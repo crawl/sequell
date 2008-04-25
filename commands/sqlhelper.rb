@@ -82,10 +82,7 @@ def sql_exec_query(num, q, lastcount = nil)
 
   # If it looks like we have to fetch several rows, see if we can reduce
   # our work by reversing the sort order.
-  count = lastcount ||
-    dbh.get_first_value("SELECT COUNT(*) FROM logrecord " + q.where, 
-                        *q.values).to_i
-
+  count = lastcount || sql_count_rows_matching(q)
   return nil if count == 0
 
   if num < 0
@@ -102,11 +99,22 @@ def sql_exec_query(num, q, lastcount = nil)
   index_sanity(num)
 
   n = num
-  dbh.execute("SELECT * FROM logrecord " + q.where, *q.values) do |row|
+  sql_each_row_matching(q) do |row|
     return [ lastcount ? n + 1 : count - n, row ] if num == 0
     num -= 1
   end
   nil
+end
+
+def sql_count_rows_matching(q)
+  sql_dbh.get_first_value("SELECT COUNT(*) FROM logrecord " + q.where, 
+                      *q.values).to_i
+end
+
+def sql_each_row_matching(q)
+  sql_dbh.execute("SELECT * FROM logrecord " + q.where, *q.values) do |row|
+    yield row
+  end
 end
 
 class CrawlQuery

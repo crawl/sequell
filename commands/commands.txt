@@ -6,6 +6,7 @@
 !cmdinfo cmdinfo.py
 !currleader currLeader.pl
 !deathsby deathsby.py
+!deathsin deathsin.rb
 !dump dump.pl
 !eplayers players.pl
 !ftw ftw.pl
