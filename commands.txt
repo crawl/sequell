@@ -1,0 +1,103 @@
+                          WRITING NEW HENZELL COMMANDS
+--------------------------------------------------------------------------------
+Henzell effectively accepts new commands written in any language. This is because commands are simply UNIX programs. Of course, the languages are limited to what the server is configured for.
+
+--------
+SYNOPSIS
+--------
+
+Someone types !command. Henzell forks and execs the script associated with that command. Henzell passes some relevant arguments and receives the command's output on STDOUT. That output is sent to the channel.
+
+-----
+INPUT
+-----
+
+Henzell passes five arguments to the command. Note that any single quotes are removed from the fields for security reasons. Consider if a player typed:
+
+!arbitrary_command '; rm -rf *; echo '
+
+If the single quotes were not removed, this would cause some (ahem) headaches.
+
+ARGUMENT THE FIRST
+
+What Henzell thinks the command is really targeting. Most commands should look only at this argument. This argument is for commands that request information about a player. If the speaker passed no arguments to your command, the speaker's nick is used in place. This argument is guaranteed to match the following regex:
+
+/^[a-zA-Z0-9]*?[a-zA-Z]+$/
+
+So in plain English: any amount of alphanumeric characters followed by at least one alphabetical character. (This is because Crawl does not support names ending with numbers, so they're stripped off -- consider aristotle73 typing "!gamesby".. the command should target his account "aristotle")
+
+ARGUMENT THE SECOND
+
+The person who is issuing the command. I'm not sure if it's in the IRC RFC that nicks cannot contain single quotes, but in either case any single quotes will be stripped off the nick.
+
+ARGUMENT THE THIRD
+
+The verbatim command exactly as the user typed it, minus single quotes. If you need to look at just the arguments that the user provided, strip off the first word-thing (and probably a space, because it's required for commands) like so (again, Perl):
+
+$ARGV[2] =~ s/^\S+ //;
+
+ARGUMENT THE FOURTH
+
+This is used to tell the command whether or not to print help information. Ordinarily this is a simple empty string. However, if !help !yourcommand is used, this becomes 1. In this case you should print help text and exit. Note that you have to be alert for multiple commands in the same file. Generally you figure out which command the person is using, and then see if help mode is on. You do not need to put the command name in the output; !help does that for you. The !help command simply passes its own arguments along, with three exceptions: the fourth argument (which was the empty string) becomes 1, the third argument (verbatim text the user typed) has the following substitution applied to it (to make it easy for command authors):
+
+$ARGV[2] =~ s/^!help\s+//i;
+
+and the third change is $ARGV[2] has an exclamation point prepended to it if there is not one already. (this makes it so "!help stats" does the right thing even if stats is in a multi-command file)
+
+ARGUMENT THE FIFTH
+
+This is used to tell the command whether the command came from the channel, a private message, or a notice. For all intents and purposes, PMs and notices should be treated equally. But who knows, you might have some use. This argument is empty, '', if the command came from the channel. This argument is '1' if it was a PM, or '2' if it was a notice. The following test could be used to exit if the command only works if it was issued in the channel (probably done the same in no_pm() in your language's helper library):
+
+if ($ARGV[4])
+{
+  printf "This command cannot be used in a %s.\n",
+         $ARGV[4] eq '1' ? 'private message' : 'notice';
+  exit;
+}
+
+------
+OUTPUT
+------
+
+Henzell currently accepts two forms of output. The exit code of the script and STDERR are (mostly) ignored. The STDERR of any script is logged.
+
+Henzell truncates all output to 400 characters (after any processing). Future versions might support longer lines which are broken up before outputting (a la Rodney3).
+
+NORMAL OUTPUT
+
+This is to be used for most commands. Simply print the output to STDOUT. Henzell currently only looks at the first line of output, but in the future he may pay attention to subsequent lines. Henzell simply echoes this output to whatever medium he received the command over (whether it be a channel or, in the future, a private message or notice)
+
+LOGFILE OUTPUT
+
+This is used for when you want Henzell to "pretty print" a logfile line. This should be used for any command that displays a logfile line, so that consistency is maintained. To use the logfile output mode you print to STDOUT just like in normal output mode, except you begin with an "\n". Henzell will then look at the next line and try to parse it as a logfile entry. Logfile entries begin and end with a colon. Henzell will strip off any text before the first colon in the line and prepend it to the pretty-printed logfile entry. Similarly for any text after the last colon. This means you cannot include a colon in the pre-text or post-text. Note that in the new 0.2.x logfile format, you have to specifically wrap the xlogline in colons.
+
+------------
+COMMON USAGE
+------------
+
+Unfortunately since Henzell commands are external scripts, they cannot make use of standard utility functions (like finding the games for a player or building a more suitable data structure from a logfile line). However, for some languages (currently Perl, Python, and Ruby) we have helper scripts that contain useful utility functions and constant definitions. Use these whenever possible (again for consistency, but also because that's just a good coding practice). A fringe benefit of writing commands this way (as external programs) is that they're very easy to test. The real reason commands are external programs is because they're easier to update (no need to reboot Henzell) and being able to be written in multiple languages is a boon for getting new functionality for Henzell.
+
+Anyway, the helper scripts should make writing new commands very painless. Here's a somewhat simplified version of !hsn in Perl.
+
+#!/usr/bin/perl
+do 'commands/helper.pl';
+print "List a player's high scoring game." and exit if $ARGV[3];
+my $nick = shift;
+my $games_ref = games_by($nick);
+my $hsn_ref = (sort { $b->{score} <=> $a->{score} } @$games_ref)[0];
+print "\n" . munge_game($hsn_ref);
+
+If you're going to write new helper scripts (or simply extend an existing helper script) please use the same external interface as used in other helper scripts (except where it makes sense to diverge.. for example the Perl helper script uses references where possible to save time and space in passing things around).
+
+-----------------------
+CAVEATS FOR CONSISTENCY
+-----------------------
+
+1. When writing a command, where possible use the same messages as other commands (for example, "No games for NICK." instead of "NICK has played no games.").
+2. When printing out the resulting nickname ("Eidolos has played X games..."), where possible use a nickname directly from the logfile. So (in Perl), use $games[0]{name} not $nick (which would be from user input). This is so "!gamesby EIDOLOS" ends up with the correct case. (Rodney in #nethack does not do this: most logfile commands have the player name in lowercase regardless of the actual capitalization). Yes this means if you're doing an victory-based command you may have to look at all games (not just victories.. but you were going to anyway, to distinguish between "No games for NICK." versus "No victories for NICK.", right?).
+3. If you're printing a floating point number, please use a printf (or similar) so that the appropriate amount of trailing zeros are included (so printf '%.2f%%', 100*$vics/$games instead of print int(10000*$vics/$games)/100 -- the former will always print two digits after the decimal point, the latter will print zero, one, or two). The exact precision used isn't much of an issue, though (but prefer two places after the decimal.. any more and it gets a bit clunky).
+4. Output should (almost) always begin with a capital letter. One exception is when output begins with a player name and that player name is not capitalized.
+5. If you're printing a frequency table (such as the output of !won), sort based on frequency (whether ascending or descending) and then by the item name (ascending). In Perl, that's:
+   sort { $won{$b} <=> $won{$a} || $a cmp $b } @races;
+6. If your command takes a player name and additional arguments, then those additional arguments should be formed such that an argument cannot be confused for a nickname. For example, let's pretend the !won command is extended to accept a race name. So a player can type !won NICK RACE. Now suppose there's someone with the nickname "Human" on akrasiac. What should "!won Human" produce -- the human victories of the person typing the command, or all the victories of this Human account? The answer is the former. The RACE argument should (for example) be prepended with a - so it's completely unambiguous. As a guideline, !command <args> should produce the exact same results as !command SPEAKERNICK <args>. Note that since Crawl nicks cannot contain only numbers so something like !game_number 10 is unambiguous (whereas in NetHack it isn't, so Rodney3 requires the number argument be prepended with a #)
+

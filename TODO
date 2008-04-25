@@ -1,0 +1,12 @@
+* Have greensnark add realtime, possibly also number of monsters in sight, to each where file.
+
+* PM support.
+
+* doy (probably also other people) milestone idea: when HP drops below a certain percent (say, 10%).. probably also a minimum level cap so the milestone file doesn't get too large.
+
+* Message-leaving system needs some improvements before it can be called done
+  - really needs PM support
+  - limit of say, 5 messages
+  - when we get a seendb, limit message-target to someone who is in the seendb
+  - probably need to make sure the target is identified to nickserv as well
+
