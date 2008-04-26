@@ -397,7 +397,7 @@ sub load_commands
 
 sub pack_args
 {
-  join " ", map {"\Q$_"} @_;
+  join " ", map { $_ eq '' ? "''" : "\Q$_"} @_;
 }
 
 sub run_command

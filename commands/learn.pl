@@ -46,7 +46,6 @@ if (!exists $filenames{$subcommand})
 
 $subcommand = $filenames{$subcommand};
 $args = '' unless defined $args;
-$args =~ y/'//d;
 
 exec("commands/learn/$subcommand", $ARGV[1], $args);
 
