@@ -267,7 +267,8 @@ sub irc_001
 sub respond_to_any_msg
 {
   my ($kernel, $nick, $verbatim, $sender, $channel) = @_;
-  my $output = `./commands/message/all_input.pl '$nick' '$verbatim'`;
+  $verbatim =~ tr/'//d;
+  my $output = qx!./commands/message/all_input.pl '$nick' '$verbatim'!;
   $kernel->post($sender => privmsg => $channel => $output) if $output;
 }
 
