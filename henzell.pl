@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use POE qw(Component::IRC);
+use POE qw(Component::IRC Component::IRC::Plugin::NickReclaim);
 use POSIX qw(setsid); # For daemonization.
 
 my $CRAWL_VERSION  = qr/^0\.3/;
@@ -199,6 +199,8 @@ sub _start
   # and register and connect to the specified server.
   my $irc_session = $heap->{irc}->session_id();
   $kernel->post( $irc_session => register => 'all' );
+  $irc->plugin_add( NickReclaim => 
+   	POE::Component::IRC::Plugin::NickReclaim->new( poll => 30 ));
   $kernel->post( $irc_session => connect => { } );
   undef;
 }
