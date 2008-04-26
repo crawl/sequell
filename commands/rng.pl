@@ -3,7 +3,7 @@ use strict;
 use warnings;
 do 'commands/helper.pl';
 
-help("Chooses randomly between its (space-separated) arguments. Currently has no special arguments.");
+help("Chooses randomly between its (space-separated) arguments. Accepts \@char, \@role, and \@race special arguments.");
 
 my @RACE_ABBREV = qw[ Hu El HE GE DE SE HD MD Ha HO Ko Mu Na Gn
                 Og Tr OM Dr Ce DG Sp Mi DS

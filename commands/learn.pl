@@ -29,7 +29,7 @@ if ($ARGV[2] =~ s/^\?\?(.*)//)
 elsif ($ARGV[2] =~ s/^!learn +(\w+) *(.*)$//i)
 {
   $subcommand = $1;
-  $args = $2;  
+  $args = $2;
 }
 
 if (!defined($subcommand))

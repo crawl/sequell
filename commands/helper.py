@@ -400,6 +400,7 @@ def deaths_in(branch, level):
     return games
 
 def kills_by(monster):
+    monster = monster.replace("'", "")
     if monster in ('pois', 'starvation', 'stupidity', 'water', 'burning',
                    'draining', 'weakness', 'cloud', 'lava', 'clumsiness',
                    'trap', 'freezing', 'wild_magic', 'statue', 'rotting',

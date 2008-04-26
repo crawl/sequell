@@ -4,14 +4,12 @@
 !aptnew apt-new.pl
 !chars chars.py
 !cmdinfo cmdinfo.py
-!currleader currLeader.pl
 !deathsby deathsby.py
 !deathsin deathsin.rb
 !dump dump.pl
 !eplayers players.pl
 !ftw ftw.pl
 !gamesby gamesby.pl
-!ghostkills ghostkills.py
 !gkills ghostkills.py
 !help help.pl
 !hs hsn.rb

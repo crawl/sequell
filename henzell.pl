@@ -43,7 +43,7 @@ if (@loghandles == 1) {
 }
 
 # We create a new PoCo-IRC object and component.
-my $irc = POE::Component::IRC->spawn( 
+my $irc = POE::Component::IRC->spawn(
       nick    => $nickname,
       server  => $ircserver,
       port    => $port,
@@ -278,7 +278,6 @@ sub irc_public
   my $channel = $where->[0];
 
   my $target = $verbatim;
-  $verbatim =~ y/'//d;
   $nick     =~ y/'//d;
 
   seen_update($nick, "saying '$verbatim'");
@@ -301,7 +300,7 @@ sub irc_public
   }
   elsif (exists $commands{$command})
   {
-    my $output = 
+    my $output =
     	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
     $output = substr($output, 0, 400) . "..." if length($output) > 400;
     $kernel->post( $sender => privmsg => $channel => $output);
@@ -310,26 +309,25 @@ sub irc_public
   undef;
 }
 
-sub irc_msg                                                                                                            
-{                                                                                                                      
-  print "irc_msg\n";                                                                                                   
-  my ($kernel,$sender,$who,$where,$verbatim) = @_[KERNEL,SENDER,ARG0,ARG1,ARG2];                                       
-  my $nick = ( split /!/, $who )[0];                                                                                   
-                                                                                                                       
-  $verbatim =~ y/'//d;                                                                                                 
-  $nick     =~ y/'//d;                                                                                                 
-  # only do learndb lookups in private messages                                                                        
-  $verbatim =~ /^(?:\?\?|!learn query )/ or return;                                                                    
-                                                                                                                      
-  seen_update($nick, "saying '$verbatim'");                                                                            
-  my $command = '!learn';                                                                                              
-                                                                                                                       
-  if (exists $commands{$command})                                                                                      
-  {                                                                                                                    
+sub irc_msg
+{
+  print "irc_msg\n";
+  my ($kernel,$sender,$who,$where,$verbatim) = @_[KERNEL,SENDER,ARG0,ARG1,ARG2];
+  my $nick = ( split /!/, $who )[0];
+
+  $nick     =~ y/'//d;
+  # only do learndb lookups in private messages
+  $verbatim =~ /^(?:\?\?|!learn query )/ or return;
+
+  seen_update($nick, "saying '$verbatim'");
+  my $command = '!learn';
+
+  if (exists $commands{$command})
+  {
     my $output = $commands{$command}->(pack_args('', $nick, $verbatim, '', ''));
-    $output = substr($output, 0, 400) . "..." if length($output) > 400;                                                
-    $kernel->post( $sender => privmsg => $nick => $output);                                                            
-  }                                                                                                                    
+    $output = substr($output, 0, 400) . "..." if length($output) > 400;
+    $kernel->post( $sender => privmsg => $nick => $output);
+  }
 }
 
 sub irc_255
@@ -399,7 +397,7 @@ sub load_commands
 
 sub pack_args
 {
-  join " ", map {"'$_'"} @_;
+  join " ", map {"\Q$_"} @_;
 }
 
 sub run_command
@@ -431,7 +429,7 @@ sub seen_update
     warn "Unable to open $seen_dir/\L$nick\E for writing: $!";
     return;
   };
-  print {$handle} join(':', 
+  print {$handle} join(':',
                        map {$seen{$_} =~ s/:/::/g; "$_=$seen{$_}"}
                        keys %seen),
                   "\n";
