@@ -45,8 +45,7 @@ sub pretty_print
 
   my $deathmsg = $game_ref->{vmsg} || $game_ref->{tmsg};
   $deathmsg =~ s/!$//;
-  my $title = $game_ref->{title};
-  $title = "Farming $title" if $game_ref->{turn} > 200000;
+  my $title = game_skill_title($game_ref);
   sprintf '%s the %s (L%d %s)%s, %s%s%s, with %d point%s after %d turn%s and %s.',
       $game_ref->{name},
 	  $title,

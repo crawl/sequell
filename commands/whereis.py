@@ -58,8 +58,6 @@ elif status == 'active':
     prestr = 'is currently'
     datestr = ''
 
-sktitle = details['title']
-if nturns > 200000:
-	sktitle = "Farming " + sktitle
+sktitle = game_skill_title(details)
 if (status != 'won') and (status != 'bailed out'):
     print("%s the %s (L%s %s)%s %s %s %s%s%s." % (nick, sktitle, details['xl'], details['char'], godstr, prestr, prep, replace(details['place'], ';', ':'), datestr, turnstr))

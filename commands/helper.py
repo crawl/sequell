@@ -9,6 +9,12 @@ www_rawdatapath = '/var/www/crawl/rawdata/'
 
 xkeychars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
 
+adjective_skills = \
+  dict( [ (title, True) for 
+          title in [ 'Deadly Accurate', 'Spry', 'Covert', 'Unseen' ] ] )
+
+adjective_end = re.compile(r'(?:ed|ble|ous)$')
+
 details_names = ['v', 'lv', 'name', 'uid', 'race', 'cls', 'xl', 'sk', 'sklev',
                  'title', 'place', 'br', 'lvl', 'ltyp', 'hp', 'mhp', 'mmhp',
                  'str', 'int', 'dex', 'start', 'dur', 'turn', 'sc', 'ktyp',
@@ -174,6 +180,20 @@ branches_abbrev = ["D","Dis","Geh","Hell","Coc","Tar",
                    "Swamp"]
 lcbranches_abbrev = [string.lower(abbrev) for abbrev in branches_abbrev]
 lclevels_abbrev = [string.lower(level) for level in levels_abbrev]
+
+def game_skill_title(game):
+    title = game['title']
+    turns = game['turn']
+    if turns < 200000:
+        return title
+    else:
+        return game_skill_farming(title)
+
+def game_skill_farming(title):
+    if adjective_skills.has_key(title) or adjective_end.search(title):
+        return title + " Farmer"
+    else:
+        return "Farming " + title
 
 def plural(int):
     if int > 1:
