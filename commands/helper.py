@@ -184,7 +184,7 @@ lclevels_abbrev = [string.lower(level) for level in levels_abbrev]
 def game_skill_title(game):
     title = game['title']
     turns = game['turn']
-    if turns < 200000:
+    if int(turns) < 200000:
         return title
     else:
         return game_skill_farming(title)
