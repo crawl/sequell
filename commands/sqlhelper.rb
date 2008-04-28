@@ -223,7 +223,7 @@ def _combine_args(args)
 end
 
 def _canonical_args(args)
-  args.map { |a| a.sub(ARGSPLITTER, "#$1#$2#$3") }
+  args.map { |a| a.sub(ARGSPLITTER, '\1\2\3').tr('_', ' ') }
 end
 
 def parse_query_params(nick, num, args)
