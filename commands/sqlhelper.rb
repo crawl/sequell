@@ -181,18 +181,25 @@ def build_query(nick, num, args)
   CrawlQuery.new(predicates, sorts)
 end
 
-def parse_query_params(nick, num, args)
-  preds, sorts = [ "and" ], Array.new()
+def _combine_args(args, splitter)
+  # First combination: if we have args that start with an operator,
+  # combine them with the preceding arg. For instance
+  # ['killer', '=', 'steam', 'dragon'] will be combined as
+  # ['killer=', 'steam', 'dragon']
+  cargs = []
+  opstart = %r!^#{OPERATORS.keys.map { |o| Regexp.quote(o) }.join('|')}!;
+  for arg in args do
+    if !cargs.empty? && arg =~ opstart
+      cargs.last << arg
+    else
+      cargs << arg
+    end
+  end
+  args = cargs
 
-  splitter = Regexp.new('^-?([a-z]+)\s*(' + 
-                        OPERATORS.keys.map { |o| Regexp.quote(o) }.join("|") + 
-                        ')\s*(.*)$')
-
-  preds << [ :field, 'LOWER(name) = ?', nick.downcase ] if nick != '*'
-
-  # Go through the arg list and check for space-split args that should be 
-  # combined (such as ['killer=steam', 'dragon'], which should become
-  # ['killer=steam dragon']).
+  # Second combination: Go through the arg list and check for
+  # space-split args that should be combined (such as ['killer=steam',
+  # 'dragon'], which should become ['killer=steam dragon']).
   cargs = []
   for arg in args do
     if cargs.empty? || arg =~ splitter
@@ -201,8 +208,21 @@ def parse_query_params(nick, num, args)
       cargs.last << " " << arg
     end
   end
+  cargs
+end
 
-  for arg in cargs do
+def parse_query_params(nick, num, args)
+  preds, sorts = [ "and" ], Array.new()
+
+  splitter = Regexp.new('^-?([a-z]+)\s*(' +
+                        OPERATORS.keys.map { |o| Regexp.quote(o) }.join("|") +
+                        ')\s*(.*)$')
+
+  preds << [ :field, 'LOWER(name) = ?', nick.downcase ] if nick != '*'
+
+  args = _combine_args(args, splitter)
+
+  for arg in args do
     raise "Malformed argument: #{arg}" unless arg =~ splitter
     key, op, val = $1, $2, $3
 
