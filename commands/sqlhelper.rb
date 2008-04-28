@@ -184,9 +184,9 @@ end
 def parse_query_params(nick, num, args)
   preds, sorts = [ "and" ], Array.new()
 
-  splitter = Regexp.new('^-?([a-z]+)(' + 
+  splitter = Regexp.new('^-?([a-z]+)\s*(' + 
                         OPERATORS.keys.map { |o| Regexp.quote(o) }.join("|") + 
-                        ')(\S*)$')
+                        ')\s*(.*)$')
 
   preds << [ :field, 'LOWER(name) = ?', nick.downcase ] if nick != '*'
 
@@ -195,8 +195,8 @@ def parse_query_params(nick, num, args)
   # ['killer=steam dragon']).
   cargs = []
   for arg in args do
-    if arg =~ splitter || cargs.empty?
-      cars << arg
+    if cargs.empty? || arg =~ splitter
+      cargs << arg
     else
       cargs.last << " " << arg
     end
