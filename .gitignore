@@ -1,3 +1,4 @@
 nohup.*
+*.diff
 _darcs/
 t/
