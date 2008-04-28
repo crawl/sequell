@@ -51,13 +51,16 @@ $DB_HANDLE = nil
 #       nick num etc
 # runs the query and returns the matching game.
 
-def sql_find_game(default_nick, args)
+def sql_build_query(default_nick, args)
   args = _op_back_combine(args)
   nick = extract_nick(args) || default_nick
   num  = extract_num(args)
-  q = build_query(nick, num, args)
+  build_query(nick, num, args)
+end
 
-  n, row = sql_exec_query(num, q)
+def sql_find_game(default_nick, args)
+  q = sql_build_query(default_nick, args)
+  n, row = sql_exec_query(q.num, q)
   [ n, row ? row_to_fieldmap(row) : nil, q.argstr ]
 end
 
@@ -124,11 +127,13 @@ def sql_each_row_matching(q)
 end
 
 class CrawlQuery
-  attr_accessor :argstr
+  attr_accessor :argstr, :nick, :num
 
-  def initialize(predicates, sorts, argstr)
+  def initialize(predicates, sorts, nick, num, argstr)
     @pred = predicates
     @sort = sorts
+    @nick = nick
+    @num = num
     @argstr = argstr
     @values = nil
   end
@@ -155,7 +160,7 @@ class CrawlQuery
   alias where query
 
   def reverse
-    CrawlQuery.new(@pred, reverse_sorts(@sort), @argstr)
+    CrawlQuery.new(@pred, reverse_sorts(@sort), @nick, @num, @argstr)
   end
 
   def reverse_sorts(sorts)
@@ -187,7 +192,7 @@ end
 
 def build_query(nick, num, args)
   predicates, sorts, cargs = parse_query_params(nick, num, args)
-  CrawlQuery.new(predicates, sorts, "#{nick} (#{cargs.join(' ')})")
+  CrawlQuery.new(predicates, sorts, nick, num, "#{nick} (#{cargs.join(' ')})")
 end
 
 def _op_back_combine(args)
