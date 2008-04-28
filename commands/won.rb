@@ -1,12 +1,13 @@
 #!/usr/bin/ruby
 require 'commands/helper.rb'
+require 'commands/sqlhelper.rb'
 
 help("Shows the number of games won.\nUsage:" +
      " !won <nick> [<number of wins to skip>]")
 
 def parse_args
   words = ARGV[2].split(' ')[ 1..-1 ]
-  [ ARGV[1], 0 ] if words.empty?
+  return [ ARGV[1], 0 ] if !words || words.empty?
    
   if words[0] =~ /^[a-zA-Z!]\w+$/
     nick = words.slice!(0).sub(/^!/, '')
@@ -36,8 +37,13 @@ end
 
 games = nil
 begin
-  q = build_query(nick, -1, [ ])
-  count = 0
+  if num == 0
+    q = build_query(nick, -1, ["ktyp=winning"]).reverse
+    count = sql_count_rows_matching(build_query(nick, -1, []))
+  else
+    q = build_query(nick, -1, []).reverse
+    count = 0
+  end
   wins = []
 
   whash  = Hash.new(0)
@@ -45,18 +51,24 @@ begin
   allwins = 0
   offset = num
   first  = 0
+  lastwin = ''
+  nfinalwin = 0
+  finalwin = ''
 
   name = nick
-  sql_each_row_matching(q) do |row|
+  sql_each_row_matching(q.reverse) do |row|
     g = row_to_fieldmap(row)
-    count += 1
+    count += 1 if num != 0
 
     name = g['name']
     if g['ktyp'] == 'winning'
       allwins += 1
       offset -= 1
+      nfinalwin = count
+      finalwin = g['char']
       if offset == 0
         first = count
+	lastwin = g['char']
       end
       if offset < 0
         nwins += 1
@@ -68,16 +80,14 @@ begin
 
   if count == 0
     printf("No games for #{nick}.\n")
-  elsif num > allwins
-    puts "#{name} has only #{allwins} wins."
   else
     if nwins == 0 then
-      if first == 0 then
-        puts "#{name} has not won in #{games.size} games."
+      if (num < allwins || allwins == 0) && first == 0 then
+        puts "#{name} has not won in #{count} games."
       else
-        puts "#{name} has not won in #{games.size - first} games" +
-          " since their #{games[first - 1]['char']}" +
-          " (win ##{num})."
+        puts "#{name} has not won in #{count - nfinalwin} games" +
+          " since their #{finalwin}" +
+          " (win ##{allwins})."
       end
     else
       if num == 0 then
@@ -86,15 +96,15 @@ begin
           b.last <=> a.last }.
           map { |a,b| "#{b}x#{a}" }.
           join(' ')
-        puts "#{name} has won #{times(nwins)} in #{games.size} games " +
-          "(#{sprintf('%0.2f%%', nwins * 100.0 / games.size)}): #{wins}"
+        puts "#{name} has won #{times(nwins)} in #{count} games " +
+          "(#{sprintf('%0.2f%%', nwins * 100.0 / count)}): #{wins}"
       else
         wins = wins.join(', ')
-        ngames = games.size - first
+        ngames = count - first
         perc = sprintf('%0.2f%%', nwins * 100.0 / ngames)
-        puts "#{name} has won #{times(nwins)} in #{games.size - first} " + 
+        puts "#{name} has won #{times(nwins)} in #{count - first} " + 
           "games (#{perc}) " +
-          "since their #{games[first - 1]['char']} (win ##{num}): " +
+          "since their #{lastwin} (win ##{num}): " +
           wins
       end
     end
