@@ -20,6 +20,7 @@
 !learn learn.pl
 !lastgame listgame.rb
 !listgame listgame.rb
+!lg listgame.rb
 !lsa lsa.py
 !messages message/messages.pl
 !players players.pl
