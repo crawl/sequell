@@ -326,16 +326,11 @@ def extract_num(args)
 
   num = nil
   (0 ... args.size).each do |i|
-    break if OPERATORS.keys.find { |x| args[i].index(x) }
     num = _parse_number(args[i])
     if num
       args.slice!(i)
       break
     end
-  end
-  if not num
-    num = _parse_number(args.last)
-    args.slice!(args.size - 1) if num
   end
   num ? (num > 0 ? num - 1 : num) : -1
 end
