@@ -304,9 +304,7 @@ def extract_nick(args)
 
   nick = nil
   (0 ... args.size).each do |i|
-    if OPERATORS.keys.find { |x| args[i].index(x) }
-      return nick
-    end
+    return nick if OPERATORS.keys.find { |x| args[i].index(x) }
     if args[i] =~ /^([^+0-9!-][\w_`'-]+)$/ ||
        args[i] =~ /^!([\w_`'-]+)$/ ||
        args[i] =~ /^([*.])$/ then
@@ -319,14 +317,25 @@ def extract_nick(args)
   nick
 end
 
+def _parse_number(arg)
+  arg =~ /^[+-]?\d+$/ ? arg.to_i : nil
+end
+
 def extract_num(args)
+  return -1 if args.empty?
+
   num = nil
   (0 ... args.size).each do |i|
-    if args[i] =~ /^[+-]?\d+$/
-      num = args[i].to_i
+    break if OPERATORS.keys.find { |x| args[i].index(x) }
+    num = _parse_number(args[i])
+    if num
       args.slice!(i)
       break
     end
+  end
+  if not num
+    num = _parse_number(args.last)
+    args.slice!(args.size - 1) if num
   end
   num ? (num > 0 ? num - 1 : num) : -1
 end
