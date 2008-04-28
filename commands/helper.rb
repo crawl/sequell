@@ -25,23 +25,6 @@ def munge_game(game)
   game.to_a.map { |x,y| "#{x}=#{y.to_s.gsub(':', '::')}" }.join(':')
 end
 
-def demunge_logline(logline)
-  fields = logline.split(':')
-  fields.shift
-  fields.pop
-
-  h = Hash.new()
-  $field_names.each do |key|
-    type = key[-1,1]
-    if type == "I"
-      h[key.chop] = fields.shift.to_i
-    else
-      h[key.chop] = fields.shift
-    end
-  end
-  h
-end
-
 def demunge_xlogline(logline) # TODO XXX XPLODE OMG
   h = Hash.new()
   if logline == ''

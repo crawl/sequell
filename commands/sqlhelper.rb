@@ -190,7 +190,19 @@ def parse_query_params(nick, num, args)
 
   preds << [ :field, 'LOWER(name) = ?', nick.downcase ] if nick != '*'
 
+  # Go through the arg list and check for space-split args that should be 
+  # combined (such as ['killer=steam', 'dragon'], which should become
+  # ['killer=steam dragon']).
+  cargs = []
   for arg in args do
+    if arg =~ splitter || cargs.empty?
+      cars << arg
+    else
+      cargs.last << " " << arg
+    end
+  end
+
+  for arg in cargs do
     raise "Malformed argument: #{arg}" unless arg =~ splitter
     key, op, val = $1, $2, $3
 
