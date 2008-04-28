@@ -47,6 +47,7 @@ $DB_HANDLE = nil
 # runs the query and returns the matching game.
 
 def sql_find_game(default_nick, args)
+  args = _op_back_combine(args)
   nick = extract_nick(args) || default_nick
   num  = extract_num(args)
   q = build_query(nick, num, args)
@@ -181,13 +182,13 @@ def build_query(nick, num, args)
   CrawlQuery.new(predicates, sorts)
 end
 
-def _combine_args(args, splitter)
+def _op_back_combine(args)
   # First combination: if we have args that start with an operator,
   # combine them with the preceding arg. For instance
   # ['killer', '=', 'steam', 'dragon'] will be combined as
   # ['killer=', 'steam', 'dragon']
   cargs = []
-  opstart = %r!^#{OPERATORS.keys.map { |o| Regexp.quote(o) }.join('|')}!;
+  opstart = %r!^(#{OPERATORS.keys.map { |o| Regexp.quote(o) }.join('|')})!;
   for arg in args do
     if !cargs.empty? && arg =~ opstart
       cargs.last << arg
@@ -195,8 +196,10 @@ def _combine_args(args, splitter)
       cargs << arg
     end
   end
-  args = cargs
+  cargs
+end
 
+def _combine_args(args, splitter)
   # Second combination: Go through the arg list and check for
   # space-split args that should be combined (such as ['killer=steam',
   # 'dragon'], which should become ['killer=steam dragon']).
@@ -289,10 +292,12 @@ def extract_nick(args)
 
   nick = nil
   (0 ... args.size).each do |i|
-    if !OPERATORS.keys.find { |x| args[i].index(x) } and
-        (args[i] =~ /^([^+0-9!-][\w_`'-]+)$/ ||
-         args[i] =~ /^!([\w_`'-]+)$/ ||
-         args[i] =~ /^([*.])$/) then
+    if OPERATORS.keys.find { |x| args[i].index(x) }
+      return nick
+    end
+    if args[i] =~ /^([^+0-9!-][\w_`'-]+)$/ ||
+       args[i] =~ /^!([\w_`'-]+)$/ ||
+       args[i] =~ /^([*.])$/ then
       nick = $1
       nick = '*' if nick == '.'
       args.slice!(i)
