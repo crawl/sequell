@@ -21,6 +21,11 @@ ROWFETCH_MAX = 5000
 DBFILE = "#{ENV['HOME']}/logfile.db"
 LOGFIELDS = { }
 
+ARGSPLITTER = Regexp.new('^-?([a-z]+)\s*(' +
+                        OPERATORS.keys.map { |o| Regexp.quote(o) }.join("|") +
+                        ')\s*(.*)$')
+
+
 LOGFIELDS_DECORATED.each do |lf|
   class << lf
     def name
@@ -53,7 +58,7 @@ def sql_find_game(default_nick, args)
   q = build_query(nick, num, args)
 
   n, row = sql_exec_query(num, q)
-  [ n, row ? row_to_fieldmap(row) : nil, "#{nick} (#{args.join(' ')})" ]
+  [ n, row ? row_to_fieldmap(row) : nil, q.argstr ]
 end
 
 def row_to_fieldmap(row)
@@ -119,9 +124,12 @@ def sql_each_row_matching(q)
 end
 
 class CrawlQuery
-  def initialize(predicates, sorts)
+  attr_accessor :argstr
+
+  def initialize(predicates, sorts, argstr)
     @pred = predicates
     @sort = sorts
+    @argstr = argstr
     @values = nil
   end
 
@@ -147,7 +155,7 @@ class CrawlQuery
   alias where query
 
   def reverse
-    CrawlQuery.new(@pred, reverse_sorts(@sort))
+    CrawlQuery.new(@pred, reverse_sorts(@sort), @argstr)
   end
 
   def reverse_sorts(sorts)
@@ -178,8 +186,8 @@ class CrawlQuery
 end
 
 def build_query(nick, num, args)
-  predicates, sorts = parse_query_params(nick, num, args)
-  CrawlQuery.new(predicates, sorts)
+  predicates, sorts, cargs = parse_query_params(nick, num, args)
+  CrawlQuery.new(predicates, sorts, "#{nick} (#{cargs.join(' ')})")
 end
 
 def _op_back_combine(args)
@@ -199,13 +207,13 @@ def _op_back_combine(args)
   cargs
 end
 
-def _combine_args(args, splitter)
+def _combine_args(args)
   # Second combination: Go through the arg list and check for
   # space-split args that should be combined (such as ['killer=steam',
   # 'dragon'], which should become ['killer=steam dragon']).
   cargs = []
   for arg in args do
-    if cargs.empty? || arg =~ splitter
+    if cargs.empty? || arg =~ ARGSPLITTER
       cargs << arg
     else
       cargs.last << " " << arg
@@ -214,19 +222,18 @@ def _combine_args(args, splitter)
   cargs
 end
 
+def _canonical_args(args)
+  args.map { |a| a.sub(ARGSPLITTER, "#$1#$2#$3") }
+end
+
 def parse_query_params(nick, num, args)
   preds, sorts = [ "and" ], Array.new()
-
-  splitter = Regexp.new('^-?([a-z]+)\s*(' +
-                        OPERATORS.keys.map { |o| Regexp.quote(o) }.join("|") +
-                        ')\s*(.*)$')
-
   preds << [ :field, 'LOWER(name) = ?', nick.downcase ] if nick != '*'
 
-  args = _combine_args(args, splitter)
+  args = _combine_args(args)
 
   for arg in args do
-    raise "Malformed argument: #{arg}" unless arg =~ splitter
+    raise "Malformed argument: #{arg}" unless arg =~ ARGSPLITTER
     key, op, val = $1, $2, $3
 
     key.downcase!
@@ -258,7 +265,7 @@ def parse_query_params(nick, num, args)
   end
 
   sorts << "ORDER BY offset DESC" if sorts.empty?
-  [ preds, sorts ]
+  [ preds, sorts, _canonical_args(args) ]
 end
 
 def query_field(selector, field, op, sqlop, val)
