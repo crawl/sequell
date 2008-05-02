@@ -150,6 +150,17 @@ class CrawlQuery
     "SELECT COUNT(*) FROM logrecord " + where
   end
 
+  def count_on(field)
+    temp = @sort
+    begin
+      @sort = []
+      %{SELECT #{field}, COUNT(*) AS fieldcount FROM logrecord
+        #{where} GROUP BY #{field} ORDER BY fieldcount DESC}
+    ensure
+      @sort = temp
+    end
+  end
+
   def query
     @query || build_query
   end
@@ -354,4 +365,27 @@ def extract_num(args)
     end
   end
   num ? (num > 0 ? num - 1 : num) : -1
+end
+
+def report_grouped_games(group_by, defval, args)
+  who = args[0]
+  q = sql_build_query(who, args[2].split()[1 .. -1])
+  count = sql_count_rows_matching(q)
+  name = q.nick
+  chars = []
+  if count > 0
+    sql_each_row_for_query(q.count_on(group_by), *q.values) do |row|
+      chars << [ row[0] || defval, row[1] ]
+    end
+  end
+
+  if count == 0
+    puts "No games for #{q.argstr}."
+  else
+    puts("#{count} games for #{q.argstr}: " +
+         chars.map { |e| "#{e[1]}x#{e[0]}" }.join(" "))
+  end
+rescue
+  puts $!
+  raise
 end
