@@ -175,6 +175,11 @@ class CrawlQuery
     CrawlQuery.new(@pred, reverse_sorts(@sort), @nick, @num, @argstr)
   end
 
+  def clear_sorts!
+    @sort.clear
+    @query = nil
+  end
+
   def reverse_sorts(sorts)
     sorts.map do |s|
       s =~ /\s+DESC\s*$/i ? s.sub(/\s+DESC\s*$/, '') : s + " DESC"
@@ -208,7 +213,7 @@ end
 
 def build_query(nick, num, args)
   predicates, sorts, cargs = parse_query_params(nick, num, args)
-  CrawlQuery.new(predicates, sorts, nick, num, build_argstr(nick, cargs))
+  CrawlQuery.new(predicates, sorts, nick, num, _build_argstr(nick, cargs))
 end
 
 def _op_back_combine(args)

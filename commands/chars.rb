@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/ruby1.9
 
 require 'commands/sqlhelper'
 require 'commands/helper'
@@ -13,9 +13,8 @@ begin
   name = q.nick
   chars = []
   if count > 0
-    charquery = %{SELECT char, COUNT(*) AS char_count FROM (#{q.select_all})
-                  GROUP BY char
-                  ORDER BY char_count DESC}
+    q.clear_sorts!
+    charquery = %{SELECT char, COUNT(*) AS char_count FROM (#{q.select_all}) GROUP BY char ORDER BY char_count DESC}
 
     sql_each_row_for_query(q, *q.values) do |row|
       chars << [ row[1], row[2] ]
