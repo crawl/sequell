@@ -19,7 +19,7 @@ LOGFIELDS_DECORATED = %w/v lv scI name uidI race cls char xlI sk
 
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk title ktyp place br ltyp
-              god urune nrune/.map { |x| [x, true] }.flatten) ]
+              god urune nrune str int dex/.map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
 ROWFETCH_MAX = 5000
@@ -168,7 +168,7 @@ def sql_each_row_for_query(query_text, *params)
 end
 
 class CrawlQuery
-  attr_accessor :argstr, :nick, :num
+  attr_accessor :argstr, :nick, :num, :raw
 
   def initialize(predicates, sorts, nick, num, argstr)
     @pred = predicates
@@ -178,6 +178,7 @@ class CrawlQuery
     @argstr = argstr
     @values = nil
     @summarize = nil
+    @raw = nil
   end
 
   def summarize
