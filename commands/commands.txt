@@ -2,7 +2,7 @@
 !aplayers players.pl
 !apt apt.pl
 !aptnew apt-new.pl
-!chars chars.py
+!chars chars.rb
 !cmdinfo cmdinfo.py
 !deathsby deathsby.py
 !deathsin deathsin.rb
