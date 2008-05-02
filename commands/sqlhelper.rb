@@ -47,10 +47,6 @@ end
 
 $DB_HANDLE = nil
 
-# Given a set of arguments of the form
-#       nick num etc
-# runs the query and returns the matching game.
-
 def sql_build_query(default_nick, args)
   args = _op_back_combine(args)
   nick = extract_nick(args) || default_nick
@@ -58,6 +54,9 @@ def sql_build_query(default_nick, args)
   build_query(nick, num, args)
 end
 
+# Given a set of arguments of the form
+#       nick num etc
+# runs the query and returns the matching game.
 def sql_find_game(default_nick, args)
   q = sql_build_query(default_nick, args)
   n, row = sql_exec_query(q.num, q)
@@ -116,12 +115,17 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
-  sql_dbh.get_first_value("SELECT COUNT(*) FROM logrecord " + q.where, 
-                      *q.values).to_i
+  sql_dbh.get_first_value(q.select_count, *q.values).to_i
 end
 
 def sql_each_row_matching(q)
-  sql_dbh.execute("SELECT * FROM logrecord " + q.where, *q.values) do |row|
+  sql_dbh.execute(q.select_all, *q.values) do |row|
+    yield row
+  end
+end
+
+def sql_each_row_for_query(query_text, *params)
+  sql_dbh.execute(query_text, *params) do |row|
     yield row
   end
 end
@@ -136,6 +140,14 @@ class CrawlQuery
     @num = num
     @argstr = argstr
     @values = nil
+  end
+
+  def select_all
+    "SELECT * FROM logrecord " + where
+  end
+
+  def select_count
+    "SELECT COUNT(*) FROM logrecord " + where
   end
 
   def query
@@ -190,9 +202,13 @@ class CrawlQuery
   end
 end
 
+def _build_argstr(nick, cargs)
+  cargs.empty? ? nick : "#{nick} (#{cargs.join(' ')})"
+end
+
 def build_query(nick, num, args)
   predicates, sorts, cargs = parse_query_params(nick, num, args)
-  CrawlQuery.new(predicates, sorts, nick, num, "#{nick} (#{cargs.join(' ')})")
+  CrawlQuery.new(predicates, sorts, nick, num, build_argstr(nick, cargs))
 end
 
 def _op_back_combine(args)

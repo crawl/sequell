@@ -8,25 +8,25 @@ help("Lists the frequency of all character types a player started.")
 who = ARGV[0]
 
 begin
-  chars = Hash.new(0)
-  q = build_query( who, -1, [ ] )
-  count = 0
-  name = who
-  sql_each_row_matching(q) do |rgame|
-    game = row_to_fieldmap(rgame)
-    chars[game['char']] += 1
-    name = game['name']
-    count += 1
+  q = sql_build_query(who, ARGV[2].split()[1 .. -1])
+  count = sql_count_rows_matching(q)
+  name = q.nick
+  chars = []
+  if count > 0
+    charquery = %{SELECT char, COUNT(*) AS char_count FROM (#{q.select_all})
+                  GROUP BY char
+                  ORDER BY char_count DESC}
+
+    sql_each_row_for_query(q, *q.values) do |row|
+      chars << [ row[1], row[2] ]
+    end
   end
 
-  sorted =
-    chars.keys.map { |k| [k, chars[k]] }.sort { |a,b| b[1] <=> a[1] }
-
-  if sorted.empty?
-    puts "No games for #{name}."
+  if count == 0
+    puts "No games for #{q.argstr}."
   else
-    puts("#{name} has played #{count} games: " +
-         sorted.map { |e| "#{e[1]}x#{e[0]}" }.join(" "))
+    puts("#{count} games for #{q.argstr}: " +
+         chars.map { |e| "#{e[1]}x#{e[0]}" }.join(" "))
   end
 rescue
   puts $!
