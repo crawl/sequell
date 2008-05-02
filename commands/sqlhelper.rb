@@ -18,7 +18,7 @@ LOGFIELDS_DECORATED = %w/v lv scI name uidI race cls char xlI sk
   nruneI tmsg vmsg/
 
 LOGFIELDS_SUMMARIZABLE =
-  Hash[ * (%w/v name race cls char xl sk title ktyp place br ltyp
+  Hash[ * (%w/v name race cls char xl sk title ktyp place br ltyp killer
               god urune nrune str int dex/.map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
@@ -426,6 +426,8 @@ def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
   chars = []
   defval ||=
     case q.summarize
+      when 'killer'
+        "other"
       when 'god'
         "No God"
       else
