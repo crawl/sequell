@@ -1,4 +1,4 @@
-#! /usr/bin/ruby1.9
+#! /usr/bin/ruby
 
 require 'commands/sqlhelper'
 require 'commands/helper'
@@ -14,10 +14,11 @@ begin
   chars = []
   if count > 0
     q.clear_sorts!
-    charquery = %{SELECT char, COUNT(*) AS char_count FROM (#{q.select_all}) GROUP BY char ORDER BY char_count DESC}
-
-    sql_each_row_for_query(q, *q.values) do |row|
-      chars << [ row[1], row[2] ]
+    charquery = %{SELECT char, COUNT(*) cc FROM logrecord
+                  #{q.where}
+                  GROUP BY char ORDER BY cc DESC}
+    sql_each_row_for_query(charquery, *q.values) do |row|
+      chars << [ row[0], row[1] ]
     end
   end
 
