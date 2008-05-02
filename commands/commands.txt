@@ -10,6 +10,7 @@
 !eplayers players.pl
 !ftw ftw.pl
 !gamesby gamesby.pl
+!gods chars.rb
 !gkills ghostkills.py
 !help help.pl
 !hs hsn.rb

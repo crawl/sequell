@@ -154,6 +154,7 @@ class CrawlQuery
     temp = @sort
     begin
       @sort = []
+      @query = nil
       %{SELECT #{field}, COUNT(*) AS fieldcount FROM logrecord
         #{where} GROUP BY #{field} ORDER BY fieldcount DESC}
     ensure
@@ -367,7 +368,7 @@ def extract_num(args)
   num ? (num > 0 ? num - 1 : num) : -1
 end
 
-def report_grouped_games(group_by, defval, args)
+def report_grouped_games(group_by, defval, args, separator=' ', formatter=nil)
   who = args[0]
   q = sql_build_query(who, args[2].split()[1 .. -1])
   count = sql_count_rows_matching(q)
@@ -375,15 +376,20 @@ def report_grouped_games(group_by, defval, args)
   chars = []
   if count > 0
     sql_each_row_for_query(q.count_on(group_by), *q.values) do |row|
-      chars << [ row[0] || defval, row[1] ]
+      val = row[0]
+      val = defval if val.empty?
+      chars << [ val, row[1] ]
     end
   end
 
   if count == 0
     puts "No games for #{q.argstr}."
   else
+    printable = chars.map do |e|
+      formatter ? formatter.call(e[1], e[0]) : "#{e[1]}x#{e[0]}"
+    end
     puts("#{count} games for #{q.argstr}: " +
-         chars.map { |e| "#{e[1]}x#{e[0]}" }.join(" "))
+         printable.join(separator))
   end
 rescue
   puts $!
