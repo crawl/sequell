@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 
 require 'sqlite3'
+require 'commands/helper'
 
 OPERATORS = {
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
@@ -15,6 +16,10 @@ LOGFIELDS_DECORATED = %w/v lv scI name uidI race cls char xlI sk
   sklevI title ktyp killer kaux place br lvlI ltyp hpI mhpI mmhpI damI
   strI intI dexI god pietyI penI wizI start end durI turnI uruneI
   nruneI tmsg vmsg/
+
+LOGFIELDS_SUMMARIZABLE =
+  Hash[ * (%w/v name race cls char xl sk title ktyp place br ltyp
+              god urune nrune/.map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
 ROWFETCH_MAX = 5000
@@ -48,10 +53,25 @@ end
 $DB_HANDLE = nil
 
 def sql_build_query(default_nick, args)
+  summarize = args.find { |a| a =~ /^-?s(?:=.*)?$/ }
+  args.delete(summarize) if summarize
+
+  sfield = nil
+  if summarize
+    if summarize =~ /^-?s=(.*)$/
+      sfield = $1
+      raise "Bad arg '#{summarize}' - cannot summarise by #{sfield}" unless LOGFIELDS_SUMMARIZABLE[sfield]
+    else
+      sfield = 'name'
+    end
+  end
+
   args = _op_back_combine(args)
   nick = extract_nick(args) || default_nick
   num  = extract_num(args)
-  build_query(nick, num, args)
+  q = build_query(nick, num, args)
+  q.summarize = sfield if summarize
+  q
 end
 
 # Given a set of arguments of the form
@@ -61,6 +81,23 @@ def sql_find_game(default_nick, args)
   q = sql_build_query(default_nick, args)
   n, row = sql_exec_query(q.num, q)
   [ n, row ? row_to_fieldmap(row) : nil, q.argstr ]
+end
+
+def sql_show_game(default_nick, args)
+  q = sql_build_query(default_nick, args)
+  if q.summarize
+    report_grouped_games_for_query(q)
+  else
+    n, row = sql_exec_query(q.num, q)
+    unless row
+      puts "No games for #{q.argstr}."
+    else
+      print "\n#{n}. :#{munge_game(row_to_fieldmap(row))}:"
+    end
+  end
+rescue
+  puts $!
+  raise
 end
 
 def row_to_fieldmap(row)
@@ -140,7 +177,17 @@ class CrawlQuery
     @num = num
     @argstr = argstr
     @values = nil
+    @summarize = nil
   end
+
+  def summarize
+    @summarize
+  end
+
+  def summarize= (s)
+    @summarize = s
+    @query = nil
+  end 
 
   def select_all
     "SELECT * FROM logrecord " + where
@@ -148,6 +195,10 @@ class CrawlQuery
 
   def select_count
     "SELECT COUNT(*) FROM logrecord " + where
+  end
+
+  def summary_query
+    count_on(@summarize)
   end
 
   def count_on(field)
@@ -368,14 +419,26 @@ def extract_num(args)
   num ? (num > 0 ? num - 1 : num) : -1
 end
 
-def report_grouped_games(group_by, defval, args, separator=' ', formatter=nil)
-  who = args[1]
-  q = sql_build_query(who, args[2].split()[1 .. -1])
+def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
   count = sql_count_rows_matching(q)
   name = q.nick
   chars = []
+  defval ||=
+    case q.summarize
+      when 'god'
+        "No God"
+      else
+        ""
+    end
+  formatter ||= 
+    case q.summarize
+      when 'char'
+        Proc.new { |n, w| "#{n}x#{w}" }
+      else
+        Proc.new { |n, w| "#{n}x #{w}" }
+    end
   if count > 0
-    sql_each_row_for_query(q.count_on(group_by), *q.values) do |row|
+    sql_each_row_for_query(q.summary_query, *q.values) do |row|
       val = row[0]
       val = defval if val.empty?
       chars << [ val, row[1] ]
@@ -391,6 +454,13 @@ def report_grouped_games(group_by, defval, args, separator=' ', formatter=nil)
     puts("#{count} games for #{q.argstr}: " +
          printable.join(separator))
   end
+end
+
+def report_grouped_games(group_by, defval, args, separator=', ', formatter=nil)
+  who = args[1]
+  q = sql_build_query(who, args[2].split()[1 .. -1])
+  q.summarize = group_by
+  report_grouped_games_for_query(q, defval, separator, formatter)
 rescue
   puts $!
   raise
