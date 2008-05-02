@@ -59,7 +59,7 @@ def sql_build_query(default_nick, args)
   sfield = nil
   if summarize
     if summarize =~ /^-?s=(.*)$/
-      sfield = $1
+      sfield = COLUMN_ALIASES[$1] || $1
       raise "Bad arg '#{summarize}' - cannot summarise by #{sfield}" unless LOGFIELDS_SUMMARIZABLE[sfield]
     else
       sfield = 'name'
