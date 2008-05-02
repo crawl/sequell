@@ -369,7 +369,7 @@ def extract_num(args)
 end
 
 def report_grouped_games(group_by, defval, args, separator=' ', formatter=nil)
-  who = args[0]
+  who = args[1]
   q = sql_build_query(who, args[2].split()[1 .. -1])
   count = sql_count_rows_matching(q)
   name = q.nick
