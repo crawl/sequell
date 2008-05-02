@@ -20,7 +20,7 @@ my $seen_dir       = '/home/henzell/henzell/dat/seendb';
 my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft greensnark cbus/;
 
 my %adjective_skill_title =
-  map($_ => 1, ('Deadly Accurate', 'Spry', 'Covert', 'Unseen'));
+  map(($_ => 1), ('Deadly Accurate', 'Spry', 'Covert', 'Unseen'));
 
 my %commands;
 
