@@ -18,7 +18,7 @@ LOGFIELDS_DECORATED = %w/v lv scI name uidI race cls char xlI sk
   nruneI tmsg vmsg/
 
 LOGFIELDS_SUMMARIZABLE =
-  Hash[ * (%w/v name race cls char xl sk title ktyp place br ltyp killer
+  Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br ltyp killer
               god urune nrune str int dex/.map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
@@ -454,7 +454,9 @@ def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
     printable = chars.map do |e|
       formatter ? formatter.call(e[1], e[0]) : "#{e[1]}x#{e[0]}"
     end
-    puts("#{count} games for #{q.argstr}: " +
+    scount = count == 1 ? "One" : "#{count}"
+    sgames = count == 1 ? "game" : "games"
+    puts("#{scount} #{sgames} for #{q.argstr}: " +
          printable.join(separator))
   end
 end
