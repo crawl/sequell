@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 do 'commands/helper.pl';
-
 help("Looks up aptitudes for specified race/skill combination.");
+
 our (%fullDB, %transRaceDB, %skillList, %bestApt, %dracColours);
 my %raceMap;
 

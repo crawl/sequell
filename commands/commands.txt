@@ -23,6 +23,7 @@
 !listgame listgame.rb
 !lg listgame.rb
 !lsa lsa.py
+!macro macro.pl
 !messages message/messages.pl
 !players players.pl
 !rc rc.pl
@@ -30,6 +31,7 @@
 !screensize screensize.pl
 !seen seen.pl
 !size screensize.pl
+!skill skill.pl
 !streak streak.py
 !tell message/tell.pl
 !whereis whereis.py
