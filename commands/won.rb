@@ -56,7 +56,7 @@ begin
   finalwin = ''
 
   name = nick
-  sql_each_row_matching(q.reverse) do |row|
+  sql_each_row_matching(q) do |row|
     g = row_to_fieldmap(row)
     count += 1 if num != 0
 
