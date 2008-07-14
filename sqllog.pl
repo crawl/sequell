@@ -14,18 +14,19 @@ my @LOGFIELDS_DECORATED = qw/v lv scI name uidI race cls char xlI sk
 
 my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
-my $LOGFILE = "$ENV{HOME}/fun/crawl/crawl-ref/source/saves/logfile";
+my $LOGFILE = "allgames.txt";
 my $DBFILE = "$ENV{HOME}/logfile.db";
 
 my $dbh = open_db();
 my $insert_st = prepare_insert_st($dbh);
+my $offset_st = prepare_offset_st($dbh);
 
 sub launch {
   system "renice +10 $$ &>/dev/null";
   open my $loghandle, '<', $LOGFILE or die "Can't read $LOGFILE: $!\n";
   binmode $loghandle;
-  unless (cat_logfile($loghandle)) {
-    cat_logfile($loghandle, -1);
+  unless (cat_logfile($LOGFILE, $loghandle)) {
+    cat_logfile($LOGFILE, $loghandle, -1);
   }
   cleanup_db();
 }
@@ -39,25 +40,40 @@ sub open_db {
 
 sub cleanup_db {
   undef $insert_st;
+  undef $offset_st;
   $dbh->disconnect();
+}
+
+sub prepare_st {
+  my ($dbh, $query) = @_;
+  my $st = $dbh->prepare($query) or die "Can't prepare $query: $!\n";
+  return $st;
 }
 
 sub prepare_insert_st {
   my $dbh = shift;
+  my @allfields = ('file', 'offset', @LOGFIELDS);
   my $text = "INSERT INTO logrecord ("
-    . join(', ', 'offset', @LOGFIELDS)
+    . join(', ', @allfields)
     . ") VALUES ("
-    . join(', ', map("?", 'offset', @LOGFIELDS))
+    . join(', ', map("?", @allfields))
     . ")";
-  my $st = $dbh->prepare($text) or die "Can't prepare $text: $!\n";
-  return $st;
+  return prepare_st($dbh, $text);
+}
+
+sub prepare_offset_st {
+  my $dbh = shift;
+  return prepare_st($dbh,
+                    "SELECT MAX(offset) FROM logrecord WHERE file = ?");
 }
 
 sub create_tables {
   my $dbh = shift;
   my $table_ddl = <<TABLEDDL;
 CREATE TABLE logrecord (
-    offset INTEGER UNIQUE PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    file STRING,
+    offset INTEGER,
     v STRING,
     lv STRING,
     sc INTEGER,
@@ -100,19 +116,25 @@ CREATE TABLE logrecord (
 TABLEDDL
 
   $dbh->do( $table_ddl ) or die "Can't create table schema!: $!\n";
-  for my $indexddl ("CREATE INDEX inames ON logrecord (name);",
+  for my $indexddl (
+                    "CREATE INDEX inames ON logrecord (name);",
                     "CREATE INDEX ioffsets ON logrecord (offset);",
                     "CREATE INDEX iscores ON logrecord (sc);",
-                    "CREATE INDEX ichar ON logrecord (char);") {
+                    "CREATE INDEX ichar ON logrecord (char);",
+                    "CREATE INDEX iend ON logrecord (end);",
+                    "CREATE INDEX iver ON logrecord (v);"
+                   )
+  {
     $dbh->do($indexddl) or die "Can't create $indexddl: $!\n";
   }
 }
 
 sub find_start_offset {
-  my $st = "SELECT MAX(offset) FROM logrecord";
-  my $aref = $dbh->selectall_arrayref($st);
-  my $rowoffset = $aref->[0]->[0] || -1;
-  return $rowoffset;
+  my $file = shift;
+  $offset_st->execute($file);
+  my $rows = $offset_st->fetchall_arrayref;
+  return $rows->[0]->[0] || -1 if $rows && $rows->[0];
+  return -1;
 }
 
 sub truncate_logrecord_table {
@@ -146,8 +168,9 @@ sub go_to_offset {
 }
 
 sub cat_logfile {
-  my ($loghandle, $offset) = @_;
-  $offset = find_start_offset() unless defined $offset;
+  my ($lfile, $loghandle, $offset) = @_;
+  $offset = find_start_offset($lfile) unless defined $offset;
+  die "No offset into $lfile" unless defined $offset;
 
   eval {
     go_to_offset($loghandle, $offset);
@@ -163,7 +186,7 @@ sub cat_logfile {
     my $line = <$loghandle>;
     last unless $line && $line =~ /\n$/;
     ++$rows;
-    add_logline($linestart, $line);
+    add_logline($lfile, $linestart, $line);
     if (!($rows % 2000)) {
       $dbh->commit;
       $dbh->begin_work;
@@ -193,10 +216,10 @@ sub logfield_hash {
 }
 
 sub add_logline {
-  my ($offset, $line) = @_;
+  my ($file, $offset, $line) = @_;
   chomp $line;
   my $fields = logfield_hash($line);
-  my @bindvalues = ($offset,
+  my @bindvalues = ($file, $offset,
     map {
       my $integer = /I$/;
       (my $key = $_) =~ s/I$//;

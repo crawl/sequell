@@ -3,6 +3,10 @@
 require 'sqlite3'
 require 'commands/helper'
 
+# Important: we filter games to this set unless the user explicitly
+# specifies a version.
+CURRENT_VER = "0.4"
+
 OPERATORS = {
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
   '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE'
@@ -29,7 +33,6 @@ LOGFIELDS = { }
 ARGSPLITTER = Regexp.new('^-?([a-z]+)\s*(' +
                         OPERATORS.keys.map { |o| Regexp.quote(o) }.join("|") +
                         ')\s*(.*)$')
-
 
 LOGFIELDS_DECORATED.each do |lf|
   class << lf
@@ -223,8 +226,36 @@ class CrawlQuery
     @values
   end
 
+  def pred_field_arr(p)
+    fields = p[1 .. -1].collect do |e|
+      if e[0] == :field
+        e[3]
+      else
+        pred_fields(e)
+      end
+    end
+  end
+
+  def pred_fields(p)
+    Set.new(pred_field_arr(p).flatten)
+  end
+
+  # Add any extra query fields we may need to.
+  def augment_query
+    if not pred_fields(@pred).include?('v')
+      @query << " " << p[0] << " " << version_predicate
+      @values << CURRENT_VER
+    end
+    q
+  end
+
+  def version_predicate
+    "v = ?"
+  end
+
   def build_query
     @query, @values = collect_clauses(@pred)
+    augment_query()
     @query = "WHERE #{where}" unless where.empty?
     unless @sort.empty?
       @query << " " unless where.empty?
@@ -316,9 +347,13 @@ def _canonical_args(args)
   args.map { |a| a.sub(ARGSPLITTER, '\1\2\3').tr('_', ' ') }
 end
 
+def field_pred(v, op, fname, fexpr)
+  [ :field, "#{fexpr or fname} #{op} ?", v, fname.downcase ]
+end
+
 def parse_query_params(nick, num, args)
   preds, sorts = [ "and" ], Array.new()
-  preds << [ :field, 'LOWER(name) = ?', nick.downcase ] if nick != '*'
+  preds << field_pred(nick.downcase, '=', 'name', 'LOWER(name)') if nick != '*'
 
   args = _combine_args(args)
 
@@ -354,7 +389,7 @@ def parse_query_params(nick, num, args)
     end
   end
 
-  sorts << "ORDER BY offset DESC" if sorts.empty?
+  sorts << "ORDER BY end DESC" if sorts.empty?
   [ preds, sorts, _canonical_args(args) ]
 end
 
@@ -363,9 +398,9 @@ def query_field(selector, field, op, sqlop, val)
       val !~ /^an /i then
     clause = [ op == '=' ? 'OR' : 'AND' ]
     v = proc_val(val, sqlop)
-    clause << [ :field, "#{field} #{sqlop} ?", v]
-    clause << [ :field, "#{field} #{sqlop} ?", "a " + v ]
-    clause << [ :field, "#{field} #{sqlop} ?", "an " + v ]
+    clause << field_pred(v, sqlop, selector, field)
+    clause << field_pred("a " + v, sqlop, selector, field)
+    clause << field_pred("an " + v, sqlop, selector, field)
     return clause
   end
   if selector == 'place' and !val.index(':') and 
@@ -374,7 +409,7 @@ def query_field(selector, field, op, sqlop, val)
     val = val + ':%'
     sqlop = op == '=' ? 'LIKE' : 'NOT LIKE'
   end
-  [ :field, "#{field} #{sqlop} ?", proc_val(val, sqlop) ]
+  field_pred(val, sqlop, selector, field)
 end
 
 def proc_val(val, sqlop)

@@ -41,8 +41,11 @@ my @stonehandles = open_handles(@stonefiles);
 my @loghandles = open_handles(@logfiles);
 
 if (@loghandles == 1) {
-    my $fh = $loghandles[0]->[1];
-    cat_logfile($fh) || cat_logfile($fh, -1);
+  for my $lhand (@loghandles) {
+    my $file = $lhand->[0];
+    my $fh = $lhand->[1];
+    cat_logfile($file, $fh) || cat_logfile($file, $fh, -1);
+  }
 }
 
 # We create a new PoCo-IRC object and component.
@@ -215,7 +218,7 @@ sub _start
   # and register and connect to the specified server.
   my $irc_session = $heap->{irc}->session_id();
   $kernel->post( $irc_session => register => 'all' );
-  $irc->plugin_add( NickReclaim => 
+  $irc->plugin_add( NickReclaim =>
    	POE::Component::IRC::Plugin::NickReclaim->new( poll => 30 ));
   $kernel->post( $irc_session => connect => { } );
   undef;
@@ -453,4 +456,3 @@ sub seen_update
                        keys %seen),
                   "\n";
 }
-
