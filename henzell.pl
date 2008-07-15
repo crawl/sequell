@@ -180,6 +180,15 @@ sub check_all_logfiles
   }
 }
 
+sub suppress_game {
+  my $g = shift;
+  return ($g->{sc} <= 2000 && 
+    ($g->{ktyp} eq 'quitting' || $g->{ktyp} eq 'leaving' 
+     || $g->{turn} < 30 
+     || ($g->{turn} < 1000 && $g->{place} eq 'Abyss'
+         && $g->{god} eq 'Lugonu' && $g->{cls} eq 'Chaos Knight')));
+}
+
 sub tail_logfile
 {
   my $href = shift;
@@ -199,8 +208,7 @@ sub tail_logfile
   add_logline($href->[0], $startoffset, $line);
 
   my $game_ref = demunge_xlogline($line);
-  if ($game_ref->{sc} > 2000 || ($game_ref->{ktyp} ne 'quitting' && $game_ref->{ktyp} ne 'leaving' && $game_ref->{turn} >= 30))
-  {
+  if (!suppress_game($game_ref)) {
     my $output = pretty_print($game_ref);
     $output =~ s/ on \d{4}-\d{2}-\d{2}//;
     $irc->yield(privmsg => $channel => $output);

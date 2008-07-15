@@ -24,7 +24,7 @@ LOGFIELDS_DECORATED = %w/v lv scI name uidI race cls char xlI sk
 
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br ltyp killer
-              god urune nrune str int dex/.map { |x| [x, true] }.flatten) ]
+              god urune nrune str int dex kaux/.map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
 ROWFETCH_MAX = 5000
@@ -244,10 +244,12 @@ class CrawlQuery
   # Add any extra query fields we may need to.
   def augment_query
     if not pred_fields(@pred).include?('v')
+      fp = field_pred("#{CURRENT_VER}*", 'LIKE', 'v', 'v')
+      @pred << fp
       @query << " " << @pred[0] if not @query.empty?
-      @query << " " << version_predicate
+      @query << " " << fp[1]
       @values ||= []
-      @values << CURRENT_VER
+      @values << fp[2]
       frag = "v=~#{CURRENT_VER}*"
       if @argstr =~ /\)$/
         @argstr.sub!(%r/\)$/, " #{frag})")
@@ -258,7 +260,7 @@ class CrawlQuery
   end
 
   def version_predicate
-    "v = ?"
+    "v LIKE ?"
   end
 
   def build_query
@@ -407,9 +409,9 @@ def query_field(selector, field, op, sqlop, val)
   if selector == 'killer' and [ '=', '!=' ].index(op) and val !~ /^a /i and
       val !~ /^an /i then
     clause = [ op == '=' ? 'OR' : 'AND' ]
-    clause << field_pred(v, sqlop, selector, field)
-    clause << field_pred("a " + v, sqlop, selector, field)
-    clause << field_pred("an " + v, sqlop, selector, field)
+    clause << field_pred(val, sqlop, selector, field)
+    clause << field_pred("a " + val, sqlop, selector, field)
+    clause << field_pred("an " + val, sqlop, selector, field)
     return clause
   end
   if selector == 'place' and !val.index(':') and 
