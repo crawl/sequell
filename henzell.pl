@@ -12,8 +12,10 @@ my $ircserver      = 'irc.freenode.org';
 my $port           = 6667;
 my $channel        = '##crawl';
 my @stonefiles     = ('/var/www/crawl/milestones02.txt',
-                      '/home/crawl/chroot/var/games/crawl03/saves/milestones.txt');
-my @logfiles       = ('/var/www/crawl/allgames.txt');
+                      '/home/crawl/chroot/var/games/crawl03/saves/milestones.txt',
+                      '/home/crawl/chroot/var/games/crawl04/saves/milestones.txt');
+my @logfiles       = ('/var/www/crawl/allgames.txt', 
+                      '/home/crawl/chroot/var/games/crawl04/saves/logfile');
 my $command_dir    = 'commands/';
 my $commands_file  = $command_dir . 'commands.txt';
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
@@ -31,16 +33,12 @@ require 'sqllog.pl';
 system "renice +10 $$ &>/dev/null";
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
-umask 0;
-defined(my $pid = fork) or die "Unable to fork: $!";
-exit if $pid;
-setsid or die "Unable to start a new session: $!";
-# Done daemonifying.
+daemonify();
 
 my @stonehandles = open_handles(@stonefiles);
 my @loghandles = open_handles(@logfiles);
 
-if (@loghandles == 1) {
+if (@loghandles >= 1) {
   for my $lhand (@loghandles) {
     my $file = $lhand->[0];
     my $fh = $lhand->[1];
@@ -70,6 +68,14 @@ POE::Session->create(
 
 $poe_kernel->run();
 exit 0;
+
+sub daemonify {
+  umask 0;
+  defined(my $pid = fork) or die "Unable to fork: $!";
+  exit if $pid;
+  setsid or die "Unable to start a new session: $!";
+  # Done daemonifying.
+}
 
 sub open_handles
 {
@@ -190,7 +196,7 @@ sub tail_logfile
   return unless defined($line) && $line =~ /\S/;
 
   # Add line to DB.
-  add_logline($startoffset, $line);
+  add_logline($href->[0], $startoffset, $line);
 
   my $game_ref = demunge_xlogline($line);
   if ($game_ref->{sc} > 2000 || ($game_ref->{ktyp} ne 'quitting' && $game_ref->{ktyp} ne 'leaving' && $game_ref->{turn} >= 30))

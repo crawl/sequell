@@ -133,8 +133,8 @@ sub find_start_offset {
   my $file = shift;
   $offset_st->execute($file);
   my $rows = $offset_st->fetchall_arrayref;
-  return $rows->[0]->[0] || -1 if $rows && $rows->[0];
-  return -1;
+  return $rows->[0]->[0] || 0 if $rows && $rows->[0];
+  return 0;
 }
 
 sub truncate_logrecord_table {
@@ -190,7 +190,7 @@ sub cat_logfile {
     if (!($rows % 2000)) {
       $dbh->commit;
       $dbh->begin_work;
-      print "Committed $rows rows.\r";
+      print "Committed $rows rows from $lfile.\r";
       STDOUT->flush;
     }
   }

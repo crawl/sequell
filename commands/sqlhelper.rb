@@ -2,6 +2,7 @@
 
 require 'sqlite3'
 require 'commands/helper'
+require 'set'
 
 # Important: we filter games to this set unless the user explicitly
 # specifies a version.
@@ -105,8 +106,8 @@ end
 
 def row_to_fieldmap(row)
   map = { }
-  (1 ... row.size).each do |i|
-    lfd = LOGFIELDS_DECORATED[i - 1]
+  (3 ... row.size).each do |i|
+    lfd = LOGFIELDS_DECORATED[i - 3]
     map[lfd.name] = lfd.value(row[i])
   end
   map
@@ -243,10 +244,17 @@ class CrawlQuery
   # Add any extra query fields we may need to.
   def augment_query
     if not pred_fields(@pred).include?('v')
-      @query << " " << p[0] << " " << version_predicate
+      @query << " " << @pred[0] if not @query.empty?
+      @query << " " << version_predicate
+      @values ||= []
       @values << CURRENT_VER
+      frag = "v=~#{CURRENT_VER}*"
+      if @argstr =~ /\)$/
+        @argstr.sub!(%r/\)$/, " #{frag})")
+      else
+        @argstr += " (#{frag})"
+      end
     end
-    q
   end
 
   def version_predicate
@@ -261,6 +269,7 @@ class CrawlQuery
       @query << " " unless where.empty?
       @query << @sort[0]
     end
+    #puts "Query: #{@query}, params: #{@values.join(',')}"
     @query
   end
 
@@ -348,6 +357,7 @@ def _canonical_args(args)
 end
 
 def field_pred(v, op, fname, fexpr)
+  v = proc_val(v, op)
   [ :field, "#{fexpr or fname} #{op} ?", v, fname.downcase ]
 end
 
@@ -397,7 +407,6 @@ def query_field(selector, field, op, sqlop, val)
   if selector == 'killer' and [ '=', '!=' ].index(op) and val !~ /^a /i and
       val !~ /^an /i then
     clause = [ op == '=' ? 'OR' : 'AND' ]
-    v = proc_val(val, sqlop)
     clause << field_pred(v, sqlop, selector, field)
     clause << field_pred("a " + v, sqlop, selector, field)
     clause << field_pred("an " + v, sqlop, selector, field)
