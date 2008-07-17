@@ -227,7 +227,14 @@ sub add_logline {
       $val = $integer? 0 : '' unless defined $val;
       $val
     } @LOGFIELDS_DECORATED);
-  $insert_st->execute(@bindvalues) or die "Can't insert record for $line: $!\n";
+  while (1) {
+    my $res = $insert_st->execute(@bindvalues);
+    my $reason = $!;
+    last if $res;
+    # If SQLite wants us to retry, sleep one second and take another stab at it.
+    die "Can't insert record for $line: $!\n" unless $reason =~ /temporarily unavail/i;
+    sleep 1;
+  }
 }
 
 1;
