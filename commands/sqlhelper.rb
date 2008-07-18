@@ -31,8 +31,9 @@ ROWFETCH_MAX = 5000
 DBFILE = "#{ENV['HOME']}/logfile.db"
 LOGFIELDS = { }
 
+SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 ARGSPLITTER = Regexp.new('^-?([a-z]+)\s*(' +
-                        OPERATORS.keys.map { |o| Regexp.quote(o) }.join("|") +
+                        SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
                         ')\s*(.*)$')
 
 LOGFIELDS_DECORATED.each do |lf|
@@ -244,13 +245,13 @@ class CrawlQuery
   # Add any extra query fields we may need to.
   def augment_query
     if not pred_fields(@pred).include?('v')
-      fp = field_pred("#{CURRENT_VER}*", 'LIKE', 'v', 'v')
+      fp = field_pred(CURRENT_VER, '>=', 'v', 'v')
       @pred << fp
       @query << " " << @pred[0] if not @query.empty?
       @query << " " << fp[1]
       @values ||= []
       @values << fp[2]
-      frag = "v=~#{CURRENT_VER}*"
+      frag = "v>=#{CURRENT_VER}"
       if @argstr =~ /\)$/
         @argstr.sub!(%r/\)$/, " #{frag})")
       else
@@ -394,7 +395,7 @@ def parse_query_params(nick, num, args)
       if LOGFIELDS[selector] == 'I'
         raise "Can't use #{op} on numeric field #{selector}" if sqlop =~ /LIKE/
         val = val.to_i
-      else
+      elsif field != 'v' and field != 'lv'
         field = "LOWER(#{field})"
       end
       preds << query_field(selector, field, op, sqlop, val)
