@@ -36,8 +36,6 @@ else
                                             (ARGV[2].split)[1 .. -1] +
                                             ["ktyp=winning"]))
 
-  sql_each_row_for_query(win_query) do |r|
-
   puts "#{q.argstr} has played #{ngames} game#{plural}, between " +
       "#{datestr(r[2])} and #{datestr(r[3])}, won #{winstr(win_count, ngames)}, " +
       "high score #{r[4]}, total score #{r[5]}, total turns #{r[6]}, " +
