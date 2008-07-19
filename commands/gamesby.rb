@@ -41,5 +41,5 @@ else
   puts "#{q.argstr} has played #{ngames} game#{plural}, between " +
       "#{datestr(r[2])} and #{datestr(r[3])}, won #{winstr(win_count, ngames)}, " +
       "high score #{r[4]}, total score #{r[5]}, total turns #{r[6]}, " +
-      "total time #{duration_str(r[7])}."
+      "total time #{duration_str(r[7].to_i)}."
 end
