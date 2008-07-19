@@ -14,9 +14,15 @@ KTYP_FIELDS = [
                'acid', 'curare', 'melting', 'bleeding', 'statue', 'xom',
                'tso_smiting', 'deaths_door'
                ]
+KTYP_MAPPINGS = {
+  "drown" => "water", "drowning" => 'water',
+  'poison' => 'pois', 'poisoning' => 'pois'
+}
 KTYP_SET = Set.new(KTYP_FIELDS)
 
 def killer_field(key)
+  key.downcase!
+  key = KTYP_MAPPINGS[key] || key
   if KTYP_SET.include?(key)
     "ktyp=#{key}"
   else
