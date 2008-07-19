@@ -285,14 +285,14 @@ end
 
 def datestr(d)
   if d =~ /^(\d{4})(\d{2})(\d{2})/
-    sprintf("%s%d%s", $1, $2.to_i + 1, $3)
+    sprintf("%s%02d%s", $1, $2.to_i + 1, $3)
   else
     d
   end
 end
 
 def duration_str(dur)
-  sprintf "%d:%02d:%02d", dur / 3600, dur / 60, dur % 60
+  sprintf "%d:%02d:%02d", dur / 3600, (dur % 3600) / 60, dur % 60
 end
 
 def help(helpstring)

@@ -15,6 +15,14 @@ sql_each_row_for_query(full_query, *q.values) do |r|
   rows << r
 end
 
+def winstr(wcount, ngames)
+  s = "#{wcount}"
+  if wcount > 0
+    s << " " << sprintf("%.2f%%", wcount * 100.0 / ngames.to_f)
+  end
+  s
+end
+
 if rows.empty?
   puts "No games for #{q.argstr}."
 else
@@ -25,13 +33,13 @@ else
   win_count = \
     sql_count_rows_matching(
                             sql_build_query(ARGV[1], 
-                                            (ARGV[2].split)[1 .. -1] 
-                                            + ["ktyp=winning"]))
+                                            (ARGV[2].split)[1 .. -1] +
+                                            ["ktyp=winning"]))
 
   sql_each_row_for_query(win_query) do |r|
 
   puts "#{q.argstr} has played #{ngames} game#{plural}, between " +
-      "#{datestr(r[2])} and #{datestr(r[3])}, won #{win_count}, " +
+      "#{datestr(r[2])} and #{datestr(r[3])}, won #{winstr(win_count, ngames)}, " +
       "high score #{r[4]}, total score #{r[5]}, total turns #{r[6]}, " +
       "total time #{duration_str(r[7])}."
 end
