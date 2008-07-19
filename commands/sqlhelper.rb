@@ -17,14 +17,14 @@ COLUMN_ALIASES = {
   'role' => 'cls', 'class' => 'cls', 'species' => 'race'
 }
 
-LOGFIELDS_DECORATED = %w/v lv scI name uidI race cls char xlI sk
+LOGFIELDS_DECORATED = %w/src v lv scI name uidI race cls char xlI sk
   sklevI title ktyp killer kaux place br lvlI ltyp hpI mhpI mmhpI damI
   strI intI dexI god pietyI penI wizI start end durI turnI uruneI
   nruneI tmsg vmsg/
 
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br ltyp killer
-              god urune nrune str int dex kaux/.map { |x| [x, true] }.flatten) ]
+              god urune nrune src str int dex kaux/.map { |x| [x, true] }.flatten) ]
 
 # Skip so many leading fields when processing SELECT * responses.
 # The skipped fields are: id, file, source, offset.
@@ -115,8 +115,10 @@ end
 
 def row_to_fieldmap(row)
   map = { }
+  src = LOGFIELDS_DECORATED[0]
+  map[src.name] = src.value(row[2])
   (LOGFIELDS_SKIP ... row.size).each do |i|
-    lfd = LOGFIELDS_DECORATED[i - LOGFIELDS_SKIP]
+    lfd = LOGFIELDS_DECORATED[i - LOGFIELDS_SKIP + 1]
     map[lfd.name] = lfd.value(row[i])
   end
   map
