@@ -14,8 +14,8 @@ my @LOGFIELDS_DECORATED = qw/v lv scI name uidI race cls char xlI sk
 
 my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
-my @INDEX_COLS = qw/src v sc name race cls char xl sk sklev title
-ktyp killer kaux place br lvl ltyp hp mhp mmhp dam str int dex god
+my @INDEX_COLS = qw/src v sc name race cls char xl
+ktyp killer kaux place str int dex god
 start end dur turn urune nrune /;
 
 my @INDEX_CASES = ( 'src', 'v', '' );
@@ -27,7 +27,7 @@ my $COMMIT_INTERVAL = 3000;
 # Dump indexes if we need to add more than around 600 lines of data.
 my $INDEX_DISCARD_THRESHOLD = 300 * 600;
 
-my $need_indexes = 0;
+my $need_indexes = 1;
 
 my $dbh = open_db();
 my $insert_st = prepare_insert_st($dbh);
@@ -155,13 +155,14 @@ sub create_indexes {
     my $name = index_name($cols);
     print "Creating index $name...\n";
     my $ddl = ("CREATE INDEX " . index_name($cols) . " ON logrecord (" .
-      join(", ", @$cols), ");");
+      join(", ", @$cols) . ");");
     $dbh->do($ddl);
   }
   $need_indexes = 0;
 }
 
 sub drop_indexes {
+  print "Dropping all indexes (errors are harmless)...\n";
   for my $cols (index_cols()) {
     my $ddl = ("DROP INDEX " . index_name($cols) . ";");
     $dbh->do($ddl);
@@ -207,7 +208,7 @@ sub go_to_offset {
   }
   my $lastline = <$loghandle>;
   $lastline =~ /\n$/
-    or die "Last line allegedly read ($lastline) not newline terminated.";
+    or die "Last line allegedly read ($lastline) at $offset not newline terminated.";
   return 1;
 }
 
@@ -216,13 +217,14 @@ sub cat_logfile {
   $offset = find_start_offset($lfile) unless defined $offset;
   die "No offset into $lfile" unless defined $offset;
 
-  my $outstanding_size = -s($lfile) - $offset;
+  my $size = -s($lfile);
+  my $outstanding_size = $size - $offset;
   drop_indexes() if $outstanding_size > $INDEX_DISCARD_THRESHOLD;
 
   eval {
     go_to_offset($loghandle, $offset);
   };
-  print "$@\n" if $@;
+  print "Error seeking in $lfile: $@\n" if $@;
   return if $@;
 
   my $linestart;
