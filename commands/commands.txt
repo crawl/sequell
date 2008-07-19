@@ -9,7 +9,7 @@
 !dump dump.pl
 !eplayers players.pl
 !ftw ftw.pl
-!gamesby gamesby.pl
+!gamesby gamesby.rb
 !gods chars.rb
 !gkills ghostkills.py
 !help help.pl

@@ -23,7 +23,7 @@ def winstr(wcount, ngames)
   s
 end
 
-if rows.empty?
+if rows.empty? || rows[0][1].to_i == 0
   puts "No games for #{q.argstr}."
 else
   r = rows[0]
