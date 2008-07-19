@@ -511,9 +511,8 @@ def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
   end
 end
 
-def report_grouped_games(group_by, defval, args, separator=', ', formatter=nil)
-  who = args[1]
-  q = sql_build_query(who, args[2].split()[1 .. -1])
+def report_grouped_games(group_by, defval, who, args, separator=', ', formatter=nil)
+  q = sql_build_query(who, args)
   q.summarize = group_by
   report_grouped_games_for_query(q, defval, separator, formatter)
 rescue

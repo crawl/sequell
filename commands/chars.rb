@@ -18,4 +18,5 @@ if ARGV[2] =~ /^!(\S+)/
   end
 end
 
-report_grouped_games(group_by, defval, ARGV, separator, formatter)
+report_grouped_games(group_by, defval, ARGV[1], (ARGV[2].split)[1 .. -1], 
+                     separator, formatter)
