@@ -16,6 +16,7 @@ my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
 my $LOGFILE = "allgames.txt";
 my $DBFILE = "$ENV{HOME}/logfile.db";
+my $COMMIT_INTERVAL = 15000;
 
 my $dbh = open_db();
 my $insert_st = prepare_insert_st($dbh);
@@ -72,27 +73,27 @@ sub create_tables {
   my $table_ddl = <<TABLEDDL;
 CREATE TABLE logrecord (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    file TEXT,
+    file TEXT COLLATE NOCASE,
     offset INTEGER,
-    v TEXT,
-    lv TEXT,
+    v TEXT COLLATE NOCASE,
+    lv TEXT COLLATE NOCASE,
     sc INTEGER,
-    name TEXT,
-    uid TEXT,
-    race TEXT,
-    cls TEXT,
-    char TEXT,
+    name TEXT COLLATE NOCASE,
+    uid TEXT COLLATE NOCASE,
+    race TEXT COLLATE NOCASE,
+    cls TEXT COLLATE NOCASE,
+    char TEXT COLLATE NOCASE,
     xl INT,
-    sk TEXT,
+    sk TEXT COLLATE NOCASE,
     sklev INT,
-    title TEXT,
-    ktyp TEXT,
-    killer TEXT,
-    kaux TEXT,
-    place TEXT,
-    br TEXT,
+    title TEXT COLLATE NOCASE,
+    ktyp TEXT COLLATE NOCASE,
+    killer TEXT COLLATE NOCASE,
+    kaux TEXT COLLATE NOCASE,
+    place TEXT COLLATE NOCASE,
+    br TEXT COLLATE NOCASE,
     lvl INTEGER,
-    ltyp TEXT,
+    ltyp TEXT COLLATE NOCASE,
     hp INTEGER,
     mhp INTEGER,
     mmhp INTEGER,
@@ -100,36 +101,53 @@ CREATE TABLE logrecord (
     str INTEGER,
     int INTEGER,
     dex INTEGER,
-    god TEXT,
+    god TEXT COLLATE NOCASE,
     piety INTEGER,
     pen INTEGER,
     wiz INTEGER,
-    start TEXT,
-    end TEXT,
+    start TEXT COLLATE NOCASE,
+    end TEXT COLLATE NOCASE,
     dur INTEGER,
     turn INTEGER,
     urune INTEGER,
     nrune INTEGER,
-    tmsg TEXT,
-    vmsg TEXT
+    tmsg TEXT COLLATE NOCASE,
+    vmsg TEXT COLLATE NOCASE
 );
 TABLEDDL
 
   $dbh->do( $table_ddl ) or die "Can't create table schema!: $!\n";
   for my $indexddl (
-                    "CREATE INDEX inames ON logrecord (name);",
-                    "CREATE INDEX ioffsets ON logrecord (offset);",
-                    "CREATE INDEX iscores ON logrecord (sc);",
-                    "CREATE INDEX ichar ON logrecord (char);",
-                    "CREATE INDEX igod ON logrecord (god);",
-                    "CREATE INDEX iplace ON logrecord (place);",
-                    "CREATE INDEX irace ON logrecord (race);",
-                    "CREATE INDEX icls ON logrecord (cls);",
-                    "CREATE INDEX isk ON logrecord (sk);",
-                    "CREATE INDEX iend ON logrecord (end);",
-                    "CREATE INDEX istart ON logrecord (start);",
-                    "CREATE INDEX iver ON logrecord (v);",
-                    "CREATE INDEX iktyp ON logrecord (ktyp);",
+                    "CREATE INDEX ind_sc ON logrecord (sc);",
+                    "CREATE INDEX ind_name ON logrecord (name);",
+                    "CREATE INDEX ind_race ON logrecord (race);",
+                    "CREATE INDEX ind_cls ON logrecord (cls);",
+                    "CREATE INDEX ind_char ON logrecord (char);",
+                    "CREATE INDEX ind_xl ON logrecord (xl);",
+                    "CREATE INDEX ind_sk ON logrecord (sk);",
+                    "CREATE INDEX ind_sklev ON logrecord (sklev);",
+                    "CREATE INDEX ind_title ON logrecord (title);",
+                    "CREATE INDEX ind_ktyp ON logrecord (ktyp);",
+                    "CREATE INDEX ind_killer ON logrecord (killer);",
+                    "CREATE INDEX ind_kaux ON logrecord (kaux);",
+                    "CREATE INDEX ind_place ON logrecord (place);",
+                    "CREATE INDEX ind_br ON logrecord (br);",
+                    "CREATE INDEX ind_lvl ON logrecord (lvl);",
+                    "CREATE INDEX ind_ltyp ON logrecord (ltyp);",
+                    "CREATE INDEX ind_hp ON logrecord (hp);",
+                    "CREATE INDEX ind_mhp ON logrecord (mhp);",
+                    "CREATE INDEX ind_mmhp ON logrecord (mmhp);",
+                    "CREATE INDEX ind_dam ON logrecord (dam);",
+                    "CREATE INDEX ind_str ON logrecord (str);",
+                    "CREATE INDEX ind_int ON logrecord (int);",
+                    "CREATE INDEX ind_dex ON logrecord (dex);",
+                    "CREATE INDEX ind_god ON logrecord (god);",
+                    "CREATE INDEX ind_start ON logrecord (start);",
+                    "CREATE INDEX ind_end ON logrecord (end);",
+                    "CREATE INDEX ind_dur ON logrecord (dur);",
+                    "CREATE INDEX ind_turn ON logrecord (turn);",
+                    "CREATE INDEX ind_urune ON logrecord (urune);",
+                    "CREATE INDEX ind_nrune ON logrecord (nrune);",
                    )
   {
     $dbh->do($indexddl) or die "Can't create $indexddl: $!\n";
@@ -194,7 +212,7 @@ sub cat_logfile {
     last unless $line && $line =~ /\n$/;
     ++$rows;
     add_logline($lfile, $linestart, $line);
-    if (!($rows % 2000)) {
+    if (!($rows % $COMMIT_INTERVAL)) {
       $dbh->commit;
       $dbh->begin_work;
       print "Committed $rows rows from $lfile.\r";

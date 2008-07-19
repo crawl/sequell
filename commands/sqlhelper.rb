@@ -366,7 +366,7 @@ end
 
 def parse_query_params(nick, num, args)
   preds, sorts = [ "and" ], Array.new()
-  preds << field_pred(nick.downcase, '=', 'name', 'LOWER(name)') if nick != '*'
+  preds << field_pred(nick, '=', 'name', 'name') if nick != '*'
 
   args = _combine_args(args)
 
@@ -395,8 +395,6 @@ def parse_query_params(nick, num, args)
       if LOGFIELDS[selector] == 'I'
         raise "Can't use #{op} on numeric field #{selector}" if sqlop =~ /LIKE/
         val = val.to_i
-      elsif field != 'v' and field != 'lv'
-        field = "LOWER(#{field})"
       end
       preds << query_field(selector, field, op, sqlop, val)
     end
