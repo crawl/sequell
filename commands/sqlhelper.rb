@@ -195,6 +195,10 @@ class CrawlQuery
     @query = nil
   end 
 
+  def select(what)
+    "SELECT #{what} FROM logrecord " + where
+  end
+
   def select_all
     "SELECT * FROM logrecord " + where
   end
