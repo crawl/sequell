@@ -11,7 +11,7 @@
 !ftw ftw.pl
 !gamesby gamesby.rb
 !gods chars.rb
-!gkills ghostkills.py
+!gkills gkills.rb
 !help help.pl
 !hs hsn.rb
 !idle idle.pl
