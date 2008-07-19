@@ -121,8 +121,15 @@ TABLEDDL
                     "CREATE INDEX ioffsets ON logrecord (offset);",
                     "CREATE INDEX iscores ON logrecord (sc);",
                     "CREATE INDEX ichar ON logrecord (char);",
+                    "CREATE INDEX igod ON logrecord (god);",
+                    "CREATE INDEX iplace ON logrecord (place);",
+                    "CREATE INDEX irace ON logrecord (race);",
+                    "CREATE INDEX icls ON logrecord (cls);",
+                    "CREATE INDEX isk ON logrecord (sk);",
                     "CREATE INDEX iend ON logrecord (end);",
-                    "CREATE INDEX iver ON logrecord (v);"
+                    "CREATE INDEX istart ON logrecord (start);",
+                    "CREATE INDEX iver ON logrecord (v);",
+                    "CREATE INDEX iktyp ON logrecord (ktyp);",
                    )
   {
     $dbh->do($indexddl) or die "Can't create $indexddl: $!\n";
