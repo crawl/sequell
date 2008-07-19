@@ -20,7 +20,9 @@ my @logfiles       = ('/var/www/crawl/allgames.txt',
                       # The [cdo] prefix indicates that this is a remote
                       # logfile, which we'll enter into the db with a source
                       # of "cdo", and for which we will not make announcements.
-                      '[cdo]/home/henzell/cdo-logfile');
+                      '[cdo]/home/henzell/cdo-logfile-0.3',
+                      '[cdo]/home/henzell/cdo-logfile-0.4');
+
 my $command_dir    = 'commands/';
 my $commands_file  = $command_dir . 'commands.txt';
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
@@ -38,10 +40,10 @@ require 'sqllog.pl';
 system "renice +10 $$ &>/dev/null";
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
-daemonify();
+daemonify() unless grep($_ eq '-n', @ARGV);
 
-my @stonehandles = open_handles(@stonefiles);
 my @loghandles = open_handles(@logfiles);
+my @stonehandles = open_handles(@stonefiles);
 
 if (@loghandles >= 1) {
   for my $lhand (@loghandles) {
@@ -90,10 +92,10 @@ sub open_handles
   my @handles;
 
   for my $file (@files) {
-    my ($server) = $file = /^\[(.*?)\]/;
+    my ($server) = $file =~ /^\[(.*?)\]/;
     $server ||= $SERVER;
 
-    my $file =~ s/^\[.*?\]//;
+    $file =~ s/^\[.*?\]//;
 
     open my $handle, '<', $file or do {
       warn "Unable to open $file for reading: $!";
@@ -101,7 +103,7 @@ sub open_handles
     };
 
     seek($handle, 0, 2); # EOF
-    push @handles, [ $file, $handle, tell($handle), $SERVER ];
+    push @handles, [ $file, $handle, tell($handle), $server ];
   }
   return @handles;
 }

@@ -16,7 +16,7 @@ my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
 my $LOGFILE = "allgames.txt";
 my $DBFILE = "$ENV{HOME}/logfile.db";
-my $COMMIT_INTERVAL = 15000;
+my $COMMIT_INTERVAL = 3000;
 
 my $dbh = open_db();
 my $insert_st = prepare_insert_st($dbh);
@@ -53,7 +53,7 @@ sub prepare_st {
 
 sub prepare_insert_st {
   my $dbh = shift;
-  my @allfields = ('file', 'offset', @LOGFIELDS);
+  my @allfields = ('file', 'src', 'offset', @LOGFIELDS);
   my $text = "INSERT INTO logrecord ("
     . join(', ', @allfields)
     . ") VALUES ("
