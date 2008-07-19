@@ -6,9 +6,7 @@ use warnings;
 my $nick = shift;
 my $baseURL = "http://crawl.akrasiac.org/rcfiles/";
 my $localPath = "/var/www/crawl/rcfiles/";
-my $rcsuffix = ".nethackrc";
-
-my $localRC = $localPath . $nick . ".nethackrc";
+my $rcsuffix = ".crawlrc";
 
 do 'commands/helper.pl';
 help("Gives an URL to the specified users crawl configuration file.");

@@ -26,8 +26,8 @@ sub launch {
   system "renice +10 $$ &>/dev/null";
   open my $loghandle, '<', $LOGFILE or die "Can't read $LOGFILE: $!\n";
   binmode $loghandle;
-  unless (cat_logfile($LOGFILE, $loghandle)) {
-    cat_logfile($LOGFILE, $loghandle, -1);
+  unless (cat_logfile($LOGFILE, 'test', $loghandle)) {
+    cat_logfile($LOGFILE, 'test', $loghandle, -1);
   }
   cleanup_db();
 }
@@ -74,6 +74,7 @@ sub create_tables {
 CREATE TABLE logrecord (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     file TEXT COLLATE NOCASE,
+    src TEXT COLLATE NOCASE,
     offset INTEGER,
     v TEXT COLLATE NOCASE,
     lv TEXT COLLATE NOCASE,
@@ -118,6 +119,7 @@ TABLEDDL
 
   $dbh->do( $table_ddl ) or die "Can't create table schema!: $!\n";
   for my $indexddl (
+                    "CREATE INDEX ind_src ON logrecord (src);",
                     "CREATE INDEX ind_sc ON logrecord (sc);",
                     "CREATE INDEX ind_name ON logrecord (name);",
                     "CREATE INDEX ind_race ON logrecord (race);",
@@ -193,7 +195,7 @@ sub go_to_offset {
 }
 
 sub cat_logfile {
-  my ($lfile, $loghandle, $offset) = @_;
+  my ($lfile, $source, $loghandle, $offset) = @_;
   $offset = find_start_offset($lfile) unless defined $offset;
   die "No offset into $lfile" unless defined $offset;
 
@@ -211,7 +213,7 @@ sub cat_logfile {
     my $line = <$loghandle>;
     last unless $line && $line =~ /\n$/;
     ++$rows;
-    add_logline($lfile, $linestart, $line);
+    add_logline($lfile, $source, $linestart, $line);
     if (!($rows % $COMMIT_INTERVAL)) {
       $dbh->commit;
       $dbh->begin_work;
@@ -241,10 +243,10 @@ sub logfield_hash {
 }
 
 sub add_logline {
-  my ($file, $offset, $line) = @_;
+  my ($file, $source, $offset, $line) = @_;
   chomp $line;
   my $fields = logfield_hash($line);
-  my @bindvalues = ($file, $offset,
+  my @bindvalues = ($file, $source, $offset,
     map {
       my $integer = /I$/;
       (my $key = $_) =~ s/I$//;

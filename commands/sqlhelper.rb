@@ -26,6 +26,10 @@ LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br ltyp killer
               god urune nrune str int dex kaux/.map { |x| [x, true] }.flatten) ]
 
+# Skip so many leading fields when processing SELECT * responses.
+# The skipped fields are: id, file, source, offset.
+LOGFIELDS_SKIP = 4
+
 # Never fetch more than 5000 rows, kthx.
 ROWFETCH_MAX = 5000
 DBFILE = "#{ENV['HOME']}/logfile.db"
@@ -35,6 +39,10 @@ SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 ARGSPLITTER = Regexp.new('^-?([a-z]+)\s*(' +
                         SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
                         ')\s*(.*)$')
+
+# Automatically limit search to a specific server, unless explicitly
+# otherwise requested.
+SERVER = ENV['CRAWL_SERVER'] || 'cao'
 
 LOGFIELDS_DECORATED.each do |lf|
   class << lf
@@ -107,8 +115,8 @@ end
 
 def row_to_fieldmap(row)
   map = { }
-  (3 ... row.size).each do |i|
-    lfd = LOGFIELDS_DECORATED[i - 3]
+  (LOGFIELDS_SKIP ... row.size).each do |i|
+    lfd = LOGFIELDS_DECORATED[i - LOGFIELDS_SKIP]
     map[lfd.name] = lfd.value(row[i])
   end
   map
@@ -246,21 +254,32 @@ class CrawlQuery
     Set.new(pred_field_arr(p).flatten)
   end
 
-  # Add any extra query fields we may need to.
-  def augment_query
-    if not pred_fields(@pred).include?('v')
-      fp = field_pred(CURRENT_VER, '>=', 'v', 'v')
-      @pred << fp
-      @query << " " << @pred[0] if not @query.empty?
-      @query << " " << fp[1]
-      @values ||= []
-      @values << fp[2]
-      frag = "v>=#{CURRENT_VER}"
+  def add_extra_predicate(value, operator, fieldname, fieldexpr, hidden=false)
+    fp = field_pred(value, operator, fieldname, fieldexpr)
+    @pred << fp
+    @query << " " << @pred[0] if not @query.empty?
+    @query << " " << fp[1]
+    @values ||= []
+    @values << fp[2]
+    frag = "#{fieldname}#{operator}#{value}"
+    if not hidden
       if @argstr =~ /\)$/
         @argstr.sub!(%r/\)$/, " #{frag})")
       else
         @argstr += " (#{frag})"
       end
+    end
+  end
+
+  # Add any extra query fields we may need to.
+  def augment_query
+    pfields = pred_fields(@pred)
+    if not pfields.include?('v')
+      add_extra_predicate(CURRENT_VER, '>=', 'v', 'v')
+    end
+
+    if not pfields.include?('src')
+      add_extra_predicate(SERVER, '=', 'src', 'src', true)
     end
   end
 

@@ -4,7 +4,8 @@ use warnings;
 use POE qw(Component::IRC Component::IRC::Plugin::NickReclaim);
 use POSIX qw(setsid); # For daemonization.
 
-my $CRAWL_VERSION  = qr/^0\.3/;
+my $SERVER = 'cao';     # Local server.
+my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
 
 my $nickname       = 'Henzell';
 my $ircname        = 'Henzell the Crawl Bot';
@@ -14,8 +15,12 @@ my $channel        = '##crawl';
 my @stonefiles     = ('/var/www/crawl/milestones02.txt',
                       '/home/crawl/chroot/var/games/crawl03/saves/milestones.txt',
                       '/home/crawl/chroot/var/games/crawl04/saves/milestones.txt');
-my @logfiles       = ('/var/www/crawl/allgames.txt', 
-                      '/home/crawl/chroot/var/games/crawl04/saves/logfile');
+my @logfiles       = ('/var/www/crawl/allgames.txt',
+                      '/home/crawl/chroot/var/games/crawl04/saves/logfile',
+                      # The [cdo] prefix indicates that this is a remote
+                      # logfile, which we'll enter into the db with a source
+                      # of "cdo", and for which we will not make announcements.
+                      '[cdo]/home/henzell/cdo-logfile');
 my $command_dir    = 'commands/';
 my $commands_file  = $command_dir . 'commands.txt';
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
@@ -41,8 +46,10 @@ my @loghandles = open_handles(@logfiles);
 if (@loghandles >= 1) {
   for my $lhand (@loghandles) {
     my $file = $lhand->[0];
+    my $source_server = $lhand->[3];
     my $fh = $lhand->[1];
-    cat_logfile($file, $fh) || cat_logfile($file, $fh, -1);
+    cat_logfile($file, $source_server, $fh) ||
+      cat_logfile($file, $source_server, $fh, -1);
   }
 }
 
@@ -83,9 +90,18 @@ sub open_handles
   my @handles;
 
   for my $file (@files) {
-    open my $handle, '<', $file or die "Unable to open $file for reading: $!";
+    my ($server) = $file = /^\[(.*?)\]/;
+    $server ||= $SERVER;
+
+    my $file =~ s/^\[.*?\]//;
+
+    open my $handle, '<', $file or do {
+      warn "Unable to open $file for reading: $!";
+      next;
+    };
+
     seek($handle, 0, 2); # EOF
-    push @handles, [ $file, $handle, tell($handle) ];
+    push @handles, [ $file, $handle, tell($handle), $SERVER ];
   }
   return @handles;
 }
@@ -176,15 +192,15 @@ sub skill_farming
 sub check_all_logfiles
 {
   for my $logh (@loghandles) {
-    tail_logfile($logh);
+    1 while tail_logfile($logh);
   }
 }
 
 sub suppress_game {
   my $g = shift;
-  return ($g->{sc} <= 2000 && 
-    ($g->{ktyp} eq 'quitting' || $g->{ktyp} eq 'leaving' 
-     || $g->{turn} < 30 
+  return ($g->{sc} <= 2000 &&
+    ($g->{ktyp} eq 'quitting' || $g->{ktyp} eq 'leaving'
+     || $g->{turn} < 30
      || ($g->{turn} < 1000 && $g->{place} eq 'Abyss'
          && $g->{god} eq 'Lugonu' && $g->{cls} eq 'Chaos Knight')));
 }
@@ -204,16 +220,22 @@ sub tail_logfile
   $href->[2] = tell($loghandle);
   return unless defined($line) && $line =~ /\S/;
 
-  # Add line to DB.
-  add_logline($href->[0], $startoffset, $line);
-
-  my $game_ref = demunge_xlogline($line);
-  if (!suppress_game($game_ref)) {
-    my $output = pretty_print($game_ref);
-    $output =~ s/ on \d{4}-\d{2}-\d{2}//;
-    $irc->yield(privmsg => $channel => $output);
-  }
   seek($loghandle, $href->[2], 0);
+
+  # Add line to DB.
+  add_logline($href->[0], $href->[3], $startoffset, $line);
+
+  # If this is a local game, announce it.
+  if ($href->[3] eq $SERVER) {
+    my $game_ref = demunge_xlogline($line);
+    if (!suppress_game($game_ref)) {
+      my $output = pretty_print($game_ref);
+      $output =~ s/ on \d{4}-\d{2}-\d{2}//;
+      $irc->yield(privmsg => $channel => $output);
+    }
+  }
+
+  1;
 }
 
 sub check_logfile
@@ -320,7 +342,7 @@ sub irc_public
   respond_to_any_msg($kernel, $nick, $verbatim, $sender, $channel);
 
   $target =~ s/^\?\?/!learn query /;
-  $target =~ s/^(!\w+) ?// or return;
+  $target =~ s/^([!@]\w+) ?// or return;
   my $command = lc $1;
 
   $target   =~ s/ .*$//;
@@ -336,6 +358,7 @@ sub irc_public
   }
   elsif (exists $commands{$command})
   {
+    $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
     	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
     $output = substr($output, 0, 400) . "..." if length($output) > 400;
