@@ -120,6 +120,7 @@ TABLEDDL
   $dbh->do( $table_ddl ) or die "Can't create table schema!: $!\n";
   for my $indexddl (
                     "CREATE INDEX ind_src ON logrecord (src);",
+                    "CREATE INDEX ind_v ON logrecord (v);",
                     "CREATE INDEX ind_sc ON logrecord (sc);",
                     "CREATE INDEX ind_name ON logrecord (name);",
                     "CREATE INDEX ind_race ON logrecord (race);",
