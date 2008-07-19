@@ -14,9 +14,20 @@ my @LOGFIELDS_DECORATED = qw/v lv scI name uidI race cls char xlI sk
 
 my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
+my @INDEX_COLS = qw/src v sc name race cls char xl sk sklev title
+ktyp killer kaux place br lvl ltyp hp mhp mmhp dam str int dex god
+start end dur turn urune nrune /;
+
+my @INDEX_CASES = ( 'src', 'v', '' );
+
 my $LOGFILE = "allgames.txt";
 my $DBFILE = "$ENV{HOME}/logfile.db";
 my $COMMIT_INTERVAL = 3000;
+
+# Dump indexes if we need to add more than around 600 lines of data.
+my $INDEX_DISCARD_THRESHOLD = 300 * 600;
+
+my $need_indexes = 0;
 
 my $dbh = open_db();
 my $insert_st = prepare_insert_st($dbh);
@@ -118,43 +129,48 @@ CREATE TABLE logrecord (
 TABLEDDL
 
   $dbh->do( $table_ddl ) or die "Can't create table schema!: $!\n";
-  for my $indexddl (
-                    "CREATE INDEX ind_src ON logrecord (src);",
-                    "CREATE INDEX ind_v ON logrecord (v);",
-                    "CREATE INDEX ind_sc ON logrecord (sc);",
-                    "CREATE INDEX ind_name ON logrecord (name);",
-                    "CREATE INDEX ind_race ON logrecord (race);",
-                    "CREATE INDEX ind_cls ON logrecord (cls);",
-                    "CREATE INDEX ind_char ON logrecord (char);",
-                    "CREATE INDEX ind_xl ON logrecord (xl);",
-                    "CREATE INDEX ind_sk ON logrecord (sk);",
-                    "CREATE INDEX ind_sklev ON logrecord (sklev);",
-                    "CREATE INDEX ind_title ON logrecord (title);",
-                    "CREATE INDEX ind_ktyp ON logrecord (ktyp);",
-                    "CREATE INDEX ind_killer ON logrecord (killer);",
-                    "CREATE INDEX ind_kaux ON logrecord (kaux);",
-                    "CREATE INDEX ind_place ON logrecord (place);",
-                    "CREATE INDEX ind_br ON logrecord (br);",
-                    "CREATE INDEX ind_lvl ON logrecord (lvl);",
-                    "CREATE INDEX ind_ltyp ON logrecord (ltyp);",
-                    "CREATE INDEX ind_hp ON logrecord (hp);",
-                    "CREATE INDEX ind_mhp ON logrecord (mhp);",
-                    "CREATE INDEX ind_mmhp ON logrecord (mmhp);",
-                    "CREATE INDEX ind_dam ON logrecord (dam);",
-                    "CREATE INDEX ind_str ON logrecord (str);",
-                    "CREATE INDEX ind_int ON logrecord (int);",
-                    "CREATE INDEX ind_dex ON logrecord (dex);",
-                    "CREATE INDEX ind_god ON logrecord (god);",
-                    "CREATE INDEX ind_start ON logrecord (start);",
-                    "CREATE INDEX ind_end ON logrecord (end);",
-                    "CREATE INDEX ind_dur ON logrecord (dur);",
-                    "CREATE INDEX ind_turn ON logrecord (turn);",
-                    "CREATE INDEX ind_urune ON logrecord (urune);",
-                    "CREATE INDEX ind_nrune ON logrecord (nrune);",
-                   )
-  {
-    $dbh->do($indexddl) or die "Can't create $indexddl: $!\n";
+  $need_indexes = 1;
+}
+
+sub index_cols {
+  my @cols = ();
+  for my $case (@INDEX_CASES) {
+    my @fields = split /\+/, $case;
+    for my $field (@INDEX_COLS) {
+      push @cols, [ @fields, $field ];
+    }
   }
+  @cols
+}
+
+sub index_name {
+  my $cols = shift;
+  "ind_" . join("_", @$cols)
+}
+
+sub create_indexes {
+  my $op = shift;
+  print "Creating indexes...";
+  for my $cols (index_cols()) {
+    my $name = index_name($cols);
+    print "Creating index $name...\n";
+    my $ddl = ("CREATE INDEX " . index_name($cols) . " ON logrecord (" .
+      join(", ", @$cols), ");");
+    $dbh->do($ddl);
+  }
+  $need_indexes = 0;
+}
+
+sub drop_indexes {
+  for my $cols (index_cols()) {
+    my $ddl = ("DROP INDEX " . index_name($cols) . ";");
+    $dbh->do($ddl);
+  }
+  $need_indexes = 1;
+}
+
+sub fixup_db {
+  create_indexes() if $need_indexes;
 }
 
 sub find_start_offset {
@@ -199,6 +215,9 @@ sub cat_logfile {
   my ($lfile, $source, $loghandle, $offset) = @_;
   $offset = find_start_offset($lfile) unless defined $offset;
   die "No offset into $lfile" unless defined $offset;
+
+  my $outstanding_size = -s($lfile) - $offset;
+  drop_indexes() if $outstanding_size > $INDEX_DISCARD_THRESHOLD;
 
   eval {
     go_to_offset($loghandle, $offset);

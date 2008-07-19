@@ -56,6 +56,7 @@ if (@loghandles >= 1) {
       cat_logfile($file, $source_server, $fh, -1);
   }
 }
+fixup_db();
 
 # We create a new PoCo-IRC object and component.
 my $irc = POE::Component::IRC->spawn(
