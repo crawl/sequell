@@ -18,7 +18,7 @@ end
 def winstr(wcount, ngames)
   s = "#{wcount}"
   if wcount > 0
-    s << " " << sprintf("(%.2f%%)", wcount * 100.0 / ngames.to_f)
+    s << " " << sprintf("(%.1f%%)", wcount * 100.0 / ngames.to_f)
   end
   s
 end
