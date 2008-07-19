@@ -21,7 +21,9 @@ my @logfiles       = ('/var/www/crawl/allgames.txt',
                       # logfile, which we'll enter into the db with a source
                       # of "cdo", and for which we will not make announcements.
                       '[cdo]/home/henzell/cdo-logfile-0.3',
-                      '[cdo]/home/henzell/cdo-logfile-0.4');
+                      '[cdo]/home/henzell/cdo-logfile-0.4',
+                      '[cdo]/home/henzell/cdo-logfile-svn',
+                      );
 
 my $command_dir    = 'commands/';
 my $commands_file  = $command_dir . 'commands.txt';
