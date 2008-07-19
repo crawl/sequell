@@ -74,7 +74,7 @@ def sql_build_query(default_nick, args)
   args = _op_back_combine(args)
   nick = extract_nick(args) || default_nick
   num  = extract_num(args)
-  q = build_query(nick, num, args)
+  q = build_query(nick, num, args, false)
   q.summarize = sfield if summarize
   q
 end
@@ -318,7 +318,8 @@ def _build_argstr(nick, cargs)
   cargs.empty? ? nick : "#{nick} (#{cargs.join(' ')})"
 end
 
-def build_query(nick, num, args)
+def build_query(nick, num, args, back_combine=true)
+  args = _op_back_combine(args) if back_combine
   predicates, sorts, cargs = parse_query_params(nick, num, args)
   CrawlQuery.new(predicates, sorts, nick, num, _build_argstr(nick, cargs))
 end

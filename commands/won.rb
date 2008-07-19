@@ -8,7 +8,7 @@ help("Shows the number of games won.\nUsage:" +
 def parse_args
   words = ARGV[2].split(' ')[ 1..-1 ]
   return [ ARGV[1], 0 ] if !words || words.empty?
-   
+
   if words[0] =~ /^[a-zA-Z!]\w+$/
     nick = words.slice!(0).sub(/^!/, '')
   end
@@ -19,7 +19,7 @@ def parse_args
 
   nick ||= ARGV[1]
   num  ||= 0
-  [ nick, num ]
+  [ nick, num, words ]
 end
 
 def times(n)
@@ -28,7 +28,7 @@ def times(n)
            "#{n} times"
 end
 
-nick, num = parse_args
+nick, num, trail_select = parse_args
 
 if not num or num < 0
   puts "Bad index: #{num}"
@@ -38,10 +38,10 @@ end
 games = nil
 begin
   if num == 0
-    q = build_query(nick, -1, ["ktyp=winning"]).reverse
-    count = sql_count_rows_matching(build_query(nick, -1, []))
+    q = build_query(nick, -1, ["ktyp=winning"] + trail_select).reverse
+    count = sql_count_rows_matching(build_query(nick, -1, trail_select))
   else
-    q = build_query(nick, -1, []).reverse
+    q = build_query(nick, -1, trail_select).reverse
     count = 0
   end
   wins = []
