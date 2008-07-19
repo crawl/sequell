@@ -15,7 +15,7 @@
 !help help.pl
 !hs hsn.rb
 !idle idle.pl
-!killsby killsby.py
+!killsby killsby.rb
 !log lastlog.rb
 !lastlog lastlog.rb
 !learn learn.pl
