@@ -18,7 +18,7 @@ my @INDEX_COLS = qw/src v sc name race cls char xl
 ktyp killer kaux place str int dex god
 start end dur turn urune nrune /;
 
-my @INDEX_CASES = ( 'src', 'v', '' );
+my @INDEX_CASES = ( 'src', '' );
 
 my $LOGFILE = "allgames.txt";
 my $DBFILE = "$ENV{HOME}/logfile.db";
@@ -29,9 +29,22 @@ my $INDEX_DISCARD_THRESHOLD = 300 * 600;
 
 my $need_indexes = 1;
 
-my $dbh = open_db();
-my $insert_st = prepare_insert_st($dbh);
-my $offset_st = prepare_offset_st($dbh);
+my $dbh;
+my $insert_st;
+my $offset_st;
+
+setup_db();
+
+sub setup_db {
+  $dbh = open_db();
+  $insert_st = prepare_insert_st($dbh);
+  $offset_st = prepare_offset_st($dbh);
+}
+
+sub reopen_db {
+  cleanup_db();
+  setup_db();
+}
 
 sub launch {
   system "renice +10 $$ &>/dev/null";
@@ -129,6 +142,7 @@ CREATE TABLE logrecord (
 TABLEDDL
 
   $dbh->do( $table_ddl ) or die "Can't create table schema!: $!\n";
+  $dbh->do( 'CREATE INDEX ind_foffset on logrecord (file, offset);' );
   $need_indexes = 1;
 }
 
@@ -137,6 +151,7 @@ sub index_cols {
   for my $case (@INDEX_CASES) {
     my @fields = split /\+/, $case;
     for my $field (@INDEX_COLS) {
+      next if grep($_ eq $field, @fields);
       push @cols, [ @fields, $field ];
     }
   }
@@ -159,6 +174,7 @@ sub create_indexes {
     $dbh->do($ddl);
   }
   $need_indexes = 0;
+  reopen_db();
 }
 
 sub drop_indexes {
@@ -168,6 +184,7 @@ sub drop_indexes {
     $dbh->do($ddl);
   }
   $need_indexes = 1;
+  reopen_db();
 }
 
 sub fixup_db {

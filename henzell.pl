@@ -52,6 +52,7 @@ if (@loghandles >= 1) {
     my $file = $lhand->[0];
     my $source_server = $lhand->[3];
     my $fh = $lhand->[1];
+    print "Catching up on records from $file...\n";
     cat_logfile($file, $source_server, $fh) ||
       cat_logfile($file, $source_server, $fh, -1);
   }

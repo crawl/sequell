@@ -8,7 +8,7 @@ help("Summarizes a player's crawl.akrasiac.org career.")
 q = sql_build_query(ARGV[1], (ARGV[2].split)[1 .. -1])
 
 full_query = q.select("MAX(name), COUNT(*), MIN(start), MAX(end), " +
-                      "MAX(sc), SUM(sc), SUM(turn), SUM(dur)")
+                      "MAX(sc), SUM(sc), SUM(turn), SUM(dur)", false)
 
 rows = []
 sql_each_row_for_query(full_query, *q.values) do |r|

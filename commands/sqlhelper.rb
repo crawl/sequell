@@ -205,8 +205,8 @@ class CrawlQuery
     @query = nil
   end 
 
-  def select(what)
-    "SELECT #{what} FROM logrecord " + where
+  def select(what, with_sorts=true)
+    "SELECT #{what} FROM logrecord " + where(with_sorts)
   end
 
   def select_all
@@ -214,7 +214,7 @@ class CrawlQuery
   end
 
   def select_count
-    "SELECT COUNT(*) FROM logrecord " + where
+    "SELECT COUNT(*) FROM logrecord " + where(false)
   end
 
   def summary_query
@@ -233,8 +233,8 @@ class CrawlQuery
     end
   end
 
-  def query
-    @query || build_query
+  def query(with_sorts=true)
+    build_query(with_sorts)
   end
 
   def values
@@ -289,12 +289,12 @@ class CrawlQuery
     "v LIKE ?"
   end
 
-  def build_query
+  def build_query(with_sorts=true)
     @query, @values = collect_clauses(@pred)
     augment_query()
-    @query = "WHERE #{where}" unless where.empty?
-    unless @sort.empty?
-      @query << " " unless where.empty?
+    @query = "WHERE #{@query}" unless @query.empty?
+    unless @sort.empty? or !with_sorts
+      @query << " " unless @query.empty?
       @query << @sort[0]
     end
     #puts "Query: #{@query}, params: #{@values.join(',')}"
