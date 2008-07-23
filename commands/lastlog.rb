@@ -16,6 +16,11 @@ end
 unless game
   puts "No games for #{selectors}."
 else
-  print "#{n}. " + short_game_summary(game) + ": " +
-    (find_game_morgue(game) || "Can't find morgue!")
+  summary = short_game_summary(game)
+  begin
+    print "#{n}. " + summary + ": " +
+      (find_game_morgue(game) || "Can't find morgue!")
+  rescue
+    print "#{n}. " + summary + ": " + $!
+  end
 end

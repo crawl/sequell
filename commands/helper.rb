@@ -15,6 +15,12 @@ DGL_MORGUE_DIR = '/var/www/crawl/rawdata'
 # HTTP URL corresponding to DGL_MORGUE_DIR, with no trailing slash.
 DGL_MORGUE_URL = 'http://crawl.akrasiac.org/rawdata'
 
+DGL_ALIEN_MORGUES = \
+[
+ [ %r/-0.4$/, 'http://crawl.develz.org/morgues/stable/' ],
+ [ %r/-svn$/, 'http://crawl.develz.org/morgues/trunk/' ]
+]
+
 $field_names.each do |field|
   if field =~ /(\w+)(\w)/
     $field_types[$1] = $2
@@ -243,15 +249,33 @@ def game_morgues(name)
   Dir[ DGL_MORGUE_DIR + '/' + name + '/' + 'morgue-*.txt' ].sort
 end
 
-def find_game_morgue(e)
+def morgue_time(e)
   timestamp = e["end"].dup
   timestamp.sub!(/(\d{4})(\d{2})(\d{2})/) do |m| 
     "#$1#{sprintf('%02d', $2.to_i + 1)}#$3-"
   end
-  timestamp.sub!(/[DS]$/, "")
+  timestamp.sub(/[DS]$/, "")
+end
 
-  fulltime = timestamp
-  
+def find_alien_morgue(e)
+  if e['v'] < '0.4'
+    raise "Can't locate remote morgues with v<0.4"
+  end
+  for pair in DGL_ALIEN_MORGUES
+    if e['file'] =~ pair[0]
+      morgue_assemble_filename(pair[1], e, morgue_time(e), '.txt')
+    end
+  end
+  nil
+end
+
+def find_game_morgue(e)
+  if e['src'] != 'cao'
+    return find_alien_morgue(e)
+  end
+
+  fulltime = morgue_time(e)
+
   # Look for full timestamp
   morgue = morgue_assemble_filename(DGL_MORGUE_DIR, e, fulltime, '.txt')
   if File.exist?(morgue)
