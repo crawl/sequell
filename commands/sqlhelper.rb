@@ -17,7 +17,7 @@ COLUMN_ALIASES = {
   'role' => 'cls', 'class' => 'cls', 'species' => 'race'
 }
 
-LOGFIELDS_DECORATED = %w/src v lv scI name uidI race cls char xlI sk
+LOGFIELDS_DECORATED = %w/file src v lv scI name uidI race cls char xlI sk
   sklevI title ktyp killer kaux place br lvlI ltyp hpI mhpI mmhpI damI
   strI intI dexI god pietyI penI wizI start end durI turnI uruneI
   nruneI tmsg vmsg/
@@ -115,10 +115,12 @@ end
 
 def row_to_fieldmap(row)
   map = { }
-  src = LOGFIELDS_DECORATED[0]
+  file = LOGFIELDS_DECORATED[0]
+  src = LOGFIELDS_DECORATED[1]
+  map[file.name] = file.value(row[1])
   map[src.name] = src.value(row[2])
   (LOGFIELDS_SKIP ... row.size).each do |i|
-    lfd = LOGFIELDS_DECORATED[i - LOGFIELDS_SKIP + 1]
+    lfd = LOGFIELDS_DECORATED[i - LOGFIELDS_SKIP + 2]
     map[lfd.name] = lfd.value(row[i])
   end
   map
