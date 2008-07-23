@@ -24,7 +24,9 @@
 !killsby killsby.rb
 @killsby killsby.rb
 !log lastlog.rb
+@log lastlog.rb
 !lastlog lastlog.rb
+@lastlog lastlog.rb
 !learn learn.pl
 !lastgame listgame.rb
 @lastgame listgame.rb

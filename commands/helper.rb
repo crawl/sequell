@@ -17,8 +17,8 @@ DGL_MORGUE_URL = 'http://crawl.akrasiac.org/rawdata'
 
 DGL_ALIEN_MORGUES = \
 [
- [ %r/-0.4$/, 'http://crawl.develz.org/morgues/stable/' ],
- [ %r/-svn$/, 'http://crawl.develz.org/morgues/trunk/' ]
+ [ %r/-0.4$/, 'http://crawl.develz.org/morgues/stable' ],
+ [ %r/-svn$/, 'http://crawl.develz.org/morgues/trunk' ]
 ]
 
 $field_names.each do |field|
@@ -263,7 +263,7 @@ def find_alien_morgue(e)
   end
   for pair in DGL_ALIEN_MORGUES
     if e['file'] =~ pair[0]
-      morgue_assemble_filename(pair[1], e, morgue_time(e), '.txt')
+      return morgue_assemble_filename(pair[1], e, morgue_time(e), '.txt')
     end
   end
   nil
