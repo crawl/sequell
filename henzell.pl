@@ -39,7 +39,7 @@ do 'game_parser.pl';
 require 'sqllog.pl';
 
 # Drop process priority.
-system "renice +19 $$ &>/dev/null";
+system "renice +5 $$ &>/dev/null";
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
 daemonify() unless grep($_ eq '-n', @ARGV);
