@@ -2,7 +2,7 @@ nohup.*
 *.diff
 _darcs/
 t/
-allgames.txt
+allgames*.txt
 *.sql
 logfile
 logfile.db

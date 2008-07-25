@@ -198,6 +198,11 @@ class CrawlQuery
     @raw = nil
   end
 
+  # Is this a query aimed at a single nick?
+  def single_nick?
+    @pred[1][1] == "name = ?"
+  end
+
   def summarize
     @summarize
   end
@@ -312,6 +317,16 @@ class CrawlQuery
   def clear_sorts!
     @sort.clear
     @query = nil
+  end
+
+  def sort_by! (*fields)
+    clear_sorts!
+    sort = ""
+    for field, direction in fields
+      sort << ", " unless sort.empty?
+      sort << "#{field} #{direction == :desc ? 'DESC' : ''}"
+    end
+    @sort << "ORDER BY #{sort}"
   end
 
   def reverse_sorts(sorts)
@@ -541,4 +556,13 @@ def report_grouped_games(group_by, defval, who, args, separator=', ', formatter=
 rescue
   puts $!
   raise
+end
+
+def logfile_names
+  q = "SELECT file FROM logfiles;"
+  logfiles = []
+  sql_dbh.execute(q) do |row|
+    logfiles << row[0]
+  end
+  logfiles
 end
