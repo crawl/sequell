@@ -48,6 +48,7 @@ my @loghandles = open_handles(@logfiles);
 my @stonehandles = open_handles(@stonefiles);
 
 if (@loghandles >= 1) {
+  sql_register_logfiles(map $_->[0], @loghandles);
   for my $lhand (@loghandles) {
     my $file = $lhand->[0];
     my $source_server = $lhand->[3];

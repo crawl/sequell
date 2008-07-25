@@ -14,7 +14,7 @@ my @LOGFIELDS_DECORATED = qw/v lv scI name uidI race cls char xlI sk
 
 my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
-my @INDEX_COLS = qw/src v sc name race cls char xl
+my @INDEX_COLS = qw/src file v sc name race cls char xl
 ktyp killer kaux place str int dex god
 start end dur turn urune nrune /;
 
@@ -92,9 +92,26 @@ sub prepare_offset_st {
                     "SELECT MAX(offset) FROM logrecord WHERE file = ?");
 }
 
+sub sql_register_logfiles {
+  my @files = @_;
+  $dbh->begin_work;
+  $dbh->do("DELETE FROM logfiles;") or die "Couldn't delete file records: $!\n";
+  my $insert = "INSERT INTO logfiles VALUES (?);";
+  my $st = $dbh->prepare($insert) or die "Can't prepare $insert: $!\n";
+  for my $file (@files) {
+    execute_st($st, $file) or
+      die "Couldn't insert record for $file with $insert: $!\n";
+  }
+  $dbh->commit;
+}
+
 sub create_tables {
   my $dbh = shift;
   my $table_ddl = <<TABLEDDL;
+CREATE TABLE logfiles (
+    file TEXT PRIMARY KEY
+);
+
 CREATE TABLE logrecord (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     file TEXT COLLATE NOCASE,
@@ -281,6 +298,18 @@ sub logfield_hash {
   return \%fieldh;
 }
 
+sub execute_st {
+  my $st = shift;
+  while (1) {
+    my $res = $st->execute(@_);
+    return 1 if $res;
+    my $reason = $!;
+    # If SQLite wants us to retry, sleep one second and take another stab at it.
+    return unless $reason =~ /temporarily unavail/i;
+    sleep 1;
+  }
+}
+
 sub add_logline {
   my ($file, $source, $offset, $line) = @_;
   chomp $line;
@@ -293,14 +322,8 @@ sub add_logline {
       $val = $integer? 0 : '' unless defined $val;
       $val
     } @LOGFIELDS_DECORATED);
-  while (1) {
-    my $res = $insert_st->execute(@bindvalues);
-    my $reason = $!;
-    last if $res;
-    # If SQLite wants us to retry, sleep one second and take another stab at it.
-    die "Can't insert record for $line: $!\n" unless $reason =~ /temporarily unavail/i;
-    sleep 1;
-  }
+  execute_st($insert_st, @bindvalues) or
+    die "Can't insert record for $line: $!\n";
 }
 
 1;
