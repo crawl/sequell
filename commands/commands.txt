@@ -44,7 +44,8 @@
 !seen seen.pl
 !size screensize.pl
 !skill skill.pl
-!streak streak.py
+!streak streak.rb
+@streak streak.rb
 !tell message/tell.pl
 !whereis whereis.py
 !won won.rb
