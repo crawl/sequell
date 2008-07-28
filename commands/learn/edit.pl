@@ -17,7 +17,7 @@ if ($text eq '')
   exit;
 }
 
-my ($regex, $replacement, $opts) = $rest =~ m{^s/(.*)/(.*)/([ig]*) *$} or do
+my ($sep, $regex, $replacement, $opts) = $rest =~ m{^s(.)(.*)\1(.*)\1([ig]*) *$} or do
 {
   print "Syntax is: !learn edit TERM[NUM] s/REGEX/REPLACE/opts";
   exit;
