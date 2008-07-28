@@ -8,6 +8,8 @@ require 'set'
 # specifies a version.
 CURRENT_VER = "0.4"
 
+$CONSTRAIN_VERSION = false
+
 OPERATORS = {
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
   '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE'
@@ -283,7 +285,7 @@ class CrawlQuery
   # Add any extra query fields we may need to.
   def augment_query
     pfields = pred_fields(@pred)
-    if not pfields.include?('v')
+    if $CONSTRAIN_VERSION and not pfields.include?('v')
       add_extra_predicate(CURRENT_VER, '>=', 'v', 'v')
     end
 
