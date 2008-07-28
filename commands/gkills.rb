@@ -7,7 +7,7 @@ help("Lists the top kills for a player's ghost.")
 
 args = (ARGV[2].split)[1 .. -1] || []
 
-ghost = args[0] || ARGV[1]
+ghost = extract_nick(args) || ARGV[1]
 
 field = \
   if ghost == '*'
@@ -16,4 +16,4 @@ field = \
     "killer=#{ghost}'s ghost"
   end
 
-report_grouped_games('name', '', '*', [ '*', field ] + (args[1 .. -1] || []))
+report_grouped_games('name', '', '*', [ '*', field ] + (args || []))
