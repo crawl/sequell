@@ -111,7 +111,11 @@ sub create_tables {
 CREATE TABLE logfiles (
     file TEXT PRIMARY KEY
 );
+TABLEDDL
 
+  $dbh->do( $table_ddl ) or die "Can't create table schema!: $!\n";
+
+  $table_ddl = <<TABLEDDL;
 CREATE TABLE logrecord (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     file TEXT COLLATE NOCASE,
