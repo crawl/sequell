@@ -396,6 +396,10 @@ def _combine_args(args)
   cargs
 end
 
+def sanitize_args(args)
+  _combine_args( _op_separate( _op_back_combine( args ) ) )
+end
+
 def _canonical_args(args)
   args.map { |a| a.sub(ARGSPLITTER, '\1\2\3').tr('_', ' ') }
 end
@@ -516,7 +520,7 @@ def pred_field_arr(p)
     if e[0] == :field
       e[3]
     else
-      pred_fields(e)
+      pred_field_arr(e)
     end
   end
 end
@@ -542,6 +546,8 @@ end
 # - All members share the same starting operator.
 def flatten_predicates(pred)
   return pred unless pred.is_a? Array
+
+  pred = pred.find_all { |x| !x.is_a?(Array) || x.length > 1 }
 
   pred = [ pred[0] ] + pred[1 .. -1].map { |x| flatten_predicates(x) }
 
@@ -577,8 +583,9 @@ def parse_query_params(nick, num, args)
 
   canargs = _canonical_args(args)
   augment_query(preds, canargs)
+  preds = flatten_predicates(preds)
 
-  [ flatten_predicates(preds), sorts, canargs ]
+  [ preds, sorts, canargs ]
 end
 
 def query_field(selector, field, op, sqlop, val)
@@ -699,4 +706,8 @@ def logfile_names
     logfiles << row[0]
   end
   logfiles
+end
+
+def paren_args(args)
+  args && !args.empty? ? [ '[' ] + args + [ ']' ] : []
 end

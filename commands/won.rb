@@ -38,7 +38,8 @@ end
 games = nil
 begin
   if num == 0
-    q = build_query(nick, -1, ["ktyp=winning"] + trail_select).reverse
+    q = build_query(nick, -1,
+                    ["ktyp=winning"] + paren_args(trail_select)).reverse
     count = sql_count_rows_matching(build_query(nick, -1, trail_select))
   else
     q = build_query(nick, -1, trail_select).reverse
@@ -102,7 +103,7 @@ begin
         wins = wins.join(', ')
         ngames = count - first
         perc = sprintf('%0.2f%%', nwins * 100.0 / ngames)
-        puts "#{name} has won #{times(nwins)} in #{count - first} " + 
+        puts "#{name} has won #{times(nwins)} in #{count - first} " +
           "games (#{perc}) " +
           "since their #{lastwin} (win ##{num}): " +
           wins

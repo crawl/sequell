@@ -29,12 +29,12 @@ else
   r = rows[0]
   ngames = r[1]
   plural = ngames == 1 ? "" : "s"
-  
+
   win_count = \
     sql_count_rows_matching(
-                            sql_build_query(ARGV[1], 
-                                            (ARGV[2].split)[1 .. -1] +
-                                            ["ktyp=winning"]))
+       sql_build_query(ARGV[1],
+                       paren_args((ARGV[2].split)[1 .. -1]) +
+                       ["ktyp=winning"]))
 
   puts "#{q.argstr} has played #{ngames} game#{plural}, between " +
       "#{datestr(r[2])} and #{datestr(r[3])}, won #{winstr(win_count, ngames)}, " +

@@ -25,7 +25,7 @@ begin
   q = build_query('*', -1, [ "place=#{place}",
                              "ktyp!=quitting",
                              "ktyp!=winning",
-                             "ktyp!=leaving" ] + rest)
+                             "ktyp!=leaving" ] + paren_args(rest))
 
   count = sql_count_rows_matching(q)
   if count > 2000

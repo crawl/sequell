@@ -8,7 +8,7 @@ help "Lists the highest-scoring game for a player."
 $CONSTRAIN_VERSION = true;
 begin
   n, game, selectors = sql_find_game(ARGV[1],
-				     (ARGV[2].split)[1..-1] + [ "max=sc" ])
+				     paren_args((ARGV[2].split)[1..-1]) + [ "max=sc" ])
 rescue
   puts $!
   raise

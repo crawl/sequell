@@ -16,4 +16,4 @@ field = \
     "killer=#{ghost}'s ghost"
   end
 
-report_grouped_games('name', '', '*', [ '*', field ] + (args || []))
+report_grouped_games('name', '', '*', [ '*', field ] + paren_args(args))

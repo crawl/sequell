@@ -30,7 +30,8 @@ def killer_field(key)
   end
 end
 
-args = (ARGV[2].split)[1 .. -1]
+args = sanitize_args( (ARGV[2].split)[1 .. -1] )
 killer = killer_field(args[0])
 
-report_grouped_games('name', '', '*', [ '*', killer ] + args[1 .. -1])
+report_grouped_games('name', '', '*',
+                     [ '*', killer ] + paren_args(args[1 .. -1]))
