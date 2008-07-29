@@ -21,9 +21,8 @@ KTYP_MAPPINGS = {
 KTYP_SET = Set.new(KTYP_FIELDS)
 
 def killer_field(key)
-  key.downcase!
-  key = KTYP_MAPPINGS[key] || key
-  if KTYP_SET.include?(key)
+  key = KTYP_MAPPINGS[key.downcase] || key
+  if KTYP_SET.include?(key.downcase)
     "ktyp=#{key}"
   else
     "killer=#{key}"
