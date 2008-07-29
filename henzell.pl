@@ -124,7 +124,7 @@ sub newsworthy
   return 0
     if $s->{type} eq 'unique'
       and grep {index($s->{milestone}, $_) > -1}
-        qw/Terence Jessica Ijyb Blork Edmund Psyche Donald Snorg Michael/;
+        qw/Terence Jessica Ijyb Blork Edmund Psyche Donald Michael/;
 
   return 0
     if $s->{type} =~ /abyss/ and ($s->{god} eq 'Lugonu' || !$s->{god})
