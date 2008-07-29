@@ -15,6 +15,11 @@ OPERATORS = {
   '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE'
 }
 
+OPEN_PAREN = '['
+CLOSE_PAREN = ']'
+
+BOOLEAN_OR = '|'
+
 COLUMN_ALIASES = {
   'role' => 'cls', 'class' => 'cls', 'species' => 'race'
 }
@@ -212,7 +217,7 @@ class CrawlQuery
   def summarize= (s)
     @summarize = s
     @query = nil
-  end 
+  end
 
   def select(what, with_sorts=true)
     "SELECT #{what} FROM logrecord " + where(with_sorts)
@@ -265,48 +270,17 @@ class CrawlQuery
     Set.new(pred_field_arr(p).flatten)
   end
 
-  def add_extra_predicate(value, operator, fieldname, fieldexpr, hidden=false)
-    fp = field_pred(value, operator, fieldname, fieldexpr)
-    @pred << fp
-    @query << " " << @pred[0] if not @query.empty?
-    @query << " " << fp[1]
-    @values ||= []
-    @values << fp[2]
-    frag = "#{fieldname}#{operator}#{value}"
-    if not hidden
-      if @argstr =~ /\)$/
-        @argstr.sub!(%r/\)$/, " #{frag})")
-      else
-        @argstr += " (#{frag})"
-      end
-    end
-  end
-
-  # Add any extra query fields we may need to.
-  def augment_query
-    pfields = pred_fields(@pred)
-    if $CONSTRAIN_VERSION and not pfields.include?('v')
-      add_extra_predicate(CURRENT_VER, '>=', 'v', 'v')
-    end
-
-    if not pfields.include?('src')
-      add_extra_predicate(SERVER, '=', 'src', 'src', true)
-    end
-  end
-
   def version_predicate
     "v LIKE ?"
   end
 
   def build_query(with_sorts=true)
     @query, @values = collect_clauses(@pred)
-    augment_query()
     @query = "WHERE #{@query}" unless @query.empty?
     unless @sort.empty? or !with_sorts
       @query << " " unless @query.empty?
       @query << @sort[0]
     end
-    #puts "Query: #{@query}, params: #{@values.join(',')}"
     @query
   end
 
@@ -364,8 +338,29 @@ end
 
 def build_query(nick, num, args, back_combine=true)
   args = _op_back_combine(args) if back_combine
+  args = _op_separate(args)
   predicates, sorts, cargs = parse_query_params(nick, num, args)
   CrawlQuery.new(predicates, sorts, nick, num, _build_argstr(nick, cargs))
+end
+
+def _op_separate(args)
+  cargs = []
+  for arg in args do
+    if arg =~ %r/#{Regexp.quote(OPEN_PAREN)}(\S+)/ then
+      cargs << OPEN_PAREN
+      cargs << $1
+    elsif arg =~ %r/^(\S+)#{Regexp.quote(CLOSE_PAREN)}$/ then
+      cargs << $1
+      cargs << CLOSE_PAREN
+    elsif arg =~ %r/^(\S*)\|(\S*)$/ then
+      cargs << $1 unless $1.empty?
+      cargs << BOOLEAN_OR
+      cargs << $2 unless $2.empty?
+    else
+      cargs << arg
+    end
+  end
+  cargs.length > args.length ? _op_separate(cargs) : cargs
 end
 
 def _op_back_combine(args)
@@ -391,7 +386,8 @@ def _combine_args(args)
   # 'dragon'], which should become ['killer=steam dragon']).
   cargs = []
   for arg in args do
-    if cargs.empty? || arg =~ ARGSPLITTER
+    if cargs.empty? || arg =~ ARGSPLITTER ||
+        [OPEN_PAREN, CLOSE_PAREN, BOOLEAN_OR].index(arg)
       cargs << arg
     else
       cargs.last << " " << arg
@@ -409,44 +405,180 @@ def field_pred(v, op, fname, fexpr)
   [ :field, "#{fexpr or fname} #{op} ?", v, fname.downcase ]
 end
 
+# Examines args for | operators at the top level and returns the
+# positions of all such.
+def split_or_clauses(args)
+  level = 0
+  i = 0
+  or_positions = []
+  while i < args.length
+    arg = args[i]
+    if arg == BOOLEAN_OR && level == 0
+      or_positions << i
+    end
+    if arg == OPEN_PAREN
+      level += 1
+    elsif arg == CLOSE_PAREN
+      level -= 1
+      if level == -1
+        or_positions << i
+        return or_positions
+      end
+    end
+    i += 1
+  end
+  or_positions << args.length unless or_positions.empty?
+  or_positions
+end
+
+def parse_param_group(preds, sorts, args)
+  # Check for top-level OR operators.
+  or_pos = split_or_clauses(args)
+  if not or_pos.empty?
+    preds << 'OR'
+    last = 0
+    for i in or_pos
+      slice = args.slice(last, i - last)
+      subpred = []
+      parse_param_group(subpred, sorts, slice)
+      preds << subpred
+      last = i + 1
+    end
+    return last
+  end
+
+  preds << 'AND'
+
+  i = 0
+  while i < args.length
+    arg = args[i]
+
+    i += 1
+
+    return i if arg == CLOSE_PAREN
+    if arg == OPEN_PAREN
+      subpreds = []
+      i = parse_param_group(subpreds, sorts, args[i .. -1]) + i
+      preds << subpreds
+      next
+    end
+
+    process_param(preds, sorts, arg)
+  end
+end
+
+def process_param(preds, sorts, arg)
+  raise "Malformed argument: #{arg}" unless arg =~ ARGSPLITTER
+  key, op, val = $1, $2, $3
+
+  key.downcase!
+  val.downcase!
+  val.tr! '_', ' '
+
+  sort = (key == 'max' || key == 'min')
+
+  selector = sort ? val : key
+  selector = COLUMN_ALIASES[selector] || selector
+  raise "Unknown selector: #{selector}" unless LOGFIELDS[selector]
+  raise "Bad sort: #{arg}" if sort && op != '='
+  raise "Too many sort conditions" if sort && !sorts.empty?
+
+  if sort
+    order = key == 'max'? ' DESC' : ''
+    sorts << "ORDER BY #{selector}#{order}"
+  else
+    sqlop = OPERATORS[op]
+    field = selector
+    if LOGFIELDS[selector] == 'I'
+      raise "Can't use #{op} on numeric field #{selector}" if sqlop =~ /LIKE/
+        val = val.to_i
+    end
+    preds << query_field(selector, field, op, sqlop, val)
+  end
+end
+
+def add_extra_predicate(p, arg, value, operator, fieldname,
+                        fieldexpr, hidden=false)
+  fp = field_pred(value, operator, fieldname, fieldexpr)
+  p << fp
+  if not hidden
+    frag = "#{fieldname}#{operator}#{value}"
+    if arg =~ /\)$/
+      arg.sub!(%r/\)$/, " #{frag})")
+    else
+      arg << " (#{frag})"
+    end
+  end
+end
+
+def pred_field_arr(p)
+  fields = p[1 .. -1].collect do |e|
+    if e[0] == :field
+      e[3]
+    else
+      pred_fields(e)
+    end
+  end
+end
+
+def pred_fields(p)
+  Set.new(pred_field_arr(p).flatten)
+end
+
+def augment_query(preds, canargs)
+  pfields = pred_fields(preds)
+  if $CONSTRAIN_VERSION and not pfields.include?('v')
+    add_extra_predicate(preds, canargs, CURRENT_VER, '>=', 'v', 'v')
+  end
+
+  if not pfields.include?('src')
+    add_extra_predicate(preds, canargs, SERVER, '=', 'src', 'src', true)
+  end
+end
+
+# A predicate chain can be flattened if:
+# - It starts with an operator string.
+# - It contains only one member.
+# - All members share the same starting operator.
+def flatten_predicates(pred)
+  return pred unless pred.is_a? Array
+
+  pred = [ pred[0] ] + pred[1 .. -1].map { |x| flatten_predicates(x) }
+
+  op = pred[0]
+  return pred unless op.is_a? String
+
+  return flatten_predicates(pred[1]) if pred.length == 2
+
+  rest = pred[1 .. -1]
+
+  if rest.any? { |x| x[0] == op } &&
+      rest.all? { |x| x[0] == op || x[0] == :field } then
+
+    newlist = pred[1 .. -1].map { |x| x[0] == :field ? [x] : x[1 .. -1] } \
+    .inject([]) { |full,p| full + p }
+    return flatten_predicates([ op ] + newlist)
+  end
+  pred
+end
+
+
 def parse_query_params(nick, num, args)
-  preds, sorts = [ "and" ], Array.new()
+  preds, sorts = [ 'AND' ], Array.new()
   preds << field_pred(nick, '=', 'name', 'name') if nick != '*'
 
   args = _combine_args(args)
 
-  for arg in args do
-    raise "Malformed argument: #{arg}" unless arg =~ ARGSPLITTER
-    key, op, val = $1, $2, $3
-
-    key.downcase!
-    val.downcase!
-    val.tr! '_', ' '
-
-    sort = (key == 'max' || key == 'min')
-
-    selector = sort ? val : key
-    selector = COLUMN_ALIASES[selector] || selector
-    raise "Unknown selector: #{selector}" unless LOGFIELDS[selector]
-    raise "Bad sort: #{arg}" if sort && op != '='
-    raise "Too many sort conditions" if sort && !sorts.empty?
-
-    if sort
-      order = key == 'max'? ' DESC' : ''
-      sorts << "ORDER BY #{selector}#{order}"
-    else
-      sqlop = OPERATORS[op]
-      field = selector
-      if LOGFIELDS[selector] == 'I'
-        raise "Can't use #{op} on numeric field #{selector}" if sqlop =~ /LIKE/
-        val = val.to_i
-      end
-      preds << query_field(selector, field, op, sqlop, val)
-    end
-  end
+  subpreds = []
+  parse_param_group(subpreds, sorts, args)
+  preds << subpreds
 
   sorts << "ORDER BY end DESC" if sorts.empty?
-  [ preds, sorts, _canonical_args(args) ]
+
+  canargs = _canonical_args(args)
+  augment_query(preds, canargs)
+
+  [ flatten_predicates(preds), sorts, canargs ]
 end
 
 def query_field(selector, field, op, sqlop, val)
@@ -458,7 +590,7 @@ def query_field(selector, field, op, sqlop, val)
     clause << field_pred("an " + val, sqlop, selector, field)
     return clause
   end
-  if selector == 'place' and !val.index(':') and 
+  if selector == 'place' and !val.index(':') and
     [ '=', '!=' ].index(op) and
     ![ 'pan', 'lab', 'hell', 'blade', 'temple', 'abyss' ].index(val) then
     val = val + ':%'
@@ -523,7 +655,7 @@ def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
       else
         ""
     end
-  formatter ||= 
+  formatter ||=
     case q.summarize
       when 'char'
         Proc.new { |n, w| "#{n}x#{w}" }
