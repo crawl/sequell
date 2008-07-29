@@ -224,9 +224,7 @@ class CrawlQuery
   end
 
   def select_all
-    q = "SELECT * FROM logrecord " + where
-    puts q
-    q
+    "SELECT * FROM logrecord " + where
   end
 
   def select_count
