@@ -224,7 +224,9 @@ class CrawlQuery
   end
 
   def select_all
-    "SELECT * FROM logrecord " + where
+    q = "SELECT * FROM logrecord " + where
+    puts q
+    q
   end
 
   def select_count
@@ -404,7 +406,16 @@ def sanitize_args(args)
 end
 
 def _canonical_args(args)
-  args.map { |a| a.sub(ARGSPLITTER, '\1\2\3').tr('_', ' ') }
+  raw = args.map { |a| a.sub(ARGSPLITTER, '\1\2\3').tr('_', ' ') }
+  cargs = []
+  for r in raw
+    if !cargs.empty? && cargs.last == OPEN_PAREN && r == CLOSE_PAREN
+      cargs = cargs.slice(0, cargs.length - 1)
+      next
+    end
+    cargs << r
+  end
+  cargs
 end
 
 def field_pred(v, op, fname, fexpr)
@@ -510,11 +521,7 @@ def add_extra_predicate(p, arg, value, operator, fieldname,
   p << fp
   if not hidden
     frag = "#{fieldname}#{operator}#{value}"
-    if arg =~ /\)$/
-      arg.sub!(%r/\)$/, " #{frag})")
-    else
-      arg << " (#{frag})"
-    end
+    arg << frag
   end
 end
 
@@ -550,8 +557,6 @@ end
 def flatten_predicates(pred)
   return pred unless pred.is_a? Array
 
-  pred = pred.find_all { |x| !x.is_a?(Array) || x.length > 1 }
-
   pred = [ pred[0] ] + pred[1 .. -1].map { |x| flatten_predicates(x) }
 
   op = pred[0]
@@ -568,7 +573,7 @@ def flatten_predicates(pred)
     .inject([]) { |full,p| full + p }
     return flatten_predicates([ op ] + newlist)
   end
-  pred
+  pred.find_all { |x| !x.is_a?(Array) || x.length > 1 }
 end
 
 
