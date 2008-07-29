@@ -316,7 +316,10 @@ class CrawlQuery
     return clauses unless preds.size > 1
 
     op = preds[0]
+    return [ preds[1], [ preds[2] ] ] if op == :field
+
     values = []
+
     preds[1 .. -1].each do |p|
       clauses << " " << op << " " unless clauses.empty?
       if p[0] == :field
@@ -584,7 +587,6 @@ def parse_query_params(nick, num, args)
   canargs = _canonical_args(args)
   augment_query(preds, canargs)
   preds = flatten_predicates(preds)
-
   [ preds, sorts, canargs ]
 end
 
