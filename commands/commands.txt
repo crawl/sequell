@@ -1,4 +1,5 @@
 !cdo cdoplayers.pl
+@players cdoplayers.pl
 !aplayers players.pl
 !apt apt.pl
 !aptnew apt-new.pl

@@ -71,6 +71,17 @@ LOGFIELDS_DECORATED.each do |lf|
 end
 
 $DB_HANDLE = nil
+$group_field = nil
+
+def with_group(group)
+  old = $group_field
+  $group_field = group
+  begin
+    yield
+  ensure
+    $group_field = old
+  end
+end
 
 def sql_build_query(default_nick, args)
   summarize = args.find { |a| a =~ /^-?s(?:=.*)?$/ }
@@ -86,12 +97,14 @@ def sql_build_query(default_nick, args)
     end
   end
 
-  args = _op_back_combine(args)
-  nick = extract_nick(args) || default_nick
-  num  = extract_num(args)
-  q = build_query(nick, num, args, false)
-  q.summarize = sfield if summarize
-  q
+  with_group(sfield) do
+    args = _op_back_combine(args)
+    nick = extract_nick(args) || default_nick
+    num  = extract_num(args)
+    q = build_query(nick, num, args, false)
+    q.summarize = sfield if summarize
+    q
+  end
 end
 
 # Given a set of arguments of the form
@@ -534,7 +547,7 @@ def pred_field_arr(p)
 end
 
 def pred_fields(p)
-  Set.new(pred_field_arr(p).flatten)
+  Set.new(pred_field_arr(p).flatten + [ $group_field ])
 end
 
 def augment_query(preds, canargs)
@@ -696,12 +709,16 @@ def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
 end
 
 def report_grouped_games(group_by, defval, who, args, separator=', ', formatter=nil)
-  q = sql_build_query(who, args)
-  q.summarize = group_by
-  report_grouped_games_for_query(q, defval, separator, formatter)
-rescue
-  puts $!
-  raise
+  with_group(group_by) do
+    begin
+      q = sql_build_query(who, args)
+      q.summarize = group_by
+      report_grouped_games_for_query(q, defval, separator, formatter)
+    rescue
+      puts $!
+      raise
+    end
+  end
 end
 
 def logfile_names
