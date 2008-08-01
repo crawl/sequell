@@ -621,6 +621,9 @@ def query_field(selector, field, op, sqlop, val)
     val = val + ':%'
     sqlop = op == '=' ? 'LIKE' : 'NOT LIKE'
   end
+  if selector == 'start' or selector == 'end'
+    val = val.sub(/^(\d{4})(\d{2})/) { |x| $1 + sprintf("%02d", $2.to_i - 1) }
+  end
   field_pred(val, sqlop, selector, field)
 end
 
