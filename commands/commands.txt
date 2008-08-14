@@ -48,6 +48,8 @@
 !streak streak.rb
 @streak streak.rb
 !tell message/tell.pl
+!ttyrec ttr.rb
+!ttr ttr.rb
 !whereis whereis.py
 !won won.rb
 !wtf wtf.py

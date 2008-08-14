@@ -15,7 +15,7 @@ DGL_MORGUE_DIR = '/var/www/crawl/rawdata'
 # HTTP URL corresponding to DGL_MORGUE_DIR, with no trailing slash.
 DGL_MORGUE_URL = 'http://crawl.akrasiac.org/rawdata'
 
-DGL_TTYREC_DIR = DGL_MORGUE_URL
+DGL_TTYREC_DIR = DGL_MORGUE_DIR
 
 DGL_TTYREC_URL = DGL_MORGUE_URL
 
@@ -374,8 +374,9 @@ end
 def find_ttyrecs_between(game, s, e)
   prefix = DGL_TTYREC_DIR + "/" + game['name'] + "/"
   files = Dir[ prefix + "*.ttyrec*" ]
-  bracketed = files.find_all do |file|
-    mtm = /^(\d{4})-(\d{2})-(\d{2})\.\d{2}:\d{2}:\d{2}\.ttyrec/.match(file)
+  bracketed = files.find_all do |rfile|
+    file = rfile.slice( prefix.length .. -1 )
+    mtm = /^(\d{4})-(\d{2})-(\d{2})\.(\d{2}):(\d{2}):(\d{2})\.ttyrec/.match(file)
     next unless mtm
     filetime = Time.utc(*(mtm.captures.map { |x| x.to_i }))
     filetime >= s and filetime <= e
@@ -391,12 +392,13 @@ def find_cao_ttyrecs(game)
 
   unless betw.empty?
     base_url = DGL_TTYREC_URL + "/" + game['name'] + "/"
-    "#{base_url} #{betw.join(" ")}"
+    spc = betw.length == 1 ? "" : " "
+    "#{base_url}#{spc}#{betw.join(" ")}"
   end
 end
 
 def find_game_ttyrecs(game)
-  if e['src'] != 'cao'
+  if game['src'] != 'cao'
     find_alien_ttyrecs(game)
   else
     find_cao_ttyrecs(game)

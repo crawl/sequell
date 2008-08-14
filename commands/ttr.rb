@@ -19,8 +19,9 @@ else
   summary = short_game_summary(game)
   begin
     print "#{n}. " + summary + ": " +
-      (find_game_ttyrecs(game) || "Can't find morgue!")
+      (find_game_ttyrecs(game) || "Can't find ttyrec!")
   rescue
     print "#{n}. " + summary + ": " + $!
+    raise
   end
 end
