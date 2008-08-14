@@ -1,9 +1,9 @@
-#!/usr/bin/ruby
+#! /usr/bin/ruby
 
 require 'commands/helper'
 require 'commands/sqlhelper'
 
-help("Gives a URL to the user's last morgue file. Accepts !listgame " +
+help("Supplies URLs to the user's last ttyrecs. Accepts !listgame " +
      "style selectors.")
 
 begin
@@ -19,7 +19,7 @@ else
   summary = short_game_summary(game)
   begin
     print "#{n}. " + summary + ": " +
-      (find_game_morgue(game) || "Can't find morgue!")
+      (find_game_ttyrecs(game) || "Can't find morgue!")
   rescue
     print "#{n}. " + summary + ": " + $!
   end

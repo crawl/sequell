@@ -15,11 +15,20 @@ DGL_MORGUE_DIR = '/var/www/crawl/rawdata'
 # HTTP URL corresponding to DGL_MORGUE_DIR, with no trailing slash.
 DGL_MORGUE_URL = 'http://crawl.akrasiac.org/rawdata'
 
+DGL_TTYREC_DIR = DGL_MORGUE_URL
+
+DGL_TTYREC_URL = DGL_MORGUE_URL
+
 DGL_ALIEN_MORGUES = \
 [
  [ %r/-0.4$/, 'http://crawl.develz.org/morgues/stable' ],
  [ %r/-svn$/, 'http://crawl.develz.org/morgues/trunk' ]
 ]
+
+# The time (approximate) that Crawl switched from local time to UTC in
+# logfiles. We'll have lamentable inaccuracy near this time, but that
+# can't be helped.
+LOCAL_UTC_EPOCH = Time.utc(2008, 8, 7, 3, 30)
 
 $field_names.each do |field|
   if field =~ /(\w+)(\w)/
@@ -155,7 +164,7 @@ end
 def parse_game_select_args(args)
   words = args[1].split(' ')[ 1..-1 ]
   return [ args[0], -1, '' ] if !words || words.empty?
-   
+
   if words[0] =~ /^[a-zA-Z]\w+$/ or words[0] == '*' or words[0] == '.'
     nick  = words.slice!(0)
     nick = '*' if nick == '.'
@@ -223,14 +232,14 @@ end
 
 def binary_search(arr, what)
   size = arr.size
-  
+
   if size == 1
     return what < arr[0] ? arr[0] : nil
   end
 
   s = 0
   e = size
-  
+
   while e - s > 1
     pivot = (s + e) / 2
     if arr[pivot] == what
@@ -251,7 +260,7 @@ end
 
 def morgue_time(e)
   timestamp = e["end"].dup
-  timestamp.sub!(/(\d{4})(\d{2})(\d{2})/) do |m| 
+  timestamp.sub!(/(\d{4})(\d{2})(\d{2})/) do |m|
     "#$1#{sprintf('%02d', $2.to_i + 1)}#$3-"
   end
   timestamp.sub(/[DS]$/, "")
@@ -290,7 +299,7 @@ def find_game_morgue(e)
 
   # We're in El Suck territory. Scan the directory listing.
   morgue_list = game_morgues(e["name"])
-  
+
   # morgues are sorted. The morgue date should be greater than the
   # full timestamp.
 
@@ -317,6 +326,81 @@ end
 
 def duration_str(dur)
   sprintf "%d:%02d:%02d", dur / 3600, (dur % 3600) / 60, dur % 60
+end
+
+def find_alien_ttyrecs(game)
+  raise "Can't locate remote ttyrecs"
+end
+
+def local_time(time)
+  match = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})([SD])/.match(time)
+  raise "Malformed local time: #{time}" unless match
+
+  timed = match.captures[ 0 ... -1 ].map { |t| t.to_i }
+  timed[1] += 1
+  dst = match.captures[-1] == 'D'
+
+  time = Time.local(*timed)
+
+  if dst
+    time = Time.local(time.sec, time.min, time.hour, time.day,
+                      time.month, time.year, time.wday, time.yday,
+                      time.isdst, time.zone)
+  end
+  time.utc
+end
+
+# Convert the time on a logfile
+def tty_time(game, which)
+  time = game[which]
+
+  match = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/.match(time)
+  # Treat time as UTC and load.
+  raise "Malformed time: #{time}" unless match
+
+  all = match.captures.map { |x| x.to_i }
+
+  # Month is zero-based in logfile.
+  all[1] += 1
+
+  mtime = Time.utc(*all)
+  if mtime < LOCAL_UTC_EPOCH
+    local_time(time)
+  else
+    mtime
+  end
+end
+
+def find_ttyrecs_between(game, s, e)
+  prefix = DGL_TTYREC_DIR + "/" + game['name'] + "/"
+  files = Dir[ prefix + "*.ttyrec*" ]
+  bracketed = files.find_all do |file|
+    mtm = /^(\d{4})-(\d{2})-(\d{2})\.\d{2}:\d{2}:\d{2}\.ttyrec/.match(file)
+    next unless mtm
+    filetime = Time.utc(*(mtm.captures.map { |x| x.to_i }))
+    filetime >= s and filetime <= e
+  end
+  bracketed.map { |f| f.slice( prefix.length .. -1 ) }.sort
+end
+
+def find_cao_ttyrecs(game)
+  tty_start = tty_time(game, 'start')
+  tty_end   = tty_time(game, 'end')
+
+  betw = find_ttyrecs_between(game, tty_start, tty_end)
+
+  unless betw.empty?
+    base_url = DGL_TTYREC_URL + "/" + game['name'] + "/"
+    "#{base_url} #{betw.join(" ")}"
+  end
+end
+
+def find_game_ttyrecs(game)
+  if e['src'] != 'cao'
+    find_alien_ttyrecs(game)
+  else
+    find_cao_ttyrecs(game)
+  end
 end
 
 def help(helpstring)
