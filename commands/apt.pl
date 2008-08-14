@@ -68,10 +68,7 @@ sub parseSkillsFile # {{{
 	while(<$infile>)
 	{
 		# Determine race
-		if(m#\{\s*// ([A-Z\(\)0-9_]+)#)
-		{
-			$currRace=$1 if(m#\{\s*// ([A-Z\(\)0-9_]+)#);
-		}
+		$currRace=$1 if(m#\{\s*// ([A-Z\(\)0-9_]+)#);
 
 		# Determine attribute and aptitude
 		if(m#^\s*([ 0-9-\+\(\)/\*]+),\s+// ([A-Z0-9_]+)#)
