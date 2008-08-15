@@ -14,8 +14,6 @@
 !ftw ftw.pl
 !gamesby gamesby.rb
 @gamesby gamesby.rb
-!gods chars.rb
-@gods chars.rb
 !gkills gkills.rb
 @gkills gkills.rb
 !help help.pl
@@ -26,16 +24,11 @@
 @killsby killsby.rb
 !log lastlog.rb
 @log lastlog.rb
-!lastlog lastlog.rb
-@lastlog lastlog.rb
 !learn learn.pl
-!lastgame listgame.rb
-@lastgame listgame.rb
 !listgame listgame.rb
 @listgame listgame.rb
 !lg listgame.rb
 @lg listgame.rb
-!lsa lsa.py
 !macro macro.pl
 !messages message/messages.pl
 !players players.pl
@@ -43,7 +36,6 @@
 !rng rng.pl
 !screensize screensize.pl
 !seen seen.pl
-!size screensize.pl
 !skill skill.pl
 !streak streak.rb
 @streak streak.rb
