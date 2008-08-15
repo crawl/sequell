@@ -52,7 +52,7 @@ turnstr = ' after %d turn%s' % (int(details['turn']), turnstr_suffix)
 if status == 'saved':
     prestr = 'last saved'
 elif status in [ 'dead', 'quit', 'won', 'bailed out' ]:
-    print "\n!redirect!lastgame"
+    print "\n!redirect!listgame"
     exit(0)
 elif status == 'active':
     prestr = 'is currently'
