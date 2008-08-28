@@ -556,9 +556,9 @@ def augment_query(preds, canargs)
   #  add_extra_predicate(preds, canargs, CURRENT_VER, '>=', 'v', 'v')
   #end
 
-  if not pfields.include?('src')
-    add_extra_predicate(preds, canargs, SERVER, '=', 'src', 'src', true)
-  end
+  #if not pfields.include?('src')
+  #  add_extra_predicate(preds, canargs, SERVER, '=', 'src', 'src', true)
+  #end
 end
 
 # A predicate chain can be flattened if:
