@@ -89,11 +89,13 @@ def sql_build_query(default_nick, args)
 
   sfield = nil
   if summarize
-    if summarize =~ /^-?s=(.*)$/
-      sfield = COLUMN_ALIASES[$1] || $1
+    if summarize =~ /^-?s=([+-]?)(.*)$/
+      sort = $1.empty? ? '+' : $1
+      sfield = COLUMN_ALIASES[$1] || $2
       raise "Bad arg '#{summarize}' - cannot summarise by #{sfield}" unless LOGFIELDS_SUMMARIZABLE[sfield]
+      sfield = sort + sfield
     else
-      sfield = 'name'
+      sfield = '+name'
     end
   end
 
@@ -215,6 +217,7 @@ class CrawlQuery
     @argstr = argstr
     @values = nil
     @summarize = nil
+    @summary_sort = nil
     @raw = nil
   end
 
@@ -228,7 +231,10 @@ class CrawlQuery
   end
 
   def summarize= (s)
-    @summarize = s
+    if s =~ /^([+-])(.*)/
+      @summarize = $2
+      @summary_sort = $1 == '-' ? '' : 'DESC'
+    end
     @query = nil
   end
 
@@ -245,16 +251,16 @@ class CrawlQuery
   end
 
   def summary_query
-    count_on(@summarize)
+    count_on(@summarize, @summary_sort)
   end
 
-  def count_on(field)
+  def count_on(field, sortdir)
     temp = @sort
     begin
       @sort = []
       @query = nil
       %{SELECT #{field}, COUNT(*) AS fieldcount FROM logrecord
-        #{where} GROUP BY #{field} ORDER BY fieldcount DESC}
+        #{where} GROUP BY #{field} ORDER BY fieldcount #{sortdir}}
     ensure
       @sort = temp
     end
