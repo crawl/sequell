@@ -223,7 +223,7 @@ class CrawlQuery
 
   # Is this a query aimed at a single nick?
   def single_nick?
-    @pred[1][1] == "name = ?"
+    @pred[1][1] == "name = ?" || (@pred[0] == :field && @pred[1] == "name = ?")
   end
 
   def summarize
