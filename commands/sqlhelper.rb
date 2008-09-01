@@ -231,7 +231,7 @@ class CrawlQuery
   end
 
   def summarize= (s)
-    if s =~ /^([+-])(.*)/
+    if s =~ /^([+-]?)(.*)/
       @summarize = $2
       @summary_sort = $1 == '-' ? '' : 'DESC'
     end
