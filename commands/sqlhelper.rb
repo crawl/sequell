@@ -90,23 +90,28 @@ COLUMN_ALIASES = {
   'ktype' => 'ktyp'
 }
 
-LOGFIELDS_DECORATED = %w/file src v lv scI name uidI race cls char xlI sk
-  sklevI title ktyp killer kaux place br lvlI ltyp hpI mhpI mmhpI damI
-  strI intI dexI god pietyI penI wizI start end durI turnI uruneI
-  nruneI tmsg vmsg/
+LOGFIELDS_DECORATED = %w/file src v cv lv scI name uidI race crace cls
+  char xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
+  ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
+  end durI turnI uruneI nruneI tmsg vmsg splat/
+
+FAKEFIELDS_DECORATED = %w/when/
 
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br ltyp killer
-              god urune nrune src str int dex kaux/.map { |x| [x, true] }.flatten) ]
+              god urune nrune src str int dex kaux ckiller cv ckaux crace kmod
+              splat/.
+             map { |x| [x, true] }.flatten) ]
 
 # Skip so many leading fields when processing SELECT * responses.
-# The skipped fields are: id, file, source, offset.
-LOGFIELDS_SKIP = 4
+# The skipped fields are: id, offset.
+LOGFIELDS_SKIP = 2
 
 # Never fetch more than 5000 rows, kthx.
 ROWFETCH_MAX = 5000
 DBFILE = "#{ENV['HOME']}/logfile.db"
 LOGFIELDS = { }
+FAKEFIELDS = { }
 
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 ARGSPLITTER = Regexp.new('^-?([a-z]+)\s*(' +
@@ -117,23 +122,26 @@ ARGSPLITTER = Regexp.new('^-?([a-z]+)\s*(' +
 # otherwise requested.
 SERVER = ENV['CRAWL_SERVER'] || 'cao'
 
-LOGFIELDS_DECORATED.each do |lf|
-  class << lf
-    def name
-      self.sub(/I$/, '')
+[ [ LOGFIELDS_DECORATED, LOGFIELDS ],
+  [ FAKEFIELDS_DECORATED, FAKEFIELDS ] ].each do |fdec,fdict|
+  fdec.each do |lf|
+    class << lf
+      def name
+        self.sub(/I$/, '')
+      end
+
+      def value(v)
+        (self =~ /I$/) ? v.to_i : v
+      end
     end
 
-    def value(v)
-      (self =~ /I$/) ? v.to_i : v
+    if lf =~ /I$/
+      type = 'I'
+    else
+      type = 'S'
     end
+    fdict[ lf.name ] = type
   end
-
-  if lf =~ /I$/
-    type = 'I'
-  else
-    type = 'S'
-  end
-  LOGFIELDS[ lf.name ] = type
 end
 
 $DB_HANDLE = nil
@@ -203,12 +211,8 @@ end
 
 def row_to_fieldmap(row)
   map = { }
-  file = LOGFIELDS_DECORATED[0]
-  src = LOGFIELDS_DECORATED[1]
-  map[file.name] = file.value(row[1])
-  map[src.name] = src.value(row[2])
   (LOGFIELDS_SKIP ... row.size).each do |i|
-    lfd = LOGFIELDS_DECORATED[i - LOGFIELDS_SKIP + 2]
+    lfd = LOGFIELDS_DECORATED[i - LOGFIELDS_SKIP]
     map[lfd.name] = lfd.value(row[i])
   end
   map
@@ -420,8 +424,25 @@ class CrawlQuery
   end
 end
 
+def _clean_argstr(text)
+  op_match = /#{SORTEDOPS.map { |o| Regexp.quote(o) }.join("|")}/
+  text.gsub(/\[(.*?)\]/) do |m|
+    payload = $1.dup
+    count = 0
+    payload.gsub(op_match) do |pm|
+      count += 1
+      pm
+    end
+    if count == 1
+      payload.strip
+    else
+      "[" + payload.strip + "]"
+    end
+  end
+end
+
 def _build_argstr(nick, cargs)
-  cargs.empty? ? nick : "#{nick} (#{cargs.join(' ')})"
+  cargs.empty? ? nick : "#{nick} (#{_clean_argstr(cargs.join(' '))})"
 end
 
 def build_query(nick, num, args, back_combine=true)
@@ -580,7 +601,8 @@ def process_param(preds, sorts, arg)
 
   selector = sort ? val : key
   selector = COLUMN_ALIASES[selector] || selector
-  raise "Unknown selector: #{selector}" unless LOGFIELDS[selector]
+  raise "Unknown selector: #{selector}" unless \
+     LOGFIELDS[selector] || FAKEFIELDS[selector]
   raise "Bad sort: #{arg}" if sort && op != '='
   raise "Too many sort conditions" if sort && !sorts.empty?
 
@@ -679,8 +701,8 @@ def parse_query_params(nick, num, args)
 end
 
 def query_field(selector, field, op, sqlop, val)
-  if selector == 'killer' and [ '=', '!=' ].index(op) and val !~ /^a /i and
-      val !~ /^an /i then
+  if ['killer', 'ckiller'].index(selector) and \
+      [ '=', '!=' ].index(op) and val !~ /^an? /i then
     clause = [ op == '=' ? 'OR' : 'AND' ]
     clause << field_pred(val, sqlop, selector, field)
     clause << field_pred("a " + val, sqlop, selector, field)
@@ -696,7 +718,6 @@ def query_field(selector, field, op, sqlop, val)
   if selector == 'start' or selector == 'end'
     val = val.sub(/^(\d{4})(\d{2})/) { |x| $1 + sprintf("%02d", $2.to_i - 1) }
   end
-
   if selector == 'race'
     if val.downcase == 'dr' && (op == '=' || op == '!=')
       sqlop = op == '=' ? 'LIKE' : 'NOT LIKE'
@@ -705,9 +726,21 @@ def query_field(selector, field, op, sqlop, val)
       val = RACE_EXPANSIONS[val.downcase] or val
     end
   end
-
   if selector == 'cls'
     val = CLASS_EXPANSIONS[val.downcase] or val
+  end
+  if selector == 'when'
+    if %w/t tourney tournament/.index(val) and [ '=', '!=' ].index(op)
+      tourney = op == '='
+      clause = [ tourney ? 'AND' : 'OR' ]
+      lop = tourney ? '>' : '<'
+      rop = tourney ? '<' : '>'
+      clause << query_field('start', 'start', lop, lop, '20080801')
+      clause << query_field('end', 'end', rop, rop, '20080901')
+      return clause
+    else
+      raise "Bad selector #{selector} (#{selector}=t for tourney games)"
+    end
   end
 
   field_pred(val, sqlop, selector, field)

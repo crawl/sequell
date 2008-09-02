@@ -9,7 +9,7 @@ def parse_args
   words = ARGV[2].split(' ')[ 1..-1 ]
   return [ ARGV[1], 0, [] ] if !words || words.empty?
 
-  if words[0] =~ /^[a-zA-Z!]\w+$/
+  if words[0] =~ /^(?:[a-zA-Z!]\w+|\*)$/
     nick = words.slice!(0).sub(/^!/, '')
   end
 
@@ -42,6 +42,10 @@ begin
                     ["ktyp=winning"] + paren_args(trail_select)).reverse
     count = sql_count_rows_matching(build_query(nick, -1, trail_select))
   else
+    if nick == '*'
+      puts "Cannot combine * with win-skip count."
+      exit 0
+    end
     q = build_query(nick, -1, trail_select).reverse
     count = 0
   end
@@ -61,7 +65,7 @@ begin
     g = row_to_fieldmap(row)
     count += 1 if num != 0
 
-    name = g['name']
+    name = g['name'] unless name == '*'
     if g['ktyp'] == 'winning'
       allwins += 1
       offset -= 1
@@ -97,13 +101,13 @@ begin
           b.last <=> a.last }.
           map { |a,b| "#{b}x#{a}" }.
           join(' ')
-        puts "#{name} has won #{times(nwins)} in #{count} games " +
+        puts "#{q.argstr} has won #{times(nwins)} in #{count} games " +
           "(#{sprintf('%0.2f%%', nwins * 100.0 / count)}): #{wins}"
       else
         wins = wins.join(', ')
         ngames = count - first
         perc = sprintf('%0.2f%%', nwins * 100.0 / ngames)
-        puts "#{name} has won #{times(nwins)} in #{count - first} " +
+        puts "#{q.argstr} has won #{times(nwins)} in #{count - first} " +
           "games (#{perc}) " +
           "since their #{lastwin} (win ##{num}): " +
           wins

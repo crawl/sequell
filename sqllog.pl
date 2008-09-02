@@ -7,25 +7,25 @@ use IO::Handle;
 
 use DBI;
 
-my @LOGFIELDS_DECORATED = qw/v lv scI name uidI race cls char xlI sk
-  sklevI title ktyp killer kaux place br lvlI ltyp hpI mhpI mmhpI damI
-  strI intI dexI god pietyI penI wizI start end durI turnI uruneI
-  nruneI tmsg vmsg/;
+my @LOGFIELDS_DECORATED = qw/v cv lv scI name uidI race crace cls char
+  xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
+  ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
+  end durI turnI uruneI nruneI tmsg vmsg splat/;
 
 my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
-my @INDEX_COLS = qw/src file v sc name race cls char xl
-ktyp killer kaux place str int dex god
-start end dur turn urune nrune /;
+my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
+ktyp killer ckiller kmod kaux ckaux place str int dex god
+start end dur turn urune nrune splat/;
 
-my @INDEX_CASES = ( 'src', '' );
+my @INDEX_CASES = ( '' );
 
 my $LOGFILE = "allgames.txt";
 my $DBFILE = "$ENV{HOME}/logfile.db";
 my $COMMIT_INTERVAL = 3000;
 
-# Dump indexes if we need to add more than around 600 lines of data.
-my $INDEX_DISCARD_THRESHOLD = 300 * 600;
+# Dump indexes if we need to add more than around 9000 lines of data.
+my $INDEX_DISCARD_THRESHOLD = 300 * 9000;
 
 my $need_indexes = 1;
 
@@ -118,15 +118,17 @@ TABLEDDL
   $table_ddl = <<TABLEDDL;
 CREATE TABLE logrecord (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    offset INTEGER,
     file TEXT COLLATE NOCASE,
     src TEXT COLLATE NOCASE,
-    offset INTEGER,
-    v TEXT COLLATE NOCASE,
-    lv TEXT COLLATE NOCASE,
+    v TEXT,
+    cv TEXT,
+    lv TEXT,
     sc INTEGER,
     name TEXT COLLATE NOCASE,
     uid TEXT COLLATE NOCASE,
     race TEXT COLLATE NOCASE,
+    crace TEXT COLLATE NOCASE,
     cls TEXT COLLATE NOCASE,
     char TEXT COLLATE NOCASE,
     xl INT,
@@ -135,7 +137,10 @@ CREATE TABLE logrecord (
     title TEXT COLLATE NOCASE,
     ktyp TEXT COLLATE NOCASE,
     killer TEXT COLLATE NOCASE,
+    ckiller TEXT COLLATE NOCASE,
+    kmod TEXT COLLATE NOCASE,
     kaux TEXT COLLATE NOCASE,
+    ckaux TEXT COLLATE NOCASE,
     place TEXT COLLATE NOCASE,
     br TEXT COLLATE NOCASE,
     lvl INTEGER,
@@ -158,7 +163,8 @@ CREATE TABLE logrecord (
     urune INTEGER,
     nrune INTEGER,
     tmsg TEXT COLLATE NOCASE,
-    vmsg TEXT COLLATE NOCASE
+    vmsg TEXT COLLATE NOCASE,
+    splat TEXT COLLATE NOCASE
 );
 TABLEDDL
 
@@ -297,6 +303,7 @@ sub logfield_hash {
     s/\n/:/g for $field;
     my ($key, $val) = $field =~ /^(\w+)=(.*)/;
     next unless defined $key;
+    $val =~ tr/_/ /;
     $fieldh{$key} = $val;
   }
   return \%fieldh;
@@ -314,10 +321,48 @@ sub execute_st {
   }
 }
 
+sub fixup_logfields {
+  my $g = shift;
+  ($g->{cv} = $g->{v}) =~ s/^(\d+\.\d+).*/$1/;
+  $g->{ckiller} = $g->{killer} || $g->{kaux} || '';
+  for ($g->{ckiller}) {
+    s/^an? \w+-headed (hydra.*)$/a $1/;
+    s/^.*'s? ghost$/a player ghost/;
+    s/\w+ (draconian)/$1/;
+  }
+
+  $g->{kmod} = $g->{killer} || '';
+  for ($g->{kmod}) {
+    if (/spectral (?!warrior)/) {
+      $_ = 'a spectral thing';
+    }
+    elsif (/shapeshifter/) {
+      $_ = 'shapeshifter';
+    }
+    elsif (!s/.*(zombie|skeleton|simulacrum)$/$1/) {
+      $_ = '';
+    }
+  }
+
+  $g->{ckaux} = $g->{kaux} || '';
+  for ($g->{ckaux}) {
+    s/\{.*\}//;
+    s/[+-]\d+,?\s*//;
+  }
+
+  $g->{crace} = $g->{race};
+  for ($g->{crace}) {
+    s/.*(Draconian)$/$1/;
+  }
+
+  $g
+}
+
 sub add_logline {
   my ($file, $source, $offset, $line) = @_;
   chomp $line;
   my $fields = logfield_hash($line);
+  $fields = fixup_logfields($fields);
   my @bindvalues = ($file, $source, $offset,
     map {
       my $integer = /I$/;
