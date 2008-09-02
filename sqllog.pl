@@ -20,6 +20,17 @@ start end dur turn urune nrune splat/;
 
 my @INDEX_CASES = ( '' );
 
+my @UNIQUES = ("Ijyb", "Blork the orc", "Urug", "Erolcha", "Snorg",
+  "Polyphemus", "Adolf", "Antaeus", "Xtahua", "Tiamat", "Boris",
+  "Murray", "Terence", "Jessica", "Sigmund", "Edmund", "Psyche",
+  "Donald", "Michael", "Joseph", "Erica", "Josephine", "Harold",
+  "Norbert", "Jozef", "Agnes", "Maud", "Louise", "Francis", "Frances",
+  "Rupert", "Wayne", "Duane", "Norris", "Frederick", "Margery",
+  "Mnoleg", "Lom Lobon", "Cerebov", "Gloorx Vloq", "Geryon",
+  "Dispater", "Asmodeus", "Ereshkigal");
+
+my %UNIQUES = map(($_ => 1), @UNIQUES);
+
 my $LOGFILE = "allgames.txt";
 my $DBFILE = "$ENV{HOME}/logfile.db";
 my $COMMIT_INTERVAL = 3000;
@@ -328,7 +339,12 @@ sub fixup_logfields {
   for ($g->{ckiller}) {
     s/^an? \w+-headed (hydra.*)$/a $1/;
     s/^.*'s? ghost$/a player ghost/;
-    s/\w+ (draconian)/$1/;
+    s/^an? \w+ (draconian.*)/a $1/;
+
+    # If it's an actual kill, merge Pan lords.
+    if ($g->{killer}) {
+      $_ = 'a pandemonium lord' if !/^(?:an?|the) / && !$UNIQUES{$_};
+    }
   }
 
   $g->{kmod} = $g->{killer} || '';
