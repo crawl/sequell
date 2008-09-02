@@ -35,6 +35,9 @@ my %adjective_skill_title =
 
 my %commands;
 
+# If true, Henzell replies with a private message.
+my $PRIVATE;
+
 do 'game_parser.pl';
 require 'sqllog.pl';
 
@@ -358,14 +361,14 @@ sub irc_public
 
   $target   =~ s/ .*$//;
   $target   =~ y/a-zA-Z0-9//cd;
-  #$target   =~ s/\d+$//;
   $target = $nick unless $target =~ /\S/;
   $target   =~ y/a-zA-Z0-9//cd;
-  #$target   =~ s/\d+$//;
+
+  my $response_to = $PRIVATE ? $nick : $channel;
 
   if ($command eq '!load' && exists $admins{$nick})
   {
-    $kernel->post( $sender => privmsg => $channel => load_commands());
+    $kernel->post( $sender => privmsg => $response_to => load_commands());
   }
   elsif (exists $commands{$command})
   {
@@ -373,7 +376,7 @@ sub irc_public
     my $output =
     	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
     $output = substr($output, 0, 400) . "..." if length($output) > 400;
-    $kernel->post( $sender => privmsg => $channel => $output);
+    $kernel->post( $sender => privmsg => $response_to => $output);
   }
 
   undef;
@@ -381,23 +384,12 @@ sub irc_public
 
 sub irc_msg
 {
-  print "irc_msg\n";
-  my ($kernel,$sender,$who,$where,$verbatim) = @_[KERNEL,SENDER,ARG0,ARG1,ARG2];
-  my $nick = ( split /!/, $who )[0];
-
-  $nick     =~ y/'//d;
-  # only do learndb lookups in private messages
-  $verbatim =~ /^(?:\?\?|!learn query )/ or return;
-
-  seen_update($nick, "saying '$verbatim'");
-  my $command = '!learn';
-
-  if (exists $commands{$command})
-  {
-    my $output = $commands{$command}->(pack_args('', $nick, $verbatim, '', ''));
-    $output = substr($output, 0, 400) . "..." if length($output) > 400;
-    $kernel->post( $sender => privmsg => $nick => $output);
-  }
+  $PRIVATE = 1;
+  eval {
+    irc_public(@_);
+  };
+  undef $PRIVATE;
+  die $@ if $@;
 }
 
 sub irc_255
