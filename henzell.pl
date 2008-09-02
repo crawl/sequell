@@ -35,9 +35,6 @@ my %adjective_skill_title =
 
 my %commands;
 
-# If true, Henzell replies with a private message.
-my $PRIVATE;
-
 do 'game_parser.pl';
 require 'sqllog.pl';
 
@@ -338,14 +335,15 @@ sub irc_001
 sub respond_to_any_msg
 {
   my ($kernel, $nick, $verbatim, $sender, $channel) = @_;
+  $nick =~ tr/'//d;
   $verbatim =~ tr/'//d;
   my $output = qx!./commands/message/all_input.pl '$nick' '$verbatim'!;
   $kernel->post($sender => privmsg => $channel => $output) if $output;
 }
 
-sub irc_public
+sub process_msg
 {
-  my ($kernel,$sender,$who,$where,$verbatim) = @_[KERNEL,SENDER,ARG0,ARG1,ARG2];
+  my ($private,$kernel,$sender,$who,$where,$verbatim) = @_;
   my $nick = ( split /!/, $who )[0];
   my $channel = $where->[0];
 
@@ -364,18 +362,21 @@ sub irc_public
   $target = $nick unless $target =~ /\S/;
   $target   =~ y/a-zA-Z0-9//cd;
 
-  my $response_to = $PRIVATE ? $nick : $channel;
+  my $response_to = $private ? $nick : $channel;
 
   if ($command eq '!load' && exists $admins{$nick})
   {
+    print "LOAD: $sender: $verbatim\n";
     $kernel->post( $sender => privmsg => $response_to => load_commands());
   }
   elsif (exists $commands{$command} &&
-         (!$PRIVATE 
+         (!$private
           || ($command eq '!learn' && ($verbatim =~ /^!learn\s+query\s/
                                        || $verbatim =~ /^\?\?/))
           || !grep($command eq $_, '!learn', '!tell')))
   {
+    # Log all commands to Henzell.
+    print "CMD($private): $sender: $verbatim\n";
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
     	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
@@ -386,14 +387,14 @@ sub irc_public
   undef;
 }
 
+sub irc_public
+{
+  process_msg(0, @_[KERNEL,SENDER,ARG0,ARG1,ARG2])
+}
+
 sub irc_msg
 {
-  $PRIVATE = 1;
-  eval {
-    irc_public(@_);
-  };
-  undef $PRIVATE;
-  die $@ if $@;
+  process_msg(1, @_[KERNEL,SENDER,ARG0,ARG1,ARG2])
 }
 
 sub irc_255
