@@ -15,13 +15,79 @@ OPERATORS = {
   '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE'
 }
 
+CLASS_EXPANSIONS = {
+  "Fi" => "Fighter",
+  "Wz" => "Wizard",
+  "Pr" => "Priest",
+  "Th" => "Thief",
+  "Gl" => "Gladiator",
+  "Ne" => "Necromancer",
+  "Pa" => "Paladin",
+  "As" => "Assassin",
+  "Be" => "Berserker",
+  "Hu" => "Hunter",
+  "Cj" => "Conjurer",
+  "En" => "Enchanter",
+  "FE" => "Fire Elementalist",
+  "IE" => "Ice Elementalist",
+  "Su" => "Summoner",
+  "AE" => "Air Elementalist",
+  "EE" => "Earth Elementalist",
+  "Cr" => "Crusader",
+  "DK" => "Death Knight",
+  "VM" => "Venom Mage",
+  "CK" => "Chaos Knight",
+  "Tm" => "Transmuter",
+  "He" => "Healer",
+  "Re" => "Reaver",
+  "St" => "Stalker",
+  "Mo" => "Monk",
+  "Wr" => "Warper",
+  "Wn" => "Wanderer"
+}
+
+RACE_EXPANSIONS = {
+  'Hu' => 'Human',
+  'HE' => 'High Elf',
+  'GE' => 'Grey Elf',
+  'DE' => 'Deep Elf',
+  'SE' => 'Sludge Elf',
+  'MD' => 'Mountain Dwarf',
+  'Ha' => 'Halfling',
+  'HO' => 'Hill Orc',
+  'Ko' => 'Kobold',
+  'Mu' => 'Mummy',
+  'Na' => 'Naga',
+  'Gn' => 'Gnome',
+  'Og' => 'Ogre',
+  'Tr' => 'Troll',
+  'OM' => 'Ogre-Mage',
+  'Dr' => 'Draconian',
+  'Ce' => 'Centaur',
+  'DG' => 'Demigod',
+  'Sp' => 'Spriggan',
+  'Mi' => 'Minotaur',
+  'DS' => 'Demonspawn',
+  'Gh' => 'Ghoul',
+  'Ke' => 'Kenku',
+  'Mf' => 'Merfolk',
+  'Vp' => 'Vampire'
+}
+
+[ CLASS_EXPANSIONS, RACE_EXPANSIONS ].each do |hash|
+  hash.keys.each do |key|
+    hash[key.downcase] = hash[key]
+  end
+end
+
 OPEN_PAREN = '['
 CLOSE_PAREN = ']'
 
 BOOLEAN_OR = '|'
 
 COLUMN_ALIASES = {
-  'role' => 'cls', 'class' => 'cls', 'species' => 'race'
+  'role' => 'cls', 'class' => 'cls', 'species' => 'race',
+  'ktype' => 'ktyp'
 }
 
 LOGFIELDS_DECORATED = %w/file src v lv scI name uidI race cls char xlI sk
@@ -91,7 +157,7 @@ def sql_build_query(default_nick, args)
   if summarize
     if summarize =~ /^-?s=([+-]?)(.*)$/
       sort = $1.empty? ? '+' : $1
-      sfield = COLUMN_ALIASES[$1] || $2
+      sfield = COLUMN_ALIASES[$2] || $2
       raise "Bad arg '#{summarize}' - cannot summarise by #{sfield}" unless LOGFIELDS_SUMMARIZABLE[sfield]
       sfield = sort + sfield
     else
@@ -557,7 +623,7 @@ def pred_fields(p)
 end
 
 def augment_query(preds, canargs)
-  pfields = pred_fields(preds)
+  #pfields = pred_fields(preds)
   #if $CONSTRAIN_VERSION and not pfields.include?('v')
   #  add_extra_predicate(preds, canargs, CURRENT_VER, '>=', 'v', 'v')
   #end
@@ -630,6 +696,20 @@ def query_field(selector, field, op, sqlop, val)
   if selector == 'start' or selector == 'end'
     val = val.sub(/^(\d{4})(\d{2})/) { |x| $1 + sprintf("%02d", $2.to_i - 1) }
   end
+
+  if selector == 'race'
+    if val.downcase == 'dr' && (op == '=' || op == '!=')
+      sqlop = op == '=' ? 'LIKE' : 'NOT LIKE'
+      val = "%#{val}"
+    else
+      val = RACE_EXPANSIONS[val.downcase] or val
+    end
+  end
+
+  if selector == 'cls'
+    val = CLASS_EXPANSIONS[val.downcase] or val
+  end
+
   field_pred(val, sqlop, selector, field)
 end
 
