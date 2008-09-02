@@ -366,7 +366,7 @@ sub process_msg
 
   if ($command eq '!load' && exists $admins{$nick})
   {
-    print "LOAD: $sender: $verbatim\n";
+    print "LOAD: $nick: $verbatim\n";
     $kernel->post( $sender => privmsg => $response_to => load_commands());
   }
   elsif (exists $commands{$command} &&
@@ -376,7 +376,7 @@ sub process_msg
           || !grep($command eq $_, '!learn', '!tell')))
   {
     # Log all commands to Henzell.
-    print "CMD($private): $sender: $verbatim\n";
+    print "CMD($private): $nick: $verbatim\n";
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
     	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
