@@ -371,7 +371,8 @@ sub irc_public
     $kernel->post( $sender => privmsg => $response_to => load_commands());
   }
   elsif (exists $commands{$command} &&
-         (!$PRIVATE || !grep($command eq $_, '!learn', '!tell')))
+         (!$PRIVATE || ($command eq '!learn' && $target =~ /^\s*query\s/)
+          || !grep($command eq $_, '!learn', '!tell')))
   {
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
