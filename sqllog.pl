@@ -335,7 +335,7 @@ sub execute_st {
 sub fixup_logfields {
   my $g = shift;
   ($g->{cv} = $g->{v}) =~ s/^(\d+\.\d+).*/$1/;
-  $g->{ckiller} = $g->{killer} || $g->{kaux} || '';
+  $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
   for ($g->{ckiller}) {
     s/^an? \w+-headed (hydra.*)$/a $1/;
     s/^.*'s? ghost$/a player ghost/;
