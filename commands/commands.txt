@@ -2,6 +2,7 @@
 @players cdoplayers.pl
 !aplayers players.pl
 !apt apt.pl
+!yodapt apt-doy.pl
 !aptnew apt-new.pl
 !chars chars.rb
 !cmdinfo cmdinfo.py
