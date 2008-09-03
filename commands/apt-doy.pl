@@ -178,18 +178,22 @@ sub check_long_option { # {{{
     $word =~ /-?(.*?)=(.*)/;
     my ($option, $val) = ($1, $2);
     return unless defined $option && defined $val;
+    $val = lc $val;
 
     if ((substr $option, 0, 2) eq 'so') {
         return ('sort', $val);
     }
     elsif ((substr $option, 0, 1) eq 's') {
-        return ('skill', $val);
+        return ('skill', normalize_skill($val));
     }
     elsif ((substr $option, 0, 1) eq 'r') {
-        return ('race', $val);
+        return ('race', normalize_race($val));
     }
     elsif ((substr $option, 0, 1) eq 'c') {
-        return ('color', $val);
+        for (@drac_colors) {
+            return ('color', $val) if $val eq $_;
+        }
+        error "Invalid color: $val";
     }
     else {
         return;
@@ -229,7 +233,7 @@ my @words = split ' ', strip_cmdline $ARGV[2];
 my @rest;
 
 # loop over the words, checking for things we understand
-my %opts;
+my %opts = (sort => 'alpha');
 while (@words) {
     my ($test, $option);
 
