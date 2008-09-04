@@ -116,7 +116,7 @@ FAKEFIELDS = { }
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 ARGSPLITTER = Regexp.new('^-?([a-z]+)\s*(' +
                         SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
-                        ')\s*(.*)$')
+                        ')\s*(.*)$', Regexp::IGNORECASE)
 
 # Automatically limit search to a specific server, unless explicitly
 # otherwise requested.
