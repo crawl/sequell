@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-require 'sqlite3'
+require 'dbi'
 require 'commands/helper'
 require 'set'
 
@@ -92,8 +92,8 @@ COLUMN_ALIASES = {
 
 LOGFIELDS_DECORATED = %w/file src v cv lv scI name uidI race crace cls
   char xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
-  ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
-  end durI turnI uruneI nruneI tmsg vmsg splat/
+  ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
+  endD durI turnI uruneI nruneI tmsg vmsg splat/
 
 FAKEFIELDS_DECORATED = %w/when/
 
@@ -127,21 +127,46 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
   fdec.each do |lf|
     class << lf
       def name
-        self.sub(/I$/, '')
+        self.sub(/[ID]$/, '')
+      end
+
+      def fix_date(v)
+        v = v.to_s
+        if v =~ /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/
+          # Note we're munging back to POSIX month (0-11) here.
+          $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
+        else
+          v
+        end
       end
 
       def value(v)
-        (self =~ /I$/) ? v.to_i : v
+        (self =~ /I$/) ? v.to_i :
+        (self =~ /D$/) ? fix_date(v) : v
       end
     end
 
-    if lf =~ /I$/
-      type = 'I'
+    if lf =~ /([ID])$/
+      type = $1
     else
       type = 'S'
     end
     fdict[ lf.name ] = type
   end
+end
+
+LOG2SQL = {
+  'name' => 'pname',
+  'char' => 'charabbrev',
+  'str' => 'sstr',
+  'dex' => 'sdex',
+  'int' => 'sint',
+  'start' => 'tstart',
+  'end' => 'tend'
+}
+
+LOGFIELDS_DECORATED.each do |x|
+  LOG2SQL[x.name] = x.name unless LOG2SQL[x.name]
 end
 
 $DB_HANDLE = nil
@@ -218,8 +243,37 @@ def row_to_fieldmap(row)
   map
 end
 
+class DBHandle
+  def initialize(db)
+    @db = db
+  end
+
+  def get_first_value(query, *binds)
+    @db.prepare(query) do |sth|
+      sth.execute(*binds)
+      row = sth.fetch
+      return row[0]
+    end
+    nil
+  end
+
+  def execute(query, *binds)
+    puts "Query: #{query}"
+    @db.prepare(query) do |sth|
+      sth.execute(*binds)
+      while row = sth.fetch
+        yield row
+      end
+    end
+  end
+end
+
+def connect_sql_db
+  DBHandle.new(DBI.connect('DBI:Mysql:henzell', 'henzell', ''))
+end
+
 def sql_dbh
-  $DB_HANDLE ||= SQLite3::Database.new(DBFILE)
+  $DB_HANDLE ||= connect_sql_db
 end
 
 def index_sanity(index)
@@ -253,7 +307,7 @@ def sql_exec_query(num, q, lastcount = nil)
   index_sanity(num)
 
   n = num
-  sql_each_row_matching(q) do |row|
+  sql_each_row_matching(q, n + 1) do |row|
     return [ lastcount ? n + 1 : count - n, row ] if num == 0
     num -= 1
   end
@@ -264,8 +318,12 @@ def sql_count_rows_matching(q)
   sql_dbh.get_first_value(q.select_count, *q.values).to_i
 end
 
-def sql_each_row_matching(q)
-  sql_dbh.execute(q.select_all, *q.values) do |row|
+def sql_each_row_matching(q, limit=0)
+  query = q.select_all
+  if limit > 0
+    query += " LIMIT #{limit}"
+  end
+  sql_dbh.execute(query, *q.values) do |row|
     yield row
   end
 end
@@ -329,8 +387,8 @@ class CrawlQuery
     begin
       @sort = []
       @query = nil
-      %{SELECT #{field}, COUNT(*) AS fieldcount FROM logrecord
-        #{where} GROUP BY #{field} ORDER BY fieldcount #{sortdir}}
+      %{SELECT #{LOG2SQL[field]}, COUNT(*) AS fieldcount FROM logrecord
+        #{where} GROUP BY #{LOG2SQL[field]} ORDER BY fieldcount #{sortdir}}
     ensure
       @sort = temp
     end
@@ -342,7 +400,7 @@ class CrawlQuery
 
   def values
     build_query unless @values
-    @values
+    @values || []
   end
 
   def pred_field_arr(p)
@@ -391,7 +449,7 @@ class CrawlQuery
       sort << ", " unless sort.empty?
       sort << "#{field} #{direction == :desc ? 'DESC' : ''}"
     end
-    @sort << "ORDER BY #{sort}"
+    @sort << "ORDER BY #{LOG2SQL[sort]}"
   end
 
   def reverse_sorts(sorts)
@@ -608,10 +666,10 @@ def process_param(preds, sorts, arg)
 
   if sort
     order = key == 'max'? ' DESC' : ''
-    sorts << "ORDER BY #{selector}#{order}"
+    sorts << "ORDER BY #{LOG2SQL[selector]}#{order}"
   else
     sqlop = OPERATORS[op]
-    field = selector
+    field = LOG2SQL[selector]
     if LOGFIELDS[selector] == 'I'
       raise "Can't use #{op} on numeric field #{selector}" if sqlop =~ /LIKE/
         val = val.to_i
@@ -684,7 +742,7 @@ end
 
 def parse_query_params(nick, num, args)
   preds, sorts = [ 'AND' ], Array.new()
-  preds << field_pred(nick, '=', 'name', 'name') if nick != '*'
+  preds << field_pred(nick, '=', 'name', LOG2SQL['name']) if nick != '*'
 
   args = _combine_args(args)
 
@@ -692,7 +750,7 @@ def parse_query_params(nick, num, args)
   parse_param_group(subpreds, sorts, args)
   preds << subpreds
 
-  sorts << "ORDER BY end DESC" if sorts.empty?
+  sorts << "ORDER BY #{LOG2SQL['end']} DESC" if sorts.empty?
 
   canargs = _canonical_args(args)
   augment_query(preds, canargs)
@@ -735,8 +793,8 @@ def query_field(selector, field, op, sqlop, val)
       clause = [ tourney ? 'AND' : 'OR' ]
       lop = tourney ? '>' : '<'
       rop = tourney ? '<' : '>'
-      clause << query_field('start', 'start', lop, lop, '20080801')
-      clause << query_field('end', 'end', rop, rop, '20080901')
+      clause << query_field('start', LOG2SQL['start'], lop, lop, '20080801')
+      clause << query_field('end', LOG2SQL['end'], rop, rop, '20080901')
       return clause
     else
       raise "Bad selector #{selector} (#{selector}=t for tourney games)"

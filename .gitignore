@@ -3,6 +3,5 @@ nohup.*
 _darcs/
 t/
 allgames*.txt
-*.sql
 logfile
 logfile.db

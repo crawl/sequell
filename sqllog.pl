@@ -12,11 +12,23 @@ my @LOGFIELDS_DECORATED = qw/v cv lv scI name uidI race crace cls char
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
   end durI turnI uruneI nruneI tmsg vmsg splat/;
 
+my %LOG2SQL = ( name => 'pname',
+                char => 'charabbrev',
+                str => 'sstr',
+                dex => 'sdex',
+                int => 'sint',
+                start => 'tstart',
+                end => 'tend' );
+
 my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
 my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
 ktyp killer ckiller kmod kaux ckaux place str int dex god
 start end dur turn urune nrune splat dam/;
+
+for (@LOGFIELDS, @INDEX_COLS) {
+  $LOG2SQL{$_} = $_ unless exists $LOG2SQL{$_};
+}
 
 my @INDEX_CASES = ( '' );
 
@@ -32,7 +44,6 @@ my @UNIQUES = ("Ijyb", "Blork the orc", "Urug", "Erolcha", "Snorg",
 my %UNIQUES = map(($_ => 1), @UNIQUES);
 
 my $LOGFILE = "allgames.txt";
-my $DBFILE = "$ENV{HOME}/logfile.db";
 my $COMMIT_INTERVAL = 3000;
 
 # Dump indexes if we need to add more than around 9000 lines of data.
@@ -68,10 +79,14 @@ sub launch {
 }
 
 sub open_db {
-  my $dbsize = -s $DBFILE;
-  my $dbh = DBI->connect("dbi:SQLite:$DBFILE");
-  create_tables($dbh) if !defined($dbsize) || $dbsize == 0;
+  my $dbh = DBI->connect("dbi:mysql:henzell", 'henzell', '');
+  check_indexes($dbh);
   return $dbh;
+}
+
+sub check_indexes {
+  my $dbh = shift;
+  $need_indexes = 1;
 }
 
 sub cleanup_db {
@@ -90,7 +105,7 @@ sub prepare_insert_st {
   my $dbh = shift;
   my @allfields = ('file', 'src', 'offset', @LOGFIELDS);
   my $text = "INSERT INTO logrecord ("
-    . join(', ', @allfields)
+    . join(', ', map($LOG2SQL{$_} || $_, @allfields))
     . ") VALUES ("
     . join(', ', map("?", @allfields))
     . ")";
@@ -116,81 +131,13 @@ sub sql_register_logfiles {
   $dbh->commit;
 }
 
-sub create_tables {
-  my $dbh = shift;
-  my $table_ddl = <<TABLEDDL;
-CREATE TABLE logfiles (
-    file TEXT PRIMARY KEY
-);
-TABLEDDL
-
-  $dbh->do( $table_ddl ) or die "Can't create table schema!: $!\n";
-
-  $table_ddl = <<TABLEDDL;
-CREATE TABLE logrecord (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    offset INTEGER,
-    file TEXT COLLATE NOCASE,
-    src TEXT COLLATE NOCASE,
-    v TEXT,
-    cv TEXT,
-    lv TEXT,
-    sc INTEGER,
-    name TEXT COLLATE NOCASE,
-    uid TEXT COLLATE NOCASE,
-    race TEXT COLLATE NOCASE,
-    crace TEXT COLLATE NOCASE,
-    cls TEXT COLLATE NOCASE,
-    char TEXT COLLATE NOCASE,
-    xl INT,
-    sk TEXT COLLATE NOCASE,
-    sklev INT,
-    title TEXT COLLATE NOCASE,
-    ktyp TEXT COLLATE NOCASE,
-    killer TEXT COLLATE NOCASE,
-    ckiller TEXT COLLATE NOCASE,
-    kmod TEXT COLLATE NOCASE,
-    kaux TEXT COLLATE NOCASE,
-    ckaux TEXT COLLATE NOCASE,
-    place TEXT COLLATE NOCASE,
-    br TEXT COLLATE NOCASE,
-    lvl INTEGER,
-    ltyp TEXT COLLATE NOCASE,
-    hp INTEGER,
-    mhp INTEGER,
-    mmhp INTEGER,
-    dam INTEGER,
-    str INTEGER,
-    int INTEGER,
-    dex INTEGER,
-    god TEXT COLLATE NOCASE,
-    piety INTEGER,
-    pen INTEGER,
-    wiz INTEGER,
-    start TEXT COLLATE NOCASE,
-    end TEXT COLLATE NOCASE,
-    dur INTEGER,
-    turn INTEGER,
-    urune INTEGER,
-    nrune INTEGER,
-    tmsg TEXT COLLATE NOCASE,
-    vmsg TEXT COLLATE NOCASE,
-    splat TEXT COLLATE NOCASE
-);
-TABLEDDL
-
-  $dbh->do( $table_ddl ) or die "Can't create table schema!: $!\n";
-  $dbh->do( 'CREATE INDEX ind_foffset on logrecord (file, offset);' );
-  $need_indexes = 1;
-}
-
 sub index_cols {
   my @cols = ();
   for my $case (@INDEX_CASES) {
     my @fields = split /\+/, $case;
     for my $field (@INDEX_COLS) {
       next if grep($_ eq $field, @fields);
-      push @cols, [ @fields, $field ];
+      push @cols, [ map($LOG2SQL{$_}, @fields, $field) ];
     }
   }
   @cols
@@ -203,7 +150,7 @@ sub index_name {
 
 sub create_indexes {
   my $op = shift;
-  print "Creating indexes...";
+  print "Creating indexes...\n";
   for my $cols (index_cols()) {
     my $name = index_name($cols);
     print "Creating index $name...\n";
@@ -218,7 +165,7 @@ sub create_indexes {
 sub drop_indexes {
   print "Dropping all indexes (errors are harmless)...\n";
   for my $cols (index_cols()) {
-    my $ddl = ("DROP INDEX " . index_name($cols) . ";");
+    my $ddl = ("DROP INDEX " . index_name($cols) . " ON logrecord;");
     $dbh->do($ddl);
   }
   $need_indexes = 1;
@@ -375,6 +322,11 @@ sub fixup_logfields {
   $g->{crace} = $g->{race};
   for ($g->{crace}) {
     s/.*(Draconian)$/$1/;
+  }
+
+  for ($g->{start}, $g->{end}) {
+    s/^(\d{4})(\d{2})/$1 . sprintf("%02d", $2 + 1)/e;
+    s/[SD]$//;
   }
 
   $g
