@@ -57,16 +57,11 @@ my @stonehandles = open_handles(@stonefiles);
 
 if (@loghandles >= 1) {
   sql_register_logfiles(map $_->[0], @loghandles);
-  for my $lhand (@loghandles) {
-    my $file = $lhand->[0];
-    my $source_server = $lhand->[3];
-    my $fh = $lhand->[1];
-    print "Catching up on records from $file...\n";
-    cat_logfile($file, $source_server, $fh) ||
-      cat_logfile($file, $source_server, $fh, -1);
-  }
+  catchup_logfiles();
 }
 fixup_db();
+# And once again, because creating indexes takes time.
+catchup_logfiles();
 
 # We create a new PoCo-IRC object and component.
 my $irc = POE::Component::IRC->spawn(
@@ -90,6 +85,17 @@ POE::Session->create(
 
 $poe_kernel->run();
 exit 0;
+
+sub catchup_logfiles {
+  for my $lhand (@loghandles) {
+    my $file = $lhand->[0];
+    my $source_server = $lhand->[3];
+    my $fh = $lhand->[1];
+    print "Catching up on records from $file...\n";
+    cat_logfile($file, $source_server, $fh) ||
+      cat_logfile($file, $source_server, $fh, -1);
+  }
+}
 
 sub daemonify {
   umask 0;
