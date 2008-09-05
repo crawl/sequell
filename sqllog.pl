@@ -362,8 +362,11 @@ sub fixup_logfields {
 
   $g->{ckaux} = $g->{kaux} || '';
   for ($g->{ckaux}) {
-    s/\{.*\}//g;
+    s/\{.*?\}//g;
+    s/\(.*?\)//g;
     s/[+-]\d+,?\s*//g;
+    s/^Hit by (.*) thrown .*$/$1/;
+    s/^Shot with (.*) by .*$/$1/;
   }
 
   $g->{crace} = $g->{race};
