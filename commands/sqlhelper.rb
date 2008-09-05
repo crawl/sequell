@@ -12,7 +12,8 @@ $CONSTRAIN_VERSION = false
 
 OPERATORS = {
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
-  '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE'
+  '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE',
+  '~~' => 'REGEXP', '!~~' => 'NOT REGEXP'
 }
 
 CLASS_EXPANSIONS = {
@@ -80,8 +81,8 @@ RACE_EXPANSIONS = {
   end
 end
 
-OPEN_PAREN = '['
-CLOSE_PAREN = ']'
+OPEN_PAREN = '(('
+CLOSE_PAREN = '))'
 
 BOOLEAN_OR = '|'
 
@@ -258,7 +259,6 @@ class DBHandle
   end
 
   def execute(query, *binds)
-    puts "Query: #{query}"
     @db.prepare(query) do |sth|
       sth.execute(*binds)
       while row = sth.fetch
@@ -418,7 +418,7 @@ class CrawlQuery
   end
 
   def version_predicate
-    "v LIKE ?"
+    %{v #{OPERATORS['=~']} ?}
   end
 
   def build_query(with_sorts=true)
@@ -671,8 +671,10 @@ def process_param(preds, sorts, arg)
     sqlop = OPERATORS[op]
     field = LOG2SQL[selector]
     if LOGFIELDS[selector] == 'I'
-      raise "Can't use #{op} on numeric field #{selector}" if sqlop =~ /LIKE/
-        val = val.to_i
+      if ['=~','!~','~~', '!~~'].index(op)
+        raise "Can't use #{op} on numeric field #{selector}"
+      end
+      val = val.to_i
     end
     preds << query_field(selector, field, op, sqlop, val)
   end
@@ -771,14 +773,14 @@ def query_field(selector, field, op, sqlop, val)
     [ '=', '!=' ].index(op) and
     ![ 'pan', 'lab', 'hell', 'blade', 'temple', 'abyss' ].index(val) then
     val = val + ':%'
-    sqlop = op == '=' ? 'LIKE' : 'NOT LIKE'
+    sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
   end
   if selector == 'start' or selector == 'end'
     val = val.sub(/^(\d{4})(\d{2})/) { |x| $1 + sprintf("%02d", $2.to_i - 1) }
   end
   if selector == 'race'
     if val.downcase == 'dr' && (op == '=' || op == '!=')
-      sqlop = op == '=' ? 'LIKE' : 'NOT LIKE'
+      sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
       val = "%#{val}"
     else
       val = RACE_EXPANSIONS[val.downcase] || val
@@ -911,5 +913,5 @@ def logfile_names
 end
 
 def paren_args(args)
-  args && !args.empty? ? [ '[' ] + args + [ ']' ] : []
+  args && !args.empty? ? [ OPEN_PAREN ] + args + [ CLOSE_PAREN ] : []
 end
