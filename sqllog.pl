@@ -16,7 +16,7 @@ my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
 my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
 ktyp killer ckiller kmod kaux ckaux place str int dex god
-start end dur turn urune nrune splat/;
+start end dur turn urune nrune splat dam/;
 
 my @INDEX_CASES = ( '' );
 
