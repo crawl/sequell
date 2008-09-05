@@ -362,8 +362,8 @@ sub fixup_logfields {
 
   $g->{ckaux} = $g->{kaux} || '';
   for ($g->{ckaux}) {
-    s/\{.*\}//;
-    s/[+-]\d+,?\s*//;
+    s/\{.*\}//g;
+    s/[+-]\d+,?\s*//g;
   }
 
   $g->{crace} = $g->{race};
