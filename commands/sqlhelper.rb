@@ -484,7 +484,9 @@ end
 
 def _clean_argstr(text)
   op_match = /#{SORTEDOPS.map { |o| Regexp.quote(o) }.join("|")}/
-  text.gsub(/\[(.*?)\]/) do |m|
+  popen = Regexp.quote(OPEN_PAREN)
+  pclose = Regexp.quote(CLOSE_PAREN)
+  text.gsub(/#{popen}(.*?)#{pclose}/) do |m|
     payload = $1.dup
     count = 0
     payload.gsub(op_match) do |pm|
