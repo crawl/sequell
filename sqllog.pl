@@ -367,6 +367,7 @@ sub fixup_logfields {
     s/[+-]\d+,?\s*//g;
     s/^Hit by (.*) thrown .*$/$1/;
     s/^Shot with (.*) by .*$/$1/;
+    s/\b(?:un)?cursed //;
   }
 
   $g->{crace} = $g->{race};
