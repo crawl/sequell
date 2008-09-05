@@ -723,11 +723,11 @@ def query_field(selector, field, op, sqlop, val)
       sqlop = op == '=' ? 'LIKE' : 'NOT LIKE'
       val = "%#{val}"
     else
-      val = RACE_EXPANSIONS[val.downcase] or val
+      val = RACE_EXPANSIONS[val.downcase] || val
     end
   end
   if selector == 'cls'
-    val = CLASS_EXPANSIONS[val.downcase] or val
+    val = CLASS_EXPANSIONS[val.downcase] || val
   end
   if selector == 'when'
     if %w/t tourney tournament/.index(val) and [ '=', '!=' ].index(op)
