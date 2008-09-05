@@ -3,9 +3,12 @@ use strict;
 use warnings;
 use POE qw(Component::IRC Component::IRC::Plugin::NickReclaim);
 use POSIX qw(setsid); # For daemonization.
+use Fcntl qw/:flock/;
 
 my $SERVER = 'cao';     # Local server.
 my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
+
+my $LOCK_FILE = "$ENV{HOME}/.henzell.lock";
 
 my $nickname       = 'Henzell';
 my $ircname        = 'Henzell the Crawl Bot';
@@ -37,6 +40,11 @@ my %commands;
 
 do 'game_parser.pl';
 require 'sqllog.pl';
+
+print "Locking $LOCK_FILE\n";
+open my $outf, '>', $LOCK_FILE or die "Can't open $LOCK_FILE: $!\n";
+flock $outf, LOCK_EX;
+print "Locked $LOCK_FILE, starting up...\n";
 
 # Drop process priority.
 system "renice +5 $$ &>/dev/null";
