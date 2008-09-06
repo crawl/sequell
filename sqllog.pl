@@ -7,6 +7,8 @@ use IO::Handle;
 
 use DBI;
 
+do 'game_parser.pl';
+
 my @LOGFIELDS_DECORATED = qw/v cv lv scI name uidI race crace cls char
   xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
@@ -20,13 +22,19 @@ my %LOG2SQL = ( name => 'pname',
                 start => 'tstart',
                 end => 'tend' );
 
+my %SERVER_MAP = (cao => 'crawl.akrasiac.org',
+                  cdo => 'crawl.develz.org');
+
 my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
+
+my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS);
+my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
 my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
 ktyp killer ckiller kmod kaux ckaux place str int dex god
 start end dur turn urune nrune splat dam/;
 
-for (@LOGFIELDS, @INDEX_COLS) {
+for (@LOGFIELDS, @INDEX_COLS, @SELECTFIELDS) {
   $LOG2SQL{$_} = $_ unless exists $LOG2SQL{$_};
 }
 
@@ -46,6 +54,10 @@ my %UNIQUES = map(($_ => 1), @UNIQUES);
 my $LOGFILE = "allgames.txt";
 my $COMMIT_INTERVAL = 3000;
 
+my $SPLAT_TS = 'splat.timestamp';
+my $SPLAT_REPO = '../c-splat.git';
+my $SPLAT_CO = '../csplatco';
+
 # Dump indexes if we need to add more than around 9000 lines of data.
 my $INDEX_DISCARD_THRESHOLD = 300 * 9000;
 
@@ -53,13 +65,59 @@ my $need_indexes = 1;
 
 my $dbh;
 my $insert_st;
+my $update_st;
 my $offset_st;
 
-setup_db();
+initialize_sqllog();
+
+sub initialize_sqllog {
+  setup_db();
+  load_splat_defs();
+  load_splat();
+}
+
+sub last_splat_time {
+  open my $inf, '<', $SPLAT_TS or return;
+  chomp(my $ts = <$inf>);
+  close $inf;
+  $ts
+}
+
+sub current_splat_time {
+  if (!-d $SPLAT_CO) {
+    system("git clone $SPLAT_REPO $SPLAT_CO")
+      and die "Couldn't clone $SPLAT_CO from $SPLAT_REPO\n";
+  }
+  system("cd $SPLAT_CO && git pull") and die "Couldn't update $SPLAT_REPO\n";
+
+  (stat "$SPLAT_CO/CSplat/Select.pm")[9]
+}
+
+sub load_splat_defs {
+  if (-d $SPLAT_CO) {
+    push @INC, $SPLAT_CO;
+    print "Loading $SPLAT_CO/CSplat/Select.pm\n";
+    do "$SPLAT_CO/CSplat/Select.pm";
+  }
+}
+
+sub load_splat {
+  my $splat_time = last_splat_time();
+  my $now_splat_time = current_splat_time();
+  if (!$splat_time || $splat_time < $now_splat_time) {
+    load_splat_defs();
+    update_log_rows();
+
+    open my $outf, '>', $SPLAT_TS or die "Can't write $SPLAT_TS: $!\n";
+    print $outf "$now_splat_time\n";
+    close $outf;
+  }
+}
 
 sub setup_db {
   $dbh = open_db();
   $insert_st = prepare_insert_st($dbh);
+  $update_st = prepare_update_st($dbh);
   $offset_st = prepare_offset_st($dbh);
 }
 
@@ -103,12 +161,22 @@ sub prepare_st {
 
 sub prepare_insert_st {
   my $dbh = shift;
-  my @allfields = ('file', 'src', 'offset', @LOGFIELDS);
+  my @allfields = @INSERTFIELDS;
   my $text = "INSERT INTO logrecord ("
     . join(', ', map($LOG2SQL{$_} || $_, @allfields))
     . ") VALUES ("
     . join(', ', map("?", @allfields))
     . ")";
+  return prepare_st($dbh, $text);
+}
+
+sub prepare_update_st {
+  my $dbh = shift;
+  my $text = <<QUERY;
+    UPDATE logrecord
+    SET @{ [ join(",", map("$LOG2SQL{$_} = ?", @LOGFIELDS)) ] }
+    WHERE id = ?
+QUERY
   return prepare_st($dbh, $text);
 }
 
@@ -329,24 +397,85 @@ sub fixup_logfields {
     s/[SD]$//;
   }
 
+  my $src = $g->{src};
+  # Fixup src for interesting_game.
+  $g->{src} = "http://$SERVER_MAP{$src}/";
+  $g->{splat} = CSplat::Select::interesting_game($g) ? 'y' : '';
+  $g->{src} = $src;
+
   $g
+}
+
+sub field_val {
+  my ($key, $g) = @_;
+  my $integer = $key =~ /I$/;
+  $key =~ s/I$//;
+  my $val = $g->{$key} || ($integer? 0 : '');
+  $val
 }
 
 sub add_logline {
   my ($file, $source, $offset, $line) = @_;
   chomp $line;
   my $fields = logfield_hash($line);
+  $fields->{src} = $source;
   $fields = fixup_logfields($fields);
   my @bindvalues = ($file, $source, $offset,
-    map {
-      my $integer = /I$/;
-      (my $key = $_) =~ s/I$//;
-      my $val = $$fields{$key};
-      $val = $integer? 0 : '' unless defined $val;
-      $val
-    } @LOGFIELDS_DECORATED);
+                    map(field_val($_, $fields), @LOGFIELDS_DECORATED) );
   execute_st($insert_st, @bindvalues) or
     die "Can't insert record for $line: $!\n";
+}
+
+sub xlog_escape {
+  my $str = shift;
+  $str =~ s/:/::/g;
+  $str
+}
+
+sub xlog_str {
+  my $g = shift;
+  join(":", map("$_=" . xlog_escape($g->{$_}), keys %$g))
+}
+
+sub update_game {
+  my $g = shift;
+  my @bindvals = (map(field_val($_, $g), @LOGFIELDS_DECORATED), $g->{id});
+  print "Updating game: ", pretty_print($g), "\n";
+  execute_st($update_st, @bindvals) or
+    die "Can't update record for game: " . pretty_print($g) . "\n";
+}
+
+sub game_from_row {
+  my $row = shift;
+  my %g;
+  for my $i (0 .. $#SELECTFIELDS) {
+    $g{$SELECTFIELDS[$i]} = $row->[$i];
+  }
+  \%g
+}
+
+sub games_differ {
+  my ($a, $b) = @_;
+  scalar(
+         grep(($a->{$_} || '') ne ($b->{$_} || ''),
+              @LOGFIELDS) )
+}
+
+sub update_log_rows {
+  print "Updating all rows in db to match new fixup\n";
+  my $selfields = join(", ", map($LOG2SQL{$_}, @SELECTFIELDS));
+  my $sth = $dbh->prepare("SELECT $selfields FROM logrecord")
+    or die "Can't fetch rows\n";
+  $sth->execute();
+  while (my $row = $sth->fetchrow_arrayref) {
+    my $g = game_from_row($row);
+    # Copy the game.
+    my %cg = %$g;
+    my $fixed = fixup_logfields(\%cg);
+    if (games_differ($g, $fixed)) {
+      update_game($fixed);
+    }
+  }
 }
 
 1;

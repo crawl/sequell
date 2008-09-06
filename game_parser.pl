@@ -7,6 +7,9 @@ BEGIN {
 }
 use Helper qw/demunge_xlogline serialize_time/;
 
+my %adjective_skill_title =
+  map(($_ => 1), ('Deadly Accurate', 'Spry', 'Covert', 'Unseen'));
+
 sub game_skill_title
 {
   my $game_ref = shift;

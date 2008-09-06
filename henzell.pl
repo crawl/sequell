@@ -33,12 +33,8 @@ my $commands_file  = $command_dir . 'commands.txt';
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
 my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft greensnark cbus/;
 
-my %adjective_skill_title =
-  map(($_ => 1), ('Deadly Accurate', 'Spry', 'Covert', 'Unseen'));
-
 my %commands;
 
-do 'game_parser.pl';
 require 'sqllog.pl';
 
 print "Locking $LOCK_FILE\n";
