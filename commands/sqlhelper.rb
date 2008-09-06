@@ -777,9 +777,6 @@ def query_field(selector, field, op, sqlop, val)
     val = val + ':%'
     sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
   end
-  if selector == 'start' or selector == 'end'
-    val = val.sub(/^(\d{4})(\d{2})/) { |x| $1 + sprintf("%02d", $2.to_i - 1) }
-  end
   if selector == 'race'
     if val.downcase == 'dr' && (op == '=' || op == '!=')
       sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
