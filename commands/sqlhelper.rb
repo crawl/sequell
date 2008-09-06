@@ -355,7 +355,9 @@ class CrawlQuery
 
   # Is this a query aimed at a single nick?
   def single_nick?
-    @pred[1][1] == "name = ?" || (@pred[0] == :field && @pred[1] == "name = ?")
+    nf = LOG2SQL['name']
+    @pred[1][1] == "#{nf} = ?" ||
+      (@pred[0] == :field && @pred[1] == "#{nf} = ?")
   end
 
   def summarize
