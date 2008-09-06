@@ -9,7 +9,7 @@ rawdatapath = '/var/www/crawl/rawdata/'
 nick = sys.argv[1]
 
 # games_for doesn't know about players playing their first game.
-# this could probably be corrected by making the check just for the 
+# this could probably be corrected by making the check just for the
 # whereis file, since if there's no file, it's not like the requestor
 # is going to get any useful information. But there might be a good
 # reason not to do this, so I didn't make the change. -rachel 12/22/07
@@ -53,7 +53,7 @@ if status == 'saved':
     prestr = 'last saved'
 elif status in [ 'dead', 'quit', 'won', 'bailed out' ]:
     print "\n!redirect!listgame"
-    exit(0)
+    sys.exit()
 elif status == 'active':
     prestr = 'is currently'
     datestr = ''
