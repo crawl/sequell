@@ -106,7 +106,7 @@ my %code_races = map {
 # }}}
 # short race names {{{
 my %short_races = map {
-    my @r = split;
+    my @r = split /[ -]/;
     ($_, @r == 1 ? ucfirst (substr $_, 0, 2) :
                    uc (substr $r[0], 0, 1) . uc (substr $r[1], 0, 1))
 } @races;
