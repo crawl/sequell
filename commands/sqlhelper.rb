@@ -132,13 +132,7 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
       end
 
       def fix_date(v)
-        v = v.to_s
-        if v =~ /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/
-          # Note we're munging back to POSIX month (0-11) here.
-          $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
-        else
-          v
-        end
+        sql2logdate(v)
       end
 
       def value(v)
@@ -172,6 +166,16 @@ end
 
 $DB_HANDLE = nil
 $group_field = nil
+
+def sql2logdate(v)
+  v = v.to_s
+  if v =~ /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/
+    # Note we're munging back to POSIX month (0-11) here.
+    $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
+  else
+    v
+  end
+end
 
 def with_group(group)
   old = $group_field
