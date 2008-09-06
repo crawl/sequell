@@ -88,7 +88,7 @@ BOOLEAN_OR = '|'
 
 COLUMN_ALIASES = {
   'role' => 'cls', 'class' => 'cls', 'species' => 'race',
-  'ktype' => 'ktyp', 'score' => 'sc'
+  'ktype' => 'ktyp', 'score' => 'sc', 'turns' => 'turn'
 }
 
 LOGFIELDS_DECORATED = %w/file src v cv lv scI name uidI race crace cls
