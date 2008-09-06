@@ -871,7 +871,7 @@ def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
   if count > 0
     sql_each_row_for_query(q.summary_query, *q.values) do |row|
       val = row[0]
-      val = defval if val.empty?
+      val = defval if !val
       chars << [ val, row[1] ]
     end
   end
