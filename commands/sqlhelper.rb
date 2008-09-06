@@ -101,7 +101,7 @@ FAKEFIELDS_DECORATED = %w/when/
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br ltyp killer
               god urune nrune src str int dex kaux ckiller cv ckaux crace kmod
-              splat/.
+              splat dam/.
              map { |x| [x, true] }.flatten) ]
 
 # Skip so many leading fields when processing SELECT * responses.

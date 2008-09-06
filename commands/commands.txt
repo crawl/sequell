@@ -1,7 +1,7 @@
 !cdo cdoplayers.pl
 @players cdoplayers.pl
 !aplayers players.pl
-!apt apt-doy.pl
+!apt apt.pl
 !chars chars.rb
 !cmdinfo cmdinfo.py
 !deathsby deathsby.py
@@ -27,6 +27,7 @@
 !screensize screensize.pl
 !seen seen.pl
 !skill skill.pl
+!source source.pl
 !streak streak.rb
 !tell message/tell.pl
 !ttyrec ttr.rb

@@ -193,27 +193,6 @@ sub check_milestone_file
   seek($stonehandle, $href->[2], 0);
 }
 
-sub game_skill_title
-{
-  my $game_ref = shift;
-  my $title = $game_ref->{title};
-  $title = skill_farming($title) if $game_ref->{turn} > 200000;
-  return $title;
-}
-
-sub skill_farming
-{
-  my $title = shift;
-  if ($adjective_skill_title{$title} || $title =~ /(?:ed|ble|ous)$/) {
-    return "$title Farmer";
-  } elsif ($title =~ /Crazy /) {
-    $title =~ s/Crazy/Crazy Farming/;
-    return $title;
-  } else {
-    return "Farming $title";
-  }
-}
-
 sub check_all_logfiles
 {
   for my $logh (@loghandles) {

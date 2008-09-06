@@ -1,200 +1,295 @@
 #!/usr/bin/perl
-
 use strict;
 use warnings;
 
 do 'commands/helper.pl';
-help("Looks up aptitudes for specified race/skill combination.");
+#help("Looks up aptitudes for specified race/skill combination.");
 
-our (%fullDB, %transRaceDB, %skillList, %bestApt, %dracColours);
-my %raceMap;
+my %apts;
 
-sub buildTransDB # {{{
-{
-	%dracColours = (red=>"SP_RED_DRACONIAN", white=>"SP_WHITE_DRACONIAN",
-					green=>"SP_GREEN_DRACONIAN", yellow=>"SP_YELLOW_DRACONIAN",
-					grey=>"SP_GREY_DRACONIAN", black=>"SP_BLACK_DRACONIAN",
-					purple=>"SP_PURPLE_DRACONIAN", mottled=>"SP_MOTTLED_DRACONIAN",
-					pale=>"SP_PALE_DRACONIAN");
-	%skillList = ("SK_FIGHTING"=>"Fighting", "SK_SHORT_BLADES"=>"Short",
-		"SK_LONG_BLADES"=>"Long", "SK_AXES"=>"Axes", "SK_MACES_FLAILS"=>"Maces",
-		"SK_POLEARMS"=>"Polearms", "SK_STAVES"=>"Staves", "SK_SLINGS"=>"Slings",
-		"SK_BOWS"=>"Bows", "SK_CROSSBOWS"=>"Crossbows", "SK_DARTS"=>"Darts",
-		"SK_THROWING"=>"Throw", "SK_ARMOUR"=>"Armour",
-		"SK_DODGING"=>"Dodge", "SK_STEALTH"=>"Stealth", "SK_STABBING"=>"Stab",
-		"SK_SHIELDS"=>"Shields", "SK_TRAPS_DOORS"=>"Traps",
-		"SK_UNARMED_COMBAT"=>"Unarmed", "SK_SPELLCASTING"=>"Spellcasting",
-		"SK_CONJURATIONS"=>"Conj", "SK_ENCHANTMENTS"=>"Ench",
-		"SK_SUMMONINGS"=>"Summ", "SK_NECROMANCY"=>"Nec",
-		"SK_TRANSLOCATIONS"=>"Tloc", "SK_TRANSMIGRATION"=>"Tmig",
-		"SK_DIVINATIONS"=>"Div", "SK_FIRE_MAGIC"=>"Fire", "SK_ICE_MAGIC"=>"Ice",
-		"SK_AIR_MAGIC"=>"Air", "SK_EARTH_MAGIC"=>"Earth",
-		"SK_POISON_MAGIC"=>"Poison", "SK_INVOCATIONS"=>"Inv",
-		"SK_EVOCATIONS"=>"Evo");
-	%transRaceDB = (Hu=>"SP_HUMAN",
-				HE=>"SP_HIGH_ELF",
-				GE=>"SP_GREY_ELF",
-				DE=>"SP_DEEP_ELF",
-				SE=>"SP_SLUDGE_ELF",
-				MD=>"SP_MOUNTAIN_DWARF",
-				Ha=>"SP_HALFLING",
-				HO=>"SP_HILL_ORC",
-				Ko=>"SP_KOBOLD",
-				Mu=>"SP_MUMMY",
-				Na=>"SP_NAGA",
-				Gn=>"SP_GNOME",
-				Og=>"SP_OGRE",
-				Tr=>"SP_TROLL",
-				OM=>"SP_OGRE_MAGE",
-				Dr=>"SP_BASE_DRACONIAN",
-				Ce=>"SP_CENTAUR",
-				DG=>"SP_DEMIGOD",
-				Sp=>"SP_SPRIGGAN",
-				Mi=>"SP_MINOTAUR",
-				DS=>"SP_DEMONSPAWN",
-				Gh=>"SP_GHOUL",
-				Ke=>"SP_KENKU",
-				Mf=>"SP_MERFOLK",
-				Vp=>"SP_VAMPIRE");
-
-	%raceMap = map { (lc, $_) } keys(%transRaceDB);
-	$transRaceDB{+lc} = $transRaceDB{$_} for keys %transRaceDB;
-	$skillList{+lc} = $skillList{$_} for keys %skillList;
+# build the skills/races db
+# skills {{{
+# skill list {{{
+my @skills = (
+    'fighting', 'short blades', 'long blades', 'axes', 'maces & flails',
+    'polearms', 'staves', 'slings', 'bows', 'crossbows', 'darts', 'throwing',
+    'armour', 'dodging', 'stealth', 'stabbing', 'shields', 'traps & doors',
+    'unarmed combat', 'spellcasting', 'conjurations', 'enchantments',
+    'summonings', 'necromancy', 'translocations', 'transmigration',
+    'divinations', 'fire magic', 'ice magic', 'air magic', 'earth magic',
+    'poison magic', 'invocations', 'evocations',
+); # }}}
+# skill names used by the code {{{
+my %code_skills = map {
+    my $s = $_;
+    $s =~ s/[ &]+/_/g;
+    ($_, "SK_" . uc $s)
+} @skills;
+# }}}
+# short skills {{{
+my %short_skills = map { ($_, ucfirst((split(' ', $_))[0])) } @skills;
+$short_skills{'throwing'}       = 'Throw';
+$short_skills{'dodging'}        = 'Dodge';
+$short_skills{'stabbing'}       = 'Stab';
+$short_skills{'conjurations'}   = 'Conj';
+$short_skills{'enchantments'}   = 'Ench';
+$short_skills{'summonings'}     = 'Summ';
+$short_skills{'necromancy'}     = 'Nec';
+$short_skills{'translocations'} = 'Tloc';
+$short_skills{'transmigration'} = 'Tmig';
+$short_skills{'divinations'}    = 'Div';
+$short_skills{'invocations'}    = 'Inv';
+$short_skills{'evocations'}     = 'Evo';
+# }}}
+# skill normalization {{{
+my %normalize_skill = (
+    (map { ($_, $_) } @skills),
+    (map { lc } (reverse %code_skills)),
+    (map { lc } (reverse %short_skills)),
+    pois     => 'poison magic',
+    flails   => 'maces & flails',
+    invo     => 'invocations',
+    necro    => 'necromancy',
+    transmig => 'transmigrations',
+    doors    => 'traps & doors',
+); # }}}
+sub normalize_skill { # {{{
+    my $skill = shift;
+    $skill = lc $skill;
+    $skill =~ s/(?:^\s*|\s*$)//g;
+    return $normalize_skill{$skill}
 } # }}}
-sub parseSkillsFile # {{{
-{
-	open my $infile, "<", "db.cc";
-	my $currRace;
-	while(<$infile>)
-	{
-		# Determine race
-		$currRace=$1 if(m#\{\s*// ([A-Z\(\)0-9_]+)#);
+sub short_skill { # {{{
+    my $skill = shift;
+    $skill = normalize_skill $skill;
+    return $short_skills{$skill};
+} # }}}
+sub code_skill { # {{{
+    my $skill = shift;
+    $skill = normalize_skill $skill;
+    return $code_skills{$skill};
+} # }}}
+# }}}
+# races {{{
+# draconians {{{
+my @drac_colors = qw/red white green yellow grey black purple mottled pale/;
+# }}}
+# race list {{{
+my @races = (
+    'human', 'high elf', 'grey elf', 'deep elf', 'sludge elf',
+    'mountain dwarf', 'halfling', 'hill orc', 'kobold', 'mummy', 'naga',
+    'gnome', 'ogre', 'troll', 'ogre mage',
+    (map { "$_ draconian" } @drac_colors),
+    'base draconian', 'centaur', 'demigod', 'spriggan', 'minotaur',
+    'demonspawn', 'ghoul', 'kenku', 'merfolk', 'vampire',
+);
+# }}}
+# race names used by the code {{{
+my %code_races = map {
+    my $r = $_;
+    $r =~ tr/ /_/;
+    ($_, "SP_" . uc $r)
+} @races;
+# }}}
+# short race names {{{
+my %short_races = map {
+    my @r = split;
+    ($_, @r == 1 ? ucfirst (substr $_, 0, 2) :
+                   uc (substr $r[0], 0, 1) . uc (substr $r[1], 0, 1))
+} @races;
+$short_races{'demigod'}        = 'DG';
+$short_races{'demonspawn'}     = 'DS';
+$short_races{'merfolk'}        = 'Mf';
+$short_races{'vampire'}        = 'Vp';
+$short_races{'base draconian'} = 'Dr';
+$short_races{"$_ draconian"}   = "Dr[$_]" for @drac_colors;
+# }}}
+# race normalization {{{
+my %normalize_race = (
+    (map { ($_, $_) } @races),
+    (map { lc } (reverse %code_races)),
+    (map { lc } (reverse %short_races)),
+    'ogre-mage' => 'ogre mage',
+    'draconian' => 'base draconian',
+);
+# }}}
+sub normalize_race { # {{{
+    my $race = shift;
+    $race = lc $race;
+    $race =~ s/(?:^\s*|\s*$)//g;
+    return $normalize_race{$race}
+} # }}}
+sub short_race { # {{{
+    my $race = shift;
+    $race = normalize_race $race;
+    return $short_races{$race};
+} # }}}
+sub code_race { # {{{
+    my $race = shift;
+    $race = normalize_race $race;
+    return $code_races{$race};
+} # }}}
+# }}}
 
-		# Determine attribute and aptitude
-		if(m#^\s*([ 0-9-\+\(\)/\*]+),\s+// ([A-Z0-9_]+)#)
-		{
-			my $evaled = (eval $1);
-			if( defined($currRace) )		# This figures out what the best
-			{								# aptitudes are.
-				if( defined($bestApt{$2}) )	# Check if the old value is better
-				{
-					$bestApt{$2}=$evaled if($evaled < $bestApt{$2});
-				}
-				else						# If there is no old value, just store
-				{
-					$bestApt{$2}=$evaled;
-				}
-				$fullDB{$currRace}{$2}=$evaled if( defined($currRace) );
-			}
-		}
-	}
+# helper functions
+sub error { # {{{
+    print @_, "\n";
+    exit;
+} # }}}
+sub parse_apt_file { # {{{
+    my %apts;
+    open my $aptfile, '<', shift;
+    my $race;
+    while (<$aptfile>) {
+        if (/{\s*\/\/\s*(\w+)/) {
+            $race = normalize_race $1;
+            die unless defined $race;
+        }
+        elsif (/^\s*(.*?),\s*\/\/\s*(\w+)/) {
+            next if $2 eq 'undefined' || $2 eq 'SK_UNUSED_1';
+            my $apt = eval $1;
+            my $skill = normalize_skill $2;
+            $apts{$race}{$skill} = $apt;
+        }
+    }
+    return %apts;
+} # }}}
+sub strip_cmdline { # {{{
+    my $cmdline = shift;
+    $cmdline =~ s/^!\w+\s+//;
+    chomp $cmdline;
+    $cmdline = lc $cmdline;
+    $cmdline = join(' ', split(' ', $cmdline));
+    return $cmdline;
+} # }}}
+sub is_best_apt { # {{{
+    my ($race, $skill) = @_;
+    for (@races) {
+        return 0 if $apts{$_}{$skill} < $apts{$race}{$skill};
+    }
+    return 1;
+} # }}}
+sub apt { # {{{
+    my ($race, $skill) = @_;
+    return $apts{$race}{$skill} . (is_best_apt($race, $skill) ? "!" : "");
+} # }}}
+sub check_long_option { # {{{
+    my $word = shift;
+    $word =~ /-?(.*?)=(.*)/;
+    my ($option, $val) = ($1, $2);
+    return unless defined $option && defined $val;
+    $val = lc $val;
 
-	$bestApt{+lc} = $bestApt{$_} for keys %bestApt;
-	$fullDB{+lc} = $fullDB{$_} for keys %fullDB;
-	for my $hash (values %fullDB) {
-	   $$hash{+lc} = $$hash{$_} for keys %$hash;
-	}
+    if ((substr $option, 0, 2) eq 'so') {
+        return ('sort', $val);
+    }
+    elsif ((substr $option, 0, 1) eq 's') {
+        return ('skill', normalize_skill($val));
+    }
+    elsif ((substr $option, 0, 1) eq 'r') {
+        return ('race', normalize_race($val));
+    }
+    elsif ((substr $option, 0, 1) eq 'c') {
+        for (@drac_colors) {
+            return ('color', $val) if $val eq $_;
+        }
+        error "Invalid color: $val";
+    }
+    else {
+        return;
+    }
+} # }}}
+sub print_single_apt { # {{{
+    my ($race, $skill) = @_;
+    print short_race($race),
+          " (", code_skill($skill), ")=",
+          apt($race, $skill), "\n";
+} # }}}
+sub print_race_apt { # {{{
+    my ($race, $sort) = @_;
+    my @list = @skills;
+    @list = sort @list if defined $sort && $sort eq 'alpha';
+    my @out;
+    for (@list) {
+        push @out, (short_skill $_) . '=' . (apt $race, $_);
+    }
+    print short_race($race), ": ", join(', ', @out), "\n";
+} # }}}
+sub print_skill_apt { # {{{
+    my ($skill, $sort) = @_;
+    my @list = @races;
+    @list = sort @list if defined $sort && $sort eq 'alpha';
+    my @out;
+    for (@list) {
+        push @out, (short_race $_) . '=' . (apt $_, $skill);
+    }
+    print short_skill($skill), ": ", join(', ', @out), "\n";
 } # }}}
 
-# Prepare DB's
-buildTransDB();
-parseSkillsFile();
+# get the aptitudes out of the source file
+%apts = parse_apt_file 'db.cc';
+# get the request
+my @words = split ' ', strip_cmdline $ARGV[2];
+my @rest;
 
-# 3rd argument is the entire command line
-$_ = lc($ARGV[2]);
-s/^!apt\s+(.*)$/$1/;		# Strip away the !apt part of the string
+# loop over the words, checking for things we understand
+my %opts = (sort => 'alpha');
+while (@words) {
+    my ($test, $option);
 
-chomp;
-if(/^\s* Dr \[([a-z]*)\] \s+ (SK_[A-Z_0-9]+)/xi)				# !apt Dr[red] SK_SOMETHING {{{
-{
-	unless($dracColours{$1}) { print "Invalid colour.\n"; next; }
-	my $race = $dracColours{$1};
-	if( defined($skillList{$2}) )
-	{
-		print "Dr[$1](@{ [uc $2] })=", $fullDB{$race}{$2};
-		print "!" if($fullDB{$race}{$2} == $bestApt{$2});
-		print "\n";
-	}
-	else
-	{
-		print "Invalid skill.\n";
-	}
-} # }}}
-elsif(/^\s* ([A-Za-z]{2}) \s+ (SK_[A-Z_0-9]+)/xi)			# !apt Sp SK_SOMETHING {{{
-{
-	unless($transRaceDB{$1}) { print "Invalid race.\n"; next; }
-	my $race = $transRaceDB{$1};
-	my $abbr = $raceMap{$1};
-	if( defined($skillList{$2}) )
-	{
-		print "$abbr (@{ [ uc $2 ]})=", $fullDB{$race}{$2};
-		print "!" if($fullDB{$race}{$2} == $bestApt{$2});
-		print "\n";
-	}
-	else
-	{
-		print "Invalid skill.\n";
-	}
-} # }}}
-elsif(/^\s* (SK_[A-Z_0-9]+)/xi)				# !apt SK_SOMETHING {{{
-{
-	unless( defined($skillList{uc $1}) )		# Bad skill
-	{
-		print "Skill does not exist.\n";
-		next;
-	}
-	my $output;
-	my $sk = $1;
-	foreach my $k (sort keys %transRaceDB)
-	{
-	    next unless $k =~ /^[A-Z]/;
-		my $v = $transRaceDB{$k};
-		$output .= "$k=";
-		$output .= $fullDB{$v}{$sk};
-		$output .= "!" if($bestApt{$sk}==$fullDB{$v}{$sk});
-		$output .= ", ";
-	}
-	chop $output; chop $output;
-	print "$output\n";
-} # }}}
-elsif(/^\s* Dr \[([a-z]*)\]/xi)				# !apt Dr[red] {{{
-{
-	unless($dracColours{$1}) { print "Invalid colour.\n"; next; }
-	my $race = $dracColours{$1};
-	my %tempDB = %{ $fullDB{$race} };
-	my $output;
-	foreach my $k (sort keys %tempDB)
-	{
-		next unless $k =~ /^[A-Z]/;
-		my $v = $tempDB{$k};
-		unless($k eq "SK_UNUSED_1" || $k eq "undefined")
-		{
-			$output .= $skillList{$k} . ":" . $v;
-			$output .=  "!" if($v == $bestApt{$k});
-			$output .=  ", ";
-		}
-	}
-	chop $output; chop $output;
-	print "$output\n";
-} #}}}
-elsif(/^\s* ([A-Za-z]{2})/x)						# !apt Sp {{{
-{
-	unless($transRaceDB{$1}) { print "Invalid race.\n"; next; }
-	my $race = $transRaceDB{$1};
-	my %tempDB = %{ $fullDB{$race} };
-	my $output;
+    ($option, $test) = check_long_option $words[0];
+    if (defined $test) {
+        error "$option already defined with $opts{$option}, but I got $test"
+            if exists $opts{$option};
+        $opts{$option} = $test;
+        shift @words;
+        next;
+    }
 
-	foreach my $k (sort keys %tempDB)
-	{
-		next unless $k =~ /^[A-Z]/;
-		my $v = $tempDB{$k};
-		unless($k eq "SK_UNUSED_1" || $k eq "undefined")
-		{
-			$output .= $skillList{$k} . ":" . $v;
-			$output .=  "!" if($v == $bestApt{$k});
-			$output .=  ", ";
-		}
-	}
-	chop $output; chop $output;
-	print "$output\n";
-} #}}}
+    $test = normalize_race join ' ', @words;
+    if (defined $test) {
+        error "race already defined with $opts{race}, but I got $test"
+            if exists $opts{race};
+        $opts{race} = $test;
+        @words = @rest;
+        @rest = ();
+        next;
+    }
+
+    $test = normalize_skill join ' ', @words;
+    if (defined $test) {
+        error "skill already defined with $opts{skill}, but I got $test"
+            if exists $opts{skill};
+        $opts{skill} = $test;
+        @words = @rest;
+        @rest = ();
+        next;
+    }
+
+    unshift @rest, pop @words;
+    if (@words == 0) {
+        error "Could not understand \"$rest[0]\"";
+    }
+}
+
+# check for validity of the color option
+if (exists $opts{color}) {
+    if (!defined $opts{race} || $opts{race} ne 'base draconian') {
+        error "The color option is only valid for draconians";
+    }
+    $opts{race} = "$opts{color} draconian";
+}
+
+# print the result
+if (exists $opts{race} && exists $opts{skill}) {
+    print_single_apt $opts{race}, $opts{skill}, $opts{sort};
+}
+elsif (exists $opts{race}) {
+    print_race_apt $opts{race}, $opts{sort};
+}
+elsif (exists $opts{skill}) {
+    print_skill_apt $opts{skill}, $opts{sort};
+}
+else {
+    error "You must provide at least a race or a skill";
+}

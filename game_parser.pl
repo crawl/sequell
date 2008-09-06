@@ -1,7 +1,32 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-do 'commands/helper.pl';
+
+BEGIN {
+  push @INC, 'commands';
+}
+use Helper qw/demunge_xlogline serialize_time/;
+
+sub game_skill_title
+{
+  my $game_ref = shift;
+  my $title = $game_ref->{title};
+  $title = skill_farming($title) if $game_ref->{turn} > 200000;
+  return $title;
+}
+
+sub skill_farming
+{
+  my $title = shift;
+  if ($adjective_skill_title{$title} || $title =~ /(?:ed|ble|ous)$/) {
+    return "$title Farmer";
+  } elsif ($title =~ /Crazy /) {
+    $title =~ s/Crazy/Crazy Farming/;
+    return $title;
+  } else {
+    return "Farming $title";
+  }
+}
 
 sub handle_output
 {
@@ -61,4 +86,3 @@ sub pretty_print
       $game_ref->{turn} == 1 ? '' : 's',
       serialize_time($game_ref->{dur})
 }
-
