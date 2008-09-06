@@ -783,7 +783,7 @@ def query_field(selector, field, op, sqlop, val)
     val = val + ':%'
     sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
   end
-  if selector == 'race'
+  if selector == 'race' || selector == 'crace'
     if val.downcase == 'dr' && (op == '=' || op == '!=')
       sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
       val = "%#{val}"
