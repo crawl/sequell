@@ -57,6 +57,7 @@ my %normalize_skill = (
     transmig => 'transmigrations',
     doors    => 'traps & doors',
     armor    => 'armour',
+    uc       => 'unarmed combat',
 ); # }}}
 sub normalize_skill { # {{{
     my $skill = shift;
