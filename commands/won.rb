@@ -37,16 +37,20 @@ end
 
 games = nil
 begin
+  desc = nick
   if num == 0
     q = build_query(nick, -1,
                     ["ktyp=winning"] + paren_args(trail_select)).reverse
-    count = sql_count_rows_matching(build_query(nick, -1, trail_select))
+    game_count_query = build_query(nick, -1, trail_select)
+    count = sql_count_rows_matching(game_count_query)
+    desc = game_count_query.argstr
   else
     if nick == '*'
       puts "Cannot combine * with win-skip count."
       exit 0
     end
     q = build_query(nick, -1, trail_select).reverse
+    desc = q.argstr
     count = 0
   end
   wins = []
@@ -84,13 +88,13 @@ begin
   end
 
   if count == 0
-    printf("No games for #{nick}.\n")
+    printf("No games for #{desc}.\n")
   else
     if nwins == 0 then
       if (num < allwins || allwins == 0) && first == 0 then
-        puts "#{name} has not won in #{count} games."
+        puts "#{desc} has not won in #{count} games."
       else
-        puts "#{name} has not won in #{count - nfinalwin} games" +
+        puts "#{desc} has not won in #{count - nfinalwin} games" +
           " since their #{finalwin}" +
           " (win ##{allwins})."
       end
@@ -101,13 +105,13 @@ begin
           b.last <=> a.last }.
           map { |a,b| "#{b}x#{a}" }.
           join(' ')
-        puts "#{q.argstr} has won #{times(nwins)} in #{count} games " +
+        puts "#{desc} has won #{times(nwins)} in #{count} games " +
           "(#{sprintf('%0.2f%%', nwins * 100.0 / count)}): #{wins}"
       else
         wins = wins.join(', ')
         ngames = count - first
         perc = sprintf('%0.2f%%', nwins * 100.0 / ngames)
-        puts "#{q.argstr} has won #{times(nwins)} in #{count - first} " +
+        puts "#{desc} has won #{times(nwins)} in #{count - first} " +
           "games (#{perc}) " +
           "since their #{lastwin} (win ##{num}): " +
           wins
