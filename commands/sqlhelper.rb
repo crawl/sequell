@@ -84,7 +84,7 @@ end
 OPEN_PAREN = '(('
 CLOSE_PAREN = '))'
 
-BOOLEAN_OR = '|'
+BOOLEAN_OR = '||'
 
 COLUMN_ALIASES = {
   'role' => 'cls', 'class' => 'cls', 'species' => 'race',
