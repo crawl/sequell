@@ -8,7 +8,7 @@ help("Displays lines from the crawl source.");
 
 # helper functions
 sub usage { # {{{
-    error "Syntax is 'file:lines'";
+    error "Syntax is '<file>[:<start_line>[-<end_line>]]' or '[file:]<function_name>'";
 } # }}}
 sub parse_cmdline { # {{{
     my $cmd = shift;
@@ -49,9 +49,24 @@ sub check_function { # {{{
     my $lines;
     my $looking_for = 'function';
     my $paren_level = 0;
+    my $in_comment = 0;
     while (<$fh>) {
+        if ($in_comment) {
+            if (s/.*\*\///) {
+                $in_comment = 0;
+                redo;
+            }
+            else {
+                next;
+            }
+        }
+        s/\/\/.*//;
+        if (s/\/\*.*//) {
+            $in_comment = 1;
+        }
+
         if ($looking_for eq 'function') {
-            next unless s/(.*\b$function\b)//;
+            next unless s/((.*)\b$function\b)//;
             $looking_for = 'openbrace';
             $lines = $1;
             redo;
