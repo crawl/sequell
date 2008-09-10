@@ -104,7 +104,8 @@ sub load_splat_defs {
 sub load_splat {
   my $splat_time = last_splat_time();
   my $now_splat_time = current_splat_time();
-  if (!$splat_time || $splat_time < $now_splat_time) {
+  # Disabled for the nonce
+  if (0 && (!$splat_time || $splat_time < $now_splat_time)) {
     load_splat_defs();
     update_log_rows();
 
