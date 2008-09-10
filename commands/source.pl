@@ -6,46 +6,149 @@ use Helper qw/help error strip_cmdline $source_dir/;;
 
 help("Displays lines from the crawl source.");
 
-sub usage {
+# helper functions
+sub usage { # {{{
     error "Syntax is 'file:lines'";
-}
+} # }}}
+sub parse_cmdline { # {{{
+    my $cmd = shift;
+    my ($filename, $function, $start_line, $end_line);
 
-my @words = split ':', strip_cmdline $ARGV[2];
-usage if @words > 2 || @words == 0;
-
-my ($filename, $linenos) = @words;
-open my $fh, "<", "$source_dir/source/$filename"
-    or error "Couldn't open $filename for reading";
-
-my $multiline = 1;
-my $lines = '';
-if (defined $linenos) {
-    my ($start_line, $end_line) = split '-', $linenos;
-    if (!defined $end_line) {
-        $end_line = $start_line;
-        $multiline = 0;
+    if ($cmd =~ s/^(.*\.[^:]*):?//) {
+        $filename = $1;
     }
-    usage if $start_line == 0 || $end_line == 0;
-    error "End line cannot be before start line" if $end_line < $start_line;
+
+    if ($cmd =~ s/^(\d+)(?:-(\d+))?//) {
+        ($start_line, $end_line) = ($1, $2);
+        $end_line = $start_line unless defined $end_line;
+        error "Start line must be before end line" if $end_line < $start_line;
+    }
+    elsif ($cmd =~ s/^(\w+(?:::\w+)*)//) {
+        $function = $1;
+    }
+
+    return ($filename, $function, $start_line, $end_line, $cmd);
+} # }}}
+sub check_line { # {{{
+    my ($line, $paren_level) = @_;
+    for my $char (split //, $line) {
+        return if $char eq ';' || $char eq '}';
+        $paren_level++ if $char eq '(';
+        $paren_level-- if $char eq ')';
+        return if $paren_level < 0;
+        return "found" if $char eq '{';
+    }
+    return $paren_level;
+} # }}}
+sub check_function { # {{{
+    my ($function, $filename) = @_;
+
+    open my $fh, "<", $filename
+        or error "Couldn't open $filename for reading";
+
+    my $lines;
+    my $looking_for = 'function';
+    my $paren_level = 0;
     while (<$fh>) {
-        $lines .= $_ if $start_line == $. .. $end_line == $.;
+        if ($looking_for eq 'function') {
+            next unless s/(.*\b$function\b)//;
+            $looking_for = 'openbrace';
+            $lines = $1;
+            redo;
+        }
+        elsif ($looking_for eq 'openbrace') {
+            $paren_level = check_line $_, $paren_level;
+            if (!defined $paren_level) {
+                $looking_for = 'function';
+                $paren_level = 0;
+                next;
+            }
+            elsif ($paren_level eq 'found') {
+                $looking_for = 'closebrace';
+            }
+            $lines .= $_;
+        }
+        elsif ($looking_for eq 'closebrace') {
+            $lines .= $_;
+            if (/^}/) {
+                close $fh;
+                return $lines;
+            }
+        }
     }
+
+    close $fh;
+    return;
+} # }}}
+sub get_function { # {{{
+    my ($function, $filename) = @_;
+
+    if ($filename) {
+        my $lines = check_function $function, $filename;
+        error "Couldn't find function $function in $filename"
+            unless defined $lines;
+        return $lines, $filename;
+    }
+    else {
+        require File::Next;
+        my $files = File::Next::files("$source_dir/source");
+        while (defined (my $file = $files->())) {
+            next unless $file =~ /\.cc$/;
+            my $lines = check_function $function, $file;
+            return $lines, $file if defined $lines;
+        }
+        error "Couldn't find function $function in the Crawl source tree";
+    }
+} # }}}
+sub get_file { # {{{
+    my ($filename, $start, $end) = @_;
+
+    open my $fh, "<", "$source_dir/source/$filename"
+        or error "Couldn't open $filename for reading";
+
+    my $lines = '';
+    if (defined $start && defined $end) {
+        while (<$fh>) {
+            $lines .= $_ if $start == $. .. $end == $.;
+        }
+    }
+    else {
+        $lines = do { local $/; <$fh> };
+    }
+
+    return $lines;
+} # }}}
+sub output { # {{{
+    my ($lines, $filename) = @_;
+
+    chomp $lines;
+    if ($lines =~ /\n/) {
+        my $lang = 'text';
+        $lang = 'cpp'    if $filename =~ /\.(?:cc|h)$/;
+        $lang = 'python' if $filename =~ /\.py$/;
+        $lang = 'lua'    if $filename =~ /\.lua$/;
+        require App::Nopaste;
+        my $url = App::Nopaste::nopaste(text => $lines,
+                                        nick => $ARGV[1],
+                                        lang => $lang);
+        print "Lines pasted to $url\n";
+    }
+    else {
+        print "$lines\n";
+    }
+} # }}}
+
+my $cmd = strip_cmdline $ARGV[2];
+my ($filename, $function, $start_line, $end_line, $rest) = parse_cmdline $cmd;
+error "Couldn't understand $rest" if $rest;
+usage unless defined $filename || defined $function;
+
+my $lines;
+if (defined $function) {
+    ($lines, $filename) = get_function $function, $filename;
 }
 else {
-    $lines = do { local $/; <$fh> };
+    $lines = get_file $filename, $start_line, $end_line;
 }
 
-if ($multiline) {
-    my $lang = 'text';
-    $lang = 'cpp'    if $filename =~ /\.(?:cc|h)$/;
-    $lang = 'python' if $filename =~ /\.py$/;
-    $lang = 'lua'    if $filename =~ /\.lua$/;
-    require App::Nopaste;
-    my $url = App::Nopaste::nopaste(text => $lines,
-                                    nick => $ARGV[1],
-                                    lang => $lang);
-    print "Lines pasted to $url\n";
-}
-else {
-    print "$lines";
-}
+output $lines, $filename;
