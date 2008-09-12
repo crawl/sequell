@@ -153,7 +153,7 @@ sub output { # {{{
     }
 } # }}}
 
-my $cmd = strip_cmdline $ARGV[2];
+my $cmd = strip_cmdline $ARGV[2], case_sensitive => 1;
 my ($filename, $function, $start_line, $end_line, $rest) = parse_cmdline $cmd;
 error "Couldn't understand $rest" if $rest;
 usage unless defined $filename || defined $function;

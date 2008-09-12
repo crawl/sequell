@@ -8,8 +8,8 @@ our @EXPORT_OK = qw/$source_dir ntimes once demunge_logline demunge_xlogline
                     strip_cmdline/;
 
 # useful variables {{{
-#our $source_dir = '/home/doy/coding/src/stone_soup-release/crawl-ref';
-our $source_dir = 'current';
+our $source_dir = '/home/doy/coding/src/stone_soup-release/crawl-ref';
+#our $source_dir = 'current';
 # }}}
 
 # logfile parsing {{{
@@ -213,9 +213,10 @@ sub help # {{{
 sub strip_cmdline # {{{
 {
     my $cmdline = shift;
+    my %args = @_;
     $cmdline =~ s/^!\w+\s+//;
     chomp $cmdline;
-    $cmdline = lc $cmdline;
+    $cmdline = lc $cmdline unless $args{case_sensitive};
     $cmdline = join(' ', split(' ', $cmdline));
     return $cmdline;
 } # }}}
