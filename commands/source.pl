@@ -29,6 +29,39 @@ sub parse_cmdline { # {{{
 
     return ($filename, $function, $start_line, $end_line, $cmd);
 } # }}}
+{ # closure to handle parsing out comments {{{
+my $in_comment = 0;
+sub open_file { # {{{
+    my ($path) = @_;
+    open my $fh, '<', $path or error "Couldn't open $path for reading";
+    $in_comment = 0;
+    return $fh;
+} # }}}
+sub next_line { # {{{
+    my ($fh) = @_;
+    my $line;
+    while ($line = <$fh>) {
+        if ($in_comment) {
+            if ($line =~ s/.*?\*\///) {
+                $in_comment = 0;
+                redo;
+            }
+            else {
+                next;
+            }
+        }
+        else {
+            if ($line =~ s/\/\*.*?(\*\/)?/defined $1 ? $1 : ''/e) {
+                $in_comment = defined $1;
+                redo;
+            }
+            $line =~ s/\/\/.*//;
+        }
+        return $line;
+    }
+    return;
+} # }}}
+} # }}}
 sub check_line { # {{{
     my ($line, $paren_level) = @_;
     for my $char (split //, $line) {
@@ -43,32 +76,20 @@ sub check_line { # {{{
 sub check_function { # {{{
     my ($function, $filename) = @_;
 
-    open my $fh, "<", $filename
-        or error "Couldn't open $filename for reading";
-
     my $lines;
     my $looking_for = 'function';
     my $paren_level = 0;
-    my $in_comment = 0;
-    while (<$fh>) {
-        if ($in_comment) {
-            if (s/.*\*\///) {
-                $in_comment = 0;
-                redo;
-            }
-            else {
-                next;
-            }
-        }
-        s/\/\/.*//;
-        if (s/\/\*.*//) {
-            $in_comment = 1;
-        }
-
+    my $fh = open_file $filename;
+    while ($_ = next_line $fh) {
         if ($looking_for eq 'function') {
             next unless s/((.*)\b$function\b)//;
-            $looking_for = 'openbrace';
             $lines = $1;
+            if ($2 =~ /#define/) {
+                $_ = $lines . $_;
+                undef $lines;
+                next;
+            }
+            $looking_for = 'openbrace';
             redo;
         }
         elsif ($looking_for eq 'openbrace') {
@@ -85,14 +106,31 @@ sub check_function { # {{{
         }
         elsif ($looking_for eq 'closebrace') {
             $lines .= $_;
-            if (/^}/) {
-                close $fh;
-                return $lines;
-            }
+            return $lines if /^}/;
         }
     }
 
-    close $fh;
+    return;
+} # }}}
+sub check_define { # {{{
+    my ($define, $filename) = @_;
+
+    my $lines;
+    my $looking_for = 'define';
+    my $fh = open_file $filename;
+    while ($_ = next_line $fh) {
+        if ($looking_for eq 'define') {
+            next unless s/^(\s*#define\s+$define\b)//;
+            $lines = $1;
+            $looking_for = 'enddefine';
+            redo;
+        }
+        elsif ($looking_for eq 'enddefine') {
+            $lines .= $_;
+            return $lines unless $lines =~ /\\\n$/;
+        }
+    }
+
     return;
 } # }}}
 sub get_function { # {{{
@@ -108,8 +146,10 @@ sub get_function { # {{{
         require File::Next;
         my $files = File::Next::files("$source_dir/source");
         while (defined (my $file = $files->())) {
-            next unless $file =~ /\.cc$/;
-            my $lines = check_function $function, $file;
+            my $lines = check_function $function, $file
+                if $file =~ /\.(?:cc|h)$/;
+            $lines = check_define $function, $file
+                if $file =~ /\.(?:cc|h)$/ && !defined $lines;
             return $lines, $file if defined $lines;
         }
         error "Couldn't find function $function in the Crawl source tree";
@@ -118,8 +158,7 @@ sub get_function { # {{{
 sub get_file { # {{{
     my ($filename, $start, $end) = @_;
 
-    open my $fh, "<", "$source_dir/source/$filename"
-        or error "Couldn't open $filename for reading";
+    my $fh = open_file "$source_dir/source/$filename";
 
     my $lines = '';
     if (defined $start && defined $end) {
