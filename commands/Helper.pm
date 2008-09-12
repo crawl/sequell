@@ -8,8 +8,8 @@ our @EXPORT_OK = qw/$source_dir ntimes once demunge_logline demunge_xlogline
                     strip_cmdline/;
 
 # useful variables {{{
-our $source_dir = '/home/doy/coding/src/stone_soup-release/crawl-ref';
-#our $source_dir = 'current';
+#our $source_dir = '/home/doy/coding/src/stone_soup-release/crawl-ref';
+our $source_dir = 'current';
 # }}}
 
 # logfile parsing {{{
