@@ -97,6 +97,7 @@ sub load_splat_defs {
   if (-d $SPLAT_CO) {
     push @INC, $SPLAT_CO;
     print "Loading $SPLAT_CO/CSplat/Select.pm\n";
+    $ENV{SPLAT_PATH} = $SPLAT_CO;
     do "$SPLAT_CO/CSplat/Select.pm";
   }
 }
