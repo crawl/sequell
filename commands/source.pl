@@ -74,7 +74,7 @@ sub check_line { # {{{
     return $paren_level;
 } # }}}
 sub check_function { # {{{
-    my ($function, $filename) = @_;
+    my ($function, $filename, $partial) = @_;
 
     my $lines;
     my $looking_for = 'function';
@@ -82,7 +82,8 @@ sub check_function { # {{{
     my $fh = open_file $filename;
     while ($_ = next_line $fh) {
         if ($looking_for eq 'function') {
-            next unless s/((.*)\b$function\b)//;
+            next unless $partial ? s/((.*)$function)// :
+                                   s/((.*)\b$function\b)//;
             $lines = $1;
             if ($2 =~ /#define/) {
                 $_ = $lines . $_;
@@ -113,14 +114,15 @@ sub check_function { # {{{
     return;
 } # }}}
 sub check_define { # {{{
-    my ($define, $filename) = @_;
+    my ($define, $filename, $partial) = @_;
 
     my $lines;
     my $looking_for = 'define';
     my $fh = open_file $filename;
     while ($_ = next_line $fh) {
         if ($looking_for eq 'define') {
-            next unless s/^(\s*#define\s+$define\b)//;
+            next unless $partial ? s/^(\s*#define\s+\w*$define)// :
+                                   s/^(\s*#define\s+$define\b)//;
             $lines = $1;
             $looking_for = 'enddefine';
             redo;
@@ -146,10 +148,15 @@ sub get_function { # {{{
         require File::Next;
         my $files = File::Next::files("$source_dir/source");
         while (defined (my $file = $files->())) {
-            my $lines = check_function $function, $file
-                if $file =~ /\.(?:cc|h)$/;
+            my $lines;
+            $lines = check_function $function, $file
+                if !defined $lines && $file =~ /\.(?:cc|h)$/;
             $lines = check_define $function, $file
-                if $file =~ /\.(?:cc|h)$/ && !defined $lines;
+                if !defined $lines && $file =~ /\.(?:cc|h)$/;
+            $lines = check_function $function, $file, 1
+                if !defined $lines && $file =~ /\.(?:cc|h)$/;
+            $lines = check_define $function, $file, 1
+                if !defined $lines && $file =~ /\.(?:cc|h)$/;
             return $lines, $file if defined $lines;
         }
         error "Couldn't find function $function in the Crawl source tree";
