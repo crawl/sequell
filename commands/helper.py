@@ -29,12 +29,12 @@ races =        ['Null', 'Human', 'Elf', 'High Elf', 'Grey Elf', 'Deep Elf',
                 'Black Draconian', 'Purple Draconian', 'Mottled Draconian',
                 'Pale Draconian', 'Unk0 Draconian', 'Unk1 Draconian',
                 'Base Draconian', 'Centaur', 'Demigod', 'Spriggan', 'Minotaur',
-                'Demonspawn', 'Ghoul', 'Kenku', 'Merfolk']
+                'Demonspawn', 'Ghoul', 'Kenku', 'Merfolk', 'Vampire']
 
 races_abbrev = ["XX", "Hu", "El", "HE", "GE", "DE", "SE", "HD", "MD", "Ha",
                 "HO", "Ko", "Mu", "Na", "Gn", "Og", "Tr", "OM", "Dr", "Dr",
                 "Dr", "Dr", "Dr", "Dr", "Dr", "Dr", "Dr", "Dr", "Dr", "Dr",
-                "Ce", "DG", "Sp", "Mi", "DS", "Gh", "Ke", "Mf"]
+                "Ce", "DG", "Sp", "Mi", "DS", "Gh", "Ke", "Mf", "Vp"]
 
 god_names = ['None','Zin','The Shining One','Kikubaaqudgha','Yredelemnul','Xom',
              'Vehumet','Okawaru','Makhleb','Sif Muna','Trog','Nemelex Xobeh',
