@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use File::Temp qw/tempfile/;
 
 our $learn_dir = '/home/henzell/henzell/dat/learndb/';
 
@@ -154,3 +155,22 @@ sub replace_entry
   return 0;
 }
 
+sub swap_entries
+{
+  my $term1 = cleanse_term(shift);
+  my $entry_num1 = shift;
+  my $term2 = cleanse_term(shift);
+  my $entry_num2 = shift;
+
+  my $file1 = "$learn_dir$term1/$entry_num1";
+  my $file2 = "$learn_dir$term2/$entry_num2";
+  my ($fh, $tempfile) = tempfile;
+  close $fh;
+
+  system("cp '$file1' '$tempfile'") and return;
+  system("cp '$file2' '$file1'") and return;
+  system("cp '$tempfile' '$file2'") and return;
+  system("rm '$tempfile'");
+
+  return 1;
+}

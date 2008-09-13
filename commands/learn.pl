@@ -19,6 +19,8 @@ my %filenames =
   rm     => "delete.pl",
 
   edit   => "edit.pl",
+
+  swap   => "swap.pl",
 );
 
 if ($ARGV[2] =~ s/^\?\?(.*)//)
