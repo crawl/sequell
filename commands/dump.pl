@@ -13,4 +13,4 @@ do 'commands/helper.pl';
 help("Gives an URL to the specified users crawl configuration file.");
 
 if (-e $localDump)	{ print $baseURL . $nick . "/" . $nick . ".txt"; }
-else			{ print "User does not exist.\n"; }
+else			{ print "Dump for $nick does not exist.\n"; }
