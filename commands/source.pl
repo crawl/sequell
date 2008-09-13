@@ -99,7 +99,7 @@ sub check_function { # {{{
     my $fh = open_file $filename;
     while ($_ = next_line $fh) {
         if ($looking_for eq 'function') {
-            next unless $partial ? s/((.*)$function)// :
+            next unless $partial ? s/((.*)$function)//i :
                                    s/((.*)\b$function\b)//;
             $lines = $1;
             if ($2 =~ /#define/) {
@@ -138,7 +138,7 @@ sub check_define { # {{{
     my $fh = open_file $filename;
     while ($_ = next_line $fh) {
         if ($looking_for eq 'define') {
-            next unless $partial ? s/^(\s*#define\s+\w*$define)// :
+            next unless $partial ? s/^(\s*#define\s+\w*$define)//i :
                                    s/^(\s*#define\s+$define\b)//;
             $lines = $1;
             $looking_for = 'enddefine';
@@ -160,7 +160,7 @@ sub check_vault { # {{{
     my $fh = open_file $filename;
     while ($_ = next_line $fh) {
         if ($looking_for eq 'name') {
-            next unless $partial ? s/^(NAME:\s*\w*$vault)// : 
+            next unless $partial ? s/^(NAME:\s*\w*$vault)//i :
                                    s/^(NAME:\s*$vault\b)//;
             $lines = $1;
             $looking_for = 'endmap';
