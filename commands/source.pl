@@ -79,7 +79,7 @@ sub next_line { # {{{
     return;
 } # }}}
 } # }}}
-sub check_line { # {{{
+sub scan_line { # {{{
     my ($line, $paren_level) = @_;
     for my $char (split //, $line) {
         return if $char eq ';' || $char eq '}';
@@ -93,7 +93,7 @@ sub check_line { # {{{
 sub check_function { # {{{
     my ($function, $filename, $partial) = @_;
 
-    my $lines;
+    my $start_line;
     my $looking_for = 'function';
     my $paren_level = 0;
     my $fh = open_file $filename;
@@ -101,17 +101,16 @@ sub check_function { # {{{
         if ($looking_for eq 'function') {
             next unless $partial ? s/((.*)$function)//i :
                                    s/((.*)\b$function\b)//;
-            $lines = $1;
+            $start_line = $.;
             if ($2 =~ /#define/) {
-                $_ = $lines . $_;
-                undef $lines;
+                undef $start_line;
                 next;
             }
             $looking_for = 'openbrace';
             redo;
         }
         elsif ($looking_for eq 'openbrace') {
-            $paren_level = check_line $_, $paren_level;
+            $paren_level = scan_line $_, $paren_level;
             if (!defined $paren_level) {
                 $looking_for = 'function';
                 $paren_level = 0;
@@ -120,11 +119,9 @@ sub check_function { # {{{
             elsif ($paren_level eq 'found') {
                 $looking_for = 'closebrace';
             }
-            $lines .= $_;
         }
         elsif ($looking_for eq 'closebrace') {
-            $lines .= $_;
-            return $lines if /^}/;
+            return get_file($filename, $start_line, $.) if /^}/;
         }
     }
 
@@ -133,20 +130,19 @@ sub check_function { # {{{
 sub check_define { # {{{
     my ($define, $filename, $partial) = @_;
 
-    my $lines;
+    my $start_line;
     my $looking_for = 'define';
     my $fh = open_file $filename;
     while ($_ = next_line $fh) {
         if ($looking_for eq 'define') {
             next unless $partial ? s/^(\s*#define\s+\w*$define)//i :
                                    s/^(\s*#define\s+$define\b)//;
-            $lines = $1;
+            $start_line = $.;
             $looking_for = 'enddefine';
             redo;
         }
         elsif ($looking_for eq 'enddefine') {
-            $lines .= $_;
-            return $lines unless $lines =~ /\\\n$/;
+            return get_file($filename, $start_line, $.) unless /\\\n$/;
         }
     }
 
@@ -155,60 +151,51 @@ sub check_define { # {{{
 sub check_vault { # {{{
     my ($vault, $filename, $partial) = @_;
 
-    my $lines;
+    my $start_line;
     my $looking_for = 'name';
     my $fh = open_file $filename;
     while ($_ = next_line $fh) {
         if ($looking_for eq 'name') {
             next unless $partial ? s/^(NAME:\s*\w*$vault)//i :
                                    s/^(NAME:\s*$vault\b)//;
-            $lines = $1;
+            $start_line = $.;
             $looking_for = 'endmap';
             redo;
         }
         elsif ($looking_for eq 'endmap') {
-            $lines .= $_;
-            return $lines if /^ENDMAP/;
+            return get_file($filename, $start_line, $.) if /^ENDMAP/;
         }
     }
 
     return;
 } # }}}
 sub get_function { # {{{
-    my ($function, $filename) = @_;
+    my ($function) = @_;
 
-    if ($filename) {
-        my $lines = check_function $function, $filename;
-        error "Couldn't find $function in $filename"
-            unless defined $lines;
-        return $lines, $filename;
+    require File::Next;
+    my $files = File::Next::files("$source_dir/source");
+    while (defined (my $file = $files->())) {
+        my $lines;
+        $lines = check_function $function, $file
+            if !defined $lines && $file =~ /\.(?:cc|h)$/;
+        $lines = check_define $function, $file
+            if !defined $lines && $file =~ /\.(?:cc|h)$/;
+        $lines = check_vault $function, $file
+            if !defined $lines && $file =~ /\.(?:des)$/;
+        $lines = check_function $function, $file, 1
+            if !defined $lines && $file =~ /\.(?:cc|h)$/;
+        $lines = check_define $function, $file, 1
+            if !defined $lines && $file =~ /\.(?:cc|h)$/;
+        $lines = check_vault $function, $file, 1
+            if !defined $lines && $file =~ /\.(?:des)$/;
+        return $lines, $file if defined $lines;
     }
-    else {
-        require File::Next;
-        my $files = File::Next::files("$source_dir/source");
-        while (defined (my $file = $files->())) {
-            my $lines;
-            $lines = check_function $function, $file
-                if !defined $lines && $file =~ /\.(?:cc|h)$/;
-            $lines = check_define $function, $file
-                if !defined $lines && $file =~ /\.(?:cc|h)$/;
-            $lines = check_vault $function, $file
-                if !defined $lines && $file =~ /\.(?:des)$/;
-            $lines = check_function $function, $file, 1
-                if !defined $lines && $file =~ /\.(?:cc|h)$/;
-            $lines = check_define $function, $file, 1
-                if !defined $lines && $file =~ /\.(?:cc|h)$/;
-            $lines = check_vault $function, $file, 1
-                if !defined $lines && $file =~ /\.(?:des)$/;
-            return $lines, $file if defined $lines;
-        }
-        error "Couldn't find $function in the Crawl source tree";
-    }
+    error "Couldn't find $function in the Crawl source tree";
 } # }}}
 sub get_file { # {{{
     my ($filename, $start, $end) = @_;
 
-    my $fh = open_file "$source_dir/source/$filename";
+    my $fh = open_file $filename;
 
     my $lines = '';
     if (defined $start && defined $end) {
@@ -249,10 +236,10 @@ usage unless defined $filename || defined $function;
 
 my $lines;
 if (defined $function) {
-    ($lines, $filename) = get_function $function, $filename;
+    ($lines, $filename) = get_function $function;
 }
 else {
-    $lines = get_file $filename, $start_line, $end_line;
+    $lines = get_file "$source_dir/source/$filename", $start_line, $end_line;
 }
 
 output $lines, $filename;
