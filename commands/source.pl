@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use lib 'commands';
-use Helper qw/help error strip_cmdline $source_dir/;;
+use Helper qw/help error strip_cmdline $source_dir/;
 
 help("Displays lines from the crawl source.");
 
@@ -31,13 +31,15 @@ sub parse_cmdline { # {{{
 } # }}}
 { # closure to handle parsing out comments {{{
 my $in_comment = 0;
+my $filetype = '';
 sub open_file { # {{{
     my ($path) = @_;
     open my $fh, '<', $path or error "Couldn't open $path for reading";
     $in_comment = 0;
+    ($filetype) = $path =~ /.*\.(\w+)/;
     return $fh;
 } # }}}
-sub next_line { # {{{
+sub next_line_c { # {{{
     my ($fh) = @_;
     my $line;
     while ($line = <$fh>) {
@@ -59,6 +61,21 @@ sub next_line { # {{{
         }
         return $line;
     }
+    return;
+} # }}}
+sub next_line_des { # {{{
+    my ($fh) = @_;
+    my $line;
+    while ($line = <$fh>) {
+        next if $line =~ /^#/;
+        $line =~ s/#.*//;
+        return $line;
+    }
+    return;
+} # }}}
+sub next_line { # {{{
+    return next_line_c @_ if $filetype eq 'cc' || $filetype eq 'h';
+    return next_line_des @_ if $filetype eq 'des';
     return;
 } # }}}
 } # }}}
@@ -135,12 +152,34 @@ sub check_define { # {{{
 
     return;
 } # }}}
+sub check_vault { # {{{
+    my ($vault, $filename, $partial) = @_;
+
+    my $lines;
+    my $looking_for = 'name';
+    my $fh = open_file $filename;
+    while ($_ = next_line $fh) {
+        if ($looking_for eq 'name') {
+            next unless $partial ? s/^(NAME:\s*\w*$vault)// : 
+                                   s/^(NAME:\s*$vault\b)//;
+            $lines = $1;
+            $looking_for = 'endmap';
+            redo;
+        }
+        elsif ($looking_for eq 'endmap') {
+            $lines .= $_;
+            return $lines if /^ENDMAP/;
+        }
+    }
+
+    return;
+} # }}}
 sub get_function { # {{{
     my ($function, $filename) = @_;
 
     if ($filename) {
         my $lines = check_function $function, $filename;
-        error "Couldn't find function $function in $filename"
+        error "Couldn't find $function in $filename"
             unless defined $lines;
         return $lines, $filename;
     }
@@ -153,13 +192,17 @@ sub get_function { # {{{
                 if !defined $lines && $file =~ /\.(?:cc|h)$/;
             $lines = check_define $function, $file
                 if !defined $lines && $file =~ /\.(?:cc|h)$/;
+            $lines = check_vault $function, $file
+                if !defined $lines && $file =~ /\.(?:des)$/;
             $lines = check_function $function, $file, 1
                 if !defined $lines && $file =~ /\.(?:cc|h)$/;
             $lines = check_define $function, $file, 1
                 if !defined $lines && $file =~ /\.(?:cc|h)$/;
+            $lines = check_vault $function, $file, 1
+                if !defined $lines && $file =~ /\.(?:des)$/;
             return $lines, $file if defined $lines;
         }
-        error "Couldn't find function $function in the Crawl source tree";
+        error "Couldn't find $function in the Crawl source tree";
     }
 } # }}}
 sub get_file { # {{{
