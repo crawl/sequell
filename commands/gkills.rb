@@ -11,9 +11,9 @@ ghost = extract_nick(args) || ARGV[1]
 
 field = \
   if ghost == '*'
-    "killer=~*'s ghost"
+    "killer=~*'*ghost"
   else
-    "killer=#{ghost}'s ghost"
+    "killer=~#{ghost}'*ghost"
   end
 
 report_grouped_games('name', '', '*', [ '*', field ] + paren_args(args))
