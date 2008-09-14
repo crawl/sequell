@@ -228,7 +228,7 @@ sub code_skill { # {{{
 sub display_skill { # {{{
     my $skill = shift;
     $skill = normalize_skill $skill;
-    return ucfirst_word $skill;
+    return ucfirst_word($skill);
 } # }}}
 # }}}
 # races {{{
@@ -310,7 +310,7 @@ sub display_race { # {{{
     my $race = shift;
     $race = normalize_race $race;
     return 'Ogre-Mage' if $race eq 'ogre-mage';
-    return ucfirst_word $race;
+    return ucfirst_word($race);
 } # }}}
 # }}}
 # roles {{{
@@ -369,7 +369,7 @@ sub code_role { # {{{
 sub display_role { # {{{
     my $role = shift;
     $role = normalize_role $role;
-    return ucfirst_word $role;
+    return ucfirst_word($role);
 } # }}}
 # }}}
 # }}}
