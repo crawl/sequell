@@ -310,6 +310,7 @@ sub display_race { # {{{
     my $race = shift;
     $race = normalize_race $race;
     return 'Ogre-Mage' if $race eq 'ogre-mage';
+    return 'Draconian' if $race eq 'base draconian';
     return ucfirst_word($race);
 } # }}}
 # }}}
