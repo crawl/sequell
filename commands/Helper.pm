@@ -10,12 +10,11 @@ our @EXPORT_OK = qw/$source_dir ntimes once demunge_logline demunge_xlogline
 # useful variables {{{
 #our $source_dir = '/home/doy/coding/src/stone_soup-release/crawl-ref';
 our $source_dir = 'current';
+our $logfile    = '/var/www/crawl/allgames.txt';
 # }}}
 
 # logfile parsing {{{
 {
-my $logfile = '/var/www/crawl/allgames.txt';
-
 my @field_names = qw/v lv name uid race cls xl sk sklev title place br lvl
                      ltyp hp mhp mmhp str int dex start dur turn sc ktyp 
                      killer kaux end tmsg vmsg god piety pen char nrune urune/;
