@@ -281,6 +281,60 @@ sub code_race { # {{{
     return $code_races{$race};
 } # }}}
 # }}}
+# roles {{{
+# role list {{{
+our @roles = (
+    'fighter', 'wizard', 'priest', 'thief', 'gladiator', 'necromancer',
+    'paladin', 'assassin', 'berserker', 'hunter', 'conjurer', 'enchanter',
+    'fire elementalist', 'ice elementalist', 'summoner', 'air elementalist',
+    'earth elementalist', 'crusader', 'death knight', 'venom mage',
+    'chaos knight', 'transmuter', 'healer', 'reaver', 'stalker', 'monk',
+    'warper', 'wanderer',
+);
+# }}}
+# role names used by the code {{{
+my %code_roles = map {
+    my $r = $_;
+    $r =~ tr/ /_/;
+    ($_, "JOB_" . uc $r)
+} @roles;
+# }}}
+# short role names {{{
+my %short_roles = map {
+    my @r = split ' ';
+    ($_, @r == 1 ? ucfirst (substr $_, 0, 2) :
+                   uc (substr $r[0], 0, 1) . uc (substr $r[1], 0, 1))
+} @roles;
+$short_roles{'wizard'} = 'Wz';
+$short_roles{'conjurer'} = 'Cj';
+$short_roles{'transmuter'} = 'Tm';
+$short_roles{'warper'} = 'Wr';
+$short_roles{'wanderer'} = 'Wn';
+# }}}
+# role normalization {{{
+my %normalize_role = (
+    (map { ($_, $_) } @roles),
+    (map { lc } (reverse %code_roles)),
+    (map { lc } (reverse %short_roles)),
+);
+# }}}
+sub normalize_role { # {{{
+    my $role = shift;
+    $role = lc $role;
+    $role =~ s/(?:^\s*|\s*$)//g;
+    return $normalize_role{$role}
+} # }}}
+sub short_role { # {{{
+    my $role = shift;
+    $role = normalize_role $role;
+    return $short_roles{$role};
+} # }}}
+sub code_role { # {{{
+    my $role = shift;
+    $role = normalize_role $role;
+    return $code_roles{$role};
+} # }}}
+# }}}
 # }}}
 
 # helper functions {{{
