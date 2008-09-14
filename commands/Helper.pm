@@ -13,6 +13,7 @@ our $source_dir = 'current';
 # }}}
 
 # logfile parsing {{{
+{
 my $logfile = '/var/www/crawl/allgames.txt';
 
 my @field_names = qw/v lv name uid race cls xl sk sklev title place br lvl
@@ -143,6 +144,7 @@ sub games_for # {{{
 
   return \@games;
 } # }}}
+}
 # }}}
 
 # race/role/skill munging {{{
