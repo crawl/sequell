@@ -1,151 +1,105 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-do 'commands/helper.pl';
+use lib 'commands';
+use Helper qw/:DEFAULT :roles :races/;
 
 help("Chooses randomly between its (space-separated) arguments. Accepts \@char, \@role, and \@race special arguments.");
 
-my @RACE_ABBREV = qw[ Hu El HE GE DE SE HD MD Ha HO Ko Mu Na Gn
-                Og Tr OM Dr Ce DG Sp Mi DS
-                Gh Ke Mf ];
+my %chars;
 
-my @CLASS_ABBREV = qw[ Fi Wz Pr Th Gl Ne Pa As Be Hu Cj En FE IE Su 
-                       AE EE Cr DK VM CK Tm He XX Re St Mo Wr Wn ];
-
-my @COMBOS = (
-[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0],
-[1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0],
-[1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0],
-[1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0],
-[1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0],
-[1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-[1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1],
-[1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1],
-[1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
-[1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1],
-[1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1],
-[1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1],
-[1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1],
-[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0],
-[1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
-[1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
-[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1],
-[1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
-);
-
-my @COMBOS_OBSOLETE = (
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1],
-[1,1,1,1,0,0,0,1,0,1,1,1,1,1,1,1,0,1,0,0,1,1,1,0,1,1,1,1,0],
-[1,1,1,1,0,0,1,1,0,1,1,1,1,1,1,1,0,1,0,0,1,1,1,0,1,1,1,1,0],
-[1,1,1,1,0,0,0,1,0,1,1,1,0,0,1,1,0,1,0,0,0,1,1,0,0,1,1,1,0],
-[1,1,1,1,0,1,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0],
-[1,1,1,1,0,1,0,1,0,1,0,0,1,1,1,1,1,0,1,1,1,1,1,0,0,1,1,1,0],
-[1,0,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0],
-[1,1,1,1,1,0,1,0,0,1,1,1,1,0,0,0,1,0,0,0,0,1,1,0,0,0,1,0,0],
-[1,0,0,1,0,0,0,1,0,1,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0],
-[1,0,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,0,0],
-[1,0,0,1,0,1,0,1,0,0,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1,1,0,1,0],
-[1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
-[1,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,0,0,1,1,1,1,0,0,1,1,0,1,0],
-[1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0],
-[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,1,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,0,1,0,1,0,0,0,0,0,1,0],
-[1,1,0,1,1,0,0,0,0,1,1,0,0,0,1,0,0,0,1,1,1,1,0,0,1,0,1,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[1,1,0,0,1,0,0,0,1,1,0,1,1,1,0,1,1,1,1,0,1,1,1,0,1,0,0,0,0],
-[1,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,1,1,1,1],
-[0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,1,0],
-[1,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0],
-[1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,1,1,0,1,0,1,1,0,1,0,1,1,0,0,1,1,0,0,0,0,1,1,1,0,0],
-[1,1,1,1,1,0,0,1,0,1,0,1,0,1,1,0,0,0,0,1,0,1,1,0,0,1,1,0,0] );
-
-
-my @choices = split ' ', $ARGV[2];
-shift @choices; # !rng
-
-check_special($choices[0]) if @choices == 1;
-
-print "The RNG chooses: " . $choices[rand @choices] . ".";
-
-sub check_special {
-  my $choice = shift;
-  random_role() if $choice eq '@role';
-  random_race() if $choice eq '@race';
-  random_char() if $choice eq '@char';
-  random_char_role($1) if $choice =~ /^\@role=(\w\w)$/;
-  random_char_race($1) if $choice =~ /^\@race=(\w\w)$/;
-}
-
-sub saydie($) {
-  print "$_[0]\n";
-  exit 0;
-}
-
-sub choose {
-  saydie "The RNG chooses: $_[0].";
-}
-
-sub random_race {
-  my %nodup = map(($_ => 1), grep($_ ne 'XX', @RACE_ABBREV));
-  my @races = keys %nodup;
-  choose($races[rand @races]);
-}
-
-sub random_char_role {
-  my $role = lc(shift);
-  my ($role_index) = grep(lc($CLASS_ABBREV[$_]) eq $role, 0 .. $#CLASS_ABBREV);
-  saydie "Unknown role: $role." unless defined $role_index;
-  my (@choices) = map { "$RACE_ABBREV[$_]$CLASS_ABBREV[$role_index]" } grep($COMBOS[$_][$role_index], 0 .. $#RACE_ABBREV);
-  saydie "No characters for $CLASS_ABBREV[$role_index]." unless @choices;
-  choose($choices[rand @choices]);
-}
-
-sub random_char_race {
-  my $race = lc(shift);
-  my ($race_index) = grep(lc($RACE_ABBREV[$_]) eq $race, 0 .. $#RACE_ABBREV);
-  saydie "Unknown species: $race." unless defined $race_index;
-  my @choices = map { "$RACE_ABBREV[$race_index]$CLASS_ABBREV[$_]" } grep($COMBOS[$race_index][$_], 0 .. $#CLASS_ABBREV);
-  saydie "No characters for $RACE_ABBREV[$race_index]." unless @choices;
-  choose($choices[rand @choices]);
-}
-
-sub random_role {
-  my @classes = grep($_ ne 'XX', @CLASS_ABBREV);
-  choose( $classes[rand @classes] );
-}
-
-sub random_char {
-  die "Array mismatch\n" unless @COMBOS == @RACE_ABBREV and
-                                @{$COMBOS[0]} == @CLASS_ABBREV;
-  my @avail;
-  for my $r (0 .. $#COMBOS) {
-    for my $c (0 .. $#CLASS_ABBREV) {
-      if ($COMBOS[$r][$c]) {
-        push @avail, $RACE_ABBREV[$r] . $CLASS_ABBREV[$c];
-      }
+# helper functions
+sub build_char_options { # {{{
+    open my $fh, "$source_dir/source/newgame.cc"
+        or error "Couldn't open newgame.cc for reading";
+    my $role;
+    my @found_races;
+    while (<$fh>) {
+        if (/_class_allowed\(/ .. /^}/) {
+            if (/case (JOB_\w+)/) {
+                $role = normalize_role $1;
+            }
+            elsif (/case (SP_\w+)/) {
+                my $race = normalize_race $1;
+                $race = 'draconian' if $race eq 'red draconian';
+                push @found_races, $race;
+            }
+            elsif (/return CC_(\w+)/) {
+                my $type = lc $1;
+                if (@found_races) {
+                    for my $race (@found_races) {
+                        $chars{$role}{$race} = $type;
+                    }
+                    @found_races = ();
+                }
+                else {
+                    my @simple_races = (grep(!/draconian/, @races),
+                                        'draconian');
+                    for my $race (@simple_races) {
+                        $chars{$role}{$race} = $type
+                            unless exists $chars{$role}{$race};
+                    }
+                }
+            }
+        }
     }
-  }
-  choose($avail[ rand @avail ]);
+} # }}}
+sub format_output { # {{{
+    "The RNG chooses: " . shift() . ".\n"
+} # }}}
+sub random_race { # {{{
+    my @race_list = (grep(!/draconian/, @races), 'draconian');
+    @race_list = map { display_race $_ } @race_list;
+    return random_choice(@race_list);
+} # }}}
+sub random_role { # {{{
+    my @role_list = map { display_role $_ } @roles;
+    return random_choice(@role_list);
+} # }}}
+sub random_char { # {{{
+    my %args = @_;
+    my ($race, $role);
+    {
+        ($race, $role) = ($args{race}, $args{role});
+        $race = lc random_race unless defined $race;
+        $role = lc random_role unless defined $role;
+        redo if $chars{$role}{$race} eq 'banned';
+        if (exists $args{good}) {
+            if ($args{good}) {
+                redo if $chars{$role}{$race} eq 'restricted';
+            }
+            else {
+                redo if $chars{$role}{$race} eq 'unrestricted';
+            }
+        }
+    }
+    return short_race($race) . short_role($role);
+} # }}}
+sub special_choice { # {{{
+    my $special = shift;
+    build_char_options;
+    return random_race if $special eq '@race';
+    return random_role if $special eq '@role';
+    return $special
+        unless $special =~ /\@(good|bad)?(char|race|role)(?:=(.*))?/;
+    return $special if defined $3 && $2 eq 'char';
+    my %args = ();
+    $args{good} = 1 if defined $1 && $1 eq 'good';
+    $args{good} = 0 if defined $1 && $1 eq 'bad';
+    $args{role} = normalize_role $3 if $2 eq 'role';
+    $args{race} = normalize_race $3 if $2 eq 'race';
+    return $special if exists $args{role} && !defined $args{role};
+    return $special if exists $args{race} && !defined $args{race};
+    return random_char %args;
+} # }}}
+sub random_choice { # {{{
+    $_[int rand @_]
+} # }}}
+
+my @words = split ' ', strip_cmdline $ARGV[2], case_sensitive => 1;
+if (@words == 1) {
+    print format_output special_choice @words;
+}
+else {
+    print format_output random_choice @words;
 }
