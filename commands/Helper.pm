@@ -212,6 +212,11 @@ sub code_skill { # {{{
     $skill = normalize_skill $skill;
     return $code_skills{$skill};
 } # }}}
+sub display_skill { # {{{
+    my $skill = shift;
+    $skill = normalize_skill $skill;
+    return ucfirst_word $skill;
+} # }}}
 # }}}
 # races {{{
 # draconians {{{
@@ -280,6 +285,12 @@ sub code_race { # {{{
     $race = normalize_race $race;
     return $code_races{$race};
 } # }}}
+sub display_race { # {{{
+    my $race = shift;
+    $race = normalize_race $race;
+    return 'Ogre-Mage' if $race eq 'ogre-mage';
+    return ucfirst_word $race;
+} # }}}
 # }}}
 # roles {{{
 # role list {{{
@@ -333,6 +344,11 @@ sub code_role { # {{{
     my $role = shift;
     $role = normalize_role $role;
     return $code_roles{$role};
+} # }}}
+sub display_role { # {{{
+    my $role = shift;
+    $role = normalize_role $role;
+    return ucfirst_word $role;
 } # }}}
 # }}}
 # }}}
@@ -411,5 +427,8 @@ sub strip_cmdline # {{{
     $cmdline = lc $cmdline unless $args{case_sensitive};
     $cmdline = join(' ', split(' ', $cmdline));
     return $cmdline;
+} # }}}
+sub ucfirst_word { # {{{
+    join ' ', map { ucfirst } split / /, shift;
 } # }}}
 # }}}
