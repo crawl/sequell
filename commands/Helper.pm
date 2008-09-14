@@ -145,6 +145,144 @@ sub games_for # {{{
 } # }}}
 # }}}
 
+# race/role/skill munging {{{
+# skills {{{
+# skill list {{{
+our @skills = (
+    'fighting', 'short blades', 'long blades', 'axes', 'maces & flails',
+    'polearms', 'staves', 'slings', 'bows', 'crossbows', 'darts', 'throwing',
+    'armour', 'dodging', 'stealth', 'stabbing', 'shields', 'traps & doors',
+    'unarmed combat', 'spellcasting', 'conjurations', 'enchantments',
+    'summonings', 'necromancy', 'translocations', 'transmigration',
+    'divinations', 'fire magic', 'ice magic', 'air magic', 'earth magic',
+    'poison magic', 'invocations', 'evocations', 'experience',
+); # }}}
+# skill names used by the code {{{
+my %code_skills = map {
+    my $s = $_;
+    $s =~ s/[ &]+/_/g;
+    ($_, "SK_" . uc $s)
+} @skills;
+# }}}
+# short skills {{{
+my %short_skills = map { ($_, ucfirst((split(' ', $_))[0])) } @skills;
+$short_skills{'crossbows'}      = 'Xbows';
+$short_skills{'throwing'}       = 'Throw';
+$short_skills{'dodging'}        = 'Dodge';
+$short_skills{'stabbing'}       = 'Stab';
+$short_skills{'spellcasting'}   = 'Splcast';
+$short_skills{'conjurations'}   = 'Conj';
+$short_skills{'enchantments'}   = 'Ench';
+$short_skills{'summonings'}     = 'Summ';
+$short_skills{'necromancy'}     = 'Nec';
+$short_skills{'translocations'} = 'Tloc';
+$short_skills{'transmigration'} = 'Tmig';
+$short_skills{'divinations'}    = 'Div';
+$short_skills{'invocations'}    = 'Inv';
+$short_skills{'evocations'}     = 'Evo';
+$short_skills{'experience'}     = 'Exp';
+# }}}
+# skill normalization {{{
+my %normalize_skill = (
+    (map { ($_, $_) } @skills),
+    (map { lc } (reverse %code_skills)),
+    (map { lc } (reverse %short_skills)),
+    pois     => 'poison magic',
+    flails   => 'maces & flails',
+    invo     => 'invocations',
+    necro    => 'necromancy',
+    transmig => 'transmigrations',
+    doors    => 'traps & doors',
+    armor    => 'armour',
+    uc       => 'unarmed combat',
+); # }}}
+sub normalize_skill { # {{{
+    my $skill = shift;
+    $skill = lc $skill;
+    $skill =~ s/(?:^\s*|\s*$)//g;
+    return $normalize_skill{$skill}
+} # }}}
+sub short_skill { # {{{
+    my $skill = shift;
+    $skill = normalize_skill $skill;
+    return $short_skills{$skill};
+} # }}}
+sub code_skill { # {{{
+    my $skill = shift;
+    $skill = normalize_skill $skill;
+    return $code_skills{$skill};
+} # }}}
+# }}}
+# races {{{
+# draconians {{{
+my @drac_colors = qw/red white green yellow grey black purple mottled pale/;
+# }}}
+# race list {{{
+our @races = (
+    'human', 'high elf', 'grey elf', 'deep elf', 'sludge elf',
+    'mountain dwarf', 'halfling', 'hill orc', 'kobold', 'mummy', 'naga',
+    'gnome', 'ogre', 'troll', 'ogre-mage',
+    (map { "$_ draconian" } @drac_colors),
+    'base draconian', 'centaur', 'demigod', 'spriggan', 'minotaur',
+    'demonspawn', 'ghoul', 'kenku', 'merfolk', 'vampire',
+);
+# }}}
+# genuses {{{
+my %genus_map = (
+    GENPC_DRACONIAN => [map { "$_ draconian" } (@drac_colors, "base")   ],
+    GENPC_ELVEN     => [map { "$_ elf"       } qw/high grey deep sludge/],
+    GENPC_DWARVEN   => ['mountain dwarf'],
+    GENPC_OGRE      => [qw/ogre ogre-mage/],
+);
+# }}}
+# race names used by the code {{{
+my %code_races = map {
+    my $r = $_;
+    $r =~ tr/ -/__/;
+    ($_, "SP_" . uc $r)
+} @races;
+# }}}
+# short race names {{{
+my %short_races = map {
+    my @r = split /[ -]/;
+    ($_, @r == 1 ? ucfirst (substr $_, 0, 2) :
+                   uc (substr $r[0], 0, 1) . uc (substr $r[1], 0, 1))
+} @races;
+$short_races{'demigod'}        = 'DG';
+$short_races{'demonspawn'}     = 'DS';
+$short_races{'merfolk'}        = 'Mf';
+$short_races{'vampire'}        = 'Vp';
+$short_races{'base draconian'} = 'Dr';
+$short_races{"$_ draconian"}   = "Dr[$_]" for @drac_colors;
+# }}}
+# race normalization {{{
+my %normalize_race = (
+    (map { ($_, $_) } @races),
+    (map { lc } (reverse %code_races)),
+    (map { lc } (reverse %short_races)),
+    'ogre mage' => 'ogre-mage',
+    'draconian' => 'base draconian',
+);
+# }}}
+sub normalize_race { # {{{
+    my $race = shift;
+    $race = lc $race;
+    $race =~ s/(?:^\s*|\s*$)//g;
+    return $normalize_race{$race}
+} # }}}
+sub short_race { # {{{
+    my $race = shift;
+    $race = normalize_race $race;
+    return $short_races{$race};
+} # }}}
+sub code_race { # {{{
+    my $race = shift;
+    $race = normalize_race $race;
+    return $code_races{$race};
+} # }}}
+# }}}
+# }}}
+
 # helper functions {{{
 sub ntimes # {{{
 {
