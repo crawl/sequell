@@ -387,7 +387,7 @@ our @gods = (
 my %code_gods = map {
     my $g = $_;
     $g =~ tr/ /_/;
-    ($_, "GOD_" . uc $r)
+    ($_, "GOD_" . uc $g)
 } @roles;
 $code_gods{'the shining one'} = 'GOD_SHINING_ONE';
 # }}}
