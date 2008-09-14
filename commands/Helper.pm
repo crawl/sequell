@@ -3,9 +3,21 @@ use warnings;
 use strict;
 package Helper;
 use base 'Exporter';
-our @EXPORT_OK = qw/$source_dir ntimes once demunge_logline demunge_xlogline
-                    munge_game games_for serialize_time error help
-                    strip_cmdline/;
+our @EXPORT = qw/$source_dir error help strip_cmdline/;
+our @EXPORT_OK = qw/$logfile demunge_logline demunge_xlogline munge_game
+                    games_for
+                    @skills normalize_skill short_skill code_skill
+                    display_skill
+                    @races genus_to_races is_valid_drac_color normalize_race
+                    short_race code_race display_race
+                    @roles normalize_role short_role code_role display_role
+                    ntimes once serialize_time ucfirst_word/;
+our %EXPORT_TAGS = (
+    logfile => [qw/demunge_logline demunge_xlogline munge_game games_for/],
+    skills  => [grep /skill/, @EXPORT_OK],
+    races   => ['is_valid_drac_color', grep /race/,  @EXPORT_OK],
+    roles   => [grep /role/,  @EXPORT_OK],
+);
 
 # useful variables {{{
 #our $source_dir = '/home/doy/coding/src/stone_soup-release/crawl-ref';
