@@ -222,6 +222,10 @@ sub display_skill { # {{{
 # draconians {{{
 my @drac_colors = qw/red white green yellow grey black purple mottled pale/;
 # }}}
+sub is_valid_drac_color { # {{{
+    my $color = shift;
+    return (grep { $_ eq $color } @drac_colors) > 0;
+} # }}}
 # race list {{{
 our @races = (
     'human', 'high elf', 'grey elf', 'deep elf', 'sludge elf',
@@ -269,6 +273,10 @@ my %normalize_race = (
     'draconian' => 'base draconian',
 );
 # }}}
+sub genus_to_races { # {{{
+    my $genus = shift;
+    return @{ $genus_map{$genus} };
+} # }}}
 sub normalize_race { # {{{
     my $race = shift;
     $race = lc $race;
