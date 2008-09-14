@@ -11,12 +11,14 @@ our @EXPORT_OK = qw/$logfile demunge_logline demunge_xlogline munge_game
                     @races genus_to_races is_valid_drac_color normalize_race
                     short_race code_race display_race
                     @roles normalize_role short_role code_role display_role
+                    @gods normalize_god short_god code_god display_god
                     ntimes once serialize_time ucfirst_word/;
 our %EXPORT_TAGS = (
     logfile => [qw/demunge_logline demunge_xlogline munge_game games_for/],
     skills  => [grep /skill/, @EXPORT_OK],
     races   => ['is_valid_drac_color', grep /race/,  @EXPORT_OK],
     roles   => [grep /role/,  @EXPORT_OK],
+    gods    => [grep /god/,   @EXPORT_OK],
 );
 
 # useful variables {{{
@@ -371,6 +373,62 @@ sub display_role { # {{{
     my $role = shift;
     $role = normalize_role $role;
     return ucfirst_word($role);
+} # }}}
+# }}}
+# gods {{{
+# god list {{{
+our @gods = (
+    'no god', 'zin', 'the shining one', 'kikubaaqudgha', 'yredelemnul', 'xom',
+    'vehumet', 'okawaru', 'makhleb', 'sif muna', 'trog', 'nemelex xobeh',
+    'elyvilon', 'lugonu', 'beogh',
+);
+# }}}
+# god names used by the code {{{
+my %code_gods = map {
+    my $g = $_;
+    $g =~ tr/ /_/;
+    ($_, "GOD_" . uc $r)
+} @roles;
+$code_gods{'the shining one'} = 'GOD_SHINING_ONE';
+# }}}
+# short god names {{{
+my %short_gods = map {
+    my @g = split ' ';
+    ($_, ucfirst (substr $g[0], 0, 4))
+} @gods;
+$short_gods{'no god'} = 'None';
+$short_gods{'the shining one'} = 'TSO';
+$short_gods{'okawaru'} = 'Oka';
+$short_gods{'elyvilon'} = 'Ely';
+# }}}
+# god normalization {{{
+my %normalize_god = (
+    (map { ($_, $_) } @gods),
+    (map { lc } (reverse %code_gods)),
+    (map { lc } (reverse %short_gods)),
+    nemelex => 'nemelex xobeh',
+);
+# }}}
+sub normalize_god { # {{{
+    my $god = shift;
+    $god = lc $god;
+    $god =~ s/(?:^\s*|\s*$)//g;
+    return $normalize_god{$god}
+} # }}}
+sub short_god { # {{{
+    my $god = shift;
+    $god = normalize_god $god;
+    return $short_gods{$god};
+} # }}}
+sub code_god { # {{{
+    my $god = shift;
+    $god = normalize_god $god;
+    return $code_gods{$god};
+} # }}}
+sub display_god { # {{{
+    my $god = shift;
+    $god = normalize_god $god;
+    return ucfirst_word($god);
 } # }}}
 # }}}
 # }}}
