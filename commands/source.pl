@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use lib 'commands';
-use Helper qw/help error strip_cmdline $source_dir/;
+use Helper;
 
 help("Displays lines from the crawl source.");
 
