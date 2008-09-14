@@ -363,6 +363,25 @@ sub display_role { # {{{
 # }}}
 
 # helper functions {{{
+sub error # {{{
+{
+  print @_, "\n";
+  exit;
+} # }}}
+sub help # {{{
+{
+  error @_ if $ARGV[3];
+} # }}}
+sub strip_cmdline # {{{
+{
+    my $cmdline = shift;
+    my %args = @_;
+    $cmdline =~ s/^!\w+\s+//;
+    chomp $cmdline;
+    $cmdline = lc $cmdline unless $args{case_sensitive};
+    $cmdline = join(' ', split(' ', $cmdline));
+    return $cmdline;
+} # }}}
 sub ntimes # {{{
 {
   my $times = shift;
@@ -417,25 +436,6 @@ sub serialize_time # {{{
 
   return join ' ', @fields if @fields;
   return '0s';
-} # }}}
-sub error # {{{
-{
-  print @_, "\n";
-  exit;
-} # }}}
-sub help # {{{
-{
-  error @_ if $ARGV[3];
-} # }}}
-sub strip_cmdline # {{{
-{
-    my $cmdline = shift;
-    my %args = @_;
-    $cmdline =~ s/^!\w+\s+//;
-    chomp $cmdline;
-    $cmdline = lc $cmdline unless $args{case_sensitive};
-    $cmdline = join(' ', split(' ', $cmdline));
-    return $cmdline;
 } # }}}
 sub ucfirst_word { # {{{
     join ' ', map { ucfirst } split / /, shift;
