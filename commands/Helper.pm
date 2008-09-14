@@ -453,3 +453,5 @@ sub ucfirst_word { # {{{
     join ' ', map { ucfirst } split / /, shift;
 } # }}}
 # }}}
+
+1;
