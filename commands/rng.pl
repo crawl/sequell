@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use lib 'commands';
-use Helper qw/:DEFAULT :roles :races/;
+use Helper qw/:DEFAULT :roles :races :gods/;
 
 help("Chooses randomly between its (space-separated) arguments. Accepts \@char, \@role, and \@race special arguments.");
 
@@ -56,6 +56,9 @@ sub random_role { # {{{
     my @role_list = map { display_role $_ } @roles;
     return random_choice(@role_list);
 } # }}}
+sub random_god { # {{{
+    return display_god random_choice(@gods);
+} # }}}
 sub random_char { # {{{
     my %args = @_;
     my ($race, $role);
@@ -80,6 +83,7 @@ sub special_choice { # {{{
     build_char_options;
     return random_race if $special eq '@race';
     return random_role if $special eq '@role';
+    return random_god  if $special eq '@god';
     return $special
         unless $special =~ /\@(good|bad)?(char|race|role)(?:=(.*))?/;
     return $special if defined $3 && $2 eq 'char';
