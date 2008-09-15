@@ -110,7 +110,7 @@ sub print_single_apt { # {{{
 sub print_race_apt { # {{{
     my ($race, $sort) = @_;
     my @list = @skills;
-    @list = sort @list if defined $sort && $sort eq 'alpha';
+    @list = sort @list if !defined $sort || $sort eq 'alpha';
     my @out;
     for (@list) {
         push @out, (short_skill $_) . '=' . (apt $race, $_);
@@ -120,7 +120,7 @@ sub print_race_apt { # {{{
 sub print_skill_apt { # {{{
     my ($skill, $sort) = @_;
     my @list = @races;
-    @list = sort @list if defined $sort && $sort eq 'alpha';
+    @list = sort @list if !defined $sort || $sort eq 'alpha';
     my @out;
     for (@list) {
         push @out, (short_race $_) . '=' . (apt $_, $skill);
@@ -136,7 +136,7 @@ my @words = split ' ', strip_cmdline $ARGV[2];
 my @rest;
 
 # loop over the words, checking for things we understand
-my %opts = (sort => 'alpha');
+my %opts;
 while (@words) {
     my ($test, $option);
 
