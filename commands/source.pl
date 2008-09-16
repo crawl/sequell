@@ -171,28 +171,35 @@ sub check_vault { # {{{
     return;
 } # }}}
 sub get_function { # {{{
-    my ($function) = @_;
+    my ($function, $search_for) = @_;
     my $partial = !($function =~ s/^=//);
 
-    my $files = File::Next::files({ descend_filter => sub { 0 },
-                                    file_filter    => sub { /\.(?:cc|h)$/ },
-                                  }, "$source_dir/source");
-    while (defined (my $file = $files->())) {
-        my $lines;
-        $lines = check_function $function, $file, $partial
-            if !defined $lines && $file =~ /\.(?:cc|h)$/;
-        $lines = check_define $function, $file, $partial
-            if !defined $lines && $file =~ /\.(?:cc|h)$/;
-        return $lines, $file if defined $lines;
+    if ($search_for eq 'source' || $search_for eq 'function') {
+        my $files = File::Next::files({ descend_filter => sub { 0 },
+                                        file_filter    => sub { /\.(?:cc|h)$/ },
+                                      }, "$source_dir/source");
+        while (defined (my $file = $files->())) {
+            my $lines = check_function $function, $file, $partial;
+            return $lines, $file if defined $lines;
+        }
     }
-    $files = File::Next::files({ descend_filter => sub { 0 },
-                                 file_filter    => sub { /\.des$/ },
-                               }, "$source_dir/source/dat");
-    while (defined (my $file = $files->())) {
-        my $lines;
-        $lines = check_vault $function, $file, $partial
-            if !defined $lines && $file =~ /\.(?:des)$/;
-        return $lines, $file if defined $lines;
+    if ($search_for eq 'source' || $search_for eq 'cdefine') {
+        my $files = File::Next::files({ descend_filter => sub { 0 },
+                                        file_filter    => sub { /\.(?:cc|h)$/ },
+                                      }, "$source_dir/source");
+        while (defined (my $file = $files->())) {
+            my $lines = check_define $function, $file, $partial;
+            return $lines, $file if defined $lines;
+        }
+    }
+    if ($search_for eq 'source' || $search_for eq 'vault') {
+        my $files = File::Next::files({ descend_filter => sub { 0 },
+                                        file_filter    => sub { /\.des$/ },
+                                      }, "$source_dir/source/dat");
+        while (defined (my $file = $files->())) {
+            my $lines = check_vault $function, $file, $partial;
+            return $lines, $file if defined $lines;
+        }
     }
     error "Couldn't find $function in the Crawl source tree";
 } # }}}
@@ -240,7 +247,9 @@ usage unless defined $filename || defined $function;
 
 my $lines;
 if (defined $function) {
-    ($lines, $filename) = get_function $function;
+    my ($which) = split ' ', $ARGV[2];
+    $which =~ s/^!//;
+    ($lines, $filename) = get_function $function, $which;
 }
 else {
     $lines = get_file "$source_dir/source/$filename", $start_line, $end_line;
