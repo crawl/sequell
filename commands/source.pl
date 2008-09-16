@@ -5,11 +5,11 @@ use lib 'commands';
 use File::Next;
 use Helper;
 
-help("Displays lines from the crawl source.");
+help("Displays lines from the crawl source. The single argument should be either a filename (relative to the source directory) with an optional line range, or a string to search for as part of a function/#define/vault name. Prepend = to the string to force the search to match exactly.");
 
 # helper functions
 sub usage { # {{{
-    error "Syntax is '<file>[:<start_line>[-<end_line>]]' or '[file:]<function_name>'";
+    error "Syntax is '<file>[:<start_line>[-<end_line>]]', or the name of a function/#define/vault";
 } # }}}
 sub parse_cmdline { # {{{
     my $cmd = shift;
