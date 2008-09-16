@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use lib 'commands';
+use File::Next;
 use Helper;
 
 help("Displays lines from the crawl source.");
@@ -172,8 +173,14 @@ sub check_vault { # {{{
 sub get_function { # {{{
     my ($function) = @_;
 
-    require File::Next;
-    my $files = File::Next::files("$source_dir/source");
+    my $files = File::Next::files({ descend_filter => sub {
+                                        $File::Next::dir !~ /util|rltiles/ &&
+                                        $_ ne '.svn'
+                                    },
+                                    file_filter => sub {
+                                        /\.(cc|h|des)$/
+                                    },
+                                  }, "$source_dir/source");
     while (defined (my $file = $files->())) {
         my $lines;
         $lines = check_function $function, $file
