@@ -2,6 +2,7 @@
 @players cdoplayers.pl
 !aplayers players.pl
 !apt apt.pl
+!cdefine source.pl
 !chars chars.rb
 !cmdinfo cmdinfo.py
 !deathsby deathsby.py
@@ -9,6 +10,7 @@
 !dump dump.pl
 !eplayers players.pl
 !ftw ftw.pl
+!function source.pl
 !gamesby gamesby.rb
 !gkills gkills.rb
 !help help.pl
@@ -32,6 +34,7 @@
 !tell message/tell.pl
 !ttyrec ttr.rb
 !ttr ttr.rb
+!vault source.pl
 !whereis whereis.py
 !won won.rb
 !wtf wtf.py
