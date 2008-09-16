@@ -172,28 +172,25 @@ sub check_vault { # {{{
 } # }}}
 sub get_function { # {{{
     my ($function) = @_;
+    my $partial = !($function =~ s/^=//);
 
-    my $files = File::Next::files({ descend_filter => sub {
-                                        $File::Next::dir !~ /util|rltiles/ &&
-                                        $_ ne '.svn'
-                                    },
-                                    file_filter => sub {
-                                        /\.(cc|h|des)$/
-                                    },
+    my $files = File::Next::files({ descend_filter => sub { 0 },
+                                    file_filter    => sub { /\.(?:cc|h)$/ },
                                   }, "$source_dir/source");
     while (defined (my $file = $files->())) {
         my $lines;
-        $lines = check_function $function, $file
+        $lines = check_function $function, $file, $partial
             if !defined $lines && $file =~ /\.(?:cc|h)$/;
-        $lines = check_define $function, $file
+        $lines = check_define $function, $file, $partial
             if !defined $lines && $file =~ /\.(?:cc|h)$/;
-        $lines = check_vault $function, $file
-            if !defined $lines && $file =~ /\.(?:des)$/;
-        $lines = check_function $function, $file, 1
-            if !defined $lines && $file =~ /\.(?:cc|h)$/;
-        $lines = check_define $function, $file, 1
-            if !defined $lines && $file =~ /\.(?:cc|h)$/;
-        $lines = check_vault $function, $file, 1
+        return $lines, $file if defined $lines;
+    }
+    $files = File::Next::files({ descend_filter => sub { 0 },
+                                 file_filter    => sub { /\.des$/ },
+                               }, "$source_dir/source/dat");
+    while (defined (my $file = $files->())) {
+        my $lines;
+        $lines = check_vault $function, $file, $partial
             if !defined $lines && $file =~ /\.(?:des)$/;
         return $lines, $file if defined $lines;
     }
