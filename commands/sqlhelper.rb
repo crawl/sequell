@@ -85,6 +85,7 @@ OPEN_PAREN = '(('
 CLOSE_PAREN = '))'
 
 BOOLEAN_OR = '||'
+BOOLEAN_OR_Q = Regexp.quote(BOOLEAN_OR)
 
 COLUMN_ALIASES = {
   'role' => 'cls', 'class' => 'cls', 'species' => 'race',
@@ -528,7 +529,7 @@ def _op_separate(args)
     elsif arg =~ %r/^(\S+)#{Regexp.quote(CLOSE_PAREN)}$/ then
       cargs << $1
       cargs << CLOSE_PAREN
-    elsif arg =~ %r/^(\S*)\|(\S*)$/ then
+    elsif arg =~ %r/^(\S*)#{BOOLEAN_OR_Q}(\S*)$/ then
       cargs << $1 unless $1.empty?
       cargs << BOOLEAN_OR
       cargs << $2 unless $2.empty?
