@@ -283,7 +283,7 @@ def sql_dbh
 end
 
 def index_sanity(index)
-  raise "Index too large: #{index}" if index > ROWFETCH_MAX
+  #raise "Index too large: #{index}" if index > ROWFETCH_MAX
 end
 
 def sql_exec_query(num, q, lastcount = nil)
@@ -314,8 +314,7 @@ def sql_exec_query(num, q, lastcount = nil)
 
   n = num
   sql_each_row_matching(q, n + 1) do |row|
-    return [ lastcount ? n + 1 : count - n, row ] if num == 0
-    num -= 1
+    return [ lastcount ? n + 1 : count - n, row ]
   end
   nil
 end
@@ -327,7 +326,11 @@ end
 def sql_each_row_matching(q, limit=0)
   query = q.select_all
   if limit > 0
-    query += " LIMIT #{limit}"
+    if limit > 1
+      query += " LIMIT #{limit - 1}, 1"
+    else
+      query += " LIMIT #{limit}"
+    end
   end
   sql_dbh.execute(query, *q.values) do |row|
     yield row
