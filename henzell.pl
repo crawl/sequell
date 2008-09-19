@@ -31,7 +31,8 @@ my @logfiles       = ('/var/www/crawl/allgames.txt',
 my $command_dir    = 'commands/';
 my $commands_file  = $command_dir . 'commands.txt';
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
-my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft greensnark cbus/;
+my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
+                                      greensnark cbus doy/;
 
 my %commands;
 
