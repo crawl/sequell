@@ -313,7 +313,7 @@ def find_game_morgue(e)
 end
 
 def short_game_summary(g)
-  "XL#{g['xl']} #{g['char']}, T:#{g['turn']}"
+  "#{g['name']}, XL#{g['xl']} #{g['char']}, T:#{g['turn']}"
 end
 
 def datestr(d)
