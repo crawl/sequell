@@ -73,6 +73,7 @@ class TVServ < GServer
   end
 
   def serve(sock)
+    queue = nil
     begin
       queue = bootstrap_client()
       while true
@@ -87,6 +88,12 @@ class TVServ < GServer
       end
     rescue
       puts "Ack: #$!"
+    ensure
+      if queue
+        @mutex.synchronize do
+          @clients.delete_if { |q| q.object_id == queue.object_id }
+        end
+      end
     end
   end
 end
