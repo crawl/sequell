@@ -138,8 +138,12 @@ sub launch {
   cleanup_db();
 }
 
+sub new_db_handle {
+  DBI->connect("dbi:mysql:henzell", 'henzell', '')
+}
+
 sub open_db {
-  my $dbh = DBI->connect("dbi:mysql:henzell", 'henzell', '');
+  my $dbh = new_db_handle();
   check_indexes($dbh);
   return $dbh;
 }
@@ -466,7 +470,10 @@ sub games_differ {
 sub update_log_rows {
   print "Updating all rows in db to match new fixup\n";
   my $selfields = join(", ", map($LOG2SQL{$_}, @SELECTFIELDS));
-  my $sth = $dbh->prepare("SELECT $selfields FROM logrecord")
+
+  my $ndb = new_db_handle();
+  die "Unable to connect to db\n" unless $ndb;
+  my $sth = $ndb->prepare("SELECT $selfields FROM logrecord")
     or die "Can't fetch rows\n";
   $sth->execute();
   while (my $row = $sth->fetchrow_arrayref) {
@@ -478,6 +485,7 @@ sub update_log_rows {
       update_game($fixed);
     }
   }
+  $ndb->disconnect();
 }
 
 1;
