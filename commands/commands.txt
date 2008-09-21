@@ -34,6 +34,7 @@
 !tell message/tell.pl
 !ttyrec ttr.rb
 !ttr ttr.rb
+!tv tvreq.rb
 !vault source.pl
 !whereis whereis.py
 !won won.rb
