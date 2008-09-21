@@ -166,7 +166,8 @@ def request_game(g)
 end
 
 def main
-  n, game, selectors = sql_find_game(ARGV[1], ARGV[2].split()[1 .. -1])
+  n, game, selectors =
+    sql_find_game(ARGV[1], ARGV[2].split()[1 .. -1] + [ "splat=y" ])
   raise "No games for #{selectors}." unless game
 
   summary = short_game_summary(game)
