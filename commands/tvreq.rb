@@ -161,6 +161,8 @@ def request_game(g)
         'name' => g['name'],
         'start' => g['start'],
         'end' => g['end'],
+        # Who requested the game.
+        'req' => g['req'],
 
         # These aren't required, but are useful to see.
         'char' => g['char'],
@@ -181,6 +183,7 @@ def main
   raise "#{n}. #{summary} is not a splat." unless game['splat'] == 'y'
   puts "#{n}. #{summary} requested for C-SPLAT."
 
+  game['req'] = ARGV[1]
   request_game(game)
 
 rescue
