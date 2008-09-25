@@ -63,6 +63,8 @@ my $INDEX_DISCARD_THRESHOLD = 300 * 9000;
 
 my $need_indexes = 1;
 
+my $standalone = not caller();
+
 my $dbh;
 my $insert_st;
 my $update_st;
@@ -106,7 +108,7 @@ sub load_splat {
   my $splat_time = last_splat_time();
   my $now_splat_time = current_splat_time();
   # Disabled for the nonce
-  if (0 && (!$splat_time || $splat_time < $now_splat_time)) {
+  if ($standalone && (!$splat_time || $splat_time < $now_splat_time)) {
     load_splat_defs();
     update_log_rows();
 
