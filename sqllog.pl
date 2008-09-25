@@ -388,6 +388,8 @@ sub fixup_logfields {
     s/\{.*?\}//g;
     s/\(.*?\)//g;
     s/[+-]\d+,?\s*//g;
+    s/^an? //g;
+    s/(?:elven|orcish|dwarven) //g;
     s/^Hit by (.*) thrown .*$/$1/;
     s/^Shot with (.*) by .*$/$1/;
     s/\b(?:un)?cursed //;
