@@ -47,6 +47,8 @@ CREATE TABLE logrecord (
     wiz INT,
     tstart DATETIME,
     tend DATETIME,
+    rstart CHAR(15),
+    rend CHAR(15),
     dur BIGINT,
     turn BIGINT,
     urune INT,

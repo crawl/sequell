@@ -98,7 +98,7 @@ COLUMN_ALIASES = {
 LOGFIELDS_DECORATED = %w/file src v cv lv scI name uidI race crace cls
   char xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
-  endD durI turnI uruneI nruneI tmsg vmsg splat/
+  endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend/
 
 FAKEFIELDS_DECORATED = %w/when/
 
@@ -107,10 +107,6 @@ LOGFIELDS_SUMMARIZABLE =
               god urune nrune src str int dex kaux ckiller cv ckaux crace kmod
               splat dam hp mhp mmhp piety pen/.
              map { |x| [x, true] }.flatten) ]
-
-# Skip so many leading fields when processing SELECT * responses.
-# The skipped fields are: id, offset.
-LOGFIELDS_SKIP = 2
 
 # Never fetch more than 5000 rows, kthx.
 ROWFETCH_MAX = 5000
@@ -245,8 +241,8 @@ end
 
 def row_to_fieldmap(row)
   map = { }
-  (LOGFIELDS_SKIP ... row.size).each do |i|
-    lfd = LOGFIELDS_DECORATED[i - LOGFIELDS_SKIP]
+  (0 ... row.size).each do |i|
+    lfd = LOGFIELDS_DECORATED[i]
     map[lfd.name] = lfd.value(row[i])
   end
   map
@@ -384,7 +380,8 @@ class CrawlQuery
   end
 
   def select_all
-    "SELECT * FROM logrecord " + where
+    fields = LOGFIELDS_DECORATED.map { |x| LOG2SQL[x.name] }.join(", ")
+    "SELECT #{fields} FROM logrecord " + where
   end
 
   def select_count

@@ -27,7 +27,7 @@ my %SERVER_MAP = (cao => 'crawl.akrasiac.org',
 
 my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
 
-my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS);
+my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS, 'rstart', 'rend');
 my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
 my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
@@ -400,6 +400,9 @@ sub fixup_logfields {
     s/.*(Draconian)$/$1/;
   }
 
+  $g->{rstart} = $g->{start};
+  $g->{rend} = $g->{end};
+
   for ($g->{start}, $g->{end}) {
     s/^(\d{4})(\d{2})/$1 . sprintf("%02d", $2 + 1)/e;
     s/[SD]$//;
@@ -429,7 +432,9 @@ sub add_logline {
   $fields->{src} = $source;
   $fields = fixup_logfields($fields);
   my @bindvalues = ($file, $source, $offset,
-                    map(field_val($_, $fields), @LOGFIELDS_DECORATED) );
+                    map(field_val($_, $fields), @LOGFIELDS_DECORATED),
+                    field_val('rstart', $fields),
+                    field_val('rend', $fields));
   execute_st($insert_st, @bindvalues) or
     die "Can't insert record for $line: $!\n";
 }

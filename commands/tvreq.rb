@@ -6,7 +6,7 @@ require 'commands/helper'
 require 'commands/sqlhelper'
 require 'gserver'
 
-help("Requests that C-SPLAT play the specified game. All !lg game-selector options apply.")
+help("Usage: !tv <game>. If the game is a splat, requests that C-SPLAT play it, else requests that FooTV play it. Only the end of the game will be played.")
 
 QUEUE_FILE = 'tv.queue'
 LOCK_FILE = 'tv.queue.lock'
@@ -155,20 +155,7 @@ def request_game(g)
     flock(file, File::LOCK_EX) do |f|
       # Make sure we're really at eof.
       f.seek(0, IO::SEEK_END)
-
-      # Give bare minimum info to reduce traffic.
-      stripped = {
-        'name' => g['name'],
-        'start' => g['start'],
-        'end' => g['end'],
-        # Who requested the game.
-        'req' => g['req'],
-
-        # These aren't required, but are useful to see.
-        'char' => g['char'],
-        'place' => g['place'],
-        'xl' => g['xl']
-      }
+      stripped = g
       f.puts "#{Time.now.strftime('%s')} #{munge_game(stripped)}"
     end
   end
@@ -176,12 +163,12 @@ end
 
 def main
   n, game, selectors =
-    sql_find_game(ARGV[1], ARGV[2].split()[1 .. -1] + [ "splat=y" ])
+    sql_find_game(ARGV[1], ARGV[2].split()[1 .. -1])
   raise "No games for #{selectors}." unless game
 
   summary = short_game_summary(game)
-  raise "#{n}. #{summary} is not a splat." unless game['splat'] == 'y'
-  puts "#{n}. #{summary} requested for C-SPLAT."
+  tv = game['splat'] == 'y' ? 'C-SPLAT' : 'FooTV'
+  puts "#{n}. #{summary} requested for #{tv}."
 
   game['req'] = ARGV[1]
   request_game(game)
