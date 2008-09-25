@@ -509,7 +509,7 @@ def _clean_argstr(text)
     if count == 1
       payload.strip
     else
-      OPEN_PAREN + payload.strip + OPEN_PAREN
+      OPEN_PAREN + payload.strip + CLOSE_PAREN
     end
   end
 end
