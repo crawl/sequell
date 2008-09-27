@@ -759,7 +759,6 @@ end
 
 def _add_nick_preds(nick, preds)
   aliases = nick_aliases(nick)
-  puts "Aliases: #{aliases.join(" ")}"
   if aliases.size == 1
     _add_nick(aliases[0], preds)
   else
