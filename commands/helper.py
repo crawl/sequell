@@ -460,6 +460,7 @@ def help(helpstring):
         sys.exit()
 
 def load_nick_aliases():
+    global nick_aliases_loaded
     if nick_aliases_loaded:
         return NICK_ALIASES
     nick_aliases_loaded = True
