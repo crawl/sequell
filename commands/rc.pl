@@ -2,8 +2,10 @@
 
 use strict;
 use warnings;
+use lib 'commands';
+use Helper;
 
-my $nick = shift;
+my $nick = Helper::nick_alias(shift);
 my $baseURL = "http://crawl.akrasiac.org/rcfiles/";
 my $localPath = "/var/www/crawl/rcfiles/";
 my $rcsuffix = ".crawlrc";
