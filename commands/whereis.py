@@ -14,7 +14,7 @@ nick = sys.argv[1]
 # is going to get any useful information. But there might be a good
 # reason not to do this, so I didn't make the change. -rachel 12/22/07
 
-nick = nick_alias(canonicalize_nick(nick))
+nick = canonicalize_nick(nick_alias(nick))
 if not nick:
     print("No games for %s." % sys.argv[1])
     sys.exit()
