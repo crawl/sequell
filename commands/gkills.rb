@@ -7,13 +7,25 @@ help("Lists the top kills for a player's ghost.")
 
 args = (ARGV[2].split)[1 .. -1] || []
 
-ghost = nick_primary_alias( extract_nick(args) || ARGV[1] )
+ghosts = nick_aliases( extract_nick(args) || ARGV[1] )
 
-field = \
+def ghost_field(ghost)
   if ghost == '*'
     "killer=~*'*ghost"
   else
     "killer=~#{ghost}'*ghost"
   end
+end
 
-report_grouped_games('name', '', '*', [ '*', field ] + paren_args(args))
+fields = [ ]
+if ghosts.size == 1
+  fields << ghost_field(ghosts[0])
+else
+  ghosts.each do |g|
+    fields << BOOLEAN_OR unless fields.empty?
+    fields << ghost_field(g)
+  end
+  fields = paren_args(fields)
+end
+
+report_grouped_games('name', '', '*', [ '*' ] + fields + paren_args(args))
