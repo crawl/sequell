@@ -23,6 +23,7 @@
 !lg listgame.rb
 !macro macro.pl
 !messages message/messages.pl
+!nick nickmap.rb
 !players players.pl
 !rc rc.pl
 !rng rng.pl
