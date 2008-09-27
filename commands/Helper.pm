@@ -23,7 +23,7 @@ our %EXPORT_TAGS = (
 );
 
 my $NICKMAP_FILE = 'nicks.map';
-my %NICK_ALIASES = { };
+my %NICK_ALIASES;
 my $nick_aliases_loaded;
 
 # useful variables {{{
