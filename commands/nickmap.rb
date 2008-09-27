@@ -65,6 +65,7 @@ def delete_dest(nick)
   end
 end
 
+ARGV[2].gsub!("/\\", "")
 cmdline = ARGV[2].split()[1 .. -1]
 
 if not cmdline.empty?
