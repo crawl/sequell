@@ -6,9 +6,9 @@
 use lib 'commands';
 use Helper;
 
-Helper->help("Gives an URL to the specified user's last character dump.");
+Helper::help("Gives an URL to the specified user's last character dump.");
 
-my $nick = Helper->nick_alias(shift);
+my $nick = Helper::nick_alias(shift);
 my $baseURL = "http://crawl.akrasiac.org/rawdata/";
 my $localPath = "/var/www/crawl/rawdata/";
 
