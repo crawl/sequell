@@ -30,6 +30,10 @@ DGL_ALIEN_MORGUES = \
 # can't be helped.
 LOCAL_UTC_EPOCH = Time.utc(2008, 8, 7, 3, 30)
 
+NICK_ALIASES = { }
+NICKMAP_FILE = 'nicks.map'
+$nicks_loaded = false
+
 $field_names.each do |field|
   if field =~ /(\w+)(\w)/
     $field_types[$1] = $2
@@ -410,4 +414,43 @@ def help(helpstring)
     puts helpstring
     exit
   end
+end
+
+def load_nicks
+  return if $nicks_loaded
+  if File.exists?(NICKMAP_FILE)
+    File.open(NICKMAP_FILE) do |f|
+      f.each_line do |line|
+        maps = line.split()
+        # Explicitly downcase in case someone hand-edited the file.
+        NICK_ALIASES[maps[0].downcase] = maps[1 .. -1].join(" ") if maps.size > 1
+      end
+    end
+  end
+  $nicks_loaded = true
+end
+
+def save_nicks
+  tmp = NICKMAP_FILE + '.tmp'
+  File.open(tmp, 'w') do |f|
+    for k, v in NICK_ALIASES do
+      f.puts "#{k} #{v}" if v
+    end
+  end
+  File.rename(tmp, NICKMAP_FILE)
+end
+
+def nick_aliases(nick)
+  load_nicks
+
+  aliases = NICK_ALIASES[nick.downcase]
+  if aliases
+    arralias = aliases.split()
+    return arralias if not arralias.empty?
+  end
+  [ nick ]
+end
+
+def nick_primary_alias(nick)
+  nick_aliases(nick)[0]
 end

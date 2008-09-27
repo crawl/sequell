@@ -753,10 +753,25 @@ def flatten_predicates(pred)
   pred.find_all { |x| !x.is_a?(Array) || x.length > 1 }
 end
 
+def _add_nick(nick, preds)
+  preds << field_pred(nick, '=', 'name', LOG2SQL['name'])
+end
+
+def _add_nick_preds(nick, preds)
+  aliases = nick_aliases(nick)
+  puts "Aliases: #{aliases.join(" ")}"
+  if aliases.size == 1
+    _add_nick(aliases[0], preds)
+  else
+    clause = [ 'OR' ]
+    aliases.each { |a| _add_nick(a, clause) }
+    preds << clause
+  end
+end
 
 def parse_query_params(nick, num, args)
   preds, sorts = [ 'AND' ], Array.new()
-  preds << field_pred(nick, '=', 'name', LOG2SQL['name']) if nick != '*'
+  _add_nick_preds(nick, preds) if nick != '*'
 
   args = _combine_args(args)
 

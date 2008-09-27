@@ -3,14 +3,27 @@
 # use strict;
 # use warnings;
 
-my $nick = shift;
+use Helper;
+
+Helper->help("Gives an URL to the specified user's last character dump.");
+
+my $nick = Helper->nick_alias(shift);
 my $baseURL = "http://crawl.akrasiac.org/rawdata/";
 my $localPath = "/var/www/crawl/rawdata/";
 
+if (!-d "$localPath/$nick") {
+  my $lcnick = lc $nick;
+  my @dirs = grep(lc($_) eq $lcnick,
+                  map(substr($_, len($localPath)), glob("$localPath/*")));
+  unless (@dirs) {
+    print "$nick doesn't even exist!\n";
+    exit 1;
+  }
+  $nick = $dirs[0];
+}
+
 my $localDump = $localPath . $nick . "/" . $nick . ".txt";
 
-do 'commands/helper.pl';
-help("Gives an URL to the specified users crawl configuration file.");
 
 if (-e $localDump)	{ print $baseURL . $nick . "/" . $nick . ".txt"; }
 else			{ print "Dump for $nick does not exist.\n"; }

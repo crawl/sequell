@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import string, re, os, sys 
+import string, re, os, sys
 import os.path
 from glob import glob
 
@@ -10,7 +10,7 @@ www_rawdatapath = '/var/www/crawl/rawdata/'
 xkeychars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
 
 adjective_skills = \
-  dict( [ (title, True) for 
+  dict( [ (title, True) for
           title in [ 'Deadly Accurate', 'Spry', 'Covert', 'Unseen' ] ] )
 
 adjective_end = re.compile(r'(?:ed|ble|ous)$')
@@ -18,7 +18,7 @@ adjective_end = re.compile(r'(?:ed|ble|ous)$')
 details_names = ['v', 'lv', 'name', 'uid', 'race', 'cls', 'xl', 'sk', 'sklev',
                  'title', 'place', 'br', 'lvl', 'ltyp', 'hp', 'mhp', 'mmhp',
                  'str', 'int', 'dex', 'start', 'dur', 'turn', 'sc', 'ktyp',
-                 'killer', 'kaux', 'end', 'tmsg', 'vmsg', 'god', 'piety', 
+                 'killer', 'kaux', 'end', 'tmsg', 'vmsg', 'god', 'piety',
                  'pen', 'char', 'nrune', 'urune']
 
 races =        ['Null', 'Human', 'Elf', 'High Elf', 'Grey Elf', 'Deep Elf',
@@ -181,6 +181,10 @@ branches_abbrev = ["D","Dis","Geh","Hell","Coc","Tar",
 lcbranches_abbrev = [string.lower(abbrev) for abbrev in branches_abbrev]
 lclevels_abbrev = [string.lower(level) for level in levels_abbrev]
 
+NICK_ALIASES = { }
+NICKMAP_FILE = 'nicks.map'
+nick_aliases_loaded = False
+
 def game_skill_title(game):
     title = game['title']
     turns = game['turn']
@@ -207,7 +211,7 @@ def ntimes(times):
     else: return str(times) + ' times'
 
 def canonicalize_nick(nick):
-    where_dirs = [ f for f in glob(www_rawdatapath + '/*') 
+    where_dirs = [ f for f in glob(www_rawdatapath + '/*')
     			if os.path.isdir(f) ]
     lnickw = nick.lower()
     match = [ x for x in where_dirs if x.lower().endswith('/' + lnickw) ]
@@ -245,7 +249,7 @@ def parse_argstring(argstring): # Takes a string of everything after !cmd.
         sys.exit()
     if argstring.count('"') == 0:
         arglist = argstring.split(' ')
-    else: 
+    else:
         i = 0
         quotelist = argstring.split('"')
         for string in quotelist:
@@ -321,7 +325,7 @@ def demunge_xlogline(logline):
 
 def games_for(nick):
     nick = string.lower(nick)
-    filter = re.compile('[^a-z0-9]') 
+    filter = re.compile('[^a-z0-9]')
     nick = filter.sub('',nick)
     potentialgames = os.popen("grep -i 'name=" + nick + ":' " + logfile).readlines()
     games = []
@@ -335,7 +339,7 @@ def games_for(nick):
     return games
 
 def games_such_that(list): # list = [(field, value),(field2, value2)]
-    filter = re.compile('[^a-z0-9]') 
+    filter = re.compile('[^a-z0-9]')
     namefilter = re.compile('[0-9]+$')
     grepstring = ''
     for item in list:
@@ -373,7 +377,7 @@ def allgames():
         i += 1
     return games
 
-        
+
 
 def deathstring(game):
     deathstring = ''
@@ -386,12 +390,12 @@ def deathstring(game):
     if game['auxkilldata']:
         deathstring += " (%s)" % game['auxkilldata']
     return deathstring
-             
+
 def deaths_in(branch, level):
     branch = string.lower(branch)
     filter = re.compile('[^a-z0-9 -]')
     branch = filter.sub('',branch)
-    
+
     if branch in lclevels_abbrev and branch != 'd':
         level_type = branch
         postbranchstr = 'ltyp=' + level_type + ':'
@@ -437,7 +441,7 @@ def kills_by(monster):
             potentialgames = os.popen('grep -i ":killer=' + monster + ':" ' + logfile).readlines()
         else:
             potentialgames = os.popen("grep -Ei ':killer=(an? )?" + monster + ":' " + logfile).readlines()
- 
+
     games = []
     i = 0
     for potentialgame in potentialgames:
@@ -454,3 +458,22 @@ def help(helpstring):
     if sys.argv[4]:
         print helpstring
         sys.exit()
+
+def load_nick_aliases():
+    if nick_aliases_loaded:
+        return NICK_ALIASES
+    nick_aliases_loaded = True
+    if os.path.exists(NICKMAP_FILE):
+        for line in open(NICKMAP_FILE).readlines():
+            nicks = line.split()
+            if len(nicks) > 1:
+                NICK_ALIASES[nicks[0].lower()] = " ".join(NICK_ALIASES[ 1 : ])
+    return NICK_ALIASES
+
+def nick_alias(nick):
+    load_nick_aliases()
+    alias = NICK_ALIASES.get(nick.lower())
+    if alias:
+        return alias.split()[0]
+    else:
+        return nick

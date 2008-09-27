@@ -12,7 +12,8 @@ our @EXPORT_OK = qw/$logfile demunge_logline demunge_xlogline munge_game
                     short_race code_race display_race
                     @roles normalize_role short_role code_role display_role
                     @gods normalize_god short_god code_god display_god
-                    ntimes once serialize_time ucfirst_word/;
+                    ntimes once serialize_time ucfirst_word
+                    nick_alias/;
 our %EXPORT_TAGS = (
     logfile => [qw/demunge_logline demunge_xlogline munge_game games_for/],
     skills  => [grep /skill/, @EXPORT_OK],
@@ -20,6 +21,10 @@ our %EXPORT_TAGS = (
     roles   => [grep /role/,  @EXPORT_OK],
     gods    => [grep /god/,   @EXPORT_OK],
 );
+
+my $NICKMAP_FILE = 'nicks.map';
+my %NICK_ALIASES = { };
+my $nick_aliases_loaded;
 
 # useful variables {{{
 #our $source_dir = '/home/doy/coding/src/stone_soup-release/crawl-ref';
@@ -30,7 +35,7 @@ our $logfile    = '/var/www/crawl/allgames.txt';
 # logfile parsing {{{
 {
 my @field_names = qw/v lv name uid race cls xl sk sklev title place br lvl
-                     ltyp hp mhp mmhp str int dex start dur turn sc ktyp 
+                     ltyp hp mhp mmhp str int dex start dur turn sc ktyp
                      killer kaux end tmsg vmsg god piety pen char nrune urune/;
 
 my @roles_abbrev = qw/Fi Wz Pr Th Gl Ne Pa As Be Hu Cj En FE IE Su AE EE Cr DK
@@ -113,7 +118,7 @@ sub demunge_xlogline # {{{
   chomp $line;
   die "Unable to handle internal newlines." if $line =~ y/\n//;
   $line =~ s/::/\n\n/g;
-  
+
   while ($line =~ /\G(\w+)=([^:]*)(?::(?=[^:])|$)/cg)
   {
     my ($key, $value) = ($1, $2);
@@ -512,5 +517,29 @@ sub ucfirst_word { # {{{
     join ' ', map { ucfirst } split / /, shift;
 } # }}}
 # }}}
+
+sub load_nick_aliases {
+  return \%NICK_ALIASES if $nick_aliases_loaded;
+
+  if (-f $NICKMAP_FILE) {
+    open my $inf, '<', $NICKMAP_FILE or return { };
+    while (<$inf>) {
+      chomp;
+      my @nicks = split;
+      $NICK_ALIASES{lc($nicks[0])} =
+        join(" ", @nicks[1 .. $#nicks]) if @nicks > 1;
+    }
+    close $inf;
+  }
+  $nick_aliases_loaded = 1;
+  \%NICK_ALIASES
+}
+
+sub nick_alias {
+  my $nick = shift;
+  my $aliases = load_nick_aliases()->{lc $nick};
+
+  $aliases && $aliases =~ /^(\S+)/ ? $1 : $nick
+}
 
 1;
