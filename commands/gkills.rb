@@ -7,7 +7,7 @@ help("Lists the top kills for a player's ghost.")
 
 args = (ARGV[2].split)[1 .. -1] || []
 
-ghost = extract_nick(args) || ARGV[1]
+ghost = nick_primary_alias( extract_nick(args) || ARGV[1] )
 
 field = \
   if ghost == '*'
