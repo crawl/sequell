@@ -468,7 +468,7 @@ def load_nick_aliases():
         for line in open(NICKMAP_FILE).readlines():
             nicks = line.split()
             if len(nicks) > 1:
-                NICK_ALIASES[nicks[0].lower()] = " ".join(NICK_ALIASES[ 1 : ])
+                NICK_ALIASES[nicks[0].lower()] = " ".join(nicks[ 1 : ])
     return NICK_ALIASES
 
 def nick_alias(nick):
