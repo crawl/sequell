@@ -3,6 +3,7 @@
 # use strict;
 # use warnings;
 
+use lib 'commands';
 use Helper;
 
 Helper->help("Gives an URL to the specified user's last character dump.");
