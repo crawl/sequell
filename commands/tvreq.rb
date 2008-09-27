@@ -6,7 +6,7 @@ require 'commands/helper'
 require 'commands/sqlhelper'
 require 'gserver'
 
-help("Usage: !tv <game>. If the game is a splat, requests that C-SPLAT play it, else requests that FooTV play it. Only the end of the game will be played.")
+help("Usage: !tv <game>. Plays the game on FooTV.")
 
 QUEUE_FILE = 'tv.queue'
 LOCK_FILE = 'tv.queue.lock'
