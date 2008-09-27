@@ -22,7 +22,7 @@ if ghosts.size == 1
   fields << ghost_field(ghosts[0])
 else
   ghosts = ghosts.map { |g| Regexp.quote(g) }
-  fields << "killer~~^(#{ghosts.join("|")})'*ghost"
+  fields << "killer~~^(#{ghosts.join("|")})'.*ghost"
 end
 
 report_grouped_games('name', '', '*', [ '*' ] + fields + paren_args(args))
