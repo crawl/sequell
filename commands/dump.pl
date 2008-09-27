@@ -15,7 +15,7 @@ my $localPath = "/var/www/crawl/rawdata/";
 if (!-d "$localPath/$nick") {
   my $lcnick = lc $nick;
   my @dirs = grep(lc($_) eq $lcnick,
-                  map(substr($_, len($localPath)), glob("$localPath/*")));
+                  map(substr($_, length($localPath)), glob("$localPath/*")));
   unless (@dirs) {
     print "$nick doesn't even exist!\n";
     exit 1;
