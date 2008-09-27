@@ -21,11 +21,8 @@ fields = [ ]
 if ghosts.size == 1
   fields << ghost_field(ghosts[0])
 else
-  ghosts.each do |g|
-    fields << BOOLEAN_OR unless fields.empty?
-    fields << ghost_field(g)
-  end
-  fields = paren_args(fields)
+  ghosts = ghosts.map { |g| Regexp.quote(g) }
+  fields << "killer~~^(#{ghosts.join("|")})'*ghost"
 end
 
 report_grouped_games('name', '', '*', [ '*' ] + fields + paren_args(args))
