@@ -167,7 +167,7 @@ def main
   raise "No games for #{selectors}." unless game
 
   summary = short_game_summary(game)
-  tv = game['splat'] == 'y' ? 'C-SPLAT' : 'FooTV'
+  tv = 'FooTV'
   puts "#{n}. #{summary} requested for #{tv}."
 
   game['req'] = ARGV[1]
