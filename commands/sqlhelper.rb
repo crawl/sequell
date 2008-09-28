@@ -49,10 +49,12 @@ CLASS_EXPANSIONS = {
 
 RACE_EXPANSIONS = {
   'Hu' => 'Human',
+  'El' => 'Elf',
   'HE' => 'High Elf',
   'GE' => 'Grey Elf',
   'DE' => 'Deep Elf',
   'SE' => 'Sludge Elf',
+  'HD' => 'Hill Dwarf',
   'MD' => 'Mountain Dwarf',
   'Ha' => 'Halfling',
   'HO' => 'Hill Orc',
