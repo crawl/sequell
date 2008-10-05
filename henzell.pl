@@ -181,8 +181,12 @@ sub check_milestone_file
     seek($stonehandle, $href->[2], 0);
     return;
   }
+  my $startoffset = $href->[2];
   $href->[2] = tell($stonehandle);
   return unless defined($line) && $line =~ /\S/;
+
+  # Add milestone to DB.
+  add_milestone($href->[0], $href->[3], $startoffset, $line);
 
   if ($href->[3] eq $SERVER) {
     my $game_ref = demunge_xlogline($line);
