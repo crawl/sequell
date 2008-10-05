@@ -10,9 +10,6 @@ CURRENT_VER = "0.4"
 
 $CONSTRAIN_VERSION = false
 
-# Query context - can be either logrecord or milestone, NOT thread safe.
-$CTX = nil
-
 OPERATORS = {
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
   '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE',
@@ -223,6 +220,9 @@ end
 
 CTX_LOG = QueryContext.new('logrecord')
 CTX_STONE = QueryContext.new('milestone')
+
+# Query context - can be either logrecord or milestone, NOT thread safe.
+$CTX = CTX_LOG
 
 $DB_HANDLE = nil
 $group_field = nil
