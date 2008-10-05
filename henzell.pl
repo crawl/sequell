@@ -42,18 +42,18 @@ my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
 
 my %commands;
 
-require 'sqllog.pl';
-
 print "Locking $LOCK_FILE\n";
 open my $outf, '>', $LOCK_FILE or die "Can't open $LOCK_FILE: $!\n";
 flock $outf, LOCK_EX;
 print "Locked $LOCK_FILE, starting up...\n";
 
-# Drop process priority.
-system "renice +5 $$ &>/dev/null";
-
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
 daemonify() unless grep($_ eq '-n', @ARGV);
+
+require 'sqllog.pl';
+
+# Drop process priority.
+system "renice +5 $$ &>/dev/null";
 
 my @loghandles = open_handles(@logfiles);
 my @stonehandles = open_handles(@stonefiles);
