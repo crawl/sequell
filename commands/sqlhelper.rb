@@ -95,7 +95,7 @@ BOOLEAN_OR_Q = Regexp.quote(BOOLEAN_OR)
 COLUMN_ALIASES = {
   'role' => 'cls', 'class' => 'cls', 'species' => 'race',
   'ktype' => 'ktyp', 'score' => 'sc', 'turns' => 'turn',
-  'time' => 'dur', 'skill' => 'sk', 'rune' => 'urune',
+  'time' => 'dur', 'skill' => 'sk',
   'ch' => 'char', 'r' => 'race', 'c' => 'cls', 'sp' => 'race',
   'cl' => 'xl', 'clev' => 'xl', 'type' => 'verb'
 }
