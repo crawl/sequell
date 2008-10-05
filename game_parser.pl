@@ -102,7 +102,8 @@ sub milestone_string
     $placestring = "";
   }
 
-  my $prefix = $show_time? "[" . serialize_time($g->{time}) . "] " : '';
+  my $time = join("-", ($g->{time} =~ /^(\d{4})(\d{2})(\d{2})/g));
+  my $prefix = $show_time? "[" . $time . "] " : '';
   sprintf("${prefix}%s the %s (L%s %s) %s%s",
     $g->{name},
     game_skill_title($g),
