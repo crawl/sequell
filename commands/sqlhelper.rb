@@ -293,9 +293,9 @@ end
 # runs the query and returns the matching game.
 def sql_find_game(default_nick, args, context=CTX_LOG)
   q = sql_build_query(default_nick, args, context)
-  n, row = sql_exec_query(q.num, q)
 
   with_query_context(context) do
+    n, row = sql_exec_query(q.num, q)
     [ n, row ? row_to_fieldmap(row) : nil, q.argstr ]
   end
 end
