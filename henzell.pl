@@ -15,9 +15,15 @@ my $ircname        = 'Henzell the Crawl Bot';
 my $ircserver      = 'irc.freenode.org';
 my $port           = 6667;
 my $channel        = '##crawl';
-my @stonefiles     = ('/var/www/crawl/milestones02.txt',
-                      '/home/crawl/chroot/var/games/crawl03/saves/milestones.txt',
-                      '/home/crawl/chroot/var/games/crawl04/saves/milestones.txt');
+my @stonefiles     =
+  ('/var/www/crawl/milestones02.txt',
+   '/home/crawl/chroot/var/games/crawl03/saves/milestones.txt',
+   '/home/crawl/chroot/var/games/crawl04/saves/milestones.txt',
+   '[cdo]/home/henzell/cdo-milestones-0.3',
+   '[cdo]/home/henzell/cdo-milestones-0.4',
+   '[cdo]/home/henzell/cdo-milestones-svn');
+
+
 my @logfiles       = ('/var/www/crawl/allgames.txt',
                       '/home/crawl/chroot/var/games/crawl04/saves/logfile',
                       # The [cdo] prefix indicates that this is a remote
@@ -55,9 +61,12 @@ my @stonehandles = open_handles(@stonefiles);
 if (@loghandles >= 1) {
   sql_register_logfiles(map $_->[0], @loghandles);
   catchup_logfiles();
+  sql_register_milestones(map $_->[0], @stonehandles);
+  catchup_stonefiles();
 }
 fixup_db();
 # And once again, because creating indexes takes time.
+catchup_stonefiles();
 catchup_logfiles();
 
 # We create a new PoCo-IRC object and component.
@@ -83,15 +92,23 @@ POE::Session->create(
 $poe_kernel->run();
 exit 0;
 
-sub catchup_logfiles {
-  for my $lhand (@loghandles) {
+sub catchup_files {
+  my ($proc, @files) = @_;
+  for my $lhand (@files) {
     my $file = $lhand->[0];
     my $source_server = $lhand->[3];
     my $fh = $lhand->[1];
     print "Catching up on records from $file...\n";
-    cat_logfile($file, $source_server, $fh) ||
-      cat_logfile($file, $source_server, $fh, -1);
+    $proc->($file, $source_server, $fh)
   }
+}
+
+sub catchup_logfiles {
+  catchup_files(\&cat_logfile, @loghandles);
+}
+
+sub catchup_stonefiles {
+  catchup_files(\&cat_stonefile, @stonehandles);
 }
 
 sub daemonify {
@@ -147,7 +164,7 @@ sub newsworthy
 sub check_stonefiles
 {
   for my $stone (@stonehandles) {
-    check_milestone_file($stone);
+    1 while check_milestone_file($stone);
   }
 }
 
@@ -167,27 +184,17 @@ sub check_milestone_file
   $href->[2] = tell($stonehandle);
   return unless defined($line) && $line =~ /\S/;
 
-  my $game_ref = demunge_xlogline($line);
+  if ($href->[3] eq $SERVER) {
+    my $game_ref = demunge_xlogline($line);
+    my $newsworthy = newsworthy($game_ref);
 
-  return unless newsworthy($game_ref);
-
-  my $placestring = " ($game_ref->{place})";
-  if ($game_ref->{milestone} eq "escaped from the Abyss!")
-  {
-    $placestring = "";
+    if ($newsworthy) {
+      $irc->yield(privmsg => $channel => milestone_string($game_ref));
+    }
   }
 
-  $irc->yield(privmsg => $channel =>
-    sprintf "%s the %s (L%s %s) %s%s",
-      $game_ref->{name},
-      game_skill_title($game_ref),
-      $game_ref->{xl},
-      $game_ref->{char},
-      $game_ref->{milestone},
-      $placestring
-  );
-
   seek($stonehandle, $href->[2], 0);
+  1
 }
 
 sub check_all_logfiles
@@ -226,15 +233,19 @@ sub tail_logfile
   # Add line to DB.
   add_logline($href->[0], $href->[3], $startoffset, $line);
 
+  my $game_ref = demunge_xlogline($line);
   # If this is a local game, announce it.
   if ($href->[3] eq $SERVER) {
-    my $game_ref = demunge_xlogline($line);
     if (!suppress_game($game_ref)) {
       my $output = pretty_print($game_ref);
       $output =~ s/ on \d{4}-\d{2}-\d{2}//;
       $irc->yield(privmsg => $channel => $output);
     }
   }
+
+  # Link up milestone entries belonging to this player to their corresponding
+  # completed games.
+  fixup_milestones($href->[3], $game_ref->{name});
 
   1;
 }

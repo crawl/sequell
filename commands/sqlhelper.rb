@@ -10,6 +10,9 @@ CURRENT_VER = "0.4"
 
 $CONSTRAIN_VERSION = false
 
+# Query context - can be either logrecord or milestone, NOT thread safe.
+$CTX = nil
+
 OPERATORS = {
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
   '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE',
@@ -94,13 +97,19 @@ COLUMN_ALIASES = {
   'ktype' => 'ktyp', 'score' => 'sc', 'turns' => 'turn',
   'time' => 'dur', 'skill' => 'sk', 'rune' => 'urune',
   'ch' => 'char', 'r' => 'race', 'c' => 'cls', 'sp' => 'race',
-  'cl' => 'xl', 'clev' => 'xl'
+  'cl' => 'xl', 'clev' => 'xl', 'type' => 'verb'
 }
 
 LOGFIELDS_DECORATED = %w/file src v cv lv scI name uidI race crace cls
   char xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
   endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend/
+
+MILEFIELDS_DECORATED = %w/file src v cv name race crace cls char xlI
+                          sk sklevI title place br lvlI ltyp
+                          hpI mhpI mmhpI strI intI dexI
+                          god durI turnI uruneI nruneI timeD
+                          verb noun milestone/
 
 FAKEFIELDS_DECORATED = %w/when/
 
@@ -114,10 +123,11 @@ LOGFIELDS_SUMMARIZABLE =
 ROWFETCH_MAX = 5000
 DBFILE = "#{ENV['HOME']}/logfile.db"
 LOGFIELDS = { }
+MILEFIELDS = { }
 FAKEFIELDS = { }
 
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
-ARGSPLITTER = Regexp.new('^-?([a-z]+)\s*(' +
+ARGSPLITTER = Regexp.new('^-?([a-z.]+)\s*(' +
                         SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
                         ')\s*(.*)$', Regexp::IGNORECASE)
 
@@ -126,7 +136,8 @@ ARGSPLITTER = Regexp.new('^-?([a-z]+)\s*(' +
 SERVER = ENV['CRAWL_SERVER'] || 'cao'
 
 [ [ LOGFIELDS_DECORATED, LOGFIELDS ],
-  [ FAKEFIELDS_DECORATED, FAKEFIELDS ] ].each do |fdec,fdict|
+  [ FAKEFIELDS_DECORATED, FAKEFIELDS ],
+  [ MILEFIELDS_DECORATED, MILEFIELDS ] ].each do |fdec,fdict|
   fdec.each do |lf|
     class << lf
       def name
@@ -159,12 +170,58 @@ LOG2SQL = {
   'dex' => 'sdex',
   'int' => 'sint',
   'start' => 'tstart',
-  'end' => 'tend'
+  'end' => 'tend',
+  'time' => 'ttime'
 }
 
-LOGFIELDS_DECORATED.each do |x|
+(LOGFIELDS_DECORATED + MILEFIELDS_DECORATED).each do |x|
   LOG2SQL[x.name] = x.name unless LOG2SQL[x.name]
 end
+
+MILEFIELDS_SUMMARIZABLE = \
+  Hash[ *MILEFIELDS_DECORATED.map { |x| [ x.name, true ] }.flatten ]
+
+# But suppress attempts to summarize by time.
+MILEFIELDS_SUMMARIZABLE['time'] = nil
+
+class QueryContext
+  attr_accessor :fields, :synthetic, :summarizable, :table, :defsort
+  attr_accessor :noun_verb, :noun_verb_fields
+  attr_accessor :fieldmap, :synthmap
+
+  def initialize(table)
+    @table = table
+
+    @noun_verb = { }
+    if @table == 'logrecord'
+      @fields = LOGFIELDS_DECORATED
+      @synthetic = FAKEFIELDS_DECORATED
+      @summarizable = LOGFIELDS_SUMMARIZABLE
+      @fieldmap = LOGFIELDS
+      @synthmap = FAKEFIELDS
+      @defsort = 'end'
+    else
+      @fields = MILEFIELDS_DECORATED
+      @synthetic = []
+      @summarizable = MILEFIELDS_SUMMARIZABLE.dup
+      @fieldmap = MILEFIELDS
+
+      @defsort = 'time'
+      nverbs = %w/abyss.enter abyss.exit rune orb ghost ghost.ban
+                  uniq uniq.ban br.enter br.end/
+      nverbs.each do |verb|
+        @noun_verb[verb] = true
+        @summarizable[verb] = true
+      end
+
+      @noun_verb_fields = [ 'noun', 'verb' ]
+      @synthmap = @noun_verb
+    end
+  end
+end
+
+CTX_LOG = QueryContext.new('logrecord')
+CTX_STONE = QueryContext.new('milestone')
 
 $DB_HANDLE = nil
 $group_field = nil
@@ -189,7 +246,17 @@ def with_group(group)
   end
 end
 
-def sql_build_query(default_nick, args)
+def with_query_context(ctx)
+  old_context = $CTX
+  begin
+    $CTX = ctx
+    yield
+  ensure
+    $CTX = old_context
+  end
+end
+
+def sql_build_query(default_nick, args, context=CTX_LOG)
   summarize = args.find { |a| a =~ /^-?s(?:=.*)?$/ }
   args.delete(summarize) if summarize
 
@@ -198,7 +265,9 @@ def sql_build_query(default_nick, args)
     if summarize =~ /^-?s=([+-]?)(.*)$/
       sort = $1.empty? ? '+' : $1
       sfield = COLUMN_ALIASES[$2] || $2
-      raise "Bad arg '#{summarize}' - cannot summarise by #{sfield}" unless LOGFIELDS_SUMMARIZABLE[sfield]
+      unless context.summarizable[sfield]
+        raise "Bad arg '#{summarize}' - cannot summarise by #{sfield}"
+      end
       sfield = sort + sfield
     else
       sfield = '+name'
@@ -209,31 +278,39 @@ def sql_build_query(default_nick, args)
     args = _op_back_combine(args)
     nick = extract_nick(args) || default_nick
     num  = extract_num(args)
-    q = build_query(nick, num, args, false)
-    q.summarize = sfield if summarize
-    q
+
+    with_query_context(context) do
+      q = build_query(nick, num, args, false)
+      q.summarize = sfield if summarize
+      q
+    end
   end
 end
 
 # Given a set of arguments of the form
 #       nick num etc
 # runs the query and returns the matching game.
-def sql_find_game(default_nick, args)
-  q = sql_build_query(default_nick, args)
+def sql_find_game(default_nick, args, context=CTX_LOG)
+  q = sql_build_query(default_nick, args, context)
   n, row = sql_exec_query(q.num, q)
-  [ n, row ? row_to_fieldmap(row) : nil, q.argstr ]
+
+  with_query_context(context) do
+    [ n, row ? row_to_fieldmap(row) : nil, q.argstr ]
+  end
 end
 
-def sql_show_game(default_nick, args)
-  q = sql_build_query(default_nick, args)
-  if q.summarize
-    report_grouped_games_for_query(q)
-  else
-    n, row = sql_exec_query(q.num, q)
-    unless row
-      puts "No games for #{q.argstr}."
+def sql_show_game(default_nick, args, context=CTX_LOG)
+  q = sql_build_query(default_nick, args, context)
+  with_query_context(context) do
+    if q.summarize
+      report_grouped_games_for_query(q)
     else
-      print "\n#{n}. :#{munge_game(row_to_fieldmap(row))}:"
+      n, row = sql_exec_query(q.num, q)
+      unless row
+        puts "No games for #{q.argstr}."
+      else
+        print "\n#{n}. :#{munge_game(row_to_fieldmap(row))}:"
+      end
     end
   end
 rescue
@@ -244,7 +321,7 @@ end
 def row_to_fieldmap(row)
   map = { }
   (0 ... row.size).each do |i|
-    lfd = LOGFIELDS_DECORATED[i]
+    lfd = $CTX.fields[i]
     map[lfd.name] = lfd.value(row[i])
   end
   map
@@ -320,6 +397,7 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
+  #puts "Query: #{q.select_all} (#{q.values.join(', ')})"
   sql_dbh.get_first_value(q.select_count, *q.values).to_i
 end
 
@@ -347,6 +425,7 @@ class CrawlQuery
   attr_accessor :argstr, :nick, :num, :raw
 
   def initialize(predicates, sorts, nick, num, argstr)
+    @table = $CTX.table
     @pred = predicates
     @sort = sorts
     @nick = nick
@@ -371,21 +450,37 @@ class CrawlQuery
     if s =~ /^([+-]?)(.*)/
       @summarize = $2
       @summary_sort = $1 == '-' ? '' : 'DESC'
+
+      if $CTX.noun_verb[@summarize]
+        noun, verb = $CTX.noun_verb_fields
+        # Ulch, we have to modify our predicates.
+        add_predicate('AND', field_pred(@summarize, '=', verb))
+        @summarize = noun
+      end
     end
     @query = nil
   end
 
+  def add_predicate(operator, pred)
+    if @pred[0] == operator
+      @pred << pred
+    else
+      @pred = [ operator, @pred, pred ]
+    end
+  end
+
   def select(what, with_sorts=true)
-    "SELECT #{what} FROM logrecord " + where(with_sorts)
+    "SELECT #{what} FROM #@table " + where(with_sorts)
   end
 
   def select_all
-    fields = LOGFIELDS_DECORATED.map { |x| LOG2SQL[x.name] }.join(", ")
-    "SELECT #{fields} FROM logrecord " + where
+    decfields = $CTX.fields
+    fields = decfields.map { |x| LOG2SQL[x.name] }.join(", ")
+    "SELECT #{fields} FROM #@table " + where
   end
 
   def select_count
-    "SELECT COUNT(*) FROM logrecord " + where(false)
+    "SELECT COUNT(*) FROM #@table " + where(false)
   end
 
   def summary_query
@@ -397,7 +492,7 @@ class CrawlQuery
     begin
       @sort = []
       @query = nil
-      %{SELECT #{LOG2SQL[field]}, COUNT(*) AS fieldcount FROM logrecord
+      %{SELECT #{LOG2SQL[field]}, COUNT(*) AS fieldcount FROM #@table
         #{where} GROUP BY #{LOG2SQL[field]} ORDER BY fieldcount #{sortdir}}
     ensure
       @sort = temp
@@ -592,7 +687,7 @@ def _canonical_args(args)
   cargs
 end
 
-def field_pred(v, op, fname, fexpr)
+def field_pred(v, op, fname, fexpr=nil)
   v = proc_val(v, op)
   [ :field, "#{fexpr or fname} #{op} ?", v, fname.downcase ]
 end
@@ -672,7 +767,8 @@ def process_param(preds, sorts, arg)
   selector = sort ? val : key
   selector = COLUMN_ALIASES[selector] || selector
   raise "Unknown selector: #{selector}" unless \
-     LOGFIELDS[selector] || FAKEFIELDS[selector]
+     $CTX.fieldmap[selector] || $CTX.synthmap[selector]
+
   raise "Bad sort: #{arg}" if sort && op != '='
   raise "Too many sort conditions" if sort && !sorts.empty?
 
@@ -682,7 +778,7 @@ def process_param(preds, sorts, arg)
   else
     sqlop = OPERATORS[op]
     field = LOG2SQL[selector]
-    if LOGFIELDS[selector] == 'I'
+    if $CTX.fieldmap[selector] == 'I'
       if ['=~','!~','~~', '!~~'].index(op)
         raise "Can't use #{op} on numeric field #{selector}"
       end
@@ -714,17 +810,6 @@ end
 
 def pred_fields(p)
   Set.new(pred_field_arr(p).flatten + [ $group_field ])
-end
-
-def augment_query(preds, canargs)
-  #pfields = pred_fields(preds)
-  #if $CONSTRAIN_VERSION and not pfields.include?('v')
-  #  add_extra_predicate(preds, canargs, CURRENT_VER, '>=', 'v', 'v')
-  #end
-
-  #if not pfields.include?('src')
-  #  add_extra_predicate(preds, canargs, SERVER, '=', 'src', 'src', true)
-  #end
 end
 
 # A predicate chain can be flattened if:
@@ -778,10 +863,9 @@ def parse_query_params(nick, num, args)
   parse_param_group(subpreds, sorts, args)
   preds << subpreds
 
-  sorts << "ORDER BY #{LOG2SQL['end']} DESC" if sorts.empty?
+  sorts << "ORDER BY #{LOG2SQL[$CTX.defsort]} DESC" if sorts.empty?
 
   canargs = _canonical_args(args)
-  augment_query(preds, canargs)
   preds = flatten_predicates(preds)
   [ preds, sorts, canargs ]
 end
@@ -795,6 +879,16 @@ def query_field(selector, field, op, sqlop, val)
     clause << field_pred("an " + val, sqlop, selector, field)
     return clause
   end
+
+  if $CTX.noun_verb[selector]
+    clause = [ 'AND' ]
+    key = $CTX.noun_verb[selector]
+    noun, verb = $CTX.noun_verb_fields
+    clause << field_pred(selector, '=', verb, verb)
+    clause << field_pred(val, sqlop, noun, noun)
+    return clause
+  end
+
   if selector == 'place' and !val.index(':') and
     [ '=', '!=' ].index(op) and
     ![ 'pan', 'lab', 'hell', 'blade', 'temple', 'abyss' ].index(val) then
@@ -812,14 +906,23 @@ def query_field(selector, field, op, sqlop, val)
   if selector == 'cls'
     val = CLASS_EXPANSIONS[val.downcase] || val
   end
+
   if selector == 'when'
     if %w/t tourney tournament/.index(val) and [ '=', '!=' ].index(op)
       tourney = op == '='
       clause = [ tourney ? 'AND' : 'OR' ]
       lop = tourney ? '>' : '<'
       rop = tourney ? '<' : '>'
-      clause << query_field('start', LOG2SQL['start'], lop, lop, '20080801')
-      clause << query_field('end', LOG2SQL['end'], rop, rop, '20080901')
+
+      tstart = '20080801'
+      tend   = '20080901'
+      if $CTX == CTX_LOG
+        clause << query_field('start', LOG2SQL['start'], lop, lop, tstart)
+        clause << query_field('end', LOG2SQL['end'], rop, rop, tend)
+      else
+        clause << query_field('time', LOG2SQL['time'], lop, lop, tstart)
+        clause << query_field('time', LOG2SQL['time'], rop, rop, tend)
+      end
       return clause
     else
       raise "Bad selector #{selector} (#{selector}=t for tourney games)"

@@ -3,5 +3,9 @@ nohup.*
 _darcs/
 t/
 allgames*.txt
-logfile
+logfile*
 logfile.db
+tv.queue*
+TAGS
+splat.timestamp
+nicks.map

@@ -20,19 +20,47 @@ my %LOG2SQL = ( name => 'pname',
                 dex => 'sdex',
                 int => 'sint',
                 start => 'tstart',
-                end => 'tend' );
+                end => 'tend',
+                time => 'ttime');
 
 my %SERVER_MAP = (cao => 'crawl.akrasiac.org',
                   cdo => 'crawl.develz.org');
 
-my @LOGFIELDS = map { my $x = $_; $x =~ s/I$//; $x } @LOGFIELDS_DECORATED;
+sub strip_suffix {
+  my $val = shift;
+  $val =~ s/[ID]$//;
+  $val
+}
+
+my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
+
+my @MILEFIELDS_DECORATED =
+    qw/v cv name race crace cls char xlI sk sklevI title
+       place br lvlI ltyp hpI mhpI mmhpI strI intI dexI god
+       durI turnI uruneI nruneI time verb noun milestone/;
 
 my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS, 'rstart', 'rend');
+
+my @MILE_INSERTFIELDS_DECORATED =
+  (qw/file src offsetI/, @MILEFIELDS_DECORATED, qw/rstart rtime/);
+
+my @MILEFIELDS = map(strip_suffix($_), @MILEFIELDS_DECORATED);
+my @MILE_INSERTFIELDS = map(strip_suffix($_), @MILE_INSERTFIELDS_DECORATED);
+
 my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
 my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
 ktyp killer ckiller kmod kaux ckaux place str int dex god
-start end dur turn urune nrune splat dam/;
+start end dur turn urune nrune splat dam rstart/;
+
+my @MILE_INDEX_COLS = ('src', grep($_ ne 'milestone', @MILEFIELDS));
+
+my %MILESTONE_VERB =
+(
+ unique => 'uniq',
+ enter => 'br.enter',
+ 'branch-finale' => 'br.end'
+);
 
 for (@LOGFIELDS, @INDEX_COLS, @SELECTFIELDS) {
   $LOG2SQL{$_} = $_ unless exists $LOG2SQL{$_};
@@ -48,6 +76,9 @@ my @UNIQUES = ("Ijyb", "Blork the orc", "Urug", "Erolcha", "Snorg",
   "Rupert", "Wayne", "Duane", "Norris", "Frederick", "Margery",
   "Mnoleg", "Lom Lobon", "Cerebov", "Gloorx Vloq", "Geryon",
   "Dispater", "Asmodeus", "Ereshkigal");
+
+my $TLOGFILE   = 'logrecord';
+my $TMILESTONE = 'milestone';
 
 my %UNIQUES = map(($_ => 1), @UNIQUES);
 
@@ -68,7 +99,8 @@ my $standalone = not caller();
 my $dbh;
 my $insert_st;
 my $update_st;
-my $offset_st;
+my $game_time_st;
+my $milestone_insert_st;
 
 initialize_sqllog();
 
@@ -121,8 +153,9 @@ sub load_splat {
 sub setup_db {
   $dbh = open_db();
   $insert_st = prepare_insert_st($dbh);
+  $milestone_insert_st = prepare_milestone_insert_st($dbh);
   $update_st = prepare_update_st($dbh);
-  $offset_st = prepare_offset_st($dbh);
+  $game_time_st = prepare_game_time_st($dbh);
 }
 
 sub reopen_db {
@@ -157,7 +190,9 @@ sub check_indexes {
 
 sub cleanup_db {
   undef $insert_st;
-  undef $offset_st;
+  undef $milestone_insert_st;
+  undef $update_st;
+  undef $game_time_st;
   $dbh->disconnect();
 }
 
@@ -167,6 +202,29 @@ sub prepare_st {
   return $st;
 }
 
+sub exec_query_st {
+  my $query = shift;
+  my $st = prepare_st($dbh, $query);
+  $st->execute(@_) or die "Failed to execute query: $query\n";
+  $st
+}
+
+sub query_one {
+  my $st = exec_query_st(@_);
+  my $row = $st->fetchrow_arrayref;
+  $row && $row->[0]
+}
+
+sub query_row {
+  my $st = exec_query_st(@_);
+  $st->fetchrow_arrayref
+}
+
+sub query_all {
+  my $st = exec_query_st(@_);
+  $st->fetchall_arrayref
+}
+
 sub prepare_insert_st {
   my $dbh = shift;
   my @allfields = @INSERTFIELDS;
@@ -174,6 +232,17 @@ sub prepare_insert_st {
     . join(', ', map($LOG2SQL{$_} || $_, @allfields))
     . ") VALUES ("
     . join(', ', map("?", @allfields))
+    . ")";
+  return prepare_st($dbh, $text);
+}
+
+sub prepare_milestone_insert_st {
+  my $dbh = shift;
+  my @fields = map($LOG2SQL{$_} || $_, @MILE_INSERTFIELDS);
+  my $text = "INSERT INTO milestone ("
+    . join(', ', @fields)
+    . ") VALUES ("
+    . join(', ', map("?", @fields))
     . ")";
   return prepare_st($dbh, $text);
 }
@@ -188,23 +257,36 @@ QUERY
   return prepare_st($dbh, $text);
 }
 
-sub prepare_offset_st {
+sub prepare_game_time_st {
   my $dbh = shift;
-  return prepare_st($dbh,
-                    "SELECT MAX(offset) FROM logrecord WHERE file = ?");
+  my $text = <<QUERY;
+    SELECT id, charabbrev, tend
+      FROM logrecord
+     WHERE src = ? AND pname = ? AND rstart = ?
+     LIMIT 1
+QUERY
+  prepare_st($dbh, $text)
 }
 
-sub sql_register_logfiles {
-  my @files = @_;
+sub sql_register_files {
+  my ($table, @files) = @_;
   $dbh->begin_work;
-  $dbh->do("DELETE FROM logfiles;") or die "Couldn't delete file records: $!\n";
-  my $insert = "INSERT INTO logfiles VALUES (?);";
+  $dbh->do("DELETE FROM $table;") or die "Couldn't delete $table records: $!\n";
+  my $insert = "INSERT INTO $table VALUES (?);";
   my $st = $dbh->prepare($insert) or die "Can't prepare $insert: $!\n";
   for my $file (@files) {
     execute_st($st, $file) or
-      die "Couldn't insert record for $file with $insert: $!\n";
+      die "Couldn't insert record into $table for $file with $insert: $!\n";
   }
   $dbh->commit;
+}
+
+sub sql_register_logfiles {
+  sql_register_files("logfiles", @_)
+}
+
+sub sql_register_milestones {
+  sql_register_files("milestone_files", @_)
 }
 
 sub index_cols {
@@ -226,7 +308,7 @@ sub index_name {
 
 sub create_indexes {
   my $op = shift;
-  print "Creating indexes...\n";
+  print "Creating indexes on logrecord...\n";
   for my $cols (index_cols()) {
     my $name = index_name($cols);
     print "Creating index $name...\n";
@@ -235,16 +317,15 @@ sub create_indexes {
     $dbh->do($ddl);
   }
   $need_indexes = 0;
-  reopen_db();
-}
 
-sub drop_indexes {
-  print "Dropping all indexes (errors are harmless)...\n";
-  for my $cols (index_cols()) {
-    my $ddl = ("DROP INDEX " . index_name($cols) . " ON logrecord;");
+
+  for my $rcol (@MILE_INDEX_COLS) {
+    my $col = $LOG2SQL{$rcol} || $rcol;
+    my $name = "mile_index_$col";
+    print "Creating index $name...\n";
+    my $ddl = "CREATE INDEX $name ON milestone ($col);";
     $dbh->do($ddl);
   }
-  $need_indexes = 1;
   reopen_db();
 }
 
@@ -252,25 +333,20 @@ sub fixup_db {
   create_indexes() if $need_indexes;
 }
 
-sub find_start_offset {
-  my $file = shift;
-  $offset_st->execute($file);
-  my $rows = $offset_st->fetchall_arrayref;
-  return $rows->[0]->[0] || 0 if $rows && $rows->[0];
-  return 0;
+sub find_start_offset_in {
+  my ($table, $file) = @_;
+  my $query = "SELECT MAX(offset) FROM $table WHERE file = ?";
+  my $res = query_one($query, $file);
+  defined($res)? $res : -1
 }
 
-sub truncate_logrecord_table {
-  $dbh->do("DELETE FROM logrecord") or die "Can't truncate logrecord: $!\n";
+sub truncate_table {
+  my $table = shift;
+  $dbh->do("DELETE FROM $table") or die "Can't truncate logrecord: $!\n";
 }
 
 sub go_to_offset {
-  my ($loghandle, $offset) = @_;
-  if ($offset == -1) {
-    seek($loghandle, 0, SEEK_SET);
-    truncate_logrecord_table();
-    return;
-  }
+  my ($table, $loghandle, $offset) = @_;
 
   if ($offset > 0) {
     # Seek to the newline.
@@ -282,25 +358,27 @@ sub go_to_offset {
       unless read($loghandle, $nl, 1) == 1 && $nl eq "\n";
   }
   else {
-    seek($loghandle, $offset, SEEK_SET) or die "Failed to seek to $offset\n";
+    seek($loghandle, 0, SEEK_SET) or die "Failed to seek to start of file\n";
   }
-  my $lastline = <$loghandle>;
-  $lastline =~ /\n$/
-    or die "Last line allegedly read ($lastline) at $offset not newline terminated.";
+
+  if ($offset != -1) {
+    my $lastline = <$loghandle>;
+    $lastline =~ /\n$/
+      or die "Last line allegedly read ($lastline) at $offset not newline terminated.";
+  }
   return 1;
 }
 
-sub cat_logfile {
-  my ($lfile, $source, $loghandle, $offset) = @_;
-  $offset = find_start_offset($lfile) unless defined $offset;
-  die "No offset into $lfile" unless defined $offset;
+sub cat_xlog {
+  my ($table, $lfile, $fadd, $source, $loghandle, $offset) = @_;
+  $offset = find_start_offset_in($table, $lfile) unless defined $offset;
+  die "No offset into $lfile ($table)" unless defined $offset;
 
   my $size = -s($lfile);
   my $outstanding_size = $size - $offset;
-  drop_indexes() if $outstanding_size > $INDEX_DISCARD_THRESHOLD;
 
   eval {
-    go_to_offset($loghandle, $offset);
+    go_to_offset($table, $loghandle, $offset);
   };
   print "Error seeking in $lfile: $@\n" if $@;
   return if $@;
@@ -313,7 +391,7 @@ sub cat_logfile {
     my $line = <$loghandle>;
     last unless $line && $line =~ /\n$/;
     ++$rows;
-    add_logline($lfile, $source, $linestart, $line);
+    $fadd->($lfile, $source, $linestart, $line);
     if (!($rows % $COMMIT_INTERVAL)) {
       $dbh->commit;
       $dbh->begin_work;
@@ -323,8 +401,61 @@ sub cat_logfile {
   }
   $dbh->commit;
   seek($loghandle, $linestart, SEEK_SET);
-  print "Updated db with $rows records.\n" if $rows;
+  print "Updated db with $rows records from $lfile.\n" if $rows;
   return 1;
+}
+
+sub cat_logfile {
+  my ($lfile, $source, $loghandle, $offset) = @_;
+  cat_xlog($TLOGFILE, $lfile, \&add_logline, $source,
+           $loghandle, $offset)
+}
+
+sub cat_stonefile {
+  my ($lfile, $source, $loghandle, $offset) = @_;
+  my $res = cat_xlog($TMILESTONE, $lfile, \&add_milestone, $source,
+                     $loghandle, $offset);
+  print "Linking milestones to completed games ($source: $lfile)...\n";
+  fixup_milestones($source) if $res;
+  print "Done linking milestones to completed games ($source: $lfile)...\n";
+}
+
+=head2 fixup_milestones()
+
+Attempts to link unlinked milestones with completed games in the logrecord
+table. Pretty expensive.
+
+=cut
+
+sub fixup_milestones {
+  my ($source, @players) = @_;
+  my $query = <<QUERY;
+     UPDATE milestone m
+       SET m.game_id = (SELECT l.id FROM logrecord l
+                         WHERE l.pname = m.pname
+                           AND l.src = m.src
+                           AND l.rstart = m.rstart
+                         LIMIT 1)
+     WHERE m.game_id IS NULL
+       AND m.src = ?
+QUERY
+
+  if (@players) {
+    @players = map($dbh->quote($_), @players);
+    if (@players == 1) {
+      $query .= " AND m.pname = ?";
+      exec_query_st($query, $source, $players[0]);
+    }
+    else {
+      $query .= " AND m.pname IN (";
+      $query .= join(", ", @players);
+      $query .= ")";
+      exec_query_st($query, $source);
+    }
+  }
+  else {
+    exec_query_st($query, $source);
+  }
 }
 
 sub logfield_hash {
@@ -355,46 +486,60 @@ sub execute_st {
   }
 }
 
+=head2 fixup_logfields
+
+Cleans up xlog dictionary for milestones and logfile entries.
+
+=cut
+
 sub fixup_logfields {
   my $g = shift;
+
+  my $milestone = $g->{milestone};
+
   ($g->{cv} = $g->{v}) =~ s/^(\d+\.\d+).*/$1/;
-  $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
-  for ($g->{ckiller}) {
-    s/^an? \w+-headed (hydra.*)$/a $1/;
-    s/^.*'s? ghost$/a player ghost/;
-    s/^an? \w+ (draconian.*)/a $1/;
 
-    # If it's an actual kill, merge Pan lords.
-    if ($g->{killer}) {
-      $_ = 'a pandemonium lord' if !/^(?:an?|the) / && !$UNIQUES{$_};
-    }
-  }
+  unless ($milestone) {
+    $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
+    for ($g->{ckiller}) {
+      s/^an? \w+-headed (hydra.*)$/a $1/;
+      s/^.*'s? ghost$/a player ghost/;
+      s/^an? \w+ (draconian.*)/a $1/;
 
-  $g->{kmod} = $g->{killer} || '';
-  for ($g->{kmod}) {
-    if (/spectral (?!warrior)/) {
-      $_ = 'a spectral thing';
+      # If it's an actual kill, merge Pan lords.
+      if ($g->{killer}) {
+        $_ = 'a pandemonium lord' if !/^(?:an?|the) / && !$UNIQUES{$_};
+      }
     }
-    elsif (/shapeshifter/) {
-      $_ = 'shapeshifter';
-    }
-    elsif (!s/.*(zombie|skeleton|simulacrum)$/$1/) {
-      $_ = '';
-    }
-  }
 
-  $g->{ckaux} = $g->{kaux} || '';
-  for ($g->{ckaux}) {
-    s/\{.*?\}//g;
-    s/\(.*?\)//g;
-    s/[+-]\d+,?\s*//g;
-    s/^an? //g;
-    s/(?:elven|orcish|dwarven) //g;
-    s/^Hit by (.*) thrown .*$/$1/;
-    s/^Shot with (.*) by .*$/$1/;
-    s/\b(?:un)?cursed //;
-    s/\s+$//;
-    s/  / /g;
+    $g->{kmod} = $g->{killer} || '';
+    for ($g->{kmod}) {
+      if (/spectral (?!warrior)/) {
+        $_ = 'a spectral thing';
+      }
+      elsif (/shapeshifter/) {
+        $_ = 'shapeshifter';
+      }
+      elsif (!s/.*(zombie|skeleton|simulacrum)$/$1/) {
+        $_ = '';
+      }
+    }
+
+    $g->{ckaux} = $g->{kaux} || '';
+    for ($g->{ckaux}) {
+      s/\{.*?\}//g;
+      s/\(.*?\)//g;
+      s/[+-]\d+,?\s*//g;
+      s/^an? //g;
+      s/(?:elven|orcish|dwarven) //g;
+      s/^Hit by (.*) thrown .*$/$1/;
+      s/^Shot with (.*) by .*$/$1/;
+      s/\b(?:un)?cursed //;
+      s/\s+$//;
+      s/  / /g;
+    }
+
+    $g->{rend} = $g->{end};
   }
 
   $g->{crace} = $g->{race};
@@ -402,19 +547,29 @@ sub fixup_logfields {
     s/.*(Draconian)$/$1/;
   }
 
+  # Milestones will have start time.
   $g->{rstart} = $g->{start};
-  $g->{rend} = $g->{end};
-
-  for ($g->{start}, $g->{end}) {
-    s/^(\d{4})(\d{2})/$1 . sprintf("%02d", $2 + 1)/e;
-    s/[SD]$//;
+  if ($milestone) {
+    $g->{rtime} = $g->{time};
   }
 
-  my $src = $g->{src};
-  # Fixup src for interesting_game.
-  $g->{src} = "http://$SERVER_MAP{$src}/";
-  $g->{splat} = CSplat::Select::interesting_game($g) ? 'y' : '';
-  $g->{src} = $src;
+  for ($g->{start}, $g->{end}, $g->{time}) {
+    if ($_) {
+      s/^(\d{4})(\d{2})/$1 . sprintf("%02d", $2 + 1)/e;
+      s/[SD]$//;
+    }
+  }
+
+  if ($milestone) {
+    milestone_mangle($g);
+  }
+  else {
+    my $src = $g->{src};
+    # Fixup src for interesting_game.
+    $g->{src} = "http://$SERVER_MAP{$src}/";
+    $g->{splat} = CSplat::Select::interesting_game($g) ? 'y' : '';
+    $g->{src} = $src;
+  }
 
   $g
 }
@@ -425,6 +580,57 @@ sub field_val {
   $key =~ s/I$//;
   my $val = $g->{$key} || ($integer? 0 : '');
   $val
+}
+
+sub milestone_mangle {
+  my ($g) = shift;
+
+  $g->{verb} = $MILESTONE_VERB{$g->{verb}} || $g->{verb};
+  my ($verb, $noun) = @$g{qw/verb noun/};
+  if ($verb eq 'uniq') {
+    my ($action, $unique) = $noun =~ /^(\w+) (.*?)\.?$/;
+    $verb = 'uniq.ban' if $action eq 'banished';
+    $noun = $unique;
+  }
+  elsif ($verb eq 'ghost') {
+    my ($action, $ghost) = $noun =~ /(\w+) the ghost of (\S+)/;
+    $verb = 'ghost.ban' if $action eq 'banished';
+    $noun = $ghost;
+  }
+  elsif ($verb eq 'abyss.enter') {
+    my ($cause) = $noun =~ /.*\((.*?)\)$/;
+    $noun = $cause ? $cause : '?';
+  }
+  elsif ($verb eq 'br.enter' || $verb eq 'br.end') {
+    $noun = $g->{place};
+    $noun =~ s/:.*//;
+  }
+  elsif ($verb eq 'rune') {
+    my ($rune) = $noun =~ /found an? (\S+)/;
+    $noun = $rune if $rune;
+  }
+  elsif ($verb eq 'orb') {
+    $noun = 'orb';
+  }
+  $g->{verb} = $verb;
+  $g->{noun} = $noun;
+}
+
+sub add_milestone {
+  my ($file, $source, $offset, $line) = @_;
+  chomp $line;
+  my $m = logfield_hash($line);
+
+  $m->{file} = $file;
+  $m->{offset} = $offset;
+  $m->{src} = $source;
+  $m->{verb} = $m->{type};
+  $m->{noun} = $m->{milestone};
+  $m = fixup_logfields($m);
+
+  my @bindvals = map(field_val($_, $m), @MILE_INSERTFIELDS_DECORATED);
+  execute_st($milestone_insert_st, @bindvals) or
+    die "Can't insert record for $line: $!\n";
 }
 
 sub add_logline {

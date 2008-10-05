@@ -21,6 +21,7 @@
 !learn learn.pl
 !listgame listgame.rb
 !lg listgame.rb
+!lm milestone.rb
 !macro macro.pl
 !messages message/messages.pl
 !nick nickmap.rb

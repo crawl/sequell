@@ -43,7 +43,9 @@ sub handle_output
     $output =~ s/:([^:]*)$//;
     my $post = defined($1) ? $1 : '';
 
-    $output = $pre . pretty_print(demunge_xlogline($output)) . $post;
+    my $g = demunge_xlogline($output);
+    my $str = $g->{milestone} ? milestone_string($g) : pretty_print($g);
+    $output = $pre . $str . $post;
   }
 
   $output =~ s/\n.*//s unless $full_output;
@@ -88,4 +90,23 @@ sub pretty_print
       $game_ref->{turn},
       $game_ref->{turn} == 1 ? '' : 's',
       serialize_time($game_ref->{dur})
+}
+
+sub milestone_string
+{
+  my $g = shift;
+
+  my $placestring = " ($g->{place})";
+  if ($g->{milestone} eq "escaped from the Abyss!")
+  {
+    $placestring = "";
+  }
+
+  sprintf("%s the %s (L%s %s) %s%s",
+    $g->{name},
+    game_skill_title($g),
+    $g->{xl},
+    $g->{char},
+    $g->{milestone},
+    $placestring)
 }
