@@ -44,7 +44,7 @@ sub handle_output
     my $post = defined($1) ? $1 : '';
 
     my $g = demunge_xlogline($output);
-    my $str = $g->{milestone} ? milestone_string($g) : pretty_print($g);
+    my $str = $g->{milestone} ? milestone_string($g, 1) : pretty_print($g);
     $output = $pre . $str . $post;
   }
 
@@ -94,7 +94,7 @@ sub pretty_print
 
 sub milestone_string
 {
-  my $g = shift;
+  my ($g, $show_time) = @_;
 
   my $placestring = " ($g->{place})";
   if ($g->{milestone} eq "escaped from the Abyss!")
@@ -102,7 +102,8 @@ sub milestone_string
     $placestring = "";
   }
 
-  sprintf("%s the %s (L%s %s) %s%s",
+  my $prefix = $show_time? "[" . serialize_time($g->{time}) + "] " : '';
+  sprintf("${prefix}%s the %s (L%s %s) %s%s",
     $g->{name},
     game_skill_title($g),
     $g->{xl},
