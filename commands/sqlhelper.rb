@@ -307,8 +307,9 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
       report_grouped_games_for_query(q)
     else
       n, row = sql_exec_query(q.num, q)
+      type = context == CTX_LOG ? 'games' : 'milestones'
       unless row
-        puts "No games for #{q.argstr}."
+        puts "No #{type} for #{q.argstr}."
       else
         print "\n#{n}. :#{munge_game(row_to_fieldmap(row))}:"
       end
@@ -1004,14 +1005,18 @@ def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
     end
   end
 
+
+  type = $CTX == CTX_LOG ? 'game' : 'milestone'
+  types = type + 's'
+
   if count == 0
-    puts "No games for #{q.argstr}."
+    puts "No #{types} for #{q.argstr}."
   else
     printable = chars.map do |e|
       formatter ? formatter.call(e[1], e[0]) : "#{e[1]}x#{e[0]}"
     end
     scount = count == 1 ? "One" : "#{count}"
-    sgames = count == 1 ? "game" : "games"
+    sgames = count == 1 ? type : types
     puts("#{scount} #{sgames} for #{q.argstr}: " +
          printable.join(separator))
   end
