@@ -202,7 +202,7 @@ class QueryContext
       @defsort = 'end'
     else
       @fields = MILEFIELDS_DECORATED
-      @synthetic = []
+      @synthetic = FAKEFIELDS_DECORATED
       @summarizable = MILEFIELDS_SUMMARIZABLE.dup
       @fieldmap = MILEFIELDS
 
