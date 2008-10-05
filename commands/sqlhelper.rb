@@ -203,6 +203,7 @@ class QueryContext
     else
       @fields = MILEFIELDS_DECORATED
       @synthetic = FAKEFIELDS_DECORATED
+      @synthmap = FAKEFIELDS.dup
       @summarizable = MILEFIELDS_SUMMARIZABLE.dup
       @fieldmap = MILEFIELDS
 
@@ -212,10 +213,10 @@ class QueryContext
       nverbs.each do |verb|
         @noun_verb[verb] = true
         @summarizable[verb] = true
+        @synthmap[verb] = true
       end
 
       @noun_verb_fields = [ 'noun', 'verb' ]
-      @synthmap = @noun_verb
     end
   end
 end
