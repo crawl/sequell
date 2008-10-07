@@ -15,7 +15,7 @@ sql_show_game(ARGV[1], args, CTX_STONE) do | n, g |
     id = g['game_id']
     game = id != nil ? sql_game_by_id(id) : nil
     if not game
-      puts "Milestone (#{short_game_summary(g)}) has no matching game."
+      puts "#{short_game_summary(g)} has no matching game."
     elsif tv
       TV.request_game_verbosely(id, game)
     else
