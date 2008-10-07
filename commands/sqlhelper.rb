@@ -124,7 +124,7 @@ MILEFIELDS = { }
 FAKEFIELDS = { }
 
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
-ARGSPLITTER = Regexp.new('^-?([a-z.]+)\s*(' +
+ARGSPLITTER = Regexp.new('^-?([a-z.:]+)\s*(' +
                         SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
                         ')\s*(.*)$', Regexp::IGNORECASE)
 
@@ -186,10 +186,39 @@ class QueryContext
   attr_accessor :noun_verb, :noun_verb_fields
   attr_accessor :fieldmap, :synthmap, :table_alias
 
+  def field?(field)
+    field_type(field)
+  end
+
+  def split_field(field)
+    prefix = nil
+    suffix = field
+    if field =~ /^(\w+):(\w+)/
+      prefix, suffix = $1, $2
+    end
+    [ prefix, suffix ]
+  end
+
+  def field_type(field)
+    prefix, suffix = split_field(field)
+
+    if prefix
+      if prefix == @table_alias
+        @fieldmap[suffix] || @synthmap[suffix]
+      else
+        @alt && @alt.field_type(field)
+      end
+    else
+      @fieldmap[suffix] || @synthmap[suffix] || (@alt && @alt.field_type(field))
+    end
+  end
+
   def dbfield(field)
-    native_field = @fieldmap[field]
-    if native_field || @table =~ /^logrecord/
-      "#@table_alias.#{LOG2SQL[field]}"
+    raise "Bad field #{field}" unless field?(field)
+    prefix, suffix = split_field(field)
+
+    if !prefix || prefix == @table_alias || @table =~ /^logrecord/
+      "#@table_alias.#{LOG2SQL[suffix]}"
     else
       @alt.dbfield(field)
     end
@@ -503,8 +532,13 @@ class CrawlQuery
                   const_pred("#{stone_alias}.game_id = #{log_alias}.id"))
   end
 
+  def sort_joins?
+    talias = CTX_LOG.table_alias
+    @sort.any? { |s| s =~ /ORDER BY #{talias}\./ }
+  end
+
   def check_joins(preds)
-    if has_joins?(preds)
+    if has_joins?(preds) || sort_joins?
       fixup_join()
     end
   end
@@ -757,15 +791,9 @@ end
 
 def field_pred(v, op, fname, fexpr=nil)
   fexpr = fexpr || fname
-  if $CTX == CTX_STONE && !$CTX.fieldmap[fname]
-    # We have a synthetic field - this is a field in the logrecord table,
-    # indicating a join.
-    fname = "lg.#{fname.downcase}"
-    fexpr = "lg.#{fexpr}"
-  else
-    talias = $CTX.table_alias
-    fname = "#{talias}.#{fname}"
-    fexpr = "#{talias}.#{fexpr}"
+  fexpr = $CTX.dbfield(fexpr)
+  if fexpr =~ /^(\w+\.)/
+    fname = $1 + fname
   end
   v = proc_val(v, op)
   [ :field, "#{fexpr or fname} #{op} ?", v, fname.downcase ]
@@ -845,8 +873,7 @@ def process_param(preds, sorts, arg)
 
   selector = sort ? val : key
   selector = COLUMN_ALIASES[selector] || selector
-  raise "Unknown selector: #{selector}" unless \
-     $CTX.fieldmap[selector] || $CTX.synthmap[selector]
+  raise "Unknown selector: #{selector}" unless $CTX.field?(selector)
 
   raise "Bad sort: #{arg}" if sort && op != '='
   raise "Too many sort conditions" if sort && !sorts.empty?
@@ -856,8 +883,8 @@ def process_param(preds, sorts, arg)
     sorts << "ORDER BY #{$CTX.dbfield(selector)}#{order}"
   else
     sqlop = OPERATORS[op]
-    field = LOG2SQL[selector]
-    if $CTX.fieldmap[selector] == 'I'
+    field = selector.downcase
+    if $CTX.field_type(selector) == 'I'
       if ['=~','!~','~~', '!~~'].index(op)
         raise "Can't use #{op} on numeric field #{selector}"
       end
@@ -904,7 +931,7 @@ def flatten_predicates(pred)
 end
 
 def _add_nick(nick, preds)
-  preds << field_pred(nick, '=', 'name', LOG2SQL['name'])
+  preds << field_pred(nick, '=', 'name', 'name')
 end
 
 def _add_nick_preds(nick, preds)
@@ -937,7 +964,12 @@ def parse_query_params(nick, num, args)
 end
 
 def query_field(selector, field, op, sqlop, val)
-  if ['killer', 'ckiller'].index(selector) and \
+  selfield = selector
+  if selector =~ /^\w+:(.*)/
+    selfield = $1
+  end
+
+  if ['killer', 'ckiller'].index(selfield) and \
       [ '=', '!=' ].index(op) and val !~ /^an? /i then
     clause = [ op == '=' ? 'OR' : 'AND' ]
     clause << field_pred(val, sqlop, selector, field)
@@ -946,7 +978,7 @@ def query_field(selector, field, op, sqlop, val)
     return clause
   end
 
-  if $CTX.noun_verb[selector]
+  if $CTX.noun_verb[selfield]
     clause = [ 'AND' ]
     key = $CTX.noun_verb[selector]
     noun, verb = $CTX.noun_verb_fields
@@ -955,13 +987,13 @@ def query_field(selector, field, op, sqlop, val)
     return clause
   end
 
-  if selector == 'place' and !val.index(':') and
+  if selfield == 'place' and !val.index(':') and
     [ '=', '!=' ].index(op) and
     ![ 'pan', 'lab', 'hell', 'blade', 'temple', 'abyss' ].index(val) then
     val = val + ':%'
     sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
   end
-  if selector == 'race' || selector == 'crace'
+  if selfield == 'race' || selfield == 'crace'
     if val.downcase == 'dr' && (op == '=' || op == '!=')
       sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
       val = "%#{val}"
@@ -969,11 +1001,11 @@ def query_field(selector, field, op, sqlop, val)
       val = RACE_EXPANSIONS[val.downcase] || val
     end
   end
-  if selector == 'cls'
+  if selfield == 'cls'
     val = CLASS_EXPANSIONS[val.downcase] || val
   end
 
-  if selector == 'when'
+  if selfield == 'when'
     if %w/t tourney tournament/.index(val) and [ '=', '!=' ].index(op)
       tourney = op == '='
       clause = [ tourney ? 'AND' : 'OR' ]
@@ -983,11 +1015,11 @@ def query_field(selector, field, op, sqlop, val)
       tstart = '20080801'
       tend   = '20080901'
       if $CTX == CTX_LOG
-        clause << query_field('start', LOG2SQL['start'], lop, lop, tstart)
-        clause << query_field('end', LOG2SQL['end'], rop, rop, tend)
+        clause << query_field('start', 'start', lop, lop, tstart)
+        clause << query_field('end', 'end', rop, rop, tend)
       else
-        clause << query_field('time', LOG2SQL['time'], lop, lop, tstart)
-        clause << query_field('time', LOG2SQL['time'], rop, rop, tend)
+        clause << query_field('time', 'time', lop, lop, tstart)
+        clause << query_field('time', 'time', rop, rop, tend)
       end
       return clause
     else
