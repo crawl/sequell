@@ -457,7 +457,7 @@ def sql_game_by_id(id)
     q = \
       CrawlQuery.new([ 'AND', field_pred(id, '=', 'id') ],
                      [ ], '*', 1, "id=#{id}")
-
+    #puts "Query: #{q.select_all}"
     r = nil
     sql_each_row_matching(q) do |row|
       r = row_to_fieldmap(row)
@@ -756,6 +756,7 @@ def const_pred(pred)
 end
 
 def field_pred(v, op, fname, fexpr=nil)
+  fexpr = fexpr || fname
   if $CTX == CTX_STONE && !$CTX.fieldmap[fname]
     # We have a synthetic field - this is a field in the logrecord table,
     # indicating a join.
