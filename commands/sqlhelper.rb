@@ -184,13 +184,19 @@ MILEFIELDS_SUMMARIZABLE['time'] = nil
 class QueryContext
   attr_accessor :fields, :synthetic, :summarizable, :table, :defsort
   attr_accessor :noun_verb, :noun_verb_fields
-  attr_accessor :fieldmap, :synthmap
+  attr_accessor :fieldmap, :synthmap, :table_alias
 
   def initialize(table)
     @table = table
 
+    if @table =~ / (\w+)$/
+      @table_alias = $1
+    else
+      @table_alias = @table
+    end
+
     @noun_verb = { }
-    if @table == 'logrecord'
+    if @table =~ /^logrecord/
       @fields = LOGFIELDS_DECORATED
       @synthetic = FAKEFIELDS_DECORATED
       @summarizable = LOGFIELDS_SUMMARIZABLE
@@ -199,8 +205,13 @@ class QueryContext
       @defsort = 'end'
     else
       @fields = MILEFIELDS_DECORATED
-      @synthetic = FAKEFIELDS_DECORATED
+      @synthetic = FAKEFIELDS_DECORATED + LOGFIELDS_DECORATED
+
       @synthmap = FAKEFIELDS.dup
+      for key in LOGFIELDS.keys
+        @synthmap[key] = LOGFIELDS[key] unless @synthmap[key]
+      end
+
       @summarizable = MILEFIELDS_SUMMARIZABLE.dup
       @fieldmap = MILEFIELDS
 
@@ -218,8 +229,8 @@ class QueryContext
   end
 end
 
-CTX_LOG = QueryContext.new('logrecord')
-CTX_STONE = QueryContext.new('milestone')
+CTX_LOG = QueryContext.new('logrecord lg')
+CTX_STONE = QueryContext.new('milestone mst')
 
 # Query context - can be either logrecord or milestone, NOT thread safe.
 $CTX = CTX_LOG
@@ -455,6 +466,27 @@ class CrawlQuery
     @summarize = nil
     @summary_sort = nil
     @raw = nil
+
+    check_joins(predicates) if $CTX == CTX_STONE
+  end
+
+  def has_joins?(preds)
+    return false if preds.empty? || !preds.is_a?(Array)
+    if preds[0].is_a?(Symbol)
+      return preds[3] =~ /^#{CTX_LOG.table_alias}\./
+    end
+    preds.any? { |x| has_joins?(x) }
+  end
+
+  def check_joins(preds)
+    if has_joins?(preds)
+      @table = "#@table, logrecord lg"
+
+      stone_alias = CTX_STONE.table_alias
+      log_alias = CTX_LOG.table_alias
+      add_predicate('AND',
+                    const_pred("#{stone_alias}.game_id = #{log_alias}.id"))
+    end
   end
 
   # Is this a query aimed at a single nick?
@@ -495,7 +527,8 @@ class CrawlQuery
 
   def select_all
     decfields = $CTX.fields
-    fields = decfields.map { |x| LOG2SQL[x.name] }.join(", ")
+    talias = $CTX.table_alias
+    fields = decfields.map { |x| talias + "." + LOG2SQL[x.name] }.join(", ")
     "SELECT #{fields} FROM #@table " + where
   end
 
@@ -526,20 +559,6 @@ class CrawlQuery
   def values
     build_query unless @values
     @values || []
-  end
-
-  def pred_field_arr(p)
-    fields = p[1 .. -1].collect do |e|
-      if e[0] == :field
-        e[3]
-      else
-        pred_fields(e)
-      end
-    end
-  end
-
-  def pred_fields(p)
-    Set.new(pred_field_arr(p).flatten)
   end
 
   def version_predicate
@@ -574,7 +593,8 @@ class CrawlQuery
       sort << ", " unless sort.empty?
       sort << "#{field} #{direction == :desc ? 'DESC' : ''}"
     end
-    @sort << "ORDER BY #{LOG2SQL[sort]}"
+    talias = $CTX.table_alias
+    @sort << "ORDER BY #{talias}.#{LOG2SQL[sort]}"
   end
 
   def reverse_sorts(sorts)
@@ -589,19 +609,20 @@ class CrawlQuery
 
     op = preds[0]
     return [ preds[1], [ preds[2] ] ] if op == :field
+    return [ preds[1], [ ] ] if op == :const
 
     values = []
 
     preds[1 .. -1].each do |p|
       clauses << " " << op << " " unless clauses.empty?
-      if p[0] == :field
-        clauses << p[1]
-        values << p[2]
+
+      subclause, subvalues = collect_clauses(p)
+      if p[0].is_a?(Symbol)
+        clauses << subclause
       else
-        subclause, subvalues = collect_clauses(p)
         clauses << "(#{subclause})"
-        values += subvalues
       end
+      values += subvalues
     end
     [ clauses, values ]
   end
@@ -707,7 +728,21 @@ def _canonical_args(args)
   cargs
 end
 
+def const_pred(pred)
+  [ :const, pred ]
+end
+
 def field_pred(v, op, fname, fexpr=nil)
+  if $CTX == CTX_STONE && !$CTX.fieldmap[fname]
+    # We have a synthetic field - this is a field in the logrecord table,
+    # indicating a join.
+    fname = "lg.#{fname.downcase}"
+    fexpr = "lg.#{fexpr}"
+  else
+    talias = $CTX.table_alias
+    fname = "#{talias}.#{fname}"
+    fexpr = "#{talias}.#{fexpr}"
+  end
   v = proc_val(v, op)
   [ :field, "#{fexpr or fname} #{op} ?", v, fname.downcase ]
 end
@@ -794,7 +829,8 @@ def process_param(preds, sorts, arg)
 
   if sort
     order = key == 'max'? ' DESC' : ''
-    sorts << "ORDER BY #{LOG2SQL[selector]}#{order}"
+    talias = $CTX.table_alias
+    sorts << "ORDER BY #{talias}.#{LOG2SQL[selector]}#{order}"
   else
     sqlop = OPERATORS[op]
     field = LOG2SQL[selector]
@@ -816,20 +852,6 @@ def add_extra_predicate(p, arg, value, operator, fieldname,
     frag = "#{fieldname}#{operator}#{value}"
     arg << frag
   end
-end
-
-def pred_field_arr(p)
-  fields = p[1 .. -1].collect do |e|
-    if e[0] == :field
-      e[3]
-    else
-      pred_field_arr(e)
-    end
-  end
-end
-
-def pred_fields(p)
-  Set.new(pred_field_arr(p).flatten + [ $group_field ])
 end
 
 # A predicate chain can be flattened if:
@@ -883,7 +905,8 @@ def parse_query_params(nick, num, args)
   parse_param_group(subpreds, sorts, args)
   preds << subpreds
 
-  sorts << "ORDER BY #{LOG2SQL[$CTX.defsort]} DESC" if sorts.empty?
+  talias = $CTX.table_alias
+  sorts << "ORDER BY #{talias}.#{LOG2SQL[$CTX.defsort]} DESC" if sorts.empty?
 
   canargs = _canonical_args(args)
   preds = flatten_predicates(preds)
