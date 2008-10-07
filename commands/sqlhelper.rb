@@ -226,7 +226,17 @@ class QueryContext
   end
 
   def summarise?(field)
-    @summarizable[field] || (@alt && @alt.summarise?(field))
+    prefix, suffix = split_field(field)
+
+    if prefix
+      if prefix == @table_alias
+        @summarizable[suffix]
+      else
+        @alt && @alt.summarise?(field)
+      end
+    else
+      @summarizable[suffix] || (@alt && @alt.summarise?(field))
+    end
   end
 
   def initialize(table, alt=nil)
