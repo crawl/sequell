@@ -217,7 +217,8 @@ class QueryContext
     raise "Bad field #{field}" unless field?(field)
     prefix, suffix = split_field(field)
 
-    if !prefix || prefix == @table_alias || @table =~ /^logrecord/
+    if @table =~ /^logrecord/ || ((!prefix || prefix == @table_alias) \
+                                  && @fieldmap[suffix])
       "#@table_alias.#{LOG2SQL[suffix]}"
     else
       @alt.dbfield(field)
@@ -248,12 +249,9 @@ class QueryContext
       @defsort = 'end'
     else
       @fields = MILEFIELDS_DECORATED
-      @synthetic = FAKEFIELDS_DECORATED + LOGFIELDS_DECORATED
+      @synthetic = FAKEFIELDS_DECORATED
 
       @synthmap = FAKEFIELDS.dup
-      for key in LOGFIELDS.keys
-        @synthmap[key] = LOGFIELDS[key] unless @synthmap[key]
-      end
 
       @summarizable = MILEFIELDS_SUMMARIZABLE.dup
       @fieldmap = MILEFIELDS
