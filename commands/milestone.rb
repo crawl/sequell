@@ -6,12 +6,10 @@ require 'commands/libtv'
 
 help("Lists milestones for the specified player. Usage: !lm (<player>) (<number>) (options) where options are in the form field=value, or (max|min)=field. See ??milestone for more info.")
 
-args, opts = extract_options(ARGV[2].split()[1 .. -1],
-                             'tv', 'game')
+args, opts = extract_options(ARGV[2].split()[1 .. -1], 'tv', 'game')
 
 tv = opts[:tv]
-sql_show_game(ARGV[1], args, CTX_STONE) do
-  | n, g |
+sql_show_game(ARGV[1], args, CTX_STONE) do | n, g |
 
   if opts[:game]
     id = g['game_id']
