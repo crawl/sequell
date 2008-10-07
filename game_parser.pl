@@ -103,6 +103,7 @@ sub milestone_string
   }
 
   my $time = join("-", ($g->{time} =~ /^(\d{4})(\d{2})(\d{2})/g));
+  $time =~ s/^(\d{4}-)(\d{2})/$1 . sprintf("%02d", $2 + 1)/;
   my $prefix = $show_time? "[" . $time . "] " : '';
   sprintf("${prefix}%s the %s (L%s %s) %s%s",
     $g->{name},
