@@ -17,7 +17,7 @@ sql_show_game(ARGV[1], args, CTX_STONE) do | n, g |
     if not game
       puts "#{short_game_summary(g)} has no matching game."
     elsif tv
-      TV.request_game_verbosely(id, game)
+      TV.request_game_verbosely(id, game, ARGV[1])
     else
       print_game_n(g['game_id'], sql_game_by_id(id))
     end
