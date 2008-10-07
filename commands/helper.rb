@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 
+require 'set'
+
 # fields end in S if they're strings, I if integral
 $field_names = %w<vS lvS nameS uidI raceS clsS xlI skS sklevI titleS placeS brS lvlI ltypS hpI mhpI mmhpI strI intI dexI startS durI turnI scI ktypS killerS kauxS endS tmsgS vmsgS godS pietyI penI charS nruneI uruneI>
 XKEYCHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
@@ -317,7 +319,8 @@ def find_game_morgue(e)
 end
 
 def short_game_summary(g)
-  "#{g['name']}, XL#{g['xl']} #{g['char']}, T:#{g['turn']}"
+  mile = g['milestone'] ? ' (milestone)' : ''
+  "#{g['name']}, XL#{g['xl']} #{g['char']}, T:#{g['turn']}#{mile}"
 end
 
 def datestr(d)
@@ -453,4 +456,22 @@ end
 
 def nick_primary_alias(nick)
   nick_aliases(nick)[0]
+end
+
+def extract_options(args, *keys)
+  keyset = Set.new(keys)
+  cargs = []
+  found = { }
+  for arg in args
+    if arg =~ /^-(\w+)$/ && keyset.include?($1)
+      found[$1.to_sym] = true
+    else
+      cargs << arg
+    end
+  end
+  [ cargs, found ]
+end
+
+def print_game_n(n, game)
+  print "\n#{n}. :#{munge_game(game)}:"
 end

@@ -94,15 +94,15 @@ COLUMN_ALIASES = {
   'ktype' => 'ktyp', 'score' => 'sc', 'turns' => 'turn',
   'time' => 'dur', 'skill' => 'sk',
   'ch' => 'char', 'r' => 'race', 'c' => 'cls', 'sp' => 'race',
-  'cl' => 'xl', 'clev' => 'xl', 'type' => 'verb'
+  'cl' => 'xl', 'clev' => 'xl', 'type' => 'verb', 'gid' => 'game_id'
 }
 
-LOGFIELDS_DECORATED = %w/file src v cv lv scI name uidI race crace cls
+LOGFIELDS_DECORATED = %w/idI file src v cv lv scI name uidI race crace cls
   char xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
   endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend/
 
-MILEFIELDS_DECORATED = %w/file src v cv name race crace cls char xlI
+MILEFIELDS_DECORATED = %w/game_idI file src v cv name race crace cls char xlI
                           sk sklevI title place br lvlI ltyp
                           hpI mhpI mmhpI strI intI dexI
                           god durI turnI uruneI nruneI timeD
@@ -311,7 +311,11 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
       unless row
         puts "No #{type} for #{q.argstr}."
       else
-        print "\n#{n}. :#{munge_game(row_to_fieldmap(row))}:"
+        if block_given?
+          yield [ n, row_to_fieldmap(row) ]
+        else
+          print "\n#{n}. :#{munge_game(row_to_fieldmap(row))}:"
+        end
       end
     end
   end
@@ -420,6 +424,20 @@ end
 def sql_each_row_for_query(query_text, *params)
   sql_dbh.execute(query_text, *params) do |row|
     yield row
+  end
+end
+
+def sql_game_by_id(id)
+  with_query_context(CTX_LOG) do
+    q = \
+      CrawlQuery.new([ 'AND', field_pred(id, '=', 'id') ],
+                     [ ], '*', 1, "id=#{id}")
+
+    r = nil
+    sql_each_row_matching(q) do |row|
+      r = row_to_fieldmap(row)
+    end
+    r
   end
 end
 
