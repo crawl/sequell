@@ -186,8 +186,22 @@ class QueryContext
   attr_accessor :noun_verb, :noun_verb_fields
   attr_accessor :fieldmap, :synthmap, :table_alias
 
-  def initialize(table)
+  def dbfield(field)
+    native_field = @fieldmap[field]
+    if native_field || @table =~ /^logrecord/
+      "#@table_alias.#{LOG2SQL[field]}"
+    else
+      @alt.dbfield(field)
+    end
+  end
+
+  def summarise?(field)
+    @summarizable[field] || (@alt && @alt.summarise?(field))
+  end
+
+  def initialize(table, alt=nil)
     @table = table
+    @alt = alt
 
     if @table =~ / (\w+)$/
       @table_alias = $1
@@ -230,7 +244,7 @@ class QueryContext
 end
 
 CTX_LOG = QueryContext.new('logrecord lg')
-CTX_STONE = QueryContext.new('milestone mst')
+CTX_STONE = QueryContext.new('milestone mst', CTX_LOG)
 
 # Query context - can be either logrecord or milestone, NOT thread safe.
 $CTX = CTX_LOG
@@ -277,7 +291,7 @@ def sql_build_query(default_nick, args, context=CTX_LOG)
     if summarize =~ /^-?s=([+-]?)(.*)$/
       sort = $1.empty? ? '+' : $1
       sfield = COLUMN_ALIASES[$2] || $2
-      unless context.summarizable[sfield]
+      unless context.summarise?(sfield)
         raise "Bad arg '#{summarize}' - cannot summarise by #{sfield}"
       end
       sfield = sort + sfield
@@ -466,6 +480,7 @@ class CrawlQuery
     @summarize = nil
     @summary_sort = nil
     @raw = nil
+    @joins = false
 
     check_joins(predicates) if $CTX == CTX_STONE
   end
@@ -478,14 +493,19 @@ class CrawlQuery
     preds.any? { |x| has_joins?(x) }
   end
 
+  def fixup_join
+    return if @joins
+    @joins = true
+    @table = "#@table, logrecord lg"
+    stone_alias = CTX_STONE.table_alias
+    log_alias = CTX_LOG.table_alias
+    add_predicate('AND',
+                  const_pred("#{stone_alias}.game_id = #{log_alias}.id"))
+  end
+
   def check_joins(preds)
     if has_joins?(preds)
-      @table = "#@table, logrecord lg"
-
-      stone_alias = CTX_STONE.table_alias
-      log_alias = CTX_LOG.table_alias
-      add_predicate('AND',
-                    const_pred("#{stone_alias}.game_id = #{log_alias}.id"))
+      fixup_join()
     end
   end
 
@@ -509,6 +529,11 @@ class CrawlQuery
         add_predicate('AND', field_pred(@summarize, '=', verb))
         @summarize = noun
       end
+
+      # If this is not a directly summarizable field, we need a join.
+      if !$CTX.summarizable[@summarize]
+        fixup_join()
+      end
     end
     @query = nil
   end
@@ -527,8 +552,7 @@ class CrawlQuery
 
   def select_all
     decfields = $CTX.fields
-    talias = $CTX.table_alias
-    fields = decfields.map { |x| talias + "." + LOG2SQL[x.name] }.join(", ")
+    fields = decfields.map { |x| $CTX.dbfield(x.name) }.join(", ")
     "SELECT #{fields} FROM #@table " + where
   end
 
@@ -545,8 +569,8 @@ class CrawlQuery
     begin
       @sort = []
       @query = nil
-      %{SELECT #{LOG2SQL[field]}, COUNT(*) AS fieldcount FROM #@table
-        #{where} GROUP BY #{LOG2SQL[field]} ORDER BY fieldcount #{sortdir}}
+      %{SELECT #{$CTX.dbfield(field)}, COUNT(*) AS fieldcount FROM #@table
+        #{where} GROUP BY #{$CTX.dbfield(field)} ORDER BY fieldcount #{sortdir}}
     ensure
       @sort = temp
     end
@@ -593,8 +617,7 @@ class CrawlQuery
       sort << ", " unless sort.empty?
       sort << "#{field} #{direction == :desc ? 'DESC' : ''}"
     end
-    talias = $CTX.table_alias
-    @sort << "ORDER BY #{talias}.#{LOG2SQL[sort]}"
+    @sort << "ORDER BY #{$CTX.dbfield(sort)}"
   end
 
   def reverse_sorts(sorts)
@@ -829,8 +852,7 @@ def process_param(preds, sorts, arg)
 
   if sort
     order = key == 'max'? ' DESC' : ''
-    talias = $CTX.table_alias
-    sorts << "ORDER BY #{talias}.#{LOG2SQL[selector]}#{order}"
+    sorts << "ORDER BY #{$CTX.dbfield(selector)}#{order}"
   else
     sqlop = OPERATORS[op]
     field = LOG2SQL[selector]
