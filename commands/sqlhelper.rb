@@ -105,7 +105,7 @@ LOGFIELDS_DECORATED = %w/idI file src v cv lv scI name uidI race crace cls
 MILEFIELDS_DECORATED = %w/game_idI file src v cv name race crace cls char xlI
                           sk sklevI title place br lvlI ltyp
                           hpI mhpI mmhpI strI intI dexI
-                          god durI turnI uruneI nruneI timeD
+                          god durI turnI uruneI nruneI timeD rtime rstart
                           verb noun milestone/
 
 FAKEFIELDS_DECORATED = %w/when/
