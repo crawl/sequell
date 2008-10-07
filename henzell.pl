@@ -382,6 +382,7 @@ sub process_msg
   {
     # Log all commands to Henzell.
     print "CMD($private): $nick: $verbatim\n";
+    $ENV{PRIVMSG} = $private ? 'y' : 'n';
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
     	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
