@@ -178,8 +178,10 @@ end
 MILEFIELDS_SUMMARIZABLE = \
   Hash[ *MILEFIELDS_DECORATED.map { |x| [ x.name, true ] }.flatten ]
 
-# But suppress attempts to summarize by time.
-MILEFIELDS_SUMMARIZABLE['time'] = nil
+# But suppress attempts to summarize by bad fields.
+%w/dur turn rtime rstart/.each do |x|
+  MILEFIELDS_SUMMARIZABLE[x] = nil
+end
 
 class QueryContext
   attr_accessor :fields, :synthetic, :summarizable, :table, :defsort
