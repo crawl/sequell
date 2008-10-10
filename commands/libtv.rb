@@ -156,15 +156,27 @@ module LibTV
       hash
     end
 
+    def self.parse_seek_num(seek, num, allow_end=false)
+      seekname = seek == '<' ? 'seek-back' : 'seek-after'
+      expected = allow_end ? 'number or "$"' : 'number'
+      if num !~ /^[-+]?\d+(?:\.\d+)?$/ && (!allow_end || num != '$')
+        raise "Bad seek argument for #{seekname}: #{num} (#{expected} expected)"
+      end
+      num
+    end
+
     def self.parse_tv_arg(hash, key)
-      if key == 'cancel'
-        hash['cancel'] = 'y'
+      if key == 'cancel' or key == 'nuke'
+        hash[key] = 'y'
       else
         prefix = key[0..0]
+        rest = key[1 .. -1].strip
         if prefix == '<'
-          hash['seekbefore'] = key[1 .. -1].strip
+          hash['seekbefore'] = parse_seek_num(prefix, rest)
         elsif prefix == '>'
-          hash['seekafter'] = key[1 .. -1].strip
+          hash['seekafter'] = parse_seek_num(prefix, rest, true)
+        else
+          raise "Unrecognised TV option: #{key}"
         end
       end
     end
@@ -198,7 +210,13 @@ module LibTV
     def self.request_game_verbosely(n, g, who)
       summary = short_game_summary(g)
       tv = 'FooTV'
-      puts "#{n}. #{summary} requested for #{tv}."
+
+      if @@tv_args['nuke']
+        puts "FooTV playlist clear requested by #{who}."
+      else
+        suffix = @@tv_args['cancel'] ? ' cancel' : ''
+        puts "#{n}. #{summary}#{suffix} requested for #{tv}."
+      end
 
       g['req'] = ARGV[1]
 
