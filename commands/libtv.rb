@@ -211,10 +211,10 @@ module LibTV
       summary = short_game_summary(g)
       tv = 'FooTV'
 
-      if @@tv_args['nuke']
+      if @@tv_args && @@tv_args['nuke']
         puts "FooTV playlist clear requested by #{who}."
       else
-        suffix = @@tv_args['cancel'] ? ' cancel' : ''
+        suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
         puts "#{n}. #{summary}#{suffix} requested for #{tv}."
       end
 
