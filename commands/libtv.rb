@@ -143,6 +143,43 @@ module LibTV
   end
 
   class TV
+    @@tv_args = nil
+
+    def self.parse_tv_args(tvarg)
+      return unless tvarg.is_a?(String)
+
+      keys = tvarg.split(':')
+      hash = { }
+      for k in keys
+        self.parse_tv_arg(hash, k)
+      end
+      hash
+    end
+
+    def self.parse_tv_arg(hash, key)
+      if key == 'cancel'
+        hash['cancel'] = 'y'
+      else
+        prefix = key[0..0]
+        if prefix == '<'
+          hash['seekbefore'] = key[1 .. -1].strip
+        elsif prefix == '>'
+          hash['seekafter'] = key[1 .. -1].strip
+        end
+      end
+    end
+
+    def self.with_tv_opts(argv)
+      args, opts = extract_options(argv, 'tv')
+      old_args = @@tv_args
+      begin
+        @@tv_args = parse_tv_args(opts[:tv])
+        yield args, opts
+      ensure
+        @@tv_args = old_args
+      end
+    end
+
     def self.request_game(g)
       # Launch a daemon that keeps a server socket open for interested
       # parties (i.e. C-SPLAT) to listen in.
@@ -164,6 +201,13 @@ module LibTV
       puts "#{n}. #{summary} requested for #{tv}."
 
       g['req'] = ARGV[1]
+
+      if @@tv_args
+        for k in @@tv_args.keys
+          g[k] = @@tv_args[k]
+        end
+      end
+
       request_game(g)
     end
   end

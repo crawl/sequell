@@ -463,8 +463,8 @@ def extract_options(args, *keys)
   cargs = []
   found = { }
   for arg in args
-    if arg =~ /^-(\w+)$/ && keyset.include?($1)
-      found[$1.to_sym] = true
+    if arg =~ /^-(\w+)(?::(.*))?$/ && keyset.include?($1)
+      found[$1.to_sym] = $2 || true
     else
       cargs << arg
     end
