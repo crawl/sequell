@@ -5,7 +5,7 @@
 !cdefine source.pl
 !chars chars.rb
 !cmdinfo cmdinfo.py
-!deathsby deathsby.py
+!deathsby deathsby.rb
 !deathsin deathsin.rb
 !dump dump.pl
 !eplayers players.pl
