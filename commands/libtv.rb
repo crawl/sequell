@@ -3,11 +3,40 @@
 require 'gserver'
 require 'commands/helper'
 
-module LibTV
+module TV
+  @@tv_args = nil
+
   QUEUE_FILE = 'tv.queue'
   LOCK_FILE = 'tv.queue.lock'
   LOG_FILE = 'tv.queue.log'
 
+  # Serves ttyrec directory listings to whoever asks.
+  class TtyrecDirectoryServ < GServer
+    def initialize(port = 21977, host = "0.0.0.0")
+      puts "Starting ttyrec listing server."
+      super(port, host, Float::MAX, $stderr, true)
+    end
+
+    def serve(sock)
+      while true
+        nick = sock.gets.chomp
+        puts "ttyrec listing requested for '#{nick}'"
+        last unless nick
+        list_ttyrecs(nick, sock)
+      end
+    end
+
+    def list_ttyrecs(nick, sock)
+      for ttyrec in Dir[DGL_TTYREC_DIR + "/#{nick}/*.ttyrec*"]
+        if ttyrec =~ %r{.*/(.*)}
+          sock.write("#$1 #{File.size(ttyrec)} ")
+        end
+      end
+      sock.write("\r\n")
+    end
+  end
+
+  # Serves TV requests to FooTV instances.
   class TVServ < GServer
     def initialize(port = 21976, host = "0.0.0.0")
       puts "Starting TV notification server."
@@ -94,7 +123,7 @@ module LibTV
     end
   end
 
-  def flock(file, mode)
+  def self.flock(file, mode)
     success = file.flock(mode)
     if success
       begin
@@ -107,7 +136,7 @@ module LibTV
     nil
   end
 
-  def oflock(filename, mode)
+  def self.oflock(filename, mode)
     open(filename, 'w') do |of|
       flock(of, mode) do |f|
         return yield(f)
@@ -116,7 +145,7 @@ module LibTV
     nil
   end
 
-  def launch_daemon()
+  def self.launch_daemon()
     return if fork()
 
     begin
@@ -134,7 +163,11 @@ module LibTV
       STDERR.reopen(logfile)
       STDIN.close()
 
-      # And start the notification server.
+      # Start the ttyrec listing server.
+      ttyrec_lister = TtyrecDirectoryServ.new
+      ttyrec_lister.start()
+
+      # Start the notification server and wait on it.
       tv = TVServ.new
       tv.start()
       tv.join()
@@ -142,95 +175,89 @@ module LibTV
     exit 0
   end
 
-  class TV
-    @@tv_args = nil
+  def self.parse_tv_args(tvarg)
+    return unless tvarg.is_a?(String)
 
-    def self.parse_tv_args(tvarg)
-      return unless tvarg.is_a?(String)
-
-      keys = tvarg.split(':')
-      hash = { }
-      for k in keys
-        self.parse_tv_arg(hash, k)
-      end
-      hash
+    keys = tvarg.split(':')
+    hash = { }
+    for k in keys
+      self.parse_tv_arg(hash, k)
     end
+    hash
+  end
 
-    def self.parse_seek_num(seek, num, allow_end=false)
-      seekname = seek == '<' ? 'seek-back' : 'seek-after'
-      expected = allow_end ? 'number or "$"' : 'number'
-      if num !~ /^[-+]?\d+(?:\.\d+)?$/ && (!allow_end || num != '$')
-        raise "Bad seek argument for #{seekname}: #{num} (#{expected} expected)"
-      end
-      num
+  def self.parse_seek_num(seek, num, allow_end=false)
+    seekname = seek == '<' ? 'seek-back' : 'seek-after'
+    expected = allow_end ? 'number or "$"' : 'number'
+    if num !~ /^[-+]?\d+(?:\.\d+)?$/ && (!allow_end || num != '$')
+      raise "Bad seek argument for #{seekname}: #{num} (#{expected} expected)"
     end
+    num
+  end
 
-    def self.parse_tv_arg(hash, key)
-      if key == 'cancel' or key == 'nuke'
-        hash[key] = 'y'
+  def self.parse_tv_arg(hash, key)
+    if key == 'cancel' or key == 'nuke'
+      hash[key] = 'y'
+    else
+      prefix = key[0..0]
+      rest = key[1 .. -1].strip
+      if prefix == '<'
+        hash['seekbefore'] = parse_seek_num(prefix, rest)
+      elsif prefix == '>'
+        hash['seekafter'] = parse_seek_num(prefix, rest, true)
       else
-        prefix = key[0..0]
-        rest = key[1 .. -1].strip
-        if prefix == '<'
-          hash['seekbefore'] = parse_seek_num(prefix, rest)
-        elsif prefix == '>'
-          hash['seekafter'] = parse_seek_num(prefix, rest, true)
-        else
-          raise "Unrecognised TV option: #{key}"
-        end
+        raise "Unrecognised TV option: #{key}"
       end
-    end
-
-    def self.with_tv_opts(argv)
-      args, opts = extract_options(argv, 'tv')
-      old_args = @@tv_args
-      begin
-        @@tv_args = parse_tv_args(opts[:tv])
-        yield args, opts
-      ensure
-        @@tv_args = old_args
-      end
-    end
-
-    def self.request_game(g)
-      # Launch a daemon that keeps a server socket open for interested
-      # parties (i.e. C-SPLAT) to listen in.
-      launch_daemon()
-
-      open(QUEUE_FILE, 'a') do |file|
-        flock(file, File::LOCK_EX) do |f|
-          # Make sure we're really at eof.
-          f.seek(0, IO::SEEK_END)
-          stripped = g
-          f.puts "#{Time.now.strftime('%s')} #{munge_game(stripped)}"
-        end
-      end
-    end
-
-    def self.request_game_verbosely(n, g, who)
-      raise "Cannot request games for TV on PM." if ENV['PRIVMSG'] == 'y'
-
-      summary = short_game_summary(g)
-      tv = 'FooTV'
-
-      if @@tv_args && @@tv_args['nuke']
-        puts "FooTV playlist clear requested by #{who}."
-      else
-        suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
-        puts "#{n}. #{summary}#{suffix} requested for #{tv}."
-      end
-
-      g['req'] = ARGV[1]
-
-      if @@tv_args
-        for k in @@tv_args.keys
-          g[k] = @@tv_args[k]
-        end
-      end
-
-      request_game(g)
     end
   end
-end
 
-include LibTV
+  def self.with_tv_opts(argv)
+    args, opts = extract_options(argv, 'tv')
+    old_args = @@tv_args
+    begin
+      @@tv_args = parse_tv_args(opts[:tv])
+      yield args, opts
+    ensure
+      @@tv_args = old_args
+    end
+  end
+
+  def self.request_game(g)
+    # Launch a daemon that keeps a server socket open for interested
+    # parties (i.e. C-SPLAT) to listen in.
+    launch_daemon()
+
+    open(QUEUE_FILE, 'a') do |file|
+      flock(file, File::LOCK_EX) do |f|
+        # Make sure we're really at eof.
+        f.seek(0, IO::SEEK_END)
+        stripped = g
+        f.puts "#{Time.now.strftime('%s')} #{munge_game(stripped)}"
+      end
+    end
+  end
+
+  def self.request_game_verbosely(n, g, who)
+    raise "Cannot request games for TV on PM." if ENV['PRIVMSG'] == 'y'
+
+    summary = short_game_summary(g)
+    tv = 'FooTV'
+
+    if @@tv_args && @@tv_args['nuke']
+      puts "FooTV playlist clear requested by #{who}."
+    else
+      suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
+      puts "#{n}. #{summary}#{suffix} requested for #{tv}."
+    end
+
+    g['req'] = ARGV[1]
+
+    if @@tv_args
+      for k in @@tv_args.keys
+        g[k] = @@tv_args[k]
+      end
+    end
+
+    request_game(g)
+  end
+end
