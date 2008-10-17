@@ -71,7 +71,7 @@ module TV
       begin
         while true
           open(QUEUE_FILE, 'r+') do |af|
-            flock(af, File::LOCK_EX) do |f|
+            TV.flock(af, File::LOCK_EX) do |f|
               lines = f.readlines
               f.truncate(0)
 
