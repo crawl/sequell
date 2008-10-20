@@ -27,7 +27,7 @@ module TV
     end
 
     def list_ttyrecs(nick, sock)
-      if nick =~ /^[a-z_ -]+$/i
+      if nick =~ /^[a-z0-9_ -]+$/i
         for ttyrec in Dir[DGL_TTYREC_DIR + "/#{nick}/*.ttyrec*"]
           if ttyrec =~ %r{.*/(.*)}
             sock.write("#$1 #{File.size(ttyrec)} ")
