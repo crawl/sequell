@@ -1,0 +1,4 @@
+#! /bin/bash
+
+cd /home/henzell/henzell
+./learndb-html.pl > dat/learndb.html
