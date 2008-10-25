@@ -70,7 +70,7 @@ dd { display:block; }
 </head>
 <body>
 EOF
-print "<p class=note>Updated at ".time2str($timestamp)."\n";
+print "<p class=note>Updated on ".time2str($timestamp)."\n";
 print "<dl>\n";
 
 sub htmlize($)
