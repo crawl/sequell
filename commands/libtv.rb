@@ -219,6 +219,9 @@ module TV
     begin
       @@tv_args = parse_tv_args(opts[:tv])
       yield args, opts
+    rescue
+      puts $!
+      raise
     ensure
       @@tv_args = old_args
     end
