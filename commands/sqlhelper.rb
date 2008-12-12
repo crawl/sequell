@@ -979,13 +979,28 @@ def query_field(selector, field, op, sqlop, val)
     selfield = $1
   end
 
-  if ['killer', 'ckiller'].index(selfield) and \
-      [ '=', '!=' ].index(op) and val !~ /^an? /i then
-    clause = [ op == '=' ? 'OR' : 'AND' ]
-    clause << field_pred(val, sqlop, selector, field)
-    clause << field_pred("a " + val, sqlop, selector, field)
-    clause << field_pred("an " + val, sqlop, selector, field)
-    return clause
+  if ['killer', 'ckiller'].index(selfield)
+    if [ '=', '!=' ].index(op) and val !~ /^an? /i then
+      if val.downcase == 'uniq' and selfield == 'killer'
+        # Handle check for uniques.
+        uniq = op == '='
+        clause = [ uniq ? 'AND' : 'OR' ]
+
+        # killer field should not be empty.
+        clause << field_pred('', OPERATORS[uniq ? '!=' : '='], selector, field)
+        # killer field should not start with "a " or "an " for uniques
+        clause << field_pred("^an? |^the ", OPERATORS[uniq ? '!~~' : '~~'],
+                             selector, field)
+        clause << field_pred("ghost", OPERATORS[uniq ? '!~' : '=~'],
+                             selector, field)
+      else
+        clause = [ op == '=' ? 'OR' : 'AND' ]
+        clause << field_pred(val, sqlop, selector, field)
+        clause << field_pred("a " + val, sqlop, selector, field)
+        clause << field_pred("an " + val, sqlop, selector, field)
+      end
+      return clause
+    end
   end
 
   if $CTX.noun_verb[selfield]
