@@ -25,6 +25,7 @@ CLASS_EXPANSIONS = {
   "Ne" => "Necromancer",
   "Pa" => "Paladin",
   "As" => "Assassin",
+  "Ar" => "Artificer",
   "Be" => "Berserker",
   "Hu" => "Hunter",
   "Cj" => "Conjurer",
