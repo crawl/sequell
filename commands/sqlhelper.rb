@@ -16,6 +16,13 @@ OPERATORS = {
   '~~' => 'REGEXP', '!~~' => 'NOT REGEXP'
 }
 
+# List of abbreviations for branches that have depths > 1. This includes
+# fake branches such as the Ziggurat.
+DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
+                   Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat/
+
+DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
+
 CLASS_EXPANSIONS = {
   "Fi" => "Fighter",
   "Wz" => "Wizard",
@@ -1014,8 +1021,7 @@ def query_field(selector, field, op, sqlop, val)
   end
 
   if selfield == 'place' and !val.index(':') and
-    [ '=', '!=' ].index(op) and
-    ![ 'pan', 'lab', 'hell', 'blade', 'temple', 'abyss' ].index(val) then
+    [ '=', '!=' ].index(op) and DEEP_BRANCH_SET.include?(val) then
     val = val + ':%'
     sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
   end

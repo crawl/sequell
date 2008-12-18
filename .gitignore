@@ -1,5 +1,7 @@
 nohup.*
 *.diff
+*.pyc
+current
 _darcs/
 t/
 allgames*.txt
