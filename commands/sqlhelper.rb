@@ -119,9 +119,9 @@ MILEFIELDS_DECORATED = %w/game_idI file src v cv name race crace cls char xlI
 FAKEFIELDS_DECORATED = %w/when/
 
 LOGFIELDS_SUMMARIZABLE =
-  Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br ltyp killer
-              god urune nrune src str int dex kaux ckiller cv ckaux crace kmod
-              splat dam hp mhp mmhp piety pen/.
+  Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br lvl ltyp
+              killer god urune nrune src str int dex kaux ckiller cv ckaux
+              crace kmod splat dam hp mhp mmhp piety pen/.
              map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
