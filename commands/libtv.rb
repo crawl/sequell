@@ -243,7 +243,7 @@ module TV
   end
 
   def self.request_game_verbosely(n, g, who)
-    raise "Cannot request games for TV on PM." if ENV['PRIVMSG'] == 'y'
+    #raise "Cannot request games for TV on PM." if ENV['PRIVMSG'] == 'y'
 
     summary = short_game_summary(g)
     tv = 'FooTV'

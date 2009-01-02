@@ -378,7 +378,7 @@ sub process_msg
          (!$private
           || ($command eq '!learn' && ($verbatim =~ /^!learn\s+query\s/
                                        || $verbatim =~ /^\?\?/))
-          || !grep($command eq $_, '!learn', '!tell', '!tv')))
+          || !grep($command eq $_, '!learn', '!tell')))
   {
     # Log all commands to Henzell.
     print "CMD($private): $nick: $verbatim\n";
