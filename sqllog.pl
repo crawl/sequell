@@ -441,12 +441,12 @@ sub fixup_milestones {
 QUERY
 
   if (@players) {
-    @players = map($dbh->quote($_), @players);
     if (@players == 1) {
       $query .= " AND m.pname = ?";
       exec_query_st($query, $source, $players[0]);
     }
     else {
+      @players = map($dbh->quote($_), @players);
       $query .= " AND m.pname IN (";
       $query .= join(", ", @players);
       $query .= ")";
