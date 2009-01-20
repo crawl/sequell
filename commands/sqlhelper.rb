@@ -1011,6 +1011,11 @@ def query_field(selector, field, op, sqlop, val)
     end
   end
 
+  # Convert game_id="" into game_id IS NULL.
+  if selfield == 'game_id' && op == '='
+    return field_pred(nil, 'IS', selector, field)
+  end
+
   if $CTX.noun_verb[selfield]
     clause = [ 'AND' ]
     key = $CTX.noun_verb[selector]
