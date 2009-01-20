@@ -177,13 +177,16 @@ module TV
     exit 0
   end
 
-  def self.parse_tv_args(tvarg)
-    return unless tvarg.is_a?(String)
-
-    keys = tvarg.split(':')
+  def self.parse_tv_args(opts)
     hash = { }
-    for k in keys
-      self.parse_tv_arg(hash, k)
+    for key in opts.keys
+      if key == :cancel || key == :nuke
+        self.parse_tv_arg(hash, key.to_s)
+      elsif key == :tv
+        value = opts[key]
+        next unless value.is_a?(String)
+        value.split(':').each { |v| self.parse_tv_arg(hash, v) }
+      end
     end
     hash
   end
@@ -213,11 +216,14 @@ module TV
     end
   end
 
-  def self.with_tv_opts(argv)
-    args, opts = extract_options(argv, 'tv')
+  def self.with_tv_opts(argv, tv_command = false)
+    opts = %w/tv/
+    opts += %w/cancel nuke/ if tv_command
+
+    args, opts = extract_options(argv, *opts)
     old_args = @@tv_args
     begin
-      @@tv_args = parse_tv_args(opts[:tv])
+      @@tv_args = parse_tv_args(opts)
       yield args, opts
     rescue
       puts $!
