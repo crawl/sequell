@@ -1012,7 +1012,7 @@ def query_field(selector, field, op, sqlop, val)
   end
 
   # Convert game_id="" into game_id IS NULL.
-  if selfield == 'game_id' && op == '='
+  if selfield == 'game_id' && op == '=' && val == ''
     return field_pred(nil, 'IS', selector, field)
   end
 
