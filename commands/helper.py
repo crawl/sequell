@@ -181,6 +181,8 @@ branches_abbrev = ["D","Dis","Geh","Hell","Coc","Tar",
 lcbranches_abbrev = [string.lower(abbrev) for abbrev in branches_abbrev]
 lclevels_abbrev = [string.lower(level) for level in levels_abbrev]
 
+WHERE_DIRS = None
+
 NICK_ALIASES = { }
 NICKMAP_FILE = 'nicks.map'
 nick_aliases_loaded = False
@@ -204,6 +206,7 @@ def plural(int):
         return 's'
     else:
         return ''
+
 def ntimes(times):
     if times == 1: return 'once'
     elif times == 2: return 'twice'
@@ -211,11 +214,16 @@ def ntimes(times):
     else: return str(times) + ' times'
 
 def canonicalize_nick(nick):
-    where_dirs = [ f for f in glob(www_rawdatapath + '/*')
-    			if os.path.isdir(f) ]
-    lnickw = nick.lower()
-    match = [ x for x in where_dirs if x.lower().endswith('/' + lnickw) ]
+    global WHERE_DIRS
+    if WHERE_DIRS is None:
+        WHERE_DIRS = [ f for f in glob(www_rawdatapath + '/*')
+                       if os.path.isdir(f) ]
+    lnickw = '/' + nick.lower()
+    match = [ x for x in WHERE_DIRS if x.lower().endswith(lnickw) ]
     return len(match) > 0 and extract_nick_from_wherepath(match[0]) or None
+
+def canonicalize_nicks(nicks):
+    return [ n for n in [ canonicalize_nick(x) for x in nicks ] if n ]
 
 def extract_nick_from_wherepath(wherepath):
     windex = wherepath.rfind('/')
@@ -471,10 +479,16 @@ def load_nick_aliases():
                 NICK_ALIASES[nicks[0].lower()] = " ".join(nicks[ 1 : ])
     return NICK_ALIASES
 
-def nick_alias(nick):
+def nick_aliases(nick):
     load_nick_aliases()
     alias = NICK_ALIASES.get(nick.lower())
     if alias:
-        return alias.split()[0]
+        return alias.split()
     else:
-        return nick
+        return [ nick ]
+
+def canonical_aliases(nick):
+    return canonicalize_nicks(nick_aliases(nick))
+
+def nick_alias(nick):
+    return nick_aliases(nick)[0]

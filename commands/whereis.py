@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import os.path
 import sys
 from helper import *
 
@@ -14,13 +15,34 @@ nick = sys.argv[1]
 # is going to get any useful information. But there might be a good
 # reason not to do this, so I didn't make the change. -rachel 12/22/07
 
-nick = canonicalize_nick(nick_alias(nick))
-if not nick:
+def where_file(nick):
+    return (rawdatapath + '%s/%s.where') % (nick, nick)
+
+aliases = canonical_aliases(nick)
+aliases = [ x for x in aliases if os.path.exists(where_file(x)) ]
+
+if not aliases:
     print("No games for %s." % sys.argv[1])
     sys.exit()
 
+def where_mtime(nick):
+    return os.path.getmtime(where_file(nick))
+
+def compare_nicks(a, b):
+    ta = where_mtime(a)
+    tb = where_mtime(b)
+    if ta < tb:
+        return -1
+    elif ta > tb:
+        return 1
+    else:
+        return 0
+
+aliases.sort(compare_nicks)
+nick = aliases[-1]
+
 try:
-    whereline = open(rawdatapath + '%s/%s.where' % (nick, nick)).readlines()[0][:-1]
+    whereline = open(where_file(nick)).readlines()[0][:-1]
 except IOError:
     print("No where info for %s." % nick)
     sys.exit()
