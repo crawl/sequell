@@ -29,8 +29,8 @@ def where_mtime(nick):
     return os.path.getmtime(where_file(nick))
 
 def most_recent_where_nick(aliases):
-    most_recent = nil
-    chosen = nil
+    most_recent = None
+    chosen = None
     for alias in aliases:
         mt = where_mtime(alias)
         if not chosen or mt > chosen:
