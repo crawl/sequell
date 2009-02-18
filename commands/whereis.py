@@ -28,18 +28,17 @@ if not aliases:
 def where_mtime(nick):
     return os.path.getmtime(where_file(nick))
 
-def compare_nicks(a, b):
-    ta = where_mtime(a)
-    tb = where_mtime(b)
-    if ta < tb:
-        return -1
-    elif ta > tb:
-        return 1
-    else:
-        return 0
+def most_recent_where_nick(aliases):
+    most_recent = nil
+    chosen = nil
+    for alias in aliases:
+        mt = where_mtime(alias)
+        if not chosen or mt > chosen:
+            chosen = mt
+            most_recent = alias
+    return most_recent
 
-aliases.sort(compare_nicks)
-nick = aliases[-1]
+nick = most_recent_where_nick(aliases)
 
 try:
     whereline = open(where_file(nick)).readlines()[0][:-1]
