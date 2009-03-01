@@ -3,7 +3,7 @@
 require 'commands/helper'
 require 'set'
 
-if ENV['PRIVMSG']
+if ENV['PRIVMSG'] == 'y'
   puts "Cannot map nicks on PM."
   exit 1
 end
