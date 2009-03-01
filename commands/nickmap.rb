@@ -3,6 +3,11 @@
 require 'commands/helper'
 require 'set'
 
+if ENV['PRIVMSG']
+  puts "Cannot map nicks on PM."
+  exit 1
+end
+
 help("Maps a nick to name(s) used on cao. Usage: !nickmap <src> <dest1> <dest2> ...; !nickmap -rm <src>; !nickmap -rm . <dest>")
 
 def cmd_nicks(cmdline)
