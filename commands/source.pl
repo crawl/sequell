@@ -245,7 +245,7 @@ my ($filename, $function, $start_line, $end_line, $rest) = parse_cmdline $cmd;
 error "Couldn't understand $rest" if $rest;
 # Paranoid filename check (sorear)
 error "Bad filename: $filename"
-  unless $filename =~ m{^[\w/+.-]+$} && $filename !~ /[.][.]/;
+  unless !$filename || ($filename =~ m{^[\w/+.-]+$} && $filename !~ /[.][.]/);
 usage unless defined $filename || defined $function;
 
 my $lines;
