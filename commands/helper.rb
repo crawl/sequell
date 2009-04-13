@@ -414,6 +414,10 @@ end
 
 def help(helpstring)
   if ARGV[3] == '1'
+    if helpstring =~ /%CMD%/
+      cmd = ARGV[2].split()[0]
+      helpstring = helpstring.gsub('%CMD%', cmd)
+    end
     puts helpstring
     exit
   end

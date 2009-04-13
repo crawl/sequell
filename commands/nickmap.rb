@@ -8,7 +8,7 @@ if ENV['PRIVMSG'] == 'y'
   exit 1
 end
 
-help("Maps a nick to name(s) used on cao. Usage: !nickmap <src> <dest1> <dest2> ...; !nickmap -rm <src>; !nickmap -rm . <dest>")
+help("Maps a nick to name(s) used on cao. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm . <dest>")
 
 def cmd_nicks(cmdline)
   rm = cmdline.find { |a| a == '-rm' }
