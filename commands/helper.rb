@@ -46,6 +46,14 @@ def munge_game(game)
   game.to_a.map { |x,y| "#{x}=#{y.to_s.gsub(':', '::')}" }.join(':')
 end
 
+def die(msg)
+  if msg =~ /%CMD%/
+    arg = ARGV[2].split()[0]
+    msg = msg.gsub('%CMD%', arg)
+  end
+  raise msg
+end
+
 def demunge_xlogline(logline) # TODO XXX XPLODE OMG
   h = Hash.new()
   if logline == ''

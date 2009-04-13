@@ -30,6 +30,7 @@
 !rng rng.pl
 !screensize screensize.pl
 !seen seen.pl
+!send send.rb
 !skill skill.pl
 !source source.pl
 !streak streak.rb
