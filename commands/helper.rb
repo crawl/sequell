@@ -269,7 +269,7 @@ def binary_search(arr, what)
 end
 
 def game_morgues(name)
-  Dir[ DGL_MORGUE_DIR + '/' + name + '/' + 'morgue-*.txt' ].sort
+  Dir[ DGL_MORGUE_DIR + '/' + name + '/' + 'morgue-*.txt*' ].sort
 end
 
 def morgue_time(e)
@@ -293,6 +293,13 @@ def find_alien_morgue(e)
 end
 
 def find_game_morgue(e)
+  return find_game_morgue_ext(e, ".txt", false) ||
+    find_game_morgue_ext(e, ".txt.bz2", false) ||
+    find_game_morgue_ext(e, ".txt.gz", false) ||
+    find_game_morgue_ext(e, ".txt", true)
+end
+
+def find_game_morgue_ext(e, ext, full_scan)
   if e['src'] != 'cao'
     return find_alien_morgue(e)
   end
@@ -300,27 +307,29 @@ def find_game_morgue(e)
   fulltime = morgue_time(e)
 
   # Look for full timestamp
-  morgue = morgue_assemble_filename(DGL_MORGUE_DIR, e, fulltime, '.txt')
+  morgue = morgue_assemble_filename(DGL_MORGUE_DIR, e, fulltime, ext)
   if File.exist?(morgue)
-    return morgue_assemble_filename(DGL_MORGUE_URL, e, fulltime, '.txt')
+    return morgue_assemble_filename(DGL_MORGUE_URL, e, fulltime, ext)
   end
 
   parttime = fulltime.sub(/\d{2}$/, '')
-  morgue = morgue_assemble_filename(DGL_MORGUE_DIR, e, parttime, '.txt')
+  morgue = morgue_assemble_filename(DGL_MORGUE_DIR, e, parttime, ext)
   if File.exist?(morgue)
-    return morgue_assemble_filename(DGL_MORGUE_URL, e, parttime, '.txt')
+    return morgue_assemble_filename(DGL_MORGUE_URL, e, parttime, ext)
   end
 
-  # We're in El Suck territory. Scan the directory listing.
-  morgue_list = game_morgues(e["name"])
+  if full_scan
+    # We're in El Suck territory. Scan the directory listing.
+    morgue_list = game_morgues(e["name"])
 
-  # morgues are sorted. The morgue date should be greater than the
-  # full timestamp.
+    # morgues are sorted. The morgue date should be greater than the
+    # full timestamp.
 
-  found = binary_search(morgue_list, morgue)
-  if found then
-    found.sub!(/.*morgue-\w+-(.*)/, '\1')
-    return morgue_assemble_filename(DGL_MORGUE_URL, e, found, '')
+    found = binary_search(morgue_list, morgue)
+    if found then
+      found.sub!(/.*morgue-\w+-(.*)/, '\1')
+      return morgue_assemble_filename(DGL_MORGUE_URL, e, found, '')
+    end
   end
 
   nil
