@@ -61,6 +61,7 @@ RACE_EXPANSIONS = {
   'HE' => 'High Elf',
   'GE' => 'Grey Elf',
   'DE' => 'Deep Elf',
+  'DD' => 'Deep Dwarf',
   'SE' => 'Sludge Elf',
   'HD' => 'Hill Dwarf',
   'MD' => 'Mountain Dwarf',
