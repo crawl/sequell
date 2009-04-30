@@ -362,7 +362,7 @@ sub go_to_offset {
 sub cat_xlog {
   my ($table, $lf, $fadd, $offset) = @_;
 
-  my $handle = $lf->{handle};
+  my $loghandle = $lf->{handle};
   my $lfile = $lf->{file};
   $offset = find_start_offset_in($table, $lfile) unless defined $offset;
   die "No offset into $lfile ($table)" unless defined $offset;
@@ -632,7 +632,7 @@ sub add_logline {
   $fields->{src} = $lf->{server};
   $fields->{alpha} = $lf->{alpha} ? 'y' : '';
   $fields = fixup_logfields($fields);
-  my @bindvalues = ($file, $source, $offset,
+  my @bindvalues = ($lf->{file}, $lf->{server}, $offset,
                     map(field_val($_, $fields), @LOGFIELDS_DECORATED),
                     field_val('rstart', $fields),
                     field_val('rend', $fields));
