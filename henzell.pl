@@ -21,7 +21,7 @@ my @stonefiles     =
    '/home/crawl/chroot/var/games/crawl04/saves/milestones.txt',
    '[cdo]/home/henzell/cdo-milestones-0.3',
    '[cdo]/home/henzell/cdo-milestones-0.4',
-   '[cdo]/home/henzell/cdo-milestones-svn');
+   '[cdo;alpha]/home/henzell/cdo-milestones-svn');
 
 
 my @logfiles       = ('/var/www/crawl/allgames.txt',
@@ -31,7 +31,7 @@ my @logfiles       = ('/var/www/crawl/allgames.txt',
                       # of "cdo", and for which we will not make announcements.
                       '[cdo]/home/henzell/cdo-logfile-0.3',
                       '[cdo]/home/henzell/cdo-logfile-0.4',
-                      '[cdo]/home/henzell/cdo-logfile-svn',
+                      '[cdo;alpha]/home/henzell/cdo-logfile-svn',
                       );
 
 my $command_dir    = 'commands/';
@@ -59,9 +59,9 @@ my @loghandles = open_handles(@logfiles);
 my @stonehandles = open_handles(@stonefiles);
 
 if (@loghandles >= 1) {
-  sql_register_logfiles(map $_->[0], @loghandles);
+  sql_register_logfiles(map $_->{file}, @loghandles);
   catchup_logfiles();
-  sql_register_milestones(map $_->[0], @stonehandles);
+  sql_register_milestones(map $_->{file}, @stonehandles);
   catchup_stonefiles();
 }
 fixup_db();
@@ -95,11 +95,9 @@ exit 0;
 sub catchup_files {
   my ($proc, @files) = @_;
   for my $lhand (@files) {
-    my $file = $lhand->[0];
-    my $source_server = $lhand->[3];
-    my $fh = $lhand->[1];
+    my $file = $lhand->{file};
     print "Catching up on records from $file...\n";
-    $proc->($file, $source_server, $fh)
+    $proc->($lhand)
   }
 }
 
@@ -125,7 +123,7 @@ sub open_handles
   my @handles;
 
   for my $file (@files) {
-    my ($server) = $file =~ /^\[(.*?)\]/;
+    my ($server, $qualifier) = $file =~ /^\[(\w+)(;\w+)?\]/;
     $server ||= $SERVER;
 
     $file =~ s/^\[.*?\]//;
@@ -136,7 +134,11 @@ sub open_handles
     };
 
     seek($handle, 0, 2); # EOF
-    push @handles, [ $file, $handle, tell($handle), $server ];
+    push @handles, { file => $file,
+                     handle => $handle,
+                     pos => tell($handle),
+                     server => $server,
+                     alpha => ($qualifier eq ';alpha') };
   }
   return @handles;
 }
@@ -171,24 +173,24 @@ sub check_stonefiles
 sub check_milestone_file
 {
   my $href = shift;
-  my $stonehandle = $href->[1];
-  $href->[2] = tell($stonehandle);
+  my $stonehandle = $href->{handle};
+  $href->{pos} = tell($stonehandle);
 
   my $line = <$stonehandle>;
   # If the line isn't complete, seek back to where we were and wait for it
   # to be done.
   if (!defined($line) || $line !~ /\n$/) {
-    seek($stonehandle, $href->[2], 0);
+    seek($stonehandle, $href->{pos}, 0);
     return;
   }
-  my $startoffset = $href->[2];
-  $href->[2] = tell($stonehandle);
+  my $startoffset = $href->{pos};
+  $href->{pos} = tell($stonehandle);
   return unless defined($line) && $line =~ /\S/;
 
   # Add milestone to DB.
-  add_milestone($href->[0], $href->[3], $startoffset, $line);
+  add_milestone($href, $startoffset, $line);
 
-  if ($href->[3] eq $SERVER) {
+  if ($href->{server} eq $SERVER) {
     my $game_ref = demunge_xlogline($line);
     my $newsworthy = newsworthy($game_ref);
 
@@ -197,7 +199,7 @@ sub check_milestone_file
     }
   }
 
-  seek($stonehandle, $href->[2], 0);
+  seek($stonehandle, $href->{pos}, 0);
   1
 }
 
@@ -220,26 +222,26 @@ sub suppress_game {
 sub tail_logfile
 {
   my $href = shift;
-  my $loghandle = $href->[1];
+  my $loghandle = $href->{handle};
 
-  $href->[2] = tell($loghandle);
+  $href->{pos} = tell($loghandle);
   my $line = <$loghandle>;
   if (!defined($line) || $line !~ /\n$/) {
-    seek($loghandle, $href->[2], 0);
+    seek($loghandle, $href->{pos}, 0);
     return;
   }
-  my $startoffset = $href->[2];
-  $href->[2] = tell($loghandle);
+  my $startoffset = $href->{pos};
+  $href->{pos} = tell($loghandle);
   return unless defined($line) && $line =~ /\S/;
 
-  seek($loghandle, $href->[2], 0);
+  seek($loghandle, $href->{pos}, 0);
 
   # Add line to DB.
-  add_logline($href->[0], $href->[3], $startoffset, $line);
+  add_logline($href, $startoffset, $line);
 
   my $game_ref = demunge_xlogline($line);
   # If this is a local game, announce it.
-  if ($href->[3] eq $SERVER) {
+  if ($href->{server} eq $SERVER) {
     if (!suppress_game($game_ref)) {
       my $output = pretty_print($game_ref);
       $output =~ s/ on \d{4}-\d{2}-\d{2}//;
@@ -249,7 +251,7 @@ sub tail_logfile
 
   # Link up milestone entries belonging to this player to their corresponding
   # completed games.
-  fixup_milestones($href->[3], $game_ref->{name});
+  fixup_milestones($href->{server}, $game_ref->{name});
 
   1;
 }

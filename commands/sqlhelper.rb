@@ -4,12 +4,6 @@ require 'dbi'
 require 'commands/helper'
 require 'set'
 
-# Important: we filter games to this set unless the user explicitly
-# specifies a version.
-CURRENT_VER = "0.4"
-
-$CONSTRAIN_VERSION = false
-
 OPERATORS = {
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
   '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE',
@@ -106,12 +100,13 @@ COLUMN_ALIASES = {
   'cl' => 'xl', 'clev' => 'xl', 'type' => 'verb', 'gid' => 'game_id'
 }
 
-LOGFIELDS_DECORATED = %w/idI file src v cv lv scI name uidI race crace cls
+LOGFIELDS_DECORATED = %w/idI file alpha src v cv lv scI name uidI race crace cls
   char xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
   endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend/
 
-MILEFIELDS_DECORATED = %w/game_idI file src v cv name race crace cls char xlI
+MILEFIELDS_DECORATED = %w/game_idI file alpha src v cv name race crace cls
+                          char xlI
                           sk sklevI title place br lvlI ltyp
                           hpI mhpI mmhpI strI intI dexI
                           god durI turnI uruneI nruneI timeD rtime rstart
@@ -122,7 +117,7 @@ FAKEFIELDS_DECORATED = %w/when/
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br lvl ltyp
               killer god urune nrune src str int dex kaux ckiller cv ckaux
-              crace kmod splat dam hp mhp mmhp piety pen/.
+              crace kmod splat dam hp mhp mmhp piety pen alpha/.
              map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.

@@ -15,9 +15,11 @@ CREATE TABLE logrecord (
     id BIGINT AUTO_INCREMENT,
     offset BIGINT,
     file VARCHAR(150),
+    -- 'y' for alpha, anything else otherwise.
+    alpha CHAR(1),
     src CHAR(5),
-    v VARCHAR(8),
-    cv VARCHAR(8),
+    v VARCHAR(10),
+    cv VARCHAR(10),
     lv VARCHAR(8),
     sc BIGINT,
     pname VARCHAR(20),
@@ -71,13 +73,14 @@ CREATE TABLE milestone (
     id BIGINT AUTO_INCREMENT,
     offset BIGINT,
     file VARCHAR(150),
+    alpha CHAR(1),
     src CHAR(5),
 
     -- The actual game that this milestone is linked with.
     game_id BIGINT,
 
-    v VARCHAR(8),
-    cv VARCHAR(8),
+    v VARCHAR(10),
+    cv VARCHAR(10),
     pname VARCHAR(20),
     race VARCHAR(20),
     crace VARCHAR(20),

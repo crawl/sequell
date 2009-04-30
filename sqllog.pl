@@ -9,7 +9,7 @@ use DBI;
 
 do 'game_parser.pl';
 
-my @LOGFIELDS_DECORATED = qw/v cv lv scI name uidI race crace cls char
+my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
   xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
   end durI turnI uruneI nruneI tmsg vmsg splat/;
@@ -35,7 +35,7 @@ sub strip_suffix {
 my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
 
 my @MILEFIELDS_DECORATED =
-    qw/v cv name race crace cls char xlI sk sklevI title
+    qw/alpha v cv name race crace cls char xlI sk sklevI title
        place br lvlI ltyp hpI mhpI mmhpI strI intI dexI god
        durI turnI uruneI nruneI time verb noun milestone/;
 
@@ -161,16 +161,6 @@ sub setup_db {
 sub reopen_db {
   cleanup_db();
   setup_db();
-}
-
-sub launch {
-  system "renice +10 $$ &>/dev/null";
-  open my $loghandle, '<', $LOGFILE or die "Can't read $LOGFILE: $!\n";
-  binmode $loghandle;
-  unless (cat_logfile($LOGFILE, 'test', $loghandle)) {
-    cat_logfile($LOGFILE, 'test', $loghandle, -1);
-  }
-  cleanup_db();
 }
 
 sub new_db_handle {
@@ -370,7 +360,10 @@ sub go_to_offset {
 }
 
 sub cat_xlog {
-  my ($table, $lfile, $fadd, $source, $loghandle, $offset) = @_;
+  my ($table, $lf, $fadd, $offset) = @_;
+
+  my $handle = $lf->{handle};
+  my $lfile = $lf->{file};
   $offset = find_start_offset_in($table, $lfile) unless defined $offset;
   die "No offset into $lfile ($table)" unless defined $offset;
 
@@ -391,7 +384,7 @@ sub cat_xlog {
     my $line = <$loghandle>;
     last unless $line && $line =~ /\n$/;
     ++$rows;
-    $fadd->($lfile, $source, $linestart, $line);
+    $fadd->($lf, $linestart, $line);
     if (!($rows % $COMMIT_INTERVAL)) {
       $dbh->commit;
       $dbh->begin_work;
@@ -406,18 +399,16 @@ sub cat_xlog {
 }
 
 sub cat_logfile {
-  my ($lfile, $source, $loghandle, $offset) = @_;
-  cat_xlog($TLOGFILE, $lfile, \&add_logline, $source,
-           $loghandle, $offset)
+  my ($lf, $offset) = @_;
+  cat_xlog($TLOGFILE, $lf, \&add_logline, $offset)
 }
 
 sub cat_stonefile {
-  my ($lfile, $source, $loghandle, $offset) = @_;
-  my $res = cat_xlog($TMILESTONE, $lfile, \&add_milestone, $source,
-                     $loghandle, $offset);
-  print "Linking milestones to completed games ($source: $lfile)...\n";
-  fixup_milestones($source) if $res;
-  print "Done linking milestones to completed games ($source: $lfile)...\n";
+  my ($lf, $offset) = @_;
+  my $res = cat_xlog($TMILESTONE, $lf, \&add_milestone, $offset);
+  print "Linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
+  fixup_milestones($lf->{server}) if $res;
+  print "Done linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
 }
 
 =head2 fixup_milestones()
@@ -617,13 +608,14 @@ sub milestone_mangle {
 }
 
 sub add_milestone {
-  my ($file, $source, $offset, $line) = @_;
+  my ($lf, $offset, $line) = @_;
   chomp $line;
   my $m = logfield_hash($line);
 
-  $m->{file} = $file;
+  $m->{file} = $lf->{file};
   $m->{offset} = $offset;
-  $m->{src} = $source;
+  $m->{src} = $lf->{server};
+  $m->{alpha} = $lf->{alpha} ? 'y' : '';
   $m->{verb} = $m->{type};
   $m->{noun} = $m->{milestone};
   $m = fixup_logfields($m);
@@ -634,10 +626,11 @@ sub add_milestone {
 }
 
 sub add_logline {
-  my ($file, $source, $offset, $line) = @_;
+  my ($lf, $offset, $line) = @_;
   chomp $line;
   my $fields = logfield_hash($line);
-  $fields->{src} = $source;
+  $fields->{src} = $lf->{server};
+  $fields->{alpha} = $lf->{alpha} ? 'y' : '';
   $fields = fixup_logfields($fields);
   my @bindvalues = ($file, $source, $offset,
                     map(field_val($_, $fields), @LOGFIELDS_DECORATED),
