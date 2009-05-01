@@ -125,6 +125,7 @@ sub open_handles
   for my $file (@files) {
     my ($server, $qualifier) = $file =~ /^\[(\w+)(;\w+)?\]/;
     $server ||= $SERVER;
+    $qualifier ||= '';
 
     $file =~ s/^\[.*?\]//;
 
