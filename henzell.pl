@@ -186,21 +186,22 @@ sub check_milestone_file
   }
   my $startoffset = $href->{pos};
   $href->{pos} = tell($stonehandle);
-  return unless defined($line) && $line =~ /\S/;
 
-  # Add milestone to DB.
-  add_milestone($href, $startoffset, $line);
+  # Clear EOF.
+  seek($stonehandle, $href->{pos}, 0);
+  if ($line =~ /\S/) {
+    # Add milestone to DB.
+    add_milestone($href, $startoffset, $line);
 
-  if ($href->{server} eq $SERVER) {
-    my $game_ref = demunge_xlogline($line);
-    my $newsworthy = newsworthy($game_ref);
+    if ($href->{server} eq $SERVER) {
+      my $game_ref = demunge_xlogline($line);
+      my $newsworthy = newsworthy($game_ref);
 
-    if ($newsworthy) {
-      $irc->yield(privmsg => $channel => milestone_string($game_ref));
+      if ($newsworthy) {
+        $irc->yield(privmsg => $channel => milestone_string($game_ref));
+      }
     }
   }
-
-  seek($stonehandle, $href->{pos}, 0);
   1
 }
 
@@ -233,28 +234,27 @@ sub tail_logfile
   }
   my $startoffset = $href->{pos};
   $href->{pos} = tell($loghandle);
-  return unless defined($line) && $line =~ /\S/;
 
   seek($loghandle, $href->{pos}, 0);
+  if ($line =~ /\S/) {
+    # Add line to DB.
+    add_logline($href, $startoffset, $line);
 
-  # Add line to DB.
-  add_logline($href, $startoffset, $line);
-
-  my $game_ref = demunge_xlogline($line);
-  # If this is a local game, announce it.
-  if ($href->{server} eq $SERVER) {
-    if (!suppress_game($game_ref)) {
-      my $output = pretty_print($game_ref);
-      $output =~ s/ on \d{4}-\d{2}-\d{2}//;
-      $irc->yield(privmsg => $channel => $output);
+    my $game_ref = demunge_xlogline($line);
+    # If this is a local game, announce it.
+    if ($href->{server} eq $SERVER) {
+      if (!suppress_game($game_ref)) {
+        my $output = pretty_print($game_ref);
+        $output =~ s/ on \d{4}-\d{2}-\d{2}//;
+        $irc->yield(privmsg => $channel => $output);
+      }
     }
+
+    # Link up milestone entries belonging to this player to their corresponding
+    # completed games.
+    fixup_milestones($href->{server}, $game_ref->{name});
   }
-
-  # Link up milestone entries belonging to this player to their corresponding
-  # completed games.
-  fixup_milestones($href->{server}, $game_ref->{name});
-
-  1;
+  1
 }
 
 sub check_logfile
