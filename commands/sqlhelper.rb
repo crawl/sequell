@@ -429,6 +429,10 @@ class DBHandle
       end
     end
   end
+
+  def do(query, *binds)
+    @db.do(query, *binds)
+  end
 end
 
 def connect_sql_db
