@@ -103,21 +103,21 @@ COLUMN_ALIASES = {
 LOGFIELDS_DECORATED = %w/idI file alpha src v cv lv scI name uidI race crace cls
   char xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
-  endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend nplayI/
+  endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend ntvI/
 
 MILEFIELDS_DECORATED = %w/game_idI idI file alpha src v cv name race crace cls
                           char xlI
                           sk sklevI title place br lvlI ltyp
                           hpI mhpI mmhpI strI intI dexI
                           god durI turnI uruneI nruneI timeD rtime rstart
-                          verb noun milestone nplayI/
+                          verb noun milestone ntvI/
 
 FAKEFIELDS_DECORATED = %w/when/
 
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br lvl ltyp
               killer god urune nrune src str int dex kaux ckiller cv ckaux
-              crace kmod splat dam hp mhp mmhp piety pen alpha nplay/.
+              crace kmod splat dam hp mhp mmhp piety pen alpha ntv/.
              map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
@@ -327,7 +327,7 @@ end
 
 def update_tv_count(g)
   table = g['milestone'] ? 'milestone' : 'logrecord'
-  sql_dbh.do("UPDATE #{table} SET nplay = nplay + 1 " +
+  sql_dbh.do("UPDATE #{table} SET ntv = ntv + 1 " +
              "WHERE id = ?", g['id'])
 end
 
