@@ -327,8 +327,8 @@ end
 
 def update_tv_count(g)
   table = g['milestone'] ? 'milestone' : 'logrecord'
-  sql_dbh.execute("UPDATE #{table} SET nplay = nplay + 1 " +
-                  "WHERE id = ?", g['id'])
+  sql_dbh.do("UPDATE #{table} SET nplay = nplay + 1 " +
+             "WHERE id = ?", g['id'])
 end
 
 def sql_build_query(default_nick, args, context=CTX_LOG)
