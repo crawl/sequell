@@ -105,7 +105,7 @@ LOGFIELDS_DECORATED = %w/idI file alpha src v cv lv scI name uidI race crace cls
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
   endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend nplayI/
 
-MILEFIELDS_DECORATED = %w/game_idI file alpha src v cv name race crace cls
+MILEFIELDS_DECORATED = %w/game_idI idI file alpha src v cv name race crace cls
                           char xlI
                           sk sklevI title place br lvlI ltyp
                           hpI mhpI mmhpI strI intI dexI
@@ -183,7 +183,7 @@ MILEFIELDS_SUMMARIZABLE = \
   Hash[ *MILEFIELDS_DECORATED.map { |x| [ x.name, true ] }.flatten ]
 
 # But suppress attempts to summarize by bad fields.
-%w/dur turn rtime rstart/.each do |x|
+%w/id dur turn rtime rstart/.each do |x|
   MILEFIELDS_SUMMARIZABLE[x] = nil
 end
 
