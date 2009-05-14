@@ -51,9 +51,11 @@ my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
 my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
 ktyp killer ckiller kmod kaux ckaux place str int dex god
-start end dur turn urune nrune splat dam rstart alpha/;
+start end dur turn urune nrune splat dam rstart alpha nplay/;
 
-my @MILE_INDEX_COLS = ('src', grep($_ ne 'milestone', @MILEFIELDS));
+my @MILE_INDEX_COLS = ('src',
+                       grep($_ ne 'milestone', @MILEFIELDS),
+                      'nplay');
 
 my %MILESTONE_VERB =
 (
