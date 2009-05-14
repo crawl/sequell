@@ -64,6 +64,10 @@ CREATE TABLE logrecord (
     tmsg VARCHAR(255),
     vmsg VARCHAR(255),
     splat CHAR(1),
+
+    -- How many times it's been played on FooTV
+    nplay INT DEFAULT 0,
+    
     PRIMARY KEY (id)
 );
 CREATE INDEX ind_foffset ON logrecord (file, offset);
@@ -117,6 +121,9 @@ CREATE TABLE milestone (
 
     -- The actual milestone message for Henzell to report.
     milestone VARCHAR(255),
+
+    -- How many times it's been played on FooTV
+    nplay INT DEFAULT 0,
 
     PRIMARY KEY(id),
     FOREIGN KEY (game_id) REFERENCES logrecord (id)

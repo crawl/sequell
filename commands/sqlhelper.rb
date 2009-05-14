@@ -103,21 +103,21 @@ COLUMN_ALIASES = {
 LOGFIELDS_DECORATED = %w/idI file alpha src v cv lv scI name uidI race crace cls
   char xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
   ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
-  endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend/
+  endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend nplayI/
 
 MILEFIELDS_DECORATED = %w/game_idI file alpha src v cv name race crace cls
                           char xlI
                           sk sklevI title place br lvlI ltyp
                           hpI mhpI mmhpI strI intI dexI
                           god durI turnI uruneI nruneI timeD rtime rstart
-                          verb noun milestone/
+                          verb noun milestone nplayI/
 
 FAKEFIELDS_DECORATED = %w/when/
 
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br lvl ltyp
               killer god urune nrune src str int dex kaux ckiller cv ckaux
-              crace kmod splat dam hp mhp mmhp piety pen alpha/.
+              crace kmod splat dam hp mhp mmhp piety pen alpha nplay/.
              map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
@@ -323,6 +323,12 @@ def with_query_context(ctx)
   ensure
     $CTX = old_context
   end
+end
+
+def update_tv_count(g)
+  table = g['milestone'] ? 'milestone' : 'logrecord'
+  sql_dbh.execute("UPDATE #{table} SET nplay = nplay + 1 " +
+                  "WHERE id = ?", g['id'])
 end
 
 def sql_build_query(default_nick, args, context=CTX_LOG)
