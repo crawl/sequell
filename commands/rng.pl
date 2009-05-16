@@ -21,7 +21,7 @@ sub build_char_options { # {{{
             }
             elsif (/case (SP_\w+)/) {
                 my $race = normalize_race $1;
-                $race = 'draconian' if $race eq 'red draconian';
+                $race = 'draconian' if $race && $race eq 'red draconian';
                 push @found_races, $race;
             }
             elsif (/return CC_(\w+)/) {
@@ -57,7 +57,8 @@ sub random_role { # {{{
     return random_choice(@role_list);
 } # }}}
 sub random_god { # {{{
-    return display_god random_choice(@gods);
+    # [ds] Can't use random_choice, seeing we've gamed that.
+    return display_god $gods[int rand @gods];
 } # }}}
 sub random_char { # {{{
     my %args = @_;
@@ -97,7 +98,9 @@ sub special_choice { # {{{
     return random_char %args;
 } # }}}
 sub random_choice { # {{{
-    $_[int rand @_]
+    # [ds] Xom IS the RNG!
+    my @xoms = grep(/xom/i, @_);
+    @xoms ? $xoms[int rand @xoms] : $_[int rand @_]
 } # }}}
 
 my @words = split ' ', strip_cmdline $ARGV[2], case_sensitive => 1;
