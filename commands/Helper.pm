@@ -41,7 +41,7 @@ my @field_names = qw/v lv name uid race cls xl sk sklev title place br lvl
 my @roles_abbrev = qw/Fi Wz Pr Th Gl Ne Pa As Be Hu Cj En FE IE Su AE EE Cr DK
                       VM CK Tm He XX Re St Mo Wr Wn/;
 my @races_abbrev = qw/XX Hu El HE GE DE SE HD MD Ha HO Ko Mu Na Gn Og Tr OM Dr
-                      Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Ce DG Sp Mi DS Gh Ke Mf/;
+                      Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Ce DG Sp Mi DS Gh Ke Mf DD/;
 
 my @roles = (
   'fighter', 'wizard', 'priest', 'thief', 'gladiator', 'necromancer',
@@ -59,7 +59,7 @@ my @races = (
   'white draconian', 'green draconian', 'yellow draconian', 'grey draconian',
   'black draconian', 'purple draconian', 'mottled draconian', 'pale draconian',
   'unk0 draconian', 'unk1 draconian', 'base draconian', 'centaur', 'demigod',
-  'spriggan', 'minotaur', 'demonspawn', 'ghoul', 'kenku', 'merfolk',
+  'spriggan', 'minotaur', 'demonspawn', 'ghoul', 'kenku', 'merfolk', 'deep dwarf'
 );
 
 my @death_method = (
@@ -173,7 +173,7 @@ our @skills = (
     'polearms', 'staves', 'slings', 'bows', 'crossbows', 'darts', 'throwing',
     'armour', 'dodging', 'stealth', 'stabbing', 'shields', 'traps & doors',
     'unarmed combat', 'spellcasting', 'conjurations', 'enchantments',
-    'summonings', 'necromancy', 'translocations', 'transmigration',
+    'summonings', 'necromancy', 'translocations', 'transmutations',
     'divinations', 'fire magic', 'ice magic', 'air magic', 'earth magic',
     'poison magic', 'invocations', 'evocations', 'experience',
 ); # }}}
@@ -196,7 +196,7 @@ $short_skills{'enchantments'}   = 'Ench';
 $short_skills{'summonings'}     = 'Summ';
 $short_skills{'necromancy'}     = 'Nec';
 $short_skills{'translocations'} = 'Tloc';
-$short_skills{'transmigration'} = 'Tmig';
+$short_skills{'transmutations'} = 'Tmut';
 $short_skills{'divinations'}    = 'Div';
 $short_skills{'invocations'}    = 'Inv';
 $short_skills{'evocations'}     = 'Evo';
@@ -211,7 +211,7 @@ my %normalize_skill = (
     flails   => 'maces & flails',
     invo     => 'invocations',
     necro    => 'necromancy',
-    transmig => 'transmigrations',
+    transmig => 'transmutations',
     doors    => 'traps & doors',
     armor    => 'armour',
     uc       => 'unarmed combat',
@@ -220,7 +220,8 @@ sub normalize_skill { # {{{
     my $skill = shift;
     $skill = lc $skill;
     $skill =~ s/(?:^\s*|\s*$)//g;
-    return $normalize_skill{$skill}
+    my $alt = $skill !~ /s$/ && "${skill}s";
+    return $normalize_skill{$skill} || normalize_skill($alt);
 } # }}}
 sub short_skill { # {{{
     my $skill = shift;
@@ -253,14 +254,14 @@ our @races = (
     'gnome', 'ogre', 'troll', 'ogre-mage',
     (map { "$_ draconian" } @drac_colors),
     'base draconian', 'centaur', 'demigod', 'spriggan', 'minotaur',
-    'demonspawn', 'ghoul', 'kenku', 'merfolk', 'vampire',
+    'demonspawn', 'ghoul', 'kenku', 'merfolk', 'vampire', 'deep dwarf'
 );
 # }}}
 # genuses {{{
 my %genus_map = (
     GENPC_DRACONIAN => [map { "$_ draconian" } (@drac_colors, "base")   ],
     GENPC_ELVEN     => [map { "$_ elf"       } qw/high grey deep sludge/],
-    GENPC_DWARVEN   => ['mountain dwarf'],
+    GENPC_DWARVEN   => ['mountain dwarf', 'deep dwarf'],
     GENPC_OGRE      => [qw/ogre ogre-mage/],
 );
 # }}}

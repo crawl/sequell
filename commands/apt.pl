@@ -18,7 +18,7 @@ sub parse_apt_file { # {{{
         # kinda ugly, but we have to skip the commented out stats at the
         # end of the array
         if (/spec_skills\[/ .. /\*\*\*\*\*\*\*\*\*\*\*/) {
-            if (/{\s*\/\/\s*(\w+)/) {
+            if (/\{\s*\/\/\s*(\w+)/) {
                 $race = normalize_race $1;
                 die unless defined $race;
             }
