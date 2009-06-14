@@ -221,7 +221,7 @@ sub normalize_skill { # {{{
     $skill = lc $skill;
     $skill =~ s/(?:^\s*|\s*$)//g;
     my $alt = $skill !~ /s$/ && "${skill}s";
-    return $normalize_skill{$skill} || normalize_skill($alt);
+    return $normalize_skill{$skill} || ($alt && normalize_skill($alt));
 } # }}}
 sub short_skill { # {{{
     my $skill = shift;
