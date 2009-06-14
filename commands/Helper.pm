@@ -249,9 +249,9 @@ sub is_valid_drac_color { # {{{
 } # }}}
 # race list {{{
 our @races = (
-    'human', 'high elf', 'grey elf', 'deep elf', 'sludge elf',
+    'human', 'high elf', 'deep elf', 'sludge elf',
     'mountain dwarf', 'halfling', 'hill orc', 'kobold', 'mummy', 'naga',
-    'gnome', 'ogre', 'troll', 'ogre-mage',
+    'ogre', 'troll',
     (map { "$_ draconian" } @drac_colors),
     'base draconian', 'centaur', 'demigod', 'spriggan', 'minotaur',
     'demonspawn', 'ghoul', 'kenku', 'merfolk', 'vampire', 'deep dwarf'
@@ -262,7 +262,7 @@ my %genus_map = (
     GENPC_DRACONIAN => [map { "$_ draconian" } (@drac_colors, "base")   ],
     GENPC_ELVEN     => [map { "$_ elf"       } qw/high grey deep sludge/],
     GENPC_DWARVEN   => ['mountain dwarf', 'deep dwarf'],
-    GENPC_OGRE      => [qw/ogre ogre-mage/],
+    GENPC_OGRE      => [qw/ogre/],
 );
 # }}}
 # race names used by the code {{{
@@ -290,7 +290,6 @@ my %normalize_race = (
     (map { ($_, $_) } @races),
     (map { lc } (reverse %code_races)),
     (map { lc } (reverse %short_races)),
-    'ogre mage' => 'ogre-mage',
     'draconian' => 'base draconian',
 );
 # }}}
