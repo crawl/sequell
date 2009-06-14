@@ -60,20 +60,25 @@ sub add_exp_apts { # {{{
 } # }}}
 sub is_best_apt { # {{{
     my ($race, $skill) = @_;
+    return 0 unless $race && $skill;
     for (@races) {
-        return 0 if $apts{$_}{$skill} < $apts{$race}{$skill};
+      no warnings 'uninitialized';
+      return 0 if $apts{$_}{$skill} < $apts{$race}{$skill};
     }
     return 1;
 } # }}}
 sub is_worst_apt { # {{{
     my ($race, $skill) = @_;
+    return 0 unless $race && $skill;
     for (@races) {
-        return 0 if $apts{$_}{$skill} > $apts{$race}{$skill};
+      no warnings 'uninitialized';
+      return 0 if $apts{$_}{$skill} > $apts{$race}{$skill};
     }
     return 1;
 } # }}}
 sub apt { # {{{
     my ($race, $skill) = @_;
+    return "?" unless $race && $skill;
     return $apts{$race}{$skill} . (is_best_apt($race, $skill) ? "!" :
                                    is_worst_apt($race, $skill) ? "*" : "");
 } # }}}
@@ -119,6 +124,7 @@ sub print_race_apt { # {{{
 } # }}}
 sub print_skill_apt { # {{{
     my ($skill, $sort) = @_;
+    die "No skill name?" unless $skill;
     my @list = @races;
     @list = sort @list if !defined $sort || $sort eq 'alpha';
     my @out;
@@ -160,7 +166,7 @@ while (@words) {
     }
 
     $test = normalize_skill join ' ', @words;
-    if (defined $test) {
+    if ($test) {
         error "skill already defined with $opts{skill}, but I got $test"
             if exists $opts{skill};
         $opts{skill} = $test;
