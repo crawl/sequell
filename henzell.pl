@@ -11,7 +11,7 @@ my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
 my $LOCK_FILE = "$ENV{HOME}/.henzell.lock";
 
 # The largest message that Henzell will paginate in PM.
-my $MAX_PAGINATE_LENGTH = 1997;
+my $MAX_PAGINATE_LENGTH = 1197;
 
 my $nickname       = 'Henzell';
 my $ircname        = 'Henzell the Crawl Bot';
