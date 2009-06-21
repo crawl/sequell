@@ -70,7 +70,7 @@ for (@LOGFIELDS, @INDEX_COLS, @SELECTFIELDS) {
 
 my @INDEX_CASES = ( '' );
 
-my @UNIQUES = ("Ijyb", "Blork the orc", "Urug", "Erolcha", "Snorg",
+my @UNIQUES = ("Ijyb", "Blork the orc", "Blork", "Urug", "Erolcha", "Snorg",
   "Polyphemus", "Adolf", "Antaeus", "Xtahua", "Tiamat", "Boris",
   "Murray", "Terence", "Jessica", "Sigmund", "Edmund", "Psyche",
   "Donald", "Michael", "Joseph", "Erica", "Josephine", "Harold",
@@ -507,6 +507,8 @@ sub fixup_logfields {
         my ($name) = /^([^,]*)/;
         $_ = 'a pandemonium lord'
           if !/^(?:an?|the) / && !$UNIQUES{$name} && !/,/;
+        # Fix Blork and variants thereof.
+        $_ = 'Blork' if /^Blork/;
       }
     }
 
