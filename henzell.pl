@@ -369,9 +369,19 @@ sub respond_with_message
 
   if ($private) {
     my $length = length($output);
-    for (my $start = 0; $start < $length; $start += 400) {
+    my $PAGE = 400;
+    for (my $start = 0; $start < $length; $start += $PAGE) {
+      if ($length - $start > $PAGE) {
+        my $spcpos = rindex($output, ' ', $start + $PAGE - 1);
+        if ($spcpos != -1 && $spcpos > $start) {
+          raw_message_post($kernel, $private, $sender, $response_to,
+                           substr($output, $start, $spcpos - $start));
+          $start = $spcpos + 1 - $PAGE;
+          next;
+        }
+      }
       raw_message_post($kernel, $private, $sender, $response_to,
-                       substr($output, $start, 400));
+                       substr($output, $start, $PAGE));
     }
   }
   else {
