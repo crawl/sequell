@@ -10,6 +10,9 @@ my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
 
 my $LOCK_FILE = "$ENV{HOME}/.henzell.lock";
 
+# The largest message that Henzell will paginate in PM.
+my $MAX_PAGINATE_LENGTH = 1997;
+
 my $nickname       = 'Henzell';
 my $ircname        = 'Henzell the Crawl Bot';
 my $ircserver      = 'irc.freenode.org';
@@ -351,6 +354,32 @@ sub respond_to_any_msg
   $kernel->post($sender => privmsg => $channel => $output) if $output;
 }
 
+sub raw_message_post
+{
+  my ($kernel, $private, $sender, $response_to, $output) = @_;
+  $kernel->post( $sender => privmsg => $response_to => $output);
+}
+
+sub respond_with_message
+{
+  my ($kernel, $private, $sender, $response_to, $output) = @_;
+
+  $output = substr($output, 0, $MAX_PAGINATE_LENGTH) . "..."
+    if length($output) > $MAX_PAGINATE_LENGTH;
+
+  if ($private) {
+    my $length = length($output);
+    for (my $start = 0; $start < $length; $start += 400) {
+      raw_message_post($kernel, $private, $sender, $response_to,
+                       substr($output, $start, 400));
+    }
+  }
+  else {
+    $output = substr($output, 0, 400) . "..." if length($output) > 400;
+    raw_message_post($kernel, $private, $sender, $response_to, $output);
+  }
+}
+
 sub process_msg
 {
   my ($private,$kernel,$sender,$who,$where,$verbatim) = @_;
@@ -391,8 +420,7 @@ sub process_msg
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
     	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
-    $output = substr($output, 0, 400) . "..." if length($output) > 400;
-    $kernel->post( $sender => privmsg => $response_to => $output);
+    respond_with_message($kernel, $private, $sender, $response_to, $output);
   }
 
   undef;
