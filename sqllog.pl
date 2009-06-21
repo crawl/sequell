@@ -77,7 +77,10 @@ my @UNIQUES = ("Ijyb", "Blork the orc", "Urug", "Erolcha", "Snorg",
   "Norbert", "Jozef", "Agnes", "Maud", "Louise", "Francis", "Frances",
   "Rupert", "Wayne", "Duane", "Norris", "Frederick", "Margery",
   "Mnoleg", "Lom Lobon", "Cerebov", "Gloorx Vloq", "Geryon",
-  "Dispater", "Asmodeus", "Ereshkigal");
+  "Dispater", "Asmodeus", "Ereshkigal", "the royal jelly",
+  "the Lernaean hydra", "Dissolution", "Azrael", "Prince Ribbit",
+  "Sonja", "Ilsuiw", "Nergalle", "Saint Roka", "Roxanne",
+  "Eustachio");
 
 my $TLOGFILE   = 'logrecord';
 my $TMILESTONE = 'milestone';
@@ -501,7 +504,9 @@ sub fixup_logfields {
 
       # If it's an actual kill, merge Pan lords.
       if ($g->{killer}) {
-        $_ = 'a pandemonium lord' if !/^(?:an?|the) / && !$UNIQUES{$_};
+        my ($name) = /^([^,]*)/;
+        $_ = 'a pandemonium lord'
+          if !/^(?:an?|the) / && !$UNIQUES{$name} && !/,/;
       }
     }
 
