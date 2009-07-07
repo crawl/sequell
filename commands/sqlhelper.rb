@@ -13,7 +13,7 @@ OPERATORS = {
 # List of abbreviations for branches that have depths > 1. This includes
 # fake branches such as the Ziggurat.
 DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
-                   Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat/
+                   Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig/
 
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
 
@@ -362,19 +362,48 @@ def sql_build_query(default_nick, args, context=CTX_LOG)
   end
 end
 
+def clean_extra_fields(extra, ctx)
+  return nil unless extra
+  fields = extra.gsub(' ', '').split(',')
+  fields = fields.collect { |f| COLUMN_ALIASES[f] || f }
+  fields.each do |f|
+    raise "Unknown selector #{f} in #{extra}" unless ctx.field?(f)
+  end
+  fields
+end
+
+def extra_field_clause(args, ctx)
+  combined = args.join(' ')
+  extra = nil
+  reg = %r/\bx\s*=\s*(\w+(?:\s*,\s*\w+)*)/
+  extra = $1 if combined =~ reg
+  combined.sub!(reg, '') if extra
+  restargs = combined.split().find_all { |x| !x.strip.empty? }
+
+  [ restargs, clean_extra_fields(extra, ctx) ]
+end
+
+def add_extra(extra, fieldmap)
+  fieldmap['extra'] = extra.join(",") if extra && !extra.empty? && fieldmap
+  fieldmap
+end
+
 # Given a set of arguments of the form
 #       nick num etc
 # runs the query and returns the matching game.
 def sql_find_game(default_nick, args, context=CTX_LOG)
+  args, extra = extra_field_clause(args, context)
+
   q = sql_build_query(default_nick, args, context)
 
   with_query_context(context) do
     n, row = sql_exec_query(q.num, q)
-    [ n, row ? row_to_fieldmap(row) : nil, q.argstr ]
+    [ n, row ? add_extra(extra, row_to_fieldmap(row)) : nil, q.argstr ]
   end
 end
 
 def sql_show_game(default_nick, args, context=CTX_LOG)
+  args, extra = extra_field_clause(args, context)
   q = sql_build_query(default_nick, args, context)
   with_query_context(context) do
     if q.summarize
@@ -385,10 +414,11 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
       unless row
         puts "No #{type} for #{q.argstr}."
       else
+        game = add_extra(extra, row_to_fieldmap(row))
         if block_given?
-          yield [ n, row_to_fieldmap(row) ]
+          yield [ n, game ]
         else
-          print "\n#{n}. :#{munge_game(row_to_fieldmap(row))}:"
+          print "\n#{n}. :#{munge_game(game)}:"
         end
       end
     end
@@ -1161,7 +1191,8 @@ def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
   end
 end
 
-def report_grouped_games(group_by, defval, who, args, separator=', ', formatter=nil)
+def report_grouped_games(group_by, defval, who, args,
+                         separator=', ', formatter=nil)
   with_group(group_by) do
     begin
       q = sql_build_query(who, args)

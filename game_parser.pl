@@ -53,9 +53,41 @@ sub handle_output
   return $output;
 }
 
+sub format_date {
+  my $date = shift;
+  $date =~ /^(\d{4})(\d{2})(\d{2})/;
+  return $1 . "-" . sprintf("%02d", $2 + 1) . "-" . $3;
+}
+
+sub formatted_game_field {
+  my ($g, $field) = @_;
+  if (grep($_ eq $field, 'end', 'start', 'rend', 'rstart', 'time')) {
+    return format_date($$g{$field});
+  }
+  elsif ($field eq 'dur') {
+    return serialize_time($$g{$field});
+  }
+  else {
+    return $$g{$field};
+  }
+}
+
+sub parse_extras {
+  my $game_ref = shift;
+  my $extra = '';
+
+  if ($$game_ref{extra}) {
+    $extra = "[" . join(";",
+                        map("$_=" . formatted_game_field($game_ref, $_),
+                            split(/,/, $$game_ref{extra}))) . "] ";
+  }
+  $extra
+}
+
 sub pretty_print
 {
   my $game_ref = shift;
+  my $extra = parse_extras($game_ref);
 
   my $loc_string = "";
   my $place = $game_ref->{place};
@@ -70,13 +102,12 @@ sub pretty_print
   $loc_string = "" # For escapes of the dungeon, so it doesn't print the loc
     if $game_ref->{ktyp} eq 'winning' or $game_ref->{ktyp} eq 'leaving';
 
-  $game_ref->{end} =~ /^(\d{4})(\d{2})(\d{2})/;
-  my $death_date = " on " . $1 . "-" . sprintf("%02d", $2 + 1) . "-" . $3;
-
+  my $death_date = " on " . format_date($$game_ref{end});
   my $deathmsg = $game_ref->{vmsg} || $game_ref->{tmsg};
   $deathmsg =~ s/!$//;
   my $title = game_skill_title($game_ref);
-  sprintf '%s the %s (L%d %s)%s, %s%s%s, with %d point%s after %d turn%s and %s.',
+  sprintf '%s%s the %s (L%d %s)%s, %s%s%s, with %d point%s after %d turn%s and %s.',
+      $extra,
       $game_ref->{name},
 	  $title,
       $game_ref->{xl},
@@ -95,6 +126,7 @@ sub pretty_print
 sub milestone_string
 {
   my ($g, $show_time) = @_;
+  my $extra = parse_extras($g);
 
   my $placestring = " ($g->{place})";
   if ($g->{milestone} eq "escaped from the Abyss!")
@@ -102,14 +134,18 @@ sub milestone_string
     $placestring = "";
   }
 
-  my $time = join("-", ($g->{time} =~ /^(\d{4})(\d{2})(\d{2})/g));
-  $time =~ s/^(\d{4}-)(\d{2})/$1 . sprintf("%02d", $2 + 1)/e;
+  my $ms = $$g{milestone};
+  my $turn = $$g{turn};
+  $ms =~ s/\.$/" at $turn turn" . ($turn == 1 ? '' : 's') . "."/e;
+
+  my $time = format_date($$g{time});
   my $prefix = $show_time? "[" . $time . "] " : '';
-  sprintf("${prefix}%s the %s (L%s %s) %s%s",
-    $g->{name},
-    game_skill_title($g),
-    $g->{xl},
-    $g->{char},
-    $g->{milestone},
-    $placestring)
+  sprintf("$prefix%s%s the %s (L%s %s) %s%s",
+          $extra,
+          $g->{name},
+          game_skill_title($g),
+          $g->{xl},
+          $g->{char},
+          $ms,
+          $placestring)
 }
