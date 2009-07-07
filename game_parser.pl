@@ -136,7 +136,7 @@ sub milestone_string
 
   my $ms = $$g{milestone};
   my $turn = $$g{turn};
-  $ms =~ s/\.$/" at $turn turn" . ($turn == 1 ? '' : 's') . "."/e;
+  $ms =~ s/\.$/ at turn $turn./;
 
   my $time = format_date($$g{time});
   my $prefix = $show_time? "[" . $time . "] " : '';
