@@ -1,4 +1,5 @@
 nohup.*
+milestones.txt
 *.diff
 *.pyc
 current
