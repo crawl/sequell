@@ -13,7 +13,7 @@ our @EXPORT_OK = qw/$logfile demunge_logline demunge_xlogline munge_game
                     @roles normalize_role short_role code_role display_role
                     @gods normalize_god short_god code_god display_god
                     ntimes once serialize_time ucfirst_word
-                    nick_alias/;
+                    nick_alias unwon_combos/;
 our %EXPORT_TAGS = (
     logfile => [qw/demunge_logline demunge_xlogline munge_game games_for/],
     skills  => [grep /skill/, @EXPORT_OK],
@@ -22,6 +22,13 @@ our %EXPORT_TAGS = (
     gods    => [grep /god/,   @EXPORT_OK],
 );
 
+my @DEAD_RACES = qw/El HD Gn GE XX OM/;
+my @BAD_COMBOS = qw/GhPa DGBe/;
+my %DEAD_RACES = map(($_ => 1), @DEAD_RACES);
+my %BAD_COMBOS = map(($_ => 1), @BAD_COMBOS);
+
+my $UNWON_FILE = '/var/www/crawl/unwon.txt';
+#my $UNWON_FILE = 'unwon.txt';
 my $NICKMAP_FILE = 'nicks.map';
 my %NICK_ALIASES;
 my $nick_aliases_loaded;
@@ -540,6 +547,25 @@ sub nick_alias {
   my $aliases = load_nick_aliases()->{lc $nick};
 
   $aliases && $aliases =~ /^(\S+)/ ? $1 : $nick
+}
+
+my @unwon_list;
+sub unwon_combos {
+  return @unwon_list if @unwon_list;
+  open my $inf, '<', $UNWON_FILE
+    or
+      do {
+        warn "Can't open $UNWON_FILE: $!\n";
+        return ();
+      };
+  chomp(my @combos = <$inf>);
+  # Discard heading
+  shift @combos;
+  @unwon_list = map([ m{^(\w+)\s+(\d+)} ], @combos);
+  @unwon_list = grep($$_[0] =~ /^(\w{2})/ && !$DEAD_RACES{$1}, @unwon_list);
+  @unwon_list = grep(!$BAD_COMBOS{$$_[0]}, @unwon_list);
+
+  @unwon_list
 }
 
 1;

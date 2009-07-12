@@ -2,13 +2,73 @@
 use strict;
 use warnings;
 use lib 'commands';
-use Helper qw/:DEFAULT :roles :races :gods/;
+use Helper qw/:DEFAULT :roles :races :gods unwon_combos/;
 
 help("Chooses randomly between its (space-separated) arguments. Accepts \@god, \@char, \@role, and \@race special arguments. Prefixing the special argument with 'good' or 'bad' limits the choices to only unrestricted or only restricted combos, respectively. \@role=<role> or \@race=<race> chooses a random combo with the specified role/race.");
 
 my %chars;
 
 # helper functions
+
+my %CANON_FIELDS = (race => 'sp', role => 'cls', class => 'cls');
+
+sub parse_unwon_options {
+  my $text = shift;
+  return () unless $text;
+  my @frags = split(/;/, $text);
+  my %opts;
+  parse_unwon_option($_, \%opts) for @frags;
+  %opts
+}
+
+sub parse_unwon_option {
+  my ($opt, $ropt) = @_;
+  if ($opt !~ /^\s*(race|sp|cls|role|class|char)\s*(!?=)\s*([a-z]+(?:\|[a-z]+)*)\s*$/) {
+    die "Malformed option: $opt\n";
+  }
+
+  my ($field, $op, $value) = ($1, $2, $3);
+  $field = $CANON_FIELDS{$field} || $field;
+  push @{$$ropt{filter_subs}}, unwon_option_filter($field, $op, $value);
+}
+
+sub unwon_option_filter {
+  my ($field, $op, $value) = @_;
+  $value = lc $value;
+  my %values;
+  my $addval = sub {
+      my $val = shift;
+      s/^\s+//, s/\s+$// for $val;
+      $values{lc $val} = 1;
+    };
+  if ($value =~ /\|/) {
+    $addval->($_) for split /\|/, $value;
+  }
+  else {
+    $addval->($value);
+  }
+  my $extractor =
+    sub {
+      return lc($_) if $field eq 'char';
+      my ($race, $cls) = /^([a-z]{2})([a-z]{2})/i;
+      lc($field eq 'sp' ? $race : $cls)
+    };
+  my $eq = $op eq '=';
+  return sub {
+      grep(($eq || 0) == ($values{$extractor->($_)} || 0), @_)
+    };
+}
+
+sub pick_unwon_combo {
+  my %pars = @_;
+  my %opts = parse_unwon_options($pars{filter});
+  my @unwon = map($_->[0], unwon_combos());
+  for my $filter (@{$opts{filter_subs}}) {
+    @unwon = $filter->(@unwon);
+  }
+  return random_choice(@unwon);
+}
+
 sub build_char_options { # {{{
     open my $fh, "$source_dir/source/newgame.cc"
         or error "Couldn't open newgame.cc for reading";
@@ -82,6 +142,9 @@ sub random_char { # {{{
 sub special_choice { # {{{
     my $special = shift;
     build_char_options;
+    return pick_unwon_combo() if $special eq '@unwon';
+    return pick_unwon_combo(filter => $1)
+      if lc($special) =~ /^\@unwon;(.*)$/;
     return random_race if $special eq '@race';
     return random_role if $special eq '@role';
     return random_god  if $special eq '@god';
