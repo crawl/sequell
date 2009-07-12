@@ -162,6 +162,7 @@ sub special_choice { # {{{
 } # }}}
 sub random_choice { # {{{
     # [ds] Xom IS the RNG!
+    die "Nothing to choose from.\n" unless @_;
     my @xoms = grep(/xom/i, @_);
     @xoms ? $xoms[int rand @xoms] : $_[int rand @_]
 } # }}}
