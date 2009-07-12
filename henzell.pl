@@ -25,17 +25,19 @@ my @stonefiles     =
    '/home/crawl/chroot/var/games/crawl05/saves/milestones.txt',
    '[cdo]/home/henzell/cdo-milestones-0.3',
    '[cdo]/home/henzell/cdo-milestones-0.4',
+   '[cdo]/home/henzell/cdo-milestones-0.5',
    '[cdo;alpha]/home/henzell/cdo-milestones-svn');
 
 
 my @logfiles       = ('/var/www/crawl/allgames.txt',
                       '/home/crawl/chroot/var/games/crawl04/saves/logfile',
-		      '/home/crawl/chroot/var/games/crawl05/saves/logfile',
+                      '/home/crawl/chroot/var/games/crawl05/saves/logfile',
                       # The [cdo] prefix indicates that this is a remote
                       # logfile, which we'll enter into the db with a source
                       # of "cdo", and for which we will not make announcements.
                       '[cdo]/home/henzell/cdo-logfile-0.3',
                       '[cdo]/home/henzell/cdo-logfile-0.4',
+                      '[cdo]/home/henzell/cdo-logfile-0.5',
                       '[cdo;alpha]/home/henzell/cdo-logfile-svn',
                       );
 
