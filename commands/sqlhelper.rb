@@ -808,14 +808,17 @@ def _op_back_combine(args)
   cargs
 end
 
+def _arg_is_grouper?(arg)
+  [OPEN_PAREN, CLOSE_PAREN, BOOLEAN_OR].index(arg)
+end
+
 def _combine_args(args)
   # Second combination: Go through the arg list and check for
   # space-split args that should be combined (such as ['killer=steam',
   # 'dragon'], which should become ['killer=steam dragon']).
   cargs = []
   for arg in args do
-    if cargs.empty? || arg =~ ARGSPLITTER ||
-        [OPEN_PAREN, CLOSE_PAREN, BOOLEAN_OR].index(arg)
+    if cargs.empty? || arg =~ ARGSPLITTER || _arg_is_grouper?(arg) || _arg_is_grouper?(cargs.last)
       cargs << arg
     else
       cargs.last << " " << arg
