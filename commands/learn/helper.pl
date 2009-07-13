@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use File::Temp qw/tempfile/;
 
-our $learn_dir = '/home/henzell/henzell/dat/learndb/';
+our $learn_dir = 'dat/learndb/';
 
 sub cleanse_term
 {
@@ -24,7 +24,7 @@ sub num_entries
   opendir(my $dir, "$learn_dir$term") or 0;
   my @files = grep {$_ ne "." and $_ ne ".." and $_ ne "contrib"}
               readdir $dir;
-  return scalar @files;  
+  return scalar @files;
 }
 
 sub read_entry
@@ -35,7 +35,7 @@ sub read_entry
 
   my $file = "$learn_dir$term/$entry_num";
   return '' if not -r $file;
-  my $contents = do {local @ARGV = $file; <>}; 
+  my $contents = do {local @ARGV = $file; <>};
   return $contents if $just_the_entry;
 
   $term =~ y/_/ /;

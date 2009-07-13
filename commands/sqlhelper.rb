@@ -915,7 +915,7 @@ def parse_param_group(preds, sorts, args)
   end
 end
 
-def fixup_listgame_param(arg)
+def fixup_listgame_arg(arg)
   # Check if it's a character abbreviation.
   if arg =~ /^([a-z]{2})([a-z]{2})/i && RACE_EXPANSIONS[$1.downcase] \
     && CLASS_EXPANSIONS[$2.downcase] then
@@ -927,12 +927,23 @@ def fixup_listgame_param(arg)
   nil
 end
 
+def fixup_listgame_selector(key, op, val)
+  # Check for regex operators in an equality check and map it to a
+  # regex check instead.
+  if (op == '=' || op == '!=') && val =~ /[()|?]/ then
+    op = op == '=' ? '~~' : '!~~'
+  end
+  [key, op, val]
+end
+
 def process_param(preds, sorts, rawarg)
   arg = rawarg
-  if arg !~ ARGSPLITTER && (arg = fixup_listgame_param(arg)) !~ ARGSPLITTER
+  if arg !~ ARGSPLITTER && (arg = fixup_listgame_arg(arg)) !~ ARGSPLITTER
     raise "Malformed argument: #{rawarg}"
   end
   key, op, val = $1, $2, $3
+
+  key, op, val = fixup_listgame_selector(key, op, val)
 
   key.downcase!
   val.downcase!
