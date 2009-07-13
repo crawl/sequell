@@ -947,7 +947,8 @@ def fixup_listgame_arg(arg)
     return "race=" + arg if is_race?(arg)
   end
 
-  if BRANCH_SET.include?(arg.downcase) && !nick_exists?(arg)
+  if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
+      (BRANCH_SET.include?(arg.downcase) && !nick_exists?(arg))
     return "place=" + arg
   end
 
