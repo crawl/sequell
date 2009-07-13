@@ -132,6 +132,8 @@ ARGSPLITTER = Regexp.new('^-?([a-z.:_]+)\s*(' +
                          SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
                          ')\s*(.*)$', Regexp::IGNORECASE)
 
+DB_NICKS = { }
+
 # Automatically limit search to a specific server, unless explicitly
 # otherwise requested.
 SERVER = ENV['CRAWL_SERVER'] || 'cao'
@@ -915,14 +917,26 @@ def parse_param_group(preds, sorts, args)
   end
 end
 
+def is_charabbrev? (arg)
+  arg =~ /^([a-z]{2})([a-z]{2})/i && RACE_EXPANSIONS[$1.downcase] &&
+    CLASS_EXPANSIONS[$2.downcase]
+end
+
+def is_race? (arg)
+  RACE_EXPANSIONS[arg] && !CLASS_EXPANSIONS[arg]
+end
+
+def is_class? (arg)
+  CLASS_EXPANSIONS[arg] && !RACE_EXPANSIONS[arg]
+end
+
 def fixup_listgame_arg(arg)
   # Check if it's a character abbreviation.
-  if arg =~ /^([a-z]{2})([a-z]{2})/i && RACE_EXPANSIONS[$1.downcase] \
-    && CLASS_EXPANSIONS[$2.downcase] then
+  if is_charabbrev?(arg) then
     return "char=" + arg
   elsif arg =~ /^[a-z]{2}$/i then
-    return "cls=" + arg if CLASS_EXPANSIONS[arg] && !RACE_EXPANSIONS[arg]
-    return "race=" + arg if RACE_EXPANSIONS[arg] && !CLASS_EXPANSIONS[arg]
+    return "cls=" + arg if is_class?(arg)
+    return "race=" + arg if is_race?(arg)
   end
 
   # If it looks like a simple nick, treat it as such
@@ -1159,6 +1173,18 @@ def proc_val(val, sqlop)
   val
 end
 
+def nick_exists?(nick)
+  lnick = nick.downcase
+  return DB_NICKS[lnick] if DB_NICKS.key?(lnick)
+  nick_exists = false
+  sql_dbh.execute('SELECT pname FROM logrecord WHERE pname = ? LIMIT 1',
+                  lnick) do |row|
+    nick_exists = true
+  end
+  DB_NICKS[lnick] = nick_exists
+  return nick_exists
+end
+
 def extract_nick(args)
   return nil if args.empty?
 
@@ -1170,8 +1196,15 @@ def extract_nick(args)
        args[i] =~ /^([*.])$/ then
       nick = $1
       nick = '*' if nick == '.'
-      args.slice!(i)
-      break
+
+      if nick.size == 1 ||
+          !(is_class?(nick) || is_race?(nick) || is_charabbrev?(nick)) ||
+          nick_exists?(nick)) then
+        args.slice!(i)
+        break
+      else
+        nick = nil
+      end
     end
   end
   nick
