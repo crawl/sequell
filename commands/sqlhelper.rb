@@ -15,6 +15,11 @@ OPERATORS = {
 DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
                    Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig/
 
+BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
+              Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig
+              Lab Pan Bazaar Bzr Hell Blade Temple/
+BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
+
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
 
 CLASS_EXPANSIONS = {
@@ -942,8 +947,12 @@ def fixup_listgame_arg(arg)
     return "race=" + arg if is_race?(arg)
   end
 
+  if BRANCH_SET.contains?(arg.downcase) && !nick_exists?(arg)
+    return "place=" + arg
+  end
+
   # If it looks like a simple nick, treat it as such
-  return "name=" + arg if arg =~ /^[\w+]+$/
+  return "name=" + arg if arg =~ /^[\w+]+$/ && nick_exists?(arg)
 
   nil
 end
