@@ -7,7 +7,10 @@ my ($term, $num, $rest);
 
 for ($ARGV[1]) {
   /^([\w! ]+)(\[(\d+)\])\s+(s[^a-z].+)/i || /^([\w! ]+)\s+(s[^a-z].+)/i
-    or die "Syntax is: !learn edit TERM[NUM] s/<search>/<repl>/\n";
+    or do {
+      print "Syntax is: !learn edit TERM[NUM] s/<search>/<repl>/\n";
+      exit 1;
+    };
   ($term, $num, $rest) = ($1, $2, $3);
 }
 
@@ -16,7 +19,8 @@ $rest = $num, undef($num) if defined($num) && !defined($rest);
 s/^\s+//, s/\s+$// for ($term, $rest);
 
 if (!$num && num_entries($term) > 1) {
-  die "Use: !learn edit ${term}[NUM] s/<search>/<repl>/\n";
+  print "Use: !learn edit ${term}[NUM] s/<search>/<repl>/\n";
+  exit 1;
 }
 $num ||= 1;
 
