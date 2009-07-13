@@ -129,8 +129,8 @@ FAKEFIELDS = { }
 
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 ARGSPLITTER = Regexp.new('^-?([a-z.:_]+)\s*(' +
-                        SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
-                        ')\s*(.*)$', Regexp::IGNORECASE)
+                         SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
+                         ')\s*(.*)$', Regexp::IGNORECASE)
 
 # Automatically limit search to a specific server, unless explicitly
 # otherwise requested.
@@ -915,8 +915,19 @@ def parse_param_group(preds, sorts, args)
   end
 end
 
+def fixup_listgame_param(arg)
+  # Check if it's a character abbreviation.
+  if arg =~ /^([a-z]{2})([a-z]{2})/i && RACE_EXPANSIONS[$1.downcase] \
+    && CLASS_EXPANSIONS[$2.downcase] then
+    return "char=" + arg
+  end
+  nil
+end
+
 def process_param(preds, sorts, arg)
-  raise "Malformed argument: #{arg}" unless arg =~ ARGSPLITTER
+  if arg !~ ARGSPLITTER && (arg = fixup_listgame_param(arg)) !~ ARGSPLITTER
+    raise "Malformed argument: #{arg}"
+  end
   key, op, val = $1, $2, $3
 
   key.downcase!
