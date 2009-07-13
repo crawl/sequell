@@ -1199,7 +1199,7 @@ def extract_nick(args)
 
       if nick.size == 1 ||
           !(is_class?(nick) || is_race?(nick) || is_charabbrev?(nick)) ||
-          nick_exists?(nick)) then
+          nick_exists?(nick) then
         args.slice!(i)
         break
       else
