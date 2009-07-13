@@ -17,7 +17,7 @@ DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
 
 BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
               Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig
-              Lab Pan Bazaar Bzr Hell Blade Temple/
+              Lab Pan Bazaar Bzr Hell Blade Temple Abyss/
 BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
 
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
