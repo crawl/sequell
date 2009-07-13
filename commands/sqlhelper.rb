@@ -924,6 +924,10 @@ def fixup_listgame_arg(arg)
     return "cls=" + arg if CLASS_EXPANSIONS[arg] && !RACE_EXPANSIONS[arg]
     return "race=" + arg if RACE_EXPANSIONS[arg] && !CLASS_EXPANSIONS[arg]
   end
+
+  # If it looks like a simple nick, treat it as such
+  return "name=" + arg if arg =~ /^[\w+]+$/
+
   nil
 end
 
