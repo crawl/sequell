@@ -933,6 +933,25 @@ def fixup_listgame_selector(key, op, val)
   if (op == '=' || op == '!=') && val =~ /[()|?]/ then
     op = op == '=' ? '~~' : '!~~'
   end
+
+  cval = val.downcase.strip
+  rkey = COLUMN_ALIASES[key.downcase] || key.downcase
+  if ['kaux', 'ckaux', 'killer', 'ktyp'].index(rkey) \
+      && ['=', '!='].index(op) then
+    if ['poison', 'poisoning'].index(cval)
+      key, val = %w/ktyp pois/
+    end
+    if cval =~ /drown/
+      key, val = %w/ktyp water/
+    end
+  end
+
+  if rkey == 'ktyp'
+    val = 'winning' if cval =~ /^win/
+    val = 'leaving' if cval =~ /^leav/
+    val = 'quitting' if cval =~ /^quit/
+  end
+
   [key, op, val]
 end
 
