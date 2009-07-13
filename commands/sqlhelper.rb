@@ -927,9 +927,10 @@ def fixup_listgame_param(arg)
   nil
 end
 
-def process_param(preds, sorts, arg)
+def process_param(preds, sorts, rawarg)
+  arg = rawarg
   if arg !~ ARGSPLITTER && (arg = fixup_listgame_param(arg)) !~ ARGSPLITTER
-    raise "Malformed argument: #{arg}"
+    raise "Malformed argument: #{rawarg}"
   end
   key, op, val = $1, $2, $3
 
