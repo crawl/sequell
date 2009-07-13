@@ -6,7 +6,7 @@ do 'commands/learn/helper.pl';
 my ($term, $num, $rest);
 
 for ($ARGV[1]) {
-  /^([\w! ]+)(\[(\d+)\])\s+(s[^a-z].+)/i || /^([\w! ]+)\s+(s[^a-z].+)/i
+  /^([\w! ]+)\[(\d+)\]\s+(s[^a-z].+)/i || /^([\w! ]+)\s+(s[^a-z].+)/i
     or do {
       print "Syntax is: !learn edit TERM[NUM] s/<search>/<repl>/\n";
       exit 1;
