@@ -920,7 +920,7 @@ def fixup_listgame_param(arg)
   if arg =~ /^([a-z]{2})([a-z]{2})/i && RACE_EXPANSIONS[$1.downcase] \
     && CLASS_EXPANSIONS[$2.downcase] then
     return "char=" + arg
-  elsif arg =~ /^[a-z]{2}$/ then
+  elsif arg =~ /^[a-z]{2}$/i then
     return "cls=" + arg if CLASS_EXPANSIONS[arg] && !RACE_EXPANSIONS[arg]
     return "race=" + arg if RACE_EXPANSIONS[arg] && !CLASS_EXPANSIONS[arg]
   end
