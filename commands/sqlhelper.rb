@@ -942,6 +942,19 @@ def is_class? (arg)
   CLASS_EXPANSIONS[arg] && !RACE_EXPANSIONS[arg]
 end
 
+LISTGAME_SHORTCUTS =
+  [
+   lambda do |value, reproc|
+     return ((GODABBRS.any? { |g| arg.downcase.index(g) == 0 })
+             && arg =~ /^[a-z]+$/i
+             && 'god')
+   end,
+   lambda do |value, reproc|
+     %w/win won quit left leav mon beam
+        pois cloud star/.any? { |ktyp| x =~ /^#{ktyp}[a-z]+/i } && 'ktyp'
+   end
+  ]
+
 def fixup_listgame_arg(preds, sorts, arg)
   atom = arg =~ /^\S+$/
   if atom
@@ -970,11 +983,12 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('name', arg)
     end
 
-    # Check for god abbreviations. No need to check for nicks here because
-    # the previous check should have caught all nicks that this check would
-    # match.
-    if (GODABBRS.any? { |g| arg.downcase.index(g) == 0 }) && arg =~ /^[a-z]+$/i
-      return reproc.call('god', arg)
+    for s in LISTGAME_SHORTCUTS
+      res = s.call(arg, reproc)
+      if res
+        return reproc.call(res, arg) if res.is_a?(String)
+        return res
+      end
     end
   end
 
