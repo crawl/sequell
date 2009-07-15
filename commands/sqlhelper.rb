@@ -18,6 +18,10 @@ DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
 BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
               Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig
               Lab Pan Bazaar Bzr Hell Blade Temple Abyss/
+
+GODABBRS = %w/zin tso kik yre xom veh oka
+              mak sif trog nem ely lug beo/
+
 BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
 
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
@@ -939,22 +943,39 @@ def is_class? (arg)
 end
 
 def fixup_listgame_arg(preds, sorts, arg)
-  # Check if it's a character abbreviation.
-  if is_charabbrev?(arg) then
-    return process_param(preds, sorts, "char=" + arg)
-  elsif arg =~ /^[a-z]{2}$/i then
-    return process_param(preds, sorts, "cls=" + arg) if is_class?(arg)
-    return process_param(preds, sorts, "race=" + arg) if is_race?(arg)
-  end
+  atom = arg =~ /^\S+$/
+  if atom
+    negated = arg =~ /^!/
+    arg = arg.sub(/^!/, '')
+    eqop = negated ? '!=' : '='
+    reproc = lambda do |field, value|
+      process_param(preds, sorts, field + eqop + value)
+    end
 
-  if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
-      (BRANCH_SET.include?(arg.downcase) && !nick_exists?(arg))
-    return process_param(preds, sorts, "place=" + arg)
-  end
+    # Check if it's a character abbreviation.
+    if is_charabbrev?(arg) then
+      return reproc.call('char', arg)
+    elsif arg =~ /^[a-z]{2}$/i then
+      return reproc.call('cls', arg) if is_class?(arg)
+      return reproc.call('race', arg) if is_race?(arg)
+    end
 
-  # If it looks like a simple nick, treat it as such
-  if arg =~ /^[\w+]+$/ && nick_exists?(arg)
-    return process_param(preds, sorts, "name=" + arg)
+    if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
+        (BRANCH_SET.include?(arg.downcase) && !nick_exists?(arg))
+      return reproc.call('place', arg)
+    end
+
+    # If it looks like a simple nick, treat it as such
+    if arg =~ /^[\w+]+$/ && nick_exists?(arg)
+      return reproc.call('name', arg)
+    end
+
+    # Check for god abbreviations. No need to check for nicks here because
+    # the previous check should have caught all nicks that this check would
+    # match.
+    if (GODABBRS.any? { |g| arg.downcase.index(g) == 0 }) && arg =~ /^[a-z]+$/i
+      return reproc.call('god', arg)
+    end
   end
 
   # If all else fails, split on whitespace and retry.
