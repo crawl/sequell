@@ -978,17 +978,17 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('place', arg)
     end
 
-    # If it looks like a simple nick, treat it as such
-    if arg =~ /^[\w+]+$/ && nick_exists?(arg)
-      return reproc.call('name', arg)
-    end
-
     for s in LISTGAME_SHORTCUTS
       res = s.call(arg, reproc)
       if res
         return reproc.call(res, arg) if res.is_a?(String)
         return res
       end
+    end
+
+    # If it looks like a simple nick, treat it as such
+    if arg =~ /^[\w+]+$/ && nick_exists?(arg)
+      return reproc.call('name', arg)
     end
   end
 
