@@ -974,7 +974,7 @@ def fixup_listgame_arg(preds, sorts, arg)
     end
 
     if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
-        (BRANCH_SET.include?(arg.downcase) && !nick_exists?(arg))
+        BRANCH_SET.include?(arg.downcase)
       return reproc.call('place', arg)
     end
 
@@ -984,11 +984,6 @@ def fixup_listgame_arg(preds, sorts, arg)
         return reproc.call(res, arg) if res.is_a?(String)
         return res
       end
-    end
-
-    # If it looks like a simple nick, treat it as such
-    if arg =~ /^[\w+]+$/ && nick_exists?(arg)
-      return reproc.call('name', arg)
     end
   end
 
