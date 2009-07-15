@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+
+our %numeric_fields;
+
 do 'commands/helper.pl';
 
 help("Displays a list of players, possibly satisfying some criteria. See ?? !players.");
@@ -11,7 +14,10 @@ my $screen   = $ARGV[2] =~ /^!aplayers/i || $ARGV[2] =~ /-[^ ]*s/;
 my $hp       = $ARGV[2] =~ /-[^ ]*h/;
 my $time     = $ARGV[2] =~ /-[^ ]*t/;
 my $god      = $ARGV[2] =~ /-[^ ]*g/;
+my ($sort)   = $ARGV[2] =~ /\b-[^ ]*s=(-?[a-z]+)\b/i;
 my $turns    = 1;
+
+$sort ||= '-xl';
 
 $time = 0; # until greensnark adds realtime to where file
 
@@ -81,7 +87,18 @@ if (@ok_players == 0)
   exit;
 }
 
-@ok_players = sort @ok_players;
+my $desc = $sort =~ /^-/;
+$sort =~ s/^-//;
+my $sorter =
+  sub {
+    my ($a, $b) = @_;
+    my $fa = $game_ref_for{$a}{$sort};
+    my $fb = $game_ref_for{$b}{$sort};
+    my $ord = $numeric_fields{$sort} ? $fa <=> $fb : $fa cmp $fb;
+    $desc ? -$ord : $ord
+  };
+
+@ok_players = sort { $sorter->($a, $b) } @ok_players;
 if ($extended)
 {
   @ok_players = map

@@ -3,8 +3,11 @@
 our $logfile = '/var/www/crawl/allgames.txt';
 
 our @field_names = qw/v lv name uid race cls xl sk sklev title place br lvl
-                      ltyp hp mhp mmhp str int dex start dur turn sc ktyp 
+                      ltyp hp mhp mmhp str int dex start dur turn sc ktyp
                       killer kaux end tmsg vmsg god piety pen char nrune urune/;
+our @numeric_fields = qw/xl sklev lvl hp mhp mmhp str int dex start dur turn sc
+                         end piety pen nrune urune/;
+our %numeric_fields = map(($_ => 1), @numeric_fields);
 
 our @roles_abbrev = qw/Fi Wz Pr Th Gl Ne Pa As Be Hu Cj En FE IE Su AE EE Cr DK
                        VM CK Tm He XX Re St Mo Wr Wn Ar/;
@@ -168,7 +171,7 @@ sub demunge_xlogline
   chomp $line;
   die "Unable to handle internal newlines." if $line =~ y/\n//;
   $line =~ s/::/\n\n/g;
-  
+
   while ($line =~ /\G(\w+)=([^:]*)(?::(?=[^:])|$)/cg)
   {
     my ($key, $value) = ($1, $2);
@@ -226,7 +229,7 @@ sub serialize_time
 
     return sprintf "%d:%02d:%02d", $hours, $minutes, $seconds;
   }
-  
+
   my $minutes = int($seconds / 60);
   $seconds %= 60;
   my $hours = int($minutes / 60);
@@ -258,3 +261,5 @@ sub help
     exit;
   }
 }
+
+1
