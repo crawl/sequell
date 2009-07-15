@@ -944,7 +944,7 @@ end
 
 LISTGAME_SHORTCUTS =
   [
-   lambda do |value, reproc|
+   lambda do |arg, reproc|
      return ((GODABBRS.any? { |g| arg.downcase.index(g) == 0 }) \
              && arg =~ /^[a-z]+$/i \
              && 'god')
