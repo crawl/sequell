@@ -974,9 +974,9 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('cls', arg) if cls && !sp
       return reproc.call('race', arg) if sp && !cls
       if cls && sp
-        clause = ['OR']
-        process_param(clause, sorts, "cls=" + arg)
-        process_param(clause, sorts, "race=" + arg)
+        clause = [negated ? 'AND' : 'OR']
+        process_param(clause, sorts, "cls" + eqop + arg)
+        process_param(clause, sorts, "race=" + eqop + arg)
         preds << clause
         return
       end
