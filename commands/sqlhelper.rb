@@ -938,24 +938,32 @@ def is_class? (arg)
   CLASS_EXPANSIONS[arg] && !RACE_EXPANSIONS[arg]
 end
 
-def fixup_listgame_arg(arg)
+def fixup_listgame_arg(preds, sorts, arg)
   # Check if it's a character abbreviation.
   if is_charabbrev?(arg) then
-    return "char=" + arg
+    return process_param(preds, sorts, "char=" + arg)
   elsif arg =~ /^[a-z]{2}$/i then
-    return "cls=" + arg if is_class?(arg)
-    return "race=" + arg if is_race?(arg)
+    return process_param(preds, sorts, "cls=" + arg) if is_class?(arg)
+    return process_param(preds, sorts, "race=" + arg) if is_race?(arg)
   end
 
   if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
       (BRANCH_SET.include?(arg.downcase) && !nick_exists?(arg))
-    return "place=" + arg
+    return process_param(preds, sorts, "place=" + arg)
   end
 
   # If it looks like a simple nick, treat it as such
-  return "name=" + arg if arg =~ /^[\w+]+$/ && nick_exists?(arg)
+  if arg =~ /^[\w+]+$/ && nick_exists?(arg)
+    return process_param(preds, sorts, "name=" + arg)
+  end
 
-  nil
+  # If all else fails, split on whitespace and retry.
+  pieces = arg.split
+  if pieces.size > 1
+    pieces.each { |p| fixup_listgame_arg(preds, sorts, p) }
+  else
+    raise "Malformed argument: #{arg}"
+  end
 end
 
 def fixup_listgame_selector(key, op, val)
@@ -988,8 +996,8 @@ end
 
 def process_param(preds, sorts, rawarg)
   arg = rawarg
-  if arg !~ ARGSPLITTER && (arg = fixup_listgame_arg(arg)) !~ ARGSPLITTER
-    raise "Malformed argument: #{rawarg}"
+  if arg !~ ARGSPLITTER
+    return fixup_listgame_arg(preds, sorts, arg)
   end
   key, op, val = $1, $2, $3
 

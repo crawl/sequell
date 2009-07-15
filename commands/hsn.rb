@@ -9,7 +9,7 @@ help "Lists the highest-scoring game for a player."
 TV.with_tv_opts(ARGV[2].split()[1 .. -1]) do |args, opts|
   begin
     n, game, selectors = \
-      sql_find_game(ARGV[1], paren_args(args) + [ "max=sc" ])
+      sql_find_game(ARGV[1], args + [ "max=sc" ])
   rescue
     puts $!
     raise
