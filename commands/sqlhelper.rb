@@ -978,8 +978,8 @@ def fixup_listgame_selector(key, op, val)
   end
 
   if rkey == 'ktyp' && eqop
-    val = 'winning' if cval =~ /^win/
-    val = 'leaving' if cval =~ /^leav/
+    val = 'winning' if cval =~ /^win/ || cval =~ /^won/
+    val = 'leaving' if cval =~ /^leav/ || cval == 'left'
     val = 'quitting' if cval =~ /^quit/
   end
 
