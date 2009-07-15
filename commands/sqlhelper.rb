@@ -610,7 +610,7 @@ class CrawlQuery
 
   # Is this a query aimed at a single nick?
   def single_nick?
-    @nick != '*' && @nick != '.'
+    @nick != '*'
   end
 
   def summarize
@@ -1251,7 +1251,6 @@ def extract_nick(args)
        args[i] =~ /^!([\w_`'-]+)$/ ||
        args[i] =~ /^([*.])$/ then
       nick = $1
-      nick = '*' if nick == '.'
 
       if nick.size == 1 ||
           !(is_class?(nick) || is_race?(nick) || is_charabbrev?(nick)) ||
@@ -1263,7 +1262,7 @@ def extract_nick(args)
       end
     end
   end
-  nick
+  nick == '.' ? nil : nick
 end
 
 def _parse_number(arg)
