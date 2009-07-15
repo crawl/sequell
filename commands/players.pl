@@ -14,7 +14,7 @@ my $screen   = $ARGV[2] =~ /^!aplayers/i || $ARGV[2] =~ /-[^ ]*s/;
 my $hp       = $ARGV[2] =~ /-[^ ]*h/;
 my $time     = $ARGV[2] =~ /-[^ ]*t/;
 my $god      = $ARGV[2] =~ /-[^ ]*g/;
-my ($sort)   = $ARGV[2] =~ /\b-[^ ]*s=(-?[a-z]+)\b/i;
+my ($sort)   = $ARGV[2] =~ /-?[^ ]*s=(-?[a-z]+)/i;
 my $turns    = 1;
 
 $sort ||= '-xl';
