@@ -951,7 +951,7 @@ LISTGAME_SHORTCUTS =
    end,
    lambda do |value, reproc|
      %w/win won quit left leav mon beam
-        pois cloud star/.any? { |ktyp| x =~ /^#{ktyp}[a-z]+/i } && 'ktyp'
+        pois cloud star/.any? { |ktyp| value =~ /^#{ktyp}[a-z]+/i } && 'ktyp'
    end
   ]
 
