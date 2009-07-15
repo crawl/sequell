@@ -1,11 +1,12 @@
 #! /usr/bin/ruby
 
+CMD = ARGV[0] || 'listgame.rb'
 while true
   print "!lg: "
   a = STDIN.gets
   break unless a
   cmd = "!lg " + a.chomp
   puts cmd
-  system "./commands/listgame.rb '' 'greensnark' '#{cmd}'"
+  system "./commands/#{CMD} '' 'greensnark' '#{cmd}'"
   puts
 end
