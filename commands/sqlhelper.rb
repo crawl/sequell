@@ -935,11 +935,11 @@ def is_charabbrev? (arg)
 end
 
 def is_race? (arg)
-  RACE_EXPANSIONS[arg] && !CLASS_EXPANSIONS[arg]
+  RACE_EXPANSIONS[arg]
 end
 
 def is_class? (arg)
-  CLASS_EXPANSIONS[arg] && !RACE_EXPANSIONS[arg]
+  CLASS_EXPANSIONS[arg]
 end
 
 LISTGAME_SHORTCUTS =
@@ -969,8 +969,17 @@ def fixup_listgame_arg(preds, sorts, arg)
     if is_charabbrev?(arg) then
       return reproc.call('char', arg)
     elsif arg =~ /^[a-z]{2}$/i then
-      return reproc.call('cls', arg) if is_class?(arg)
-      return reproc.call('race', arg) if is_race?(arg)
+      cls = is_class?(arg)
+      sp = is_race?(arg)
+      return reproc.call('cls', arg) if cls && !sp
+      return reproc.call('race', arg) if sp && !cls
+      if cls && sp
+        clause = ['OR']
+        process_param(clause, sorts, "cls=" + arg)
+        process_param(clause, sorts, "race=" + arg)
+        preds << clause
+        return
+      end
     end
 
     if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
