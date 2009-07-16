@@ -22,6 +22,8 @@ BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
 GODABBRS = %w/zin tso kik yre xom veh oka
               mak sif trog nem ely lug beo/
 
+SOURCES = %w/cao cdo/
+
 BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
 
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
@@ -952,6 +954,15 @@ LISTGAME_SHORTCUTS =
    lambda do |value, reproc|
      %w/win won quit left leav mon beam
         pois cloud star/.any? { |ktyp| value =~ /^#{ktyp}[a-z]*$/i } && 'ktyp'
+   end,
+   lambda do |value, reproc|
+     if value =~ /^\d+[.]\d+([.]\d+)*$/
+       return value =~ /^\d+[.]\d+$/ ? 'cv' : 'v'
+     end
+     nil
+   end,
+   lambda do |value, reproc|
+     SOURCES.index(value) ? 'src' : nil
    end
   ]
 
