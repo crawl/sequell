@@ -10,5 +10,6 @@ WHERE NOT EXISTS (SELECT * FROM logrecord lr WHERE
 SELECT lr.charabbrev combo, COUNT(*) games
 FROM logrecord lr, unwon_combos uw
 WHERE lr.charabbrev = uw.charabbrev
+  AND lr.ktyp != 'quitting'
 GROUP BY lr.charabbrev
 ORDER BY games DESC;
