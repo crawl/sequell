@@ -969,6 +969,7 @@ LISTGAME_SHORTCUTS =
    lambda do |value, reproc|
      if BOOL_FIELDS.index(value.downcase)
        reproc.call(value.downcase, 'y')
+       return true
      end
      nil
    end
