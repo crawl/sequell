@@ -28,6 +28,8 @@ BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
 
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
 
+BOOL_FIELDS =%w/splat alpha/
+
 CLASS_EXPANSIONS = {
   "Fi" => "Fighter",
   "Wz" => "Wizard",
@@ -963,6 +965,12 @@ LISTGAME_SHORTCUTS =
    end,
    lambda do |value, reproc|
      SOURCES.index(value) ? 'src' : nil
+   end,
+   lambda do |value, reproc|
+     if BOOL_FIELDS.index(value.downcase)
+       reproc.call(value.downcase, 'y')
+     end
+     nil
    end
   ]
 
