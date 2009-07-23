@@ -8,18 +8,18 @@ do 'commands/helper.pl';
 help("Abbreviates race/role abbreviations. Example usage: !ftw Troll Berserker");
 
 sub race_lookup {
-	my $key = shift;
+	my $key = lc(shift);
 	my $i;
 	for($i=0; $i<@races; $i++) {
-		return $races_abbrev[$i] if ($races[$i] eq $key);
+		return $races_abbrev[$i] if (lc($races[$i]) eq $key);
 	}
 	return '';
 }
 sub role_lookup {
-	my $key = shift;
+	my $key = lc(shift);
 	my $i;
 	for($i=0; $i<@roles; $i++) {
-		return $roles_abbrev[$i] if ($roles[$i] eq $key);
+		return $roles_abbrev[$i] if (lc($roles[$i]) eq $key);
 	}
 	return '';
 }
@@ -27,26 +27,26 @@ sub role_lookup {
 sub ftw {
 	my ($word1, $word2, $word3, $word4, $remainder) = split(' ');
 	my @keys = ();
-	
-	push @keys, $word1 unless $word1 eq '';
-	push @keys, $word2 unless $word2 eq '';
-	push @keys, $word3 unless $word3 eq '';
-	push @keys, $word4 unless $word4 eq '';
-	push @keys, "$word1 $word2" unless $word2 eq '';
-	push @keys, "$word2 $word3" unless $word3 eq '';
-	push @keys, "$word3 $word4" unless $word4 eq '';
-	
-	my $race = '??';
-	my $role = '??';
+
+	push @keys, "$word1 $word2" unless !$word2;
+	push @keys, "$word2 $word3" unless !$word3;
+	push @keys, "$word3 $word4" unless !$word4;
+	push @keys, $word1 unless !$word1;
+	push @keys, $word2 unless !$word2;
+	push @keys, $word3 unless !$word3;
+	push @keys, $word4 unless !$word4;
+
+	my $race = '';
+	my $role = '';
 	my $temp_race = '';
 	my $temp_role = '';
 	foreach(@keys) {
-		$temp_race = race_lookup($_);
-		$temp_role = role_lookup($_);
-		$race = $temp_race if $temp_race ne '';
-		$role = $temp_role if $temp_role ne '';
-		last if (($race ne '??') and ($role ne '??'));
+		$race ||= race_lookup($_);
+		$role ||= role_lookup($_);
+		last if $race and $role;
 	}
+    $race ||= '??';
+    $role ||= '??';
 	return "$race$role";
 }
 
