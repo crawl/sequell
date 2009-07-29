@@ -92,6 +92,19 @@ sub add_entry
     }
   }
 
+
+  ## Rachel is a terrible person.
+  #if ($term == "bad_ideas")
+  #{
+  #  if ($largest == 665)
+  #  {
+  #    print_to_entry($term,$largest+1,'orb of hellchokos');
+  #    return read_entry($term, $largest+1);
+  #  }
+  #}
+
+
+
   print_to_entry($term, $largest+1, $text);
 
   return read_entry($term, $largest+1);
@@ -104,6 +117,11 @@ sub del_entry
   my $moves = 0;
 
   my @files = (1..num_entries($term));
+
+  #if ($term == "bad_ideas")
+  #{
+  #  return read_entry('raxvulpine', 2);
+  #}
 
   return -1 if $entry_num > $files[-1];
 
