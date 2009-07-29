@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 from datetime import datetime, timedelta
+import time
 import helper
 
 TOURNEY_BEGIN = datetime(2009, 8, 1)
@@ -40,4 +41,6 @@ if extra:
 
 pm = now.strftime('%p')
 
-print ("Time: %s %s, UTC." % (now.strftime('%b %d, %Y, %I:%M:%S'), pm)) + extra
+print ("Time: %s %s, UTC."
+       % (time.strftime('%b %d, %Y, %I:%M:%S', now.timetuple()), pm)
+       + extra)
