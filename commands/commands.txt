@@ -35,7 +35,7 @@
 !source source.pl
 !streak streak.rb
 !tell message/tell.pl
-!time time.py
+!time xtime.py
 !ttyrec ttr.rb
 !ttr ttr.rb
 !tv tvreq.rb
