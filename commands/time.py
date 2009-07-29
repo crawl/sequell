@@ -39,8 +39,6 @@ elif now >= TOURNEY_BEGIN and now < TOURNEY_END:
 if extra:
   extra = " " + extra
 
-pm = now.strftime('%p')
-
-print ("Time: %s %s, UTC."
-       % (time.strftime('%b %d, %Y, %I:%M:%S', now.timetuple()), pm)
+print ("Time: %s, UTC."
+       % (time.strftime('%b %d, %Y, %I:%M:%S %p', now.timetuple()))
        + extra)
