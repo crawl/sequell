@@ -19,7 +19,7 @@ my @RLOGF = qw/v lv sc name uid race cls char
 my @RMILEF =
     qw/v name race cls char xl sk sklev title
        place br lvl ltyp hp mhp mmhp str int dex god
-       dur turn urune nrune rstart rtime milestone/;
+       dur turn urune nrune rstart rtime verb milestone/;
 
 our %LOG2SQL = ( name => 'pname',
                  char => 'charabbrev',
@@ -35,7 +35,8 @@ my %HENZELL_TO_LOG =
   (
    rstart => 'start',
    rend => 'end',
-   rtime => 'time'
+   rtime => 'time',
+   verb => 'type'
   );
 
 reconstruct_files();
@@ -103,6 +104,9 @@ sub reconstruct_xfile {
     delete $table{offset};
     for (qw/nrune urune wiz pen god kaux piety vmsg killer/) {
       delete $table{$_} if exists $table{$_} && !$table{$_};
+    }
+    if (exists $table{type}) {
+      $table{type} =~ s/\.ban$//;
     }
     $table{lv} ||= '0.1';
     $table{uid} ||= '5';
