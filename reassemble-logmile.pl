@@ -106,7 +106,11 @@ sub reconstruct_xfile {
       delete $table{$_} if exists $table{$_} && !$table{$_};
     }
     if (exists $table{type}) {
-      $table{type} =~ s/\.ban$//;
+      for ($table{type}) {
+        s/\.ban$//;
+        $_ = 'branch-finale' if $_ eq 'br.end';
+        $_ = 'enter' if $_ eq 'br.enter';
+      }
     }
     $table{lv} ||= '0.1';
     $table{uid} ||= '5';
