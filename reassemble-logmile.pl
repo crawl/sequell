@@ -82,7 +82,7 @@ sub reconstruct_xfile {
     my @henzell_fields = map($HENZELL_TO_LOG{$_} || $_, @fields);
     @table{@henzell_fields} = @$row;
 
-    my $diff = $table{$offset} - $offset;
+    my $diff = $table{offset} - $offset;
     if ($diff > 10 || $diff < 0) {
       die "Row at wrong offset ($offset, wanted $table{offset}), possibly because of previous row: $lastrow\n";
     }
