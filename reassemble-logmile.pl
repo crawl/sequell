@@ -88,7 +88,7 @@ sub reconstruct_xfile {
 
     $lastrowoffset = $table{offset};
     delete $table{offset};
-    for my $_ (qw/nrune urune wiz pen god kaux piety vmsg killer/) {
+    for (qw/nrune urune wiz pen god kaux piety vmsg killer/) {
       delete $table{$_} if exists $table{$_} && !$table{$_};
     }
     $lastrow = xlog_str(\%table);
