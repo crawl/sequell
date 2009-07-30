@@ -17,7 +17,7 @@ my @RLOGF = qw/v lv sc name uid race cls char
   rend dur turn urune nrune tmsg vmsg/;
 
 my @RMILEF =
-    qw/v lv uid name race cls char xl sk sklev title
+    qw/v name race cls char xl sk sklev title
        place br lvl ltyp hp mhp mmhp str int dex god
        dur turn urune nrune rstart rtime milestone/;
 
