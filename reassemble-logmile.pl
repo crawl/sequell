@@ -19,7 +19,7 @@ my @RLOGF = qw/v lv sc name uid race cls char
 my @RMILEF =
     qw/v name race cls char xl sk sklev title
        place br lvl ltyp hp mhp mmhp str int dex god
-       dur turn urune nrune rstart rtime verb noun milestone/;
+       dur turn urune nrune rstart rtime milestone/;
 
 our %LOG2SQL = ( name => 'pname',
                  char => 'charabbrev',
