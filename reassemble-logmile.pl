@@ -82,8 +82,16 @@ sub reconstruct_xfile {
     my @henzell_fields = map($HENZELL_TO_LOG{$_} || $_, @fields);
     @table{@henzell_fields} = @$row;
 
-    if ($offset != $table{offset}) {
+    my $diff = $table{$offset} - $offset;
+    if ($diff > 10 || $diff < 0) {
       die "Row at wrong offset ($offset, wanted $table{offset}), possibly because of previous row: $lastrow\n";
+    }
+
+    # Oops, are we short on a few characters? FAKE IT!
+    my $padding = '';
+    if ($diff) {
+      # Arr, pad it out, me hearties!
+      $padding = ' ' x $diff;
     }
 
     $lastrowoffset = $table{offset};
@@ -91,7 +99,7 @@ sub reconstruct_xfile {
     for (qw/nrune urune wiz pen god kaux piety vmsg killer/) {
       delete $table{$_} if exists $table{$_} && !$table{$_};
     }
-    $lastrow = xlog_str(\%table);
+    $lastrow = $padding . xlog_str(\%table);
     $lastrowsz = length($lastrow) + 1;
     $offset += $lastrowsz;
     print $outf "$lastrow\n";
