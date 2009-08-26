@@ -21,6 +21,7 @@ BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
 
 GODABBRS = %w/zin tso kik yre xom veh oka
               mak sif trog nem ely lug beo/
+GODMAP = { 'tso' => 'The Shining One' }
 
 SOURCES = %w/cao cdo/
 
@@ -949,9 +950,12 @@ end
 LISTGAME_SHORTCUTS =
   [
    lambda do |arg, reproc|
-     return ((GODABBRS.any? { |g| arg.downcase.index(g) == 0 }) \
-             && arg =~ /^[a-z]+$/i \
-             && 'god')
+     if ((GODABBRS.any? { |g| arg.downcase.index(g) == 0 }) &&
+         arg =~ /^[a-z]+$/i)
+       reproc.call('god', GODMAP[arg.downcase] || arg)
+       return true
+     end
+     nil
    end,
    lambda do |value, reproc|
      %w/win won quit left leav mon beam
