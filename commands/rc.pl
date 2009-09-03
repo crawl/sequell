@@ -33,7 +33,7 @@ sub globRC {
       showRC($name) and exit(0);
     }
   }
-  die "$nick doesn't even exist!\n";
+  Helper::error("$nick doesn't even exist!\n");
 }
 
 showRC($nick) || globRC($nick)
