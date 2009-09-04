@@ -56,8 +56,8 @@ sub backup_save {
   Helper::error("Cannot find save for $name.") unless @files;
 
   copy_pieces(@files);
-
   my $backup_name = tar_pieces($name, $qualifier);
+  cleanup_pieces($name);
   print "Successfully backed up ${name}'s save as $backup_name.\n";
 }
 
@@ -69,6 +69,21 @@ sub copy_pieces {
   for my $file (@_) {
     copy($file, $DESTINATION)
       or Helper::error("Failed to backup a save file. $EADMIN");
+  }
+}
+
+sub cleanup_pieces {
+  my $name = shift;
+
+  chdir $DESTINATION
+    or Helper::error("Failed to cd to backup location. $EADMIN");
+
+  # Paranoia, enforce safe characters in name.
+  Helper::error("Bogus characters in $name. $EADMIN")
+      unless $name =~ /^\w+$/;
+
+  for my $file (glob("$name${SAVE_NAME_SUFFIX}*")) {
+    unlink($file) or Helper::error("Unable to cleanup after backup. $EADMIN");
   }
 }
 
