@@ -24,6 +24,7 @@ my $USAGETEXT = "Usage: !copysave <caoname> <reason>. " .
 my $EADMIN = "Please notify the server admin of this problem.";
 
 Helper::help("$HELPTEXT $USAGETEXT");
+Helper::error("Will not backup saves on PM") if $ENV{PRIVMSG} eq 'y';
 
 my $arg = $ARGV[2];
 Helper::error($USAGETEXT) unless $arg =~ /^!\w+\s+(\w+)\s+(\S.*)/;
