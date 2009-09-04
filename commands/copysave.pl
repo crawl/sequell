@@ -89,7 +89,9 @@ sub tar_pieces {
   Helper::error("Bogus characters in $name. $EADMIN")
       unless $name =~ /^\w+$/;
 
-  system "tar cvjf $filename $name${SAVE_NAME_SUFFIX}*"
+  system "tar cvjf $filename $name${SAVE_NAME_SUFFIX}* >/dev/null 2>&1"
     and Helper::error("Archive subcommand failed when archiving "
                           . "save files. $EADMIN");
+
+  $filename
 }
