@@ -41,6 +41,7 @@ backup_save($name, $qualifier);
 sub strip_reason {
   my $reason = shift;
   $reason =~ tr/a-zA-Z0-9/_/cs;
+  s/^_+//, s/_+$// for $reason;
   $reason
 }
 
