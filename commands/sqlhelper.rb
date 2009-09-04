@@ -962,6 +962,13 @@ LISTGAME_SHORTCUTS =
         pois cloud star/.any? { |ktyp| value =~ /^#{ktyp}[a-z]*$/i } && 'ktyp'
    end,
    lambda do |value, reproc|
+     if value =~ /^drown/i
+       reproc.call('ktyp', 'water')
+       return true
+     end
+     nil
+   end,
+   lambda do |value, reproc|
      if value =~ /^\d+[.]\d+([.]\d+)*$/
        return value =~ /^\d+[.]\d+$/ ? 'cv' : 'v'
      end
