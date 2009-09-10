@@ -20,7 +20,7 @@ my $HELPTEXT = "Backs up a $VERSION save into a drop-box where "
   . "the server admin or DevTeam can find it later. Please use this only "
   . "to aid in reporting bugs.";
 my $USAGETEXT = "Usage: !copysave <caoname> <reason>. " .
-  "Name is case-sensitive. Reason must non-empty.";
+  "Name is case-sensitive. Reason must not be empty.";
 my $EADMIN = "Please notify the server admin of this problem.";
 
 Helper::help("$HELPTEXT $USAGETEXT");
