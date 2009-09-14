@@ -87,6 +87,7 @@ sub htmlize($$$)
     s{(http://[!#\$%&'*+,-./0-9:;=?\@A-Z^_a-z|~]+)}{<a href="$1">$1</a>}g;
 
     my $key;
+    tr/\x00-\x1f//d;
     s|{([a-zA-Z0-9_\[\]!?@ -]+)}| $link{"\L$1"} ? "<a href=\"#".($key="\L$1",$key=~tr{ }{_},$key)."\">$1</a>" : "{$1}"|ge;
   }
   $multiple ? "<li>$prefix<span>$entry</span></li>" : "$prefix$entry"
