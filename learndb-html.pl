@@ -11,6 +11,7 @@ my $timestamp = 0;
 
 local $/;
 
+my $title = "Henzell's learndb";
 my %learndb;
 my %redir;
 my %link;
@@ -56,26 +57,30 @@ for(split /\n/, `find dat/learndb/ -type f ! -name '*.html*'`)
     my @st;
     $timestamp = $st[10] if @st=stat $_ and $st[10]>$timestamp;
 }
+
+my $embedded_css = do { local (@ARGV, $/) = 'learndb.css'; <> };
+
 print <<EOF;
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
         "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-<title>Henzell's learndb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>$title</title>
 <style type="text/css">
-dt { display:run-in; border-top:black ridge; margin-top:0.5em; font-weight:bold; }
-dd { display:block; }
-.note { font-size:smaller; }
+$embedded_css
 </style>
 </head>
 <body>
+  <h1>${title}</h1>
 EOF
-print "<p class=note>Updated on ".time2str($timestamp)."\n";
+print "<p class='note'>Updated on ".time2str($timestamp)."\n";
 print "<dl>\n";
 
-sub htmlize($)
+sub htmlize($$)
 {
-    local ($_)=@_;
+  my ($entry, $multiple) = @_;
+  for ($entry) {
     s/&/&amp;/g;
     s/</&lt;/g;
     s/>/&gt;/g;
@@ -83,7 +88,8 @@ sub htmlize($)
 
     my $key;
     s|{([a-zA-Z0-9_\[\]!?@ -]+)}| $link{"\L$1"} ? "<a href=\"#".($key="\L$1",$key=~tr{ }{_},$key)."\">$1</a>" : "{$1}"|ge;
-    return $_;
+  }
+  $multiple ? "<li><span>$entry</span></li>" : $entry
 }
 
 for(sort keys %learndb)
@@ -94,14 +100,19 @@ for(sort keys %learndb)
     my $key = $_;
     $key=~tr{_}{ };
     print "$key\n";
-    print " <dd>", htmlize($learndb{$_}), "\n";
+    print " <dd>";
+
+    my $has_multiple = $learndb{"$_\[2]"};
+    print "<ol>" if $has_multiple;
+    print htmlize($learndb{$_}, $has_multiple), "\n";
     my $i=1;
     while($learndb{$_."[".++$i."]"})
     {
         print "  <p>";
         print "<a name=\"$_\"></a>" for(sort keys %{$redir{$_."[$i]"}});
-        print htmlize($learndb{$_."[$i]"}), "\n";
+        print htmlize($learndb{$_."[$i]"}, $has_multiple), "\n";
     }
+    print "</ol>" if $has_multiple;
 }
 print <<EOF;
 </dl>
