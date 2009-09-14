@@ -77,9 +77,9 @@ EOF
 print "<p class='note'>Updated on ".time2str($timestamp)."\n";
 print "<dl>\n";
 
-sub htmlize($$)
+sub htmlize($$$)
 {
-  my ($entry, $multiple) = @_;
+  my ($entry, $multiple, $prefix) = @_;
   for ($entry) {
     s/&/&amp;/g;
     s/</&lt;/g;
@@ -89,7 +89,7 @@ sub htmlize($$)
     my $key;
     s|{([a-zA-Z0-9_\[\]!?@ -]+)}| $link{"\L$1"} ? "<a href=\"#".($key="\L$1",$key=~tr{ }{_},$key)."\">$1</a>" : "{$1}"|ge;
   }
-  $multiple ? "<li><span>$entry</span></li>" : $entry
+  $multiple ? "<li>$prefix<span>$entry</span></li>" : "$prefix$entry"
 }
 
 for(sort keys %learndb)
@@ -104,13 +104,14 @@ for(sort keys %learndb)
 
     my $has_multiple = $learndb{"$_\[2]"};
     print "<ol>" if $has_multiple;
-    print htmlize($learndb{$_}, $has_multiple), "\n";
+    print htmlize($learndb{$_}, $has_multiple, ''), "\n";
     my $i=1;
     while($learndb{$_."[".++$i."]"})
     {
-        print "  <p>";
-        print "<a name=\"$_\"></a>" for(sort keys %{$redir{$_."[$i]"}});
-        print htmlize($learndb{$_."[$i]"}, $has_multiple), "\n";
+      my $text = $learndb{$_."[$i]"};
+      my $prefix = '';
+      $prefix .= "<a name=\"$_\"></a>" for(sort keys %{$redir{$_."[$i]"}});
+      print htmlize($text, $has_multiple, $prefix), "\n";
     }
     print "</ol>" if $has_multiple;
 }
