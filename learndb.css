@@ -23,7 +23,7 @@ p {
 }
 
 dt {
-  display: run-in;
+  /* display: run-in; at by's request, it breaks safari ---r. */
   /* border-top: 1px solid #ddd; */
   border-bottom: 1px solid #dcc;
   padding-top: 6px;
