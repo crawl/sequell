@@ -28,7 +28,6 @@ my @stonefiles     =
    '[cdo]/home/henzell/cdo-milestones-0.5',
    '[cdo;alpha]/home/henzell/cdo-milestones-svn');
 
-
 my @logfiles       = ('/var/www/crawl/allgames.txt',
                       '/home/crawl/chroot/var/games/crawl04/saves/logfile',
                       '/home/crawl/chroot/var/games/crawl05/saves/logfile',
@@ -205,7 +204,10 @@ sub check_milestone_file
       my $newsworthy = newsworthy($game_ref);
 
       if ($newsworthy) {
-        $irc->yield(privmsg => $channel => milestone_string($game_ref));
+        my $ms = milestone_string($game_ref);
+        unless (contains_banned_word($ms)) {
+          $irc->yield(privmsg => $channel => $ms);
+        }
       }
     }
   }
@@ -253,7 +255,9 @@ sub tail_logfile
       if (!suppress_game($game_ref)) {
         my $output = pretty_print($game_ref);
         $output =~ s/ on \d{4}-\d{2}-\d{2}//;
-        $irc->yield(privmsg => $channel => $output);
+        unless (contains_banned_word($output)) {
+          $irc->yield(privmsg => $channel => $output);
+        }
       }
     }
 

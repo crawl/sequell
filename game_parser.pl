@@ -10,6 +10,39 @@ use Helper qw/demunge_xlogline serialize_time/;
 my %adjective_skill_title =
   map(($_ => 1), ('Deadly Accurate', 'Spry', 'Covert', 'Unseen'));
 
+# Uncool words intended to cause offence will be righteously filtered.
+my $BANNED_WORDS_FILE = 'banned_words.txt';
+my @banned_words;
+my $banned_words_modtime;
+
+sub load_banned_words {
+  return unless -f $BANNED_WORDS_FILE;
+  if (!defined($banned_words_modtime)
+      || -M($BANNED_WORDS_FILE) < $banned_words_modtime)
+  {
+    $banned_words_modtime = -M($BANNED_WORDS_FILE);
+    @banned_words = ();
+    open my $inf, '<', $BANNED_WORDS_FILE or return;
+    while (<$inf>) {
+      chomp;
+      s/^\s*#.*//;
+      next unless /\S/;
+      push @banned_words, split();
+    }
+    close $inf;
+  }
+}
+
+sub contains_banned_word {
+  load_banned_words();
+  for my $line (@_) {
+    for my $word (@banned_words) {
+      return 1 if $line =~ /\Q$word/i;
+    }
+  }
+  return undef;
+}
+
 sub game_skill_title
 {
   my $game_ref = shift;
@@ -149,3 +182,5 @@ sub milestone_string
           $ms,
           $placestring)
 }
+
+1;
