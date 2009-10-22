@@ -30,6 +30,7 @@ sub load_banned_words {
       push @banned_words, split();
     }
     close $inf;
+    print "Loaded banned words: ", join(", ", @banned_words), "\n";
   }
 }
 
