@@ -9,6 +9,7 @@ my $SERVER = 'cao';     # Local server.
 my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
 
 my $LOCK_FILE = "$ENV{HOME}/.henzell.lock";
+my $CONFIG_FILE = 'henzell.rc';
 
 # The largest message that Henzell will paginate in PM.
 my $MAX_PAGINATE_LENGTH = 1197;
@@ -45,6 +46,9 @@ my $commands_file  = $command_dir . 'commands.txt';
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
 my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
                                       greensnark cbus doy/;
+
+my %DEFAULT_CONFIG = (use_pm => 0);
+my %conf = %DEFAULT_CONFIG;
 
 my %commands;
 
@@ -396,6 +400,18 @@ sub respond_with_message
   }
 }
 
+sub is_always_public {
+  my $command = shift;
+  # Every !learn command apart from !learn query has to be public, always.
+  return (($command =~ /^!learn/i && $command !~ /^!learn\s+query/i)
+          || $command =~ /^!tell/i);
+}
+
+sub force_private {
+  my $command = shift;
+  return $conf{use_pm} && ($command =~ /^!\w/ || $command =~ /^[?]{2}/);
+}
+
 sub process_msg
 {
   my ($private,$kernel,$sender,$who,$where,$verbatim) = @_;
@@ -408,7 +424,8 @@ sub process_msg
   seen_update($nick, "saying '$verbatim'");
   respond_to_any_msg($kernel, $nick, $verbatim, $sender, $channel);
 
-  $target =~ s/^\?\?/!learn query /;
+  $target =~ s/^\?[?>]/!learn query /;
+  $target =~ s/^!>/!/;
   $target =~ s/^([!@]\w+) ?// or return;
   my $command = lc $1;
 
@@ -416,6 +433,10 @@ sub process_msg
   $target   =~ y/a-zA-Z0-9//cd;
   $target = $nick unless $target =~ /\S/;
   $target   =~ y/a-zA-Z0-9//cd;
+
+  if (force_private($verbatim) && !is_always_public($verbatim)) {
+    $private = 1;
+  }
 
   my $response_to = $private ? $nick : $channel;
 
@@ -425,14 +446,11 @@ sub process_msg
     $kernel->post( $sender => privmsg => $response_to => load_commands());
   }
   elsif (exists $commands{$command} &&
-         (!$private
-          || ($command eq '!learn' && ($verbatim =~ /^!learn\s+query\s/
-                                       || $verbatim =~ /^\?\?/))
-          || !grep($command eq $_, '!learn', '!tell')))
+         (!$private || !is_always_public($verbatim)))
   {
     # Log all commands to Henzell.
     print "CMD($private): $nick: $verbatim\n";
-    $ENV{PRIVMSG} = $private ? 'y' : 'n';
+    $ENV{PRIVMSG} = $private ? 'y' : '';
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
     	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
@@ -482,8 +500,23 @@ sub _default
   return 0;
 }
 
+sub load_config
+{
+  %conf = %DEFAULT_CONFIG;
+  open my $inf, '<', $CONFIG_FILE or return;
+  while (<$inf>) {
+    s/^\s+//; s/\s+$//;
+    next unless /\S/;
+    if (/^(\w+)\s*=\s*(.*)/) {
+      $conf{$1} = $2;
+    }
+  }
+  close $inf;
+}
+
 sub load_commands
 {
+  load_config();
   %commands = ();
 
   my $loaded = 0;

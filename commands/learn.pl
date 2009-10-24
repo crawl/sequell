@@ -23,7 +23,7 @@ my %filenames =
   swap   => "swap.pl",
 );
 
-if ($ARGV[2] =~ s/^\?\?(.*)//)
+if ($ARGV[2] =~ s/^\?[?>](.*)//)
 {
   $subcommand = "query";
   $args = $1;
@@ -50,4 +50,3 @@ $subcommand = $filenames{$subcommand};
 $args = '' unless defined $args;
 
 exec("commands/learn/$subcommand", $ARGV[1], $args);
-
