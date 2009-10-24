@@ -459,7 +459,7 @@ sub strip_cmdline # {{{
 {
     my $cmdline = shift;
     my %args = @_;
-    $cmdline =~ s/^!\w+\s+//;
+    $cmdline =~ s/^\S+\s+//;
     chomp $cmdline;
     $cmdline = lc $cmdline unless $args{case_sensitive};
     $cmdline = join(' ', split(' ', $cmdline));
