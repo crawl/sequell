@@ -404,7 +404,7 @@ sub is_always_public {
   my $command = shift;
   # Every !learn command apart from !learn query has to be public, always.
   return (($command =~ /^!learn/i && $command !~ /^!learn\s+query/i)
-          || $command =~ /^!(?:tell|send)\b/i);
+          || $command =~ /^!(?:tell|send|copysave)\b/i);
 }
 
 sub force_private {

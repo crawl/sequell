@@ -27,7 +27,7 @@ Helper::help("$HELPTEXT $USAGETEXT");
 Helper::error("Will not backup saves on PM") if $ENV{PRIVMSG} eq 'y';
 
 my $arg = $ARGV[2];
-Helper::error($USAGETEXT) unless $arg =~ /^!\w+\s+(\w+)\s+(\S.*)/;
+Helper::error($USAGETEXT) unless $arg =~ /^\S+\s+(\w+)\s+(\S.*)/;
 
 my ($name, $reason) = ($1, $2);
 my $qualifier = strip_reason($reason);
