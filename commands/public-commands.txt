@@ -1,0 +1,4 @@
+send
+copysave
+nick
+tell

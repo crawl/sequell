@@ -43,6 +43,7 @@ my @logfiles       = ('/var/www/crawl/allgames.txt',
 
 my $command_dir    = 'commands/';
 my $commands_file  = $command_dir . 'commands.txt';
+my $public_commands_file = $command_dir . 'public-commands.txt';
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
 my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
                                       greensnark cbus doy/;
@@ -51,6 +52,7 @@ my %DEFAULT_CONFIG = (use_pm => 0);
 my %conf = %DEFAULT_CONFIG;
 
 my %commands;
+my %public_commands;
 
 print "Locking $LOCK_FILE\n";
 open my $outf, '>', $LOCK_FILE or die "Can't open $LOCK_FILE: $!\n";
@@ -403,8 +405,9 @@ sub respond_with_message
 sub is_always_public {
   my $command = shift;
   # Every !learn command apart from !learn query has to be public, always.
-  return (($command =~ /^!learn/i && $command !~ /^!learn\s+query/i)
-          || $command =~ /^!(?:tell|send|copysave)\b/i);
+  return 1 if $command =~ /^!learn/i && $command !~ /^!learn\s+query/i;
+  return 1 unless $command =~ /^\W+(\w+)/;
+  return $public_commands{lc($1)};
 }
 
 sub force_private {
@@ -514,9 +517,26 @@ sub load_config
   close $inf;
 }
 
+sub load_public_commands {
+  %public_commands = ();
+  open my $inf, '<', $public_commands_file or return;
+  while (<$inf>) {
+    chomp;
+    s/^\s+//; s/\s+$//;
+    next if /^#/;
+    next unless /\S/;
+
+    if (/^!?(\w+)/) {
+      $public_commands{lc($1)} = 1;
+    }
+  }
+  close $inf;
+}
+
 sub load_commands
 {
   load_config();
+  load_public_commands();
   %commands = ();
 
   my $loaded = 0;
