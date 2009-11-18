@@ -10,7 +10,7 @@ our @numeric_fields = qw/xl sklev lvl hp mhp mmhp str int dex start dur turn sc
 our %numeric_fields = map(($_ => 1), @numeric_fields);
 
 our @roles_abbrev = qw/Fi Wz Pr Th Gl Ne Pa As Be Hu Cj En FE IE Su AE EE Cr DK
-                       VM CK Tm He XX Re St Mo Wr Wn Ar/;
+                       VM CK Tm He XX Re St Mo Wr Wn Ar AM/;
 our @races_abbrev = qw/XX Hu El HE GE DE SE HD MD Ha HO Ko Mu Na Gn Og Tr OM Dr
                        Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Ce DG Sp Mi DS Gh Ke
                        Mf Vp DD/;
@@ -47,6 +47,7 @@ our @roles =
   'warper',
   'wanderer',
   'artificer',
+  'arcane marksman'
 );
 
 our @races =

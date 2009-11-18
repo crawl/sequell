@@ -47,10 +47,12 @@ roles =  ["Fighter","Wizard", "Priest", "Thief", "Gladiator", "Necromancer",
           "Fire Elementalist", "Ice Elementalist", "Summoner",
           "Air Elementalist", "Earth Elementalist", "Crusader", "Death Knight",
           "Venom Mage", "Chaos Knight", "Transmuter", "Healer", "Quitter",
-          "Reaver", "Stalker", "Monk", "Warper", "Wanderer", "Artificer"]
+          "Reaver", "Stalker", "Monk", "Warper", "Wanderer", "Artificer",
+          "Arcane Marksman"]
 roles_abbrev =   ["Fi", "Wz", "Pr", "Th", "Gl", "Ne", "Pa", "As", "Be", "Hu",
                   "Cj", "En", "FE", "IE", "Su", "AE", "EE", "Cr", "DK", "VM",
-                  "CK", "Tm", "He", "XX", "Re", "St", "Mo", "Wr", "Wn", "Ar"]
+                  "CK", "Tm", "He", "XX", "Re", "St", "Mo", "Wr", "Wn", "Ar",
+                  "AM"]
 
 death_methods = [
   'killed by a monster',

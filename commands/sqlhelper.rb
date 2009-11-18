@@ -41,6 +41,7 @@ CLASS_EXPANSIONS = {
   "Pa" => "Paladin",
   "As" => "Assassin",
   "Ar" => "Artificer",
+  "AM" => "Arcane Marksman",
   "Be" => "Berserker",
   "Hu" => "Hunter",
   "Cj" => "Conjurer",

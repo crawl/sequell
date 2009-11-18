@@ -46,7 +46,7 @@ my @field_names = qw/v lv name uid race cls xl sk sklev title place br lvl
                      killer kaux end tmsg vmsg god piety pen char nrune urune/;
 
 my @roles_abbrev = qw/Fi Wz Pr Th Gl Ne Pa As Be Hu Cj En FE IE Su AE EE Cr DK
-                      VM CK Tm He XX Re St Mo Wr Wn Ar/;
+                      VM CK Tm He XX Re St Mo Wr Wn Ar AM/;
 my @races_abbrev = qw/XX Hu El HE GE DE SE HD MD Ha HO Ko Mu Na Gn Og Tr OM Dr
                       Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Ce DG Sp Mi DS Gh Ke Mf DD/;
 
