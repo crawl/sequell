@@ -498,6 +498,7 @@ sub fixup_logfields {
   ($g->{cv} = $g->{v}) =~ s/^(\d+\.\d+).*/$1/;
 
   unless ($milestone) {
+    $g->{ikiller} ||= $g->{killer};
     $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
     for ($g->{ckiller}) {
       s/^an? \w+-headed (hydra.*)$/a $1/;
