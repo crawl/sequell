@@ -3,7 +3,8 @@
 require 'commands/helper.rb'
 require 'commands/sqlhelper.rb'
 
-help("Lists the most frequent victims for a given monster.")
+help("Lists the most frequent victims for a given monster. " +
+     "Use -i to show indirect kills (e.g. rat summoned by vampire).")
 
 args = (ARGV[2].split)[1 .. -1]
 
