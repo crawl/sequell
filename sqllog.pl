@@ -10,8 +10,8 @@ use DBI;
 do 'game_parser.pl';
 
 my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
-  xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
-  ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
+  xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux place
+  br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
   end durI turnI uruneI nruneI tmsg vmsg splat/;
 
 my %LOG2SQL = ( name => 'pname',
@@ -50,7 +50,7 @@ my @MILE_INSERTFIELDS = map(strip_suffix($_), @MILE_INSERTFIELDS_DECORATED);
 my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
 my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
-ktyp killer ckiller kmod kaux ckaux place str int dex god
+ktyp killer ckiller ikiller kpath kmod kaux ckaux place str int dex god
 start end dur turn urune nrune splat dam rstart alpha ntv/;
 
 my @MILE_INDEX_COLS = ('src',
@@ -80,7 +80,9 @@ my @UNIQUES = ("Ijyb", "Blork the orc", "Blork", "Urug", "Erolcha", "Snorg",
   "Dispater", "Asmodeus", "Ereshkigal", "the royal jelly",
   "the Lernaean hydra", "Dissolution", "Azrael", "Prince Ribbit",
   "Sonja", "Ilsuiw", "Nergalle", "Saint Roka", "Roxanne",
-  "Eustachio");
+  "Eustachio", "Nessos", "Dowan", "Duvessa", "Grum", "Crazy Yiuf",
+  "Gastronok", "Pikel", "Menkaure", "Khufu", "Aizul", "Purgy",
+  "Kirke", "Maurice", "Nikola");
 
 my $TLOGFILE   = 'logrecord';
 my $TMILESTONE = 'milestone';

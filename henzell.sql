@@ -35,6 +35,8 @@ CREATE TABLE logrecord (
     ktyp VARCHAR(20),
     killer VARCHAR(50),
     ckiller VARCHAR(50),
+    ikiller VARCHAR(50),
+    kpath VARCHAR(255),
     kmod VARCHAR(50),
     kaux VARCHAR(255),
     ckaux VARCHAR(255),

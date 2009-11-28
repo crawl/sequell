@@ -116,9 +116,9 @@ COLUMN_ALIASES = {
 }
 
 LOGFIELDS_DECORATED = %w/idI file alpha src v cv lv scI name uidI race crace cls
-  char xlI sk sklevI title ktyp killer ckiller kmod kaux ckaux place br lvlI
-  ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
-  endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend ntvI/
+  char xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux
+  place br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI
+  startD endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend ntvI/
 
 MILEFIELDS_DECORATED = %w/game_idI idI file alpha src v cv name race crace cls
                           char xlI
@@ -131,8 +131,8 @@ FAKEFIELDS_DECORATED = %w/when/
 
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br lvl ltyp
-              killer god urune nrune src str int dex kaux ckiller cv ckaux
-              crace kmod splat dam hp mhp mmhp piety pen alpha ntv/.
+              killer ikiller god urune nrune src str int dex kaux ckiller cv
+              ckaux crace kmod splat dam hp mhp mmhp piety pen alpha ntv/.
              map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
@@ -1178,9 +1178,9 @@ def query_field(selector, field, op, sqlop, val)
     selfield = $1
   end
 
-  if ['killer', 'ckiller'].index(selfield)
+  if ['killer', 'ckiller', 'ikiller'].index(selfield)
     if [ '=', '!=' ].index(op) and val !~ /^an? /i then
-      if val.downcase == 'uniq' and selfield == 'killer'
+      if val.downcase == 'uniq' and ['killer', 'ikiller'].index(selfield)
         # Handle check for uniques.
         uniq = op == '='
         clause = [ uniq ? 'AND' : 'OR' ]
