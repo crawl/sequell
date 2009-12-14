@@ -307,6 +307,7 @@ sub check_logfile
 }
 
 sub sibling_fetch_logs {
+  print "*** Fetching logfiles from CDO\n";
   system "./cdo-fetch-logfile >/dev/null 2>&1 &";
   $sibling_last_fetch_time = time();
   $sibling_logs_need_fetch = 0;
