@@ -1,0 +1,19 @@
+#! /bin/bash
+
+SERVER=http://crawl.develz.org
+LOCKDIR=.cdo-logfetch.lock
+cd /home/henzell/
+
+if ! mkdir $LOCKDIR; then
+    echo "Script already running. Please remove $PWD/$LOCKDIR if not."
+    exit 1
+fi
+
+wget -q -c $SERVER/allgames-0.4.txt -O cdo-logfile-0.4 &>/dev/null
+wget -q -c $SERVER/allgames-0.5.txt -O cdo-logfile-0.5 &>/dev/null
+wget -q -c $SERVER/allgames-svn.txt -O cdo-logfile-svn &>/dev/null
+wget -q -c $SERVER/milestones-0.4.txt -O cdo-milestones-0.4 &>/dev/null
+wget -q -c $SERVER/milestones-0.5.txt -O cdo-milestones-0.5 &>/dev/null
+wget -q -c $SERVER/milestones-svn.txt -O cdo-milestones-svn &>/dev/null
+
+rmdir $LOCKDIR

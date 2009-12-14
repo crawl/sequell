@@ -19,6 +19,7 @@ my $ircname        = 'Henzell the Crawl Bot';
 my $ircserver      = 'irc.freenode.org';
 my $port           = 6667;
 my $channel        = '##crawl';
+
 my @stonefiles     =
   ('/var/www/crawl/milestones02.txt',
    '/home/crawl/chroot/var/games/crawl03/saves/milestones.txt',
@@ -40,6 +41,22 @@ my @logfiles       = ('/var/www/crawl/allgames.txt',
                       '[cdo]/home/henzell/cdo-logfile-0.5',
                       '[cdo;alpha]/home/henzell/cdo-logfile-svn',
                       );
+
+
+# The other bots on the channel that might announce milestones and logfiles.
+# When Henzell sees such an announcement, it will fetch logfiles explicitly
+# within $sibling_fetch_delay seconds.
+my @sibling_bots     = qw/Gretell/;
+
+# How long after a sibling announcement that Henzell will force-fetch
+# logfile records. This should be at least 5s because we don't want a badly-
+# behaved bot to cause us to hammer cdo with http requests.
+my $sibling_fetch_delay = 10;
+
+my $sibling_logs_need_fetch;
+
+# The most recent explicit fetch of logfile records from sibling servers.
+my $sibling_last_fetch_time;
 
 my $command_dir    = 'commands/';
 my $commands_file  = $command_dir . 'commands.txt';
@@ -278,8 +295,48 @@ sub check_logfile
 {
   $_[KERNEL]->delay('check_logfile' => 1);
 
+  if ($sibling_logs_need_fetch
+      && (!$sibling_last_fetch_time
+          || (time() - $sibling_last_fetch_time) > $sibling_fetch_delay))
+  {
+    sibling_fetch_logs();
+  }
+
   check_stonefiles();
   check_all_logfiles();
+}
+
+sub sibling_fetch_logs {
+  system "./cdo-fetch-logfile >/dev/null 2>&1 &";
+  $sibling_last_fetch_time = time();
+  $sibling_logs_need_fetch = 0;
+}
+
+# This check is not perfect; it will also latch on to whereis responses,
+# but that's not a huge issue.
+sub is_sibling_announcement {
+  for (@_) {
+    # | separators are used for @? output.
+    return undef if /\|/;
+
+    # Milestone announcements have two sets of parens:
+    # Ex: wya (L26 DSAM) reached level 3 of the Tomb of the Ancients. (Tomb:3)
+    return 1 if /\(.*?\).*?\(.*?\)/;
+
+    # Logfile announcements have a paren and a turn count.
+    return 1 if /\(.*?\).*turn/;
+  }
+  return undef;
+}
+
+sub check_sibling_announcements
+{
+  my ($nick, $verbatim) = @_;
+  if (grep($_ eq $nick, @sibling_bots)) {
+    if (is_sibling_announcement($verbatim)) {
+      $sibling_logs_need_fetch = 1;
+    }
+  }
 }
 
 sub _start
@@ -426,6 +483,8 @@ sub process_msg
 
   seen_update($nick, "saying '$verbatim'");
   respond_to_any_msg($kernel, $nick, $verbatim, $sender, $channel);
+
+  check_sibling_announcements($nick, $verbatim) unless $private;
 
   $target =~ s/^\?[?>]/!learn query /;
   $target =~ s/^!>/!/;
