@@ -18,7 +18,9 @@ my $nickname       = 'Henzell';
 my $ircname        = 'Henzell the Crawl Bot';
 my $ircserver      = 'irc.freenode.org';
 my $port           = 6667;
-my $channel        = '##crawl';
+
+my @CHANNELS         = ('##crawl', '##crawl-dev');
+my $ANNOUNCE_CHANNEL = '##crawl';
 
 my @stonefiles     =
   ('/var/www/crawl/milestones02.txt',
@@ -229,7 +231,7 @@ sub check_milestone_file
       if ($newsworthy) {
         my $ms = milestone_string($game_ref);
         unless (contains_banned_word($ms)) {
-          $irc->yield(privmsg => $channel => $ms);
+          $irc->yield(privmsg => $ANNOUNCE_CHANNEL => $ms);
         }
       }
     }
@@ -279,7 +281,7 @@ sub tail_logfile
         my $output = pretty_print($game_ref);
         $output =~ s/ on \d{4}-\d{2}-\d{2}//;
         unless (contains_banned_word($output)) {
-          $irc->yield(privmsg => $channel => $output);
+          $irc->yield(privmsg => $ANNOUNCE_CHANNEL => $output);
         }
       }
     }
@@ -411,7 +413,9 @@ sub irc_001
   print "Connected to ", $poco_object->server_name(), "\n";
 
   # In any irc_* events SENDER will be the PoCo-IRC session
-  $kernel->post( $sender => join => $channel );
+  for my $channel (@CHANNELS) {
+    $kernel->post( $sender => join => $channel );
+  }
   undef;
 }
 
