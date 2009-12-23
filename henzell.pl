@@ -362,7 +362,7 @@ sub irc_ctcp_action
   my $nick = ( split /!/, $who )[0];
   my $channel = $where->[0];
 
-  seen_update($nick, "acting out $nick $verbatim");
+  seen_update($nick, "acting out $nick $verbatim on $channel");
 }
 
 sub irc_quit
@@ -395,11 +395,11 @@ sub irc_part
 
   if ($verbatim ne '')
   {
-    seen_update($nick, "parting with message '$verbatim'");
+    seen_update($nick, "parting $channel with message '$verbatim'");
   }
   else
   {
-    seen_update($nick, "parting without a message");
+    seen_update($nick, "parting $channel without a message");
   }
 }
 
@@ -486,7 +486,7 @@ sub process_msg
   my $target = $verbatim;
   $nick     =~ y/'//d;
 
-  seen_update($nick, "saying '$verbatim'");
+  seen_update($nick, "saying '$verbatim' on $channel");
   respond_to_any_msg($kernel, $nick, $verbatim, $sender, $channel);
 
   check_sibling_announcements($nick, $verbatim) unless $private;
