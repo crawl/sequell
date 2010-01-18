@@ -184,11 +184,6 @@ sub newsworthy
       and grep {$s->{br} eq $_} qw/Temple/;
 
   return 0
-    if $s->{type} eq 'unique'
-      and grep {index($s->{milestone}, $_) > -1}
-        qw/Terence Jessica Ijyb Blork Edmund Psyche Donald Michael/;
-
-  return 0
     if $s->{type} =~ /abyss/ and ($s->{god} eq 'Lugonu' || !$s->{god})
       and $s->{cls} eq 'Chaos Knight' and $s->{turn} < 5000;
 
