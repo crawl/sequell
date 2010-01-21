@@ -78,6 +78,13 @@ EOF
 print "<p class='note'>Updated on ".time2str($timestamp)."\n";
 print "<dl>\n";
 
+sub canonical_link($)
+{
+  my $link = lc(shift);
+  $link =~ s/\[1\]$//;
+  $link
+}
+
 sub htmlize($$$)
 {
   my ($entry, $multiple, $prefix) = @_;
@@ -89,7 +96,7 @@ sub htmlize($$$)
 
     my $key;
     tr/\x00-\x1f//d;
-    s|{([a-zA-Z0-9_\[\]!?@ -]+)}| $link{"\L$1"} ? "<a href=\"#".($key="\L$1",$key=~tr{ }{_},$key)."\">$1</a>" : "{$1}"|ge;
+    s|{([a-zA-Z0-9_\[\]!?@ -]+)}| $link{canonical_link("$1")} ? "<a href=\"#".($key="\L$1",$key=~tr{ }{_},$key)."\">$1</a>" : "{$1}"|ge;
   }
   $multiple ? "<li>$prefix<span>$entry</span></li>" : "$prefix$entry"
 }
