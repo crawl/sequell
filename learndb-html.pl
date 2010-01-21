@@ -15,7 +15,7 @@ my $title = "Henzell's learndb";
 my %learndb;
 my %redir;
 my %link;
-my $FULL_REDIRECT_PATTERN = /^see {([a-z0-9_\[\]!?@ -]+)}$/i;
+my $FULL_REDIRECT_PATTERN = qr/^see {([a-z0-9_\[\]!?@ -]+)}$/i;
 
 sub addlink($$)
 {
