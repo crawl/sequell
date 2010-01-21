@@ -15,6 +15,7 @@ my $title = "Henzell's learndb";
 my %learndb;
 my %redir;
 my %link;
+my $FULL_REDIRECT_PATTERN = /^see {([a-z0-9_\[\]!?@ -]+)}$/i;
 
 sub addlink($$)
 {
@@ -42,15 +43,15 @@ for(split /\n/, `find dat/learndb/ -type f ! -name '*.html*'`)
         my $key = $1;
         $key.="[$2]" if $2!='1';
         my $val = <F>;
-        if ($val=~/^see {([a-z0-9_\[\]!?@ -]+)}$/i)
+        if ($val =~ $FULL_REDIRECT_PATTERN)
         {
             addlink($key, $1);
         }
         else
         {
             addlink($key, $key);
-            $learndb{$key}=$val;
         }
+        $learndb{$key}=$val;
     }
     close F;
 
@@ -93,25 +94,28 @@ sub htmlize($$$)
   $multiple ? "<li>$prefix<span>$entry</span></li>" : "$prefix$entry"
 }
 
-for(sort keys %learndb)
+for my $key (sort keys %learndb)
 {
-    next if /\]$/;
+    next if $key =~ /\]$/;
+
+    my $has_multiple = $learndb{"$key\[2]"};
+    next if !$has_multiple && $learndb{$key} =~ $FULL_REDIRECT_PATTERN;
+
     print "<dt>";
-    print   "<a name=\"$_\"></a>" for(sort keys %{$redir{$_}});
-    my $key = $_;
-    $key=~tr{_}{ };
-    print "$key\n";
+    print   "<a name=\"$key\"></a>" for(sort keys %{$redir{$key}});
+
+    (my $clean_key = $key) =~ tr{_}{ };
+    print "$clean_key\n";
     print " <dd>";
 
-    my $has_multiple = $learndb{"$_\[2]"};
     print "<ol>" if $has_multiple;
-    print htmlize($learndb{$_}, $has_multiple, ''), "\n";
+    print htmlize($learndb{$key}, $has_multiple, ''), "\n";
     my $i=1;
-    while($learndb{$_."[".++$i."]"})
+    while($learndb{$key."[".++$i."]"})
     {
-      my $text = $learndb{$_."[$i]"};
+      my $text = $learndb{$key."[$i]"};
       my $prefix = '';
-      $prefix .= "<a name=\"$_\"></a>" for(sort keys %{$redir{$_."[$i]"}});
+      $prefix .= "<a name=\"$key\"></a>" for(sort keys %{$redir{$key."[$i]"}});
       print htmlize($text, $has_multiple, $prefix), "\n";
     }
     print "</ol>" if $has_multiple;
