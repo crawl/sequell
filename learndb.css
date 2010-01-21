@@ -36,12 +36,15 @@ dt {
 }
 
 dd {
+  background-color: #fff;
+  color: #000;
   display: block;
   margin-bottom: 4px;
   margin-left: 5px;
 }
 
 ol {
+  color: #000;
   margin-left: 5px;
   padding-left: 15px;
 }
