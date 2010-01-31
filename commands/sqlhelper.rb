@@ -12,10 +12,10 @@ OPERATORS = {
 
 # List of abbreviations for branches that have depths > 1. This includes
 # fake branches such as the Ziggurat.
-DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
+DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
                    Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig/
 
-BRANCHES = %w/D Orc Elf Lair Swamp Shoal Slime Snake Hive
+BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
               Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig
               Lab Pan Bazaar Bzr Hell Blade Temple Abyss/
 
@@ -1221,6 +1221,7 @@ def query_field(selector, field, op, sqlop, val)
     val = val + ':%'
     sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
   end
+
   if selfield == 'race' || selfield == 'crace'
     if val.downcase == 'dr' && (op == '=' || op == '!=')
       sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
@@ -1231,6 +1232,15 @@ def query_field(selector, field, op, sqlop, val)
   end
   if selfield == 'cls'
     val = CLASS_EXPANSIONS[val.downcase] || val
+  end
+
+  if selfield == 'place' and val =~ /^shoals?:(.*)/i then
+    val = $1
+    inclusive? = op.index('=') == 0
+    clause = [inclusive? ? 'OR' : 'AND']
+    clause << field_pred("Shoal:#{val}", op, selector, field)
+    clause << field_pred("Shoals:#{val}", op, selector, field)
+    return clause
   end
 
   if selfield == 'when'
