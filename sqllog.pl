@@ -497,6 +497,11 @@ sub fixup_logfields {
 
   ($g->{cv} = $g->{v}) =~ s/^(\d+\.\d+).*/$1/;
 
+  if ($g->{alpha}) {
+    $g->{cv} .= "-a";
+    $g->{v}  .= "-a" unless $g->{v} =~ /-a/;
+  }
+
   unless ($milestone) {
     $g->{ikiller} ||= $g->{killer};
     $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
