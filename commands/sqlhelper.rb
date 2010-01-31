@@ -422,6 +422,7 @@ end
 def sql_show_game(default_nick, args, context=CTX_LOG)
   args, extra = extra_field_clause(args, context)
   q = sql_build_query(default_nick, args, context)
+  STDERR.puts(q)
   with_query_context(context) do
     if q.summarize
       report_grouped_games_for_query(q)
@@ -1219,7 +1220,8 @@ def query_field(selector, field, op, sqlop, val)
   if selfield == 'place' and !val.index(':') and
     [ '=', '!=' ].index(op) and DEEP_BRANCH_SET.include?(val) then
     val = val + ':%'
-    sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
+    op = op == '=' ? '=~' : '!~'
+    sqlop = OPERATORS[op]
   end
 
   if selfield == 'race' || selfield == 'crace'
@@ -1238,8 +1240,8 @@ def query_field(selector, field, op, sqlop, val)
     val = $1
     inclusive = op.index('=') == 0
     clause = [inclusive ? 'OR' : 'AND']
-    clause << field_pred("Shoal:#{val}", op, selector, field)
-    clause << field_pred("Shoals:#{val}", op, selector, field)
+    clause << field_pred("Shoal:#{val}", sqlop, selector, field)
+    clause << field_pred("Shoals:#{val}", sqlop, selector, field)
     return clause
   end
 
