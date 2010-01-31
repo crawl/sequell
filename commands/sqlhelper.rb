@@ -1236,8 +1236,8 @@ def query_field(selector, field, op, sqlop, val)
 
   if selfield == 'place' and val =~ /^shoals?:(.*)/i then
     val = $1
-    inclusive? = op.index('=') == 0
-    clause = [inclusive? ? 'OR' : 'AND']
+    inclusive = op.index('=') == 0
+    clause = [inclusive ? 'OR' : 'AND']
     clause << field_pred("Shoal:#{val}", op, selector, field)
     clause << field_pred("Shoals:#{val}", op, selector, field)
     return clause
