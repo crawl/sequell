@@ -422,7 +422,6 @@ end
 def sql_show_game(default_nick, args, context=CTX_LOG)
   args, extra = extra_field_clause(args, context)
   q = sql_build_query(default_nick, args, context)
-  STDERR.puts(q)
   with_query_context(context) do
     if q.summarize
       report_grouped_games_for_query(q)
