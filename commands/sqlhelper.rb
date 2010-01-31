@@ -1235,8 +1235,8 @@ def query_field(selector, field, op, sqlop, val)
     val = CLASS_EXPANSIONS[val.downcase] || val
   end
 
-  if selfield == 'place' and val =~ /^shoals?:(.*)/i
-    and ['=', '!=', '=~', '!~'].index(op) then
+  if (selfield == 'place' and val =~ /^shoals?:(.*)/i
+      and ['=', '!=', '=~', '!~'].index(op)) then
     val = $1
     inclusive = op.index('=') == 0
     clause = [inclusive ? 'OR' : 'AND']
