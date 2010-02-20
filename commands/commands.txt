@@ -1,6 +1,4 @@
-!cdo cdoplayers.pl
 !copysave copysave.pl
-@players cdoplayers.pl
 !aplayers players.pl
 !apt apt.pl
 !cdefine source.pl
