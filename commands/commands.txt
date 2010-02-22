@@ -1,4 +1,5 @@
 !copysave copysave.pl
+!coffee coffee.pl
 !aplayers players.pl
 !apt apt.pl
 !cdefine source.pl
