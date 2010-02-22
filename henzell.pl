@@ -426,7 +426,12 @@ sub respond_to_any_msg
 sub raw_message_post
 {
   my ($kernel, $private, $sender, $response_to, $output) = @_;
-  $kernel->post( $sender => privmsg => $response_to => $output);
+  my $target = 'privmsg';
+  if ($output =~ m{^/me }) {
+    $output =~ s{^/me}{ACTION};
+    $target = 'ctcp';
+  }
+  $kernel->post( $sender => $target => $response_to => $output);
 }
 
 sub respond_with_message
