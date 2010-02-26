@@ -488,7 +488,7 @@ sub process_msg
 
   my $response_to = $private ? $nick : $channel;
   seen_update($nick, "saying '$verbatim' on $channel");
-  respond_to_any_msg($kernel, $nick, $verbatim, $sender, $respond_to);
+  respond_to_any_msg($kernel, $nick, $verbatim, $sender, $response_to);
 
   check_sibling_announcements($nick, $verbatim) unless $private;
 
