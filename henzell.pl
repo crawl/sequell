@@ -486,8 +486,9 @@ sub process_msg
   my $target = $verbatim;
   $nick     =~ y/'//d;
 
+  my $response_to = $private ? $nick : $channel;
   seen_update($nick, "saying '$verbatim' on $channel");
-  respond_to_any_msg($kernel, $nick, $verbatim, $sender, $channel);
+  respond_to_any_msg($kernel, $nick, $verbatim, $sender, $respond_to);
 
   check_sibling_announcements($nick, $verbatim) unless $private;
 
@@ -504,8 +505,6 @@ sub process_msg
   if (force_private($verbatim) && !is_always_public($verbatim)) {
     $private = 1;
   }
-
-  my $response_to = $private ? $nick : $channel;
 
   if ($command eq '!load' && exists $admins{$nick})
   {
