@@ -497,9 +497,9 @@ sub process_msg
   my $command = lc $1;
 
   $target   =~ s/ .*$//;
-  $target   =~ y/a-zA-Z0-9//cd;
+  $target   =~ y/a-zA-Z0-9_-//cd;
   $target = $nick unless $target =~ /\S/;
-  $target   =~ y/a-zA-Z0-9//cd;
+  $target   =~ y/a-zA-Z0-9_-//cd;
 
   if (force_private($verbatim) && !is_always_public($verbatim)) {
     $private = 1;
