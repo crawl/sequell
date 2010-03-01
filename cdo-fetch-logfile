@@ -12,8 +12,10 @@ fi
 wget -q -c $SERVER/allgames-0.4.txt -O cdo-logfile-0.4 &>/dev/null
 wget -q -c $SERVER/allgames-0.5.txt -O cdo-logfile-0.5 &>/dev/null
 wget -q -c $SERVER/allgames-svn.txt -O cdo-logfile-svn &>/dev/null
+wget -q -c $SERVER/allgames-spr.txt -O cdo-logfile-spr &>/dev/null
 wget -q -c $SERVER/milestones-0.4.txt -O cdo-milestones-0.4 &>/dev/null
 wget -q -c $SERVER/milestones-0.5.txt -O cdo-milestones-0.5 &>/dev/null
 wget -q -c $SERVER/milestones-svn.txt -O cdo-milestones-svn &>/dev/null
+wget -q -c $SERVER/milestones-spr.txt -O cdo-milestones-spr &>/dev/null
 
 rmdir $LOCKDIR

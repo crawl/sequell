@@ -502,6 +502,14 @@ sub fixup_logfields {
     $g->{v}  .= "-a" unless $g->{v} =~ /-a/;
   }
 
+  my $sprint = $$g{lv} =~ /sprint/i;
+  if ($sprint) {
+    my $oldplace = $$g{place};
+    my $place = 'Sprint';
+    $place = "$oldplace (Sprint)" unless $oldplace eq 'D:1';
+    $$g{place} = $place;
+  }
+
   unless ($milestone) {
     $g->{ikiller} ||= $g->{killer};
     $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
