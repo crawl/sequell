@@ -564,7 +564,7 @@ sub connected {
 sub emoted {
   my ($self, $e) = @_;
   main::seen_update($e, "acting out $$e{who} $$e{body} on $$e{channel}");
-  return;
+  return undef;
 }
 
 sub chanjoin {
@@ -591,7 +591,7 @@ sub chanpart {
 sub said {
   my ($self, $m) = @_;
   main::process_message($m);
-  return;
+  return undef;
 }
 
 sub tick {
