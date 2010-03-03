@@ -105,8 +105,7 @@ my $HENZELL = Henzell->new(nick    => $nickname,
                            server  => $ircserver,
                            port    => $port,
                            ircname => $ircname,
-                           channels => [ @CHANNELS ],
-                           charset => 'utf-8')
+                           channels => [ @CHANNELS ])
   or die "Unable to create Henzell\n";
 $HENZELL->run();
 exit 0;
