@@ -612,3 +612,43 @@ sub tick {
   main::check_all_logfiles();
   return 1;
 }
+
+# Override BasicBot say since it tries to get clever with linebreaks.
+sub say {
+  # If we're called without an object ref, then we're handling saying
+  # stuff from inside a forked subroutine, so we'll freeze it, and toss
+  # it out on STDOUT so that POE::Wheel::Run's handler can pick it up.
+  if ( !ref( $_[0] ) ) {
+    print $_[0] . "\n";
+    return 1;
+  }
+
+  # Otherwise, this is a standard object method
+
+  my $self = shift;
+  my $args;
+  if (ref($_[0])) {
+    $args = shift;
+  } else {
+    my %args = @_;
+    $args = \%args;
+  }
+
+  my $body = $args->{body};
+
+  # add the "Foo: bar" at the start
+  $body = "$args->{who}: $body"
+    if ( $args->{channel} ne "msg" and $args->{address} );
+
+  # work out who we're going to send the message to
+  my $who = ( $args->{channel} eq "msg" ) ? $args->{who} : $args->{channel};
+
+  unless ( $who && $body ) {
+    print STDERR "Can't PRIVMSG without target and body\n";
+    print STDERR " called from ".([caller]->[0])." line ".([caller]->[2])."\n";
+    print STDERR " who = '$who'\n body = '$body'\n";
+    return;
+  }
+
+  $self->privmsg($who, $body);
+}
