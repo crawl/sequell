@@ -561,6 +561,7 @@ sub connected {
   $self->say(channel => 'msg',
              who => 'nickserv',
              body => "identify $password");
+  return undef;
 }
 
 sub emoted {
@@ -572,6 +573,7 @@ sub emoted {
 sub chanjoin {
   my ($self, $j) = @_;
   main::seen_update($j, "joining the channel");
+  return undef;
 }
 
 sub userquit {
@@ -582,12 +584,14 @@ sub userquit {
   main::seen_update($q,
                     $msg? "$verb with message '$msg'"
                     : "$verb without a message");
+  return undef;
 }
 
 sub chanpart {
   my ($self, $m) = @_;
   $$m{verb} = "parting $$m{channel}";
   $self->userquit($m);
+  return undef;
 }
 
 sub said {
