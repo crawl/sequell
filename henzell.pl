@@ -650,5 +650,6 @@ sub say {
     return;
   }
 
-  $self->privmsg($who, $body);
+  my ($ewho, $ebody) = $self->charset_encode($who, $body);
+  $self->privmsg($ewho, $ebody);
 }
