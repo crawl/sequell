@@ -549,7 +549,7 @@ use base 'Bot::BasicBot';
 sub connected {
   my $self = shift;
 
-  load_commands();
+  main::load_commands();
 
   open(my $handle, '<', 'password.txt')
     or warn "Unable to read password.txt: $!";
@@ -558,17 +558,18 @@ sub connected {
   chomp $password;
   $self->say(channel => 'msg',
              who => 'nickserv',
-             "identify $password");
+             body => "identify $password");
 }
 
 sub emoted {
   my ($self, $e) = @_;
-  seen_update($e, "acting out $$e{who} $$e{body} on $$e{channel}");
+  main::seen_update($e, "acting out $$e{who} $$e{body} on $$e{channel}");
+  return;
 }
 
 sub chanjoin {
   my ($self, $j) = @_;
-  seen_update($j, "joining the channel");
+  main::seen_update($j, "joining the channel");
 }
 
 sub userquit {
@@ -576,9 +577,9 @@ sub userquit {
 
   my $msg = $$q{body};
   my $verb = $$q{verb} || 'quitting';
-  seen_update($q,
-              $msg? "$verb with message '$msg'"
-              : "$verb without a message");
+  main::seen_update($q,
+                    $msg? "$verb with message '$msg'"
+                    : "$verb without a message");
 }
 
 sub chanpart {
@@ -589,7 +590,8 @@ sub chanpart {
 
 sub said {
   my ($self, $m) = @_;
-  process_message($m);
+  main::process_message($m);
+  return;
 }
 
 sub tick {
@@ -597,10 +599,10 @@ sub tick {
       && (!$sibling_last_fetch_time
           || (time() - $sibling_last_fetch_time) > $sibling_fetch_delay))
   {
-    sibling_fetch_logs();
+    main::sibling_fetch_logs();
   }
 
-  check_stonefiles();
-  check_all_logfiles();
+  main::check_stonefiles();
+  main::check_all_logfiles();
   return 1;
 }
