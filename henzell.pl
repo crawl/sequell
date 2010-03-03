@@ -317,9 +317,11 @@ sub respond_to_any_msg {
   $nick =~ tr/'//d;
   $verbatim =~ tr/'//d;
   my $output = qx!./commands/message/all_input.pl '$nick' '$verbatim'!;
-  $HENZELL->say(channel => $$m{channel},
-                who => $$m{who},
-                body => $output);
+  if ($output) {
+    $HENZELL->say(channel => $$m{channel},
+                  who => $$m{who},
+                  body => $output);
+  }
 }
 
 sub raw_message_post {
