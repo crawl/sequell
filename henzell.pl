@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use POE qw(Component::IRC Component::IRC::Plugin::NickReclaim);
 use POSIX qw(setsid); # For daemonization.
 use Fcntl qw/:flock/;
 
@@ -102,27 +101,14 @@ fixup_db();
 catchup_stonefiles();
 catchup_logfiles();
 
-# We create a new PoCo-IRC object and component.
-my $irc = POE::Component::IRC->spawn(
-      nick    => $nickname,
-      server  => $ircserver,
-      port    => $port,
-      ircname => $ircname,
-) or die "Oh noooo! $!";
-
-POE::Session->create(
-      inline_states =>
-      {
-        check_logfile   => \&check_logfile,
-      },
-
-      package_states => [
-              'main' => [ qw(_default _start irc_001 irc_public irc_msg irc_255 irc_ctcp_action irc_quit irc_join irc_part) ],
-      ],
-      heap => { irc => $irc },
-);
-
-$poe_kernel->run();
+my $HENZELL = Henzell->new(nick    => $nickname,
+                           server  => $ircserver,
+                           port    => $port,
+                           ircname => $ircname,
+                           channels => [ @CHANNELS ],
+                           charset => 'utf-8')
+  or die "Unable to create Henzell\n";
+$HENZELL->run();
 exit 0;
 
 sub catchup_files {
@@ -228,7 +214,7 @@ sub check_milestone_file
       if ($newsworthy) {
         my $ms = milestone_string($game_ref);
         unless (contains_banned_word($ms)) {
-          $irc->yield(privmsg => $ANNOUNCE_CHANNEL => $ms);
+          raw_message_post({ channel => $ANNOUNCE_CHANNEL }, $ms);
         }
       }
     }
@@ -278,7 +264,7 @@ sub tail_logfile
         my $output = pretty_print($game_ref);
         $output =~ s/ on \d{4}-\d{2}-\d{2}//;
         unless (contains_banned_word($output)) {
-          $irc->yield(privmsg => $ANNOUNCE_CHANNEL => $output);
+          raw_message_post({ channel => $ANNOUNCE_CHANNEL }, $output);
         }
       }
     }
@@ -288,21 +274,6 @@ sub tail_logfile
     fixup_milestones($href->{server}, $game_ref->{name});
   }
   1
-}
-
-sub check_logfile
-{
-  $_[KERNEL]->delay('check_logfile' => 1);
-
-  if ($sibling_logs_need_fetch
-      && (!$sibling_last_fetch_time
-          || (time() - $sibling_last_fetch_time) > $sibling_fetch_delay))
-  {
-    sibling_fetch_logs();
-  }
-
-  check_stonefiles();
-  check_all_logfiles();
 }
 
 sub sibling_fetch_logs {
@@ -339,106 +310,39 @@ sub check_sibling_announcements
   }
 }
 
-sub _start
-{
-  my ($kernel,$heap) = @_[KERNEL,HEAP];
-
-  # We get the session ID of the component from the object
-  # and register and connect to the specified server.
-  my $irc_session = $heap->{irc}->session_id();
-  $kernel->post( $irc_session => register => 'all' );
-  $irc->plugin_add( NickReclaim =>
-   	POE::Component::IRC::Plugin::NickReclaim->new( poll => 30 ));
-  $kernel->post( $irc_session => connect => { } );
-  undef;
-}
-
-sub irc_ctcp_action
-{
-  my ($kernel,$sender,$who,$where,$verbatim) = @_[KERNEL,SENDER,ARG0,ARG1,ARG2];
-  my $nick = ( split /!/, $who )[0];
-  my $channel = $where->[0];
-
-  seen_update($nick, "acting out $nick $verbatim on $channel");
-}
-
-sub irc_quit
-{
-  my ($kernel,$sender,$who,$verbatim) = @_[KERNEL,SENDER,ARG0,ARG1];
-  my $nick = ( split /!/, $who )[0];
-
-  if ($verbatim ne '')
-  {
-    seen_update($nick, "quitting with message '$verbatim'");
-  }
-  else
-  {
-    seen_update($nick, "quitting without a message");
-  }
-}
-
-sub irc_join
-{
-  my ($kernel,$sender,$who) = @_[KERNEL,SENDER,ARG0];
-  my $nick = ( split /!/, $who )[0];
-
-  seen_update($nick, "joining the channel");
-}
-
-sub irc_part
-{
-  my ($kernel,$sender,$who,$channel,$verbatim) = @_[KERNEL,SENDER,ARG0,ARG1,ARG2];
-  my $nick = ( split /!/, $who )[0];
-
-  if ($verbatim ne '')
-  {
-    seen_update($nick, "parting $channel with message '$verbatim'");
-  }
-  else
-  {
-    seen_update($nick, "parting $channel without a message");
-  }
-}
-
-sub irc_001
-{
-  my ($kernel,$sender) = @_[KERNEL,SENDER];
-
-  # Get the component's object at any time by accessing the heap of
-  # the SENDER
-  my $poco_object = $sender->get_heap();
-  print "Connected to ", $poco_object->server_name(), "\n";
-
-  # In any irc_* events SENDER will be the PoCo-IRC session
-  for my $channel (@CHANNELS) {
-    $kernel->post( $sender => join => $channel );
-  }
-  undef;
-}
-
-sub respond_to_any_msg
-{
-  my ($kernel, $nick, $verbatim, $sender, $channel) = @_;
+sub respond_to_any_msg {
+  my $m = shift;
+  my $nick = $$m{who};
+  my $verbatim = $$m{body};
   $nick =~ tr/'//d;
   $verbatim =~ tr/'//d;
   my $output = qx!./commands/message/all_input.pl '$nick' '$verbatim'!;
-  $kernel->post($sender => privmsg => $channel => $output) if $output;
+  $HENZELL->say(channel => $$m{channel},
+                who => $$m{who},
+                body => $output);
 }
 
-sub raw_message_post
-{
-  my ($kernel, $private, $sender, $response_to, $output) = @_;
-  my $target = 'privmsg';
+sub raw_message_post {
+  my ($m, $output) = @_;
+
+  # Handle emotes (/me does foo)
   if ($output =~ m{^/me }) {
-    $output =~ s{^/me}{ACTION};
-    $target = 'ctcp';
+    $output =~ s{^/me }{};
+    $HENZELL->emote(channel => $$m{channel},
+                    who => $$m{who},
+                    body => $output);
+    return;
   }
-  $kernel->post( $sender => $target => $response_to => $output);
+
+  $HENZELL->say(channel => $$m{channel},
+                who => $$m{who},
+                body => $output);
 }
 
-sub respond_with_message
-{
-  my ($kernel, $private, $sender, $response_to, $output) = @_;
+sub respond_with_message {
+  my ($m, $output) = @_;
+
+  my $private = $$m{channel} eq 'msg';
 
   $output = substr($output, 0, $MAX_PAGINATE_LENGTH) . "..."
     if length($output) > $MAX_PAGINATE_LENGTH;
@@ -450,19 +354,17 @@ sub respond_with_message
       if ($length - $start > $PAGE) {
         my $spcpos = rindex($output, ' ', $start + $PAGE - 1);
         if ($spcpos != -1 && $spcpos > $start) {
-          raw_message_post($kernel, $private, $sender, $response_to,
-                           substr($output, $start, $spcpos - $start));
+          raw_message_post($m, substr($output, $start, $spcpos - $start));
           $start = $spcpos + 1 - $PAGE;
           next;
         }
       }
-      raw_message_post($kernel, $private, $sender, $response_to,
-                       substr($output, $start, $PAGE));
+      raw_message_post($m, substr($output, $start, $PAGE));
     }
   }
   else {
     $output = substr($output, 0, 400) . "..." if length($output) > 400;
-    raw_message_post($kernel, $private, $sender, $response_to, $output);
+    raw_message_post($m, $output);
   }
 }
 
@@ -479,18 +381,19 @@ sub force_private {
   return $conf{use_pm} && ($command =~ /^!\w/ || $command =~ /^[?]{2}/);
 }
 
-sub process_msg
-{
-  my ($private,$kernel,$sender,$who,$where,$verbatim) = @_;
-  my $nick = ( split /!/, $who )[0];
-  my $channel = $where->[0];
+sub process_message {
+  my ($m) = @_;
 
+  my $nick = $$m{who};
+  my $channel = $$m{channel};
+  my $private = $channel eq 'msg';
+
+  my $verbatim = $$m{body};
   my $target = $verbatim;
   $nick     =~ y/'//d;
 
-  my $response_to = $private ? $nick : $channel;
-  seen_update($nick, "saying '$verbatim' on $channel");
-  respond_to_any_msg($kernel, $nick, $verbatim, $sender, $response_to);
+  seen_update($m, "saying '$verbatim' on $channel");
+  respond_to_any_msg($m);
 
   check_sibling_announcements($nick, $verbatim) unless $private;
 
@@ -506,12 +409,15 @@ sub process_msg
 
   if (force_private($verbatim) && !is_always_public($verbatim)) {
     $private = 1;
+    $$m{channel} = 'msg';
   }
 
   if ($command eq '!load' && exists $admins{$nick})
   {
     print "LOAD: $nick: $verbatim\n";
-    $kernel->post( $sender => privmsg => $response_to => load_commands());
+    $HENZELL->say(channel => $channel,
+                  who => $$m{who},
+                  body => load_commands());
   }
   elsif (exists $commands{$command} &&
          (!$private || !is_always_public($verbatim)))
@@ -522,50 +428,10 @@ sub process_msg
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
     	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
-    respond_with_message($kernel, $private, $sender, $response_to, $output);
+    respond_with_message($m, $output);
   }
 
   undef;
-}
-
-sub irc_public
-{
-  process_msg(0, @_[KERNEL,SENDER,ARG0,ARG1,ARG2])
-}
-
-sub irc_msg
-{
-  process_msg(1, @_[KERNEL,SENDER,ARG0,ARG1,ARG2])
-}
-
-sub irc_255
-{
-  $_[KERNEL]->yield("check_logfile");
-
-  load_commands();
-
-  open(my $handle, '<', 'password.txt') or warn "Unable to read password.txt: $!";
-  my $password = <$handle>;
-  chomp $password;
-
-  $irc->yield(privmsg => "nickserv" => "identify $password");
-}
-
-# We registered for all events, this will produce some debug info.
-sub _default
-{
-  my ($event, $args) = @_[ARG0 .. $#_];
-  my @output = ( "$event: " );
-
-  foreach my $arg ( @$args ) {
-      if ( ref($arg) eq 'ARRAY' ) {
-              push( @output, "[" . join(" ,", @$arg ) . "]" );
-      } else {
-              push ( @output, "'$arg'" );
-      }
-  }
-  print STDOUT join ' ', @output, "\n";
-  return 0;
 }
 
 sub load_config
@@ -650,10 +516,12 @@ sub run_command
   return $output;
 }
 
-sub seen_update
-{
-  my $nick = shift;
-  my $doing = shift;
+sub seen_update {
+  my ($e, $doing) = @_;
+
+  return if ($$e{channel} || '') eq 'msg' || $$e{who} eq $nickname;
+
+  my $nick = $$e{who};
 
   $nick =~ y/'//d;
   $doing =~ y/'//d;
@@ -673,4 +541,66 @@ sub seen_update
                        map {$seen{$_} =~ s/:/::/g; "$_=$seen{$_}"}
                        keys %seen),
                   "\n";
+}
+
+package Henzell;
+use base 'Bot::BasicBot';
+
+sub connected {
+  my $self = shift;
+
+  load_commands();
+
+  open(my $handle, '<', 'password.txt')
+    or warn "Unable to read password.txt: $!";
+  my $password = <$handle>;
+  close $handle;
+  chomp $password;
+  $self->say(channel => 'msg',
+             who => 'nickserv',
+             "identify $password");
+}
+
+sub emoted {
+  my ($self, $e) = @_;
+  seen_update($e, "acting out $$e{who} $$e{body} on $$e{channel}");
+}
+
+sub chanjoin {
+  my ($self, $j) = @_;
+  seen_update($j, "joining the channel");
+}
+
+sub userquit {
+  my ($self, $q) = @_;
+
+  my $msg = $$q{body};
+  my $verb = $$q{verb} || 'quitting';
+  seen_update($q,
+              $msg? "$verb with message '$msg'"
+              : "$verb without a message");
+}
+
+sub chanpart {
+  my ($self, $m) = @_;
+  $$m{verb} = "parting $$m{channel}";
+  $self->userquit($m);
+}
+
+sub said {
+  my ($self, $m) = @_;
+  process_message($m);
+}
+
+sub tick {
+  if ($sibling_logs_need_fetch
+      && (!$sibling_last_fetch_time
+          || (time() - $sibling_last_fetch_time) > $sibling_fetch_delay))
+  {
+    sibling_fetch_logs();
+  }
+
+  check_stonefiles();
+  check_all_logfiles();
+  return 1;
 }
