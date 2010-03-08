@@ -4,6 +4,12 @@ require 'dbi'
 require 'commands/helper'
 require 'set'
 
+GAME_CRAWL = 'crawl'
+GAME_SPRINT = 'sprint'
+GAMES = [GAME_CRAWL, GAME_SPRINT]
+
+GAME_PREFIXES = { GAME_CRAWL => '', GAME_SPRINT => 'spr_' }
+
 OPERATORS = {
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
   '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE',
@@ -204,13 +210,35 @@ MILEFIELDS_SUMMARIZABLE = \
   MILEFIELDS_SUMMARIZABLE[x] = nil
 end
 
+module GameContext
+  @@game = GAME_CRAWL
+
+  def self.with_game(game)
+    begin
+      old_game = @@game
+      @@game = game
+      yield
+    ensure
+      @@game = old_game
+    end
+  end
+
+  def self.game
+    @@game
+  end
+end
+
 class QueryContext
-  attr_accessor :fields, :synthetic, :summarizable, :table, :defsort
+  attr_accessor :fields, :synthetic, :summarizable, :defsort
   attr_accessor :noun_verb, :noun_verb_fields
   attr_accessor :fieldmap, :synthmap, :table_alias
 
   def field?(field)
     field_type(field)
+  end
+
+  def table
+    GAME_PREFIXES[GameContext.game] + @table
   end
 
   def split_field(field)
@@ -265,6 +293,7 @@ class QueryContext
   def initialize(table, alt=nil)
     @table = table
     @alt = alt
+    @game = GAME_CRAWL
 
     if @table =~ / (\w+)$/
       @table_alias = $1
@@ -370,11 +399,14 @@ def sql_build_query(default_nick, args, context=CTX_LOG)
     args = _op_back_combine(args)
     nick = extract_nick(args) || default_nick
     num  = extract_num(args)
+    game = extract_game_type(args)
 
-    with_query_context(context) do
-      q = build_query(nick, num, args, false)
-      q.summarize = sfield if summarize
-      q
+    GameContext.with_game(game) do
+      with_query_context(context) do
+        q = build_query(nick, num, args, false)
+        q.summarize = sfield if summarize
+        q
+      end
     end
   end
 end
@@ -596,7 +628,7 @@ class CrawlQuery
   def fixup_join
     return if @joins
     @joins = true
-    @table = "#@table, logrecord lg"
+    @table = "#@table, #{CTX_LOG.table}"
     stone_alias = CTX_STONE.table_alias
     log_alias = CTX_LOG.table_alias
     add_predicate('AND',
@@ -1315,6 +1347,19 @@ end
 
 def _parse_number(arg)
   arg =~ /^[+-]?\d+$/ ? arg.to_i : nil
+end
+
+def extract_game_type(args)
+  game = GAME_CRAWL
+  (0 ... args.size).each do |i|
+    dcarg = args[i].downcase
+    if GAMES.index(dcarg) then
+      game = dcarg
+      args.slice!(i)
+      break
+    end
+  end
+  game
 end
 
 def extract_num(args)

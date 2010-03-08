@@ -106,8 +106,9 @@ my $standalone = not caller();
 my $dbh;
 my $insert_st;
 my $update_st;
-my $game_time_st;
 my $milestone_insert_st;
+my $spr_insert_st;
+my $spr_milestone_insert_st;
 
 initialize_sqllog();
 
@@ -159,10 +160,11 @@ sub load_splat {
 
 sub setup_db {
   $dbh = open_db();
-  $insert_st = prepare_insert_st($dbh);
-  $milestone_insert_st = prepare_milestone_insert_st($dbh);
+  $insert_st = prepare_insert_st($dbh, 'logrecord');
+  $spr_insert_st = prepare_insert_st($dbh, 'spr_logrecord');
+  $milestone_insert_st = prepare_milestone_insert_st($dbh, 'milestone');
+  $spr_milestone_insert_st = prepare_milestone_insert_st($dbh, 'spr_milestone');
   $update_st = prepare_update_st($dbh);
-  $game_time_st = prepare_game_time_st($dbh);
 }
 
 sub reopen_db {
@@ -187,9 +189,10 @@ sub check_indexes {
 
 sub cleanup_db {
   undef $insert_st;
+  undef $spr_insert_st;
   undef $milestone_insert_st;
+  undef $spr_milestone_insert_st;
   undef $update_st;
-  undef $game_time_st;
   $dbh->disconnect();
 }
 
@@ -223,9 +226,9 @@ sub query_all {
 }
 
 sub prepare_insert_st {
-  my $dbh = shift;
+  my ($dbh, $table) = @_;
   my @allfields = @INSERTFIELDS;
-  my $text = "INSERT INTO logrecord ("
+  my $text = "INSERT INTO $table ("
     . join(', ', map($LOG2SQL{$_} || $_, @allfields))
     . ") VALUES ("
     . join(', ', map("?", @allfields))
@@ -234,9 +237,9 @@ sub prepare_insert_st {
 }
 
 sub prepare_milestone_insert_st {
-  my $dbh = shift;
+  my ($dbh, $table) = @_;
   my @fields = map($LOG2SQL{$_} || $_, @MILE_INSERTFIELDS);
-  my $text = "INSERT INTO milestone ("
+  my $text = "INSERT INTO $table ("
     . join(', ', @fields)
     . ") VALUES ("
     . join(', ', map("?", @fields))
@@ -252,17 +255,6 @@ sub prepare_update_st {
     WHERE id = ?
 QUERY
   return prepare_st($dbh, $text);
-}
-
-sub prepare_game_time_st {
-  my $dbh = shift;
-  my $text = <<QUERY;
-    SELECT id, charabbrev, tend
-      FROM logrecord
-     WHERE src = ? AND pname = ? AND rstart = ?
-     LIMIT 1
-QUERY
-  prepare_st($dbh, $text)
 }
 
 sub sql_register_files {
@@ -504,6 +496,7 @@ sub fixup_logfields {
 
   my $sprint = $$g{lv} =~ /sprint/i;
   if ($sprint) {
+    $$g{sprint} = 1;
     my $oldplace = $$g{place};
     my $place = 'Sprint';
     $place = "$oldplace (Sprint)" unless $oldplace =~ /^D:./;
@@ -645,8 +638,9 @@ sub add_milestone {
   $m->{noun} = $m->{milestone};
   $m = fixup_logfields($m);
 
+  my $st = $$m{sprint} ? $spr_milestone_insert_st : $milestone_insert_st;
   my @bindvals = map(field_val($_, $m), @MILE_INSERTFIELDS_DECORATED);
-  execute_st($milestone_insert_st, @bindvals) or
+  execute_st($st, @bindvals) or
     die "Can't insert record for $line: $!\n";
 }
 
@@ -657,11 +651,12 @@ sub add_logline {
   $fields->{src} = $lf->{server};
   $fields->{alpha} = $lf->{alpha} ? 'y' : '';
   $fields = fixup_logfields($fields);
+  my $st = $$fields{sprint} ? $spr_insert_st : $insert_st;
   my @bindvalues = ($lf->{file}, $lf->{server}, $offset,
                     map(field_val($_, $fields), @LOGFIELDS_DECORATED),
                     field_val('rstart', $fields),
                     field_val('rend', $fields));
-  execute_st($insert_st, @bindvalues) or
+  execute_st($st, @bindvalues) or
     die "Can't insert record for $line: $!\n";
 }
 
