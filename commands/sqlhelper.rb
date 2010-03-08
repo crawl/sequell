@@ -1349,12 +1349,27 @@ def _parse_number(arg)
   arg =~ /^[+-]?\d+$/ ? arg.to_i : nil
 end
 
+def game_direct_match(game, arg, found=nil)
+  return [game, found] if found
+  return [arg, true] if GAMES.index(arg)
+  return [game, nil]
+end
+
+def game_negated_match(game, arg, found=nil)
+  return [game, found] if found
+  if arg.start_with?('!') && GAMES[1..-1].index(arg[1..-1])
+    return [GAME_CRAWL, true]
+  end
+  return [game, nil]
+end
+
 def extract_game_type(args)
   game = GAME_CRAWL
   (0 ... args.size).each do |i|
     dcarg = args[i].downcase
-    if GAMES.index(dcarg) then
-      game = dcarg
+    game, found = game_direct_match(game, dcarg)
+    game, found = game_negated_match(game, dcarg, found)
+    if found then
       args.slice!(i)
       break
     end
