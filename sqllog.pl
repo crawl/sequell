@@ -399,14 +399,17 @@ sub cat_xlog {
 
 sub cat_logfile {
   my ($lf, $offset) = @_;
-  cat_xlog($TLOGFILE, $lf, \&add_logline, $offset)
+  my $table = $$lf{file} =~ /-spr/? "spr_$TLOGFILE" : $TLOGFILE;
+  cat_xlog($table, $lf, \&add_logline, $offset)
 }
 
 sub cat_stonefile {
   my ($lf, $offset) = @_;
-  my $res = cat_xlog($TMILESTONE, $lf, \&add_milestone, $offset);
+  my $sprint = $$lf{file} =~ /-spr/;
+  my $table = $sprint? "spr_$TMILESTONE" : $TMILESTONE;
+  my $res = cat_xlog($table, $lf, \&add_milestone, $offset);
   print "Linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
-  fixup_milestones($lf->{server}) if $res;
+  fixup_milestones($lf->{server}, $sprint) if $res;
   print "Done linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
 }
 
@@ -418,10 +421,11 @@ table. Pretty expensive.
 =cut
 
 sub fixup_milestones {
-  my ($source, @players) = @_;
+  my ($source, $sprint, @players) = @_;
+  my $prefix = $sprint? 'spr_' : '';
   my $query = <<QUERY;
-     UPDATE milestone m
-       SET m.game_id = (SELECT l.id FROM logrecord l
+     UPDATE ${prefix}milestone m
+       SET m.game_id = (SELECT l.id FROM ${prefix}logrecord l
                          WHERE l.pname = m.pname
                            AND l.src = m.src
                            AND l.rstart = m.rstart

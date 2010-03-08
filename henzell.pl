@@ -270,7 +270,8 @@ sub tail_logfile
 
     # Link up milestone entries belonging to this player to their corresponding
     # completed games.
-    fixup_milestones($href->{server}, $game_ref->{name});
+    my $sprint = $$href{sprint};
+    fixup_milestones($href->{server}, $sprint, $game_ref->{name});
   }
   1
 }
