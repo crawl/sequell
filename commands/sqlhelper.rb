@@ -1357,7 +1357,7 @@ end
 
 def game_negated_match(game, arg, found=nil)
   return [game, found] if found
-  if arg.start_with?('!') && GAMES[1..-1].index(arg[1..-1])
+  if arg =~ /^!/ && GAMES[1..-1].index(arg[1..-1])
     return [GAME_CRAWL, true]
   end
   return [game, nil]
