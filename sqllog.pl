@@ -499,7 +499,7 @@ sub fixup_logfields {
     $$g{sprint} = 1;
     my $oldplace = $$g{place};
     my $place = 'Sprint';
-    $place = "$oldplace (Sprint)" unless $oldplace =~ /^D:./;
+    $place = "$oldplace (Sprint)" unless $oldplace eq 'D' || $oldplace =~ /^D:/;
     $$g{place} = $place;
   }
 
