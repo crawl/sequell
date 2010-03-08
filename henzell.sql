@@ -78,6 +78,8 @@ CREATE INDEX ind_milelocate ON logrecord (src, pname, rstart);
 CREATE TABLE spr_logrecord AS
 SELECT * FROM logrecord LIMIT 1;
 TRUNCATE TABLE spr_logrecord;
+ALTER TABLE spr_logrecord ADD PRIMARY KEY (id);
+ALTER TABLE spr_logrecord CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 CREATE INDEX spr_ind_foffset ON spr_logrecord (file, offset);
 CREATE INDEX spr_ind_milelocate ON spr_logrecord (src, pname, rstart);
 
@@ -146,7 +148,9 @@ CREATE INDEX mile_game_id ON milestone (game_id);
 CREATE TABLE spr_milestone AS
 SELECT * FROM milestone LIMIT 1;
 TRUNCATE TABLE spr_milestone;
-CREATE INDEX spr_mile_lookup_ext ON milestone (verb, noun);
-CREATE INDEX spr_mile_ind_foffset ON milestone (file, offset);
-CREATE INDEX spr_mile_lookup ON milestone (game_id, verb);
-CREATE INDEX spr_mile_game_id ON milestone (game_id);
+ALTER TABLE spr_milestone ADD PRIMARY KEY (id);
+ALTER TABLE spr_milestone CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+CREATE INDEX spr_mile_lookup_ext ON spr_milestone (verb, noun);
+CREATE INDEX spr_mile_ind_foffset ON spr_milestone (file, offset);
+CREATE INDEX spr_mile_lookup ON spr_milestone (game_id, verb);
+CREATE INDEX spr_mile_game_id ON spr_milestone (game_id);
