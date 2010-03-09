@@ -80,6 +80,8 @@ my %public_commands;
 local $SIG{PIPE} = 'IGNORE';
 local $SIG{CHLD} = 'IGNORE';
 
+binmode STDOUT, ':utf8';
+
 print "Locking $LOCK_FILE\n";
 open my $outf, '>', $LOCK_FILE or die "Can't open $LOCK_FILE: $!\n";
 flock $outf, LOCK_EX;
