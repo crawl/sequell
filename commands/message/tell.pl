@@ -4,6 +4,7 @@ use warnings;
 do 'commands/message/helper.pl';
 
 binmode STDIN, ':utf8';
+binmode STDOUT, ':utf8';
 chomp(my @args = <STDIN>);
 my $message = $args[2];
 $message =~ s/^!tell +//i;
