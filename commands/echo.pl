@@ -6,5 +6,8 @@ use warnings;
 use lib 'commands';
 use Helper;
 
+binmode STDIN, ':utf8';
+binmode STDOUT, ':utf8';
+my @args = <STDIN>;
 help("Echoes the command to the channel");
-print "$ARGV[1] said: $ARGV[2]";
+print "$args[1] said: $args[2]";
