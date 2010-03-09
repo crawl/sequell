@@ -5,6 +5,8 @@ use POSIX qw(setsid); # For daemonization.
 use Fcntl qw/:flock/;
 use IPC::Open2;
 
+$ENV{LC_ALL} = 'en_US.utf8';
+
 my $SERVER = 'cao';     # Local server.
 my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
 
@@ -109,7 +111,8 @@ my $HENZELL = Henzell->new(nick    => $nickname,
                            server  => $ircserver,
                            port    => $port,
                            ircname => $ircname,
-                           channels => [ @CHANNELS ])
+                           channels => [ @CHANNELS ],
+                           charset => 'utf-8')
   or die "Unable to create Henzell\n";
 $HENZELL->run();
 exit 0;
