@@ -3,7 +3,9 @@ use strict;
 use warnings;
 do 'commands/message/helper.pl';
 
-my $message = $ARGV[2];
+binmode STDIN, ':utf8';
+chomp(my @args = <STDIN>);
+my $message = $args[2];
 $message =~ s/^!tell +//i;
 $message =~ /^([a-zA-Z0-9_-]+) +(.+)$/ or do
 {
@@ -24,7 +26,7 @@ my $handle = message_handle($to, '>>', "Unable to add your message to $to\'s que
 
 my %message =
 (
-  from => $ARGV[1],
+  from => $args[1],
   to => $to,
   msg => $message,
   time => time,
@@ -40,5 +42,4 @@ print {$handle} join(':',
 };
 
 message_notify($to, 1);
-print "$ARGV[1]: OK, I'll let $to know.\n";
-
+print "$args[1]: OK, I'll let $to know.\n";

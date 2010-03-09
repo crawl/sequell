@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use POSIX qw(setsid); # For daemonization.
 use Fcntl qw/:flock/;
+use IPC::Open2;
 
 my $SERVER = 'cao';     # Local server.
 my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
@@ -73,6 +74,9 @@ my %conf = %DEFAULT_CONFIG;
 
 my %commands;
 my %public_commands;
+
+local $SIG{PIPE} = 'IGNORE';
+local $SIG{CHLD} = 'IGNORE';
 
 print "Locking $LOCK_FILE\n";
 open my $outf, '>', $LOCK_FILE or die "Can't open $LOCK_FILE: $!\n";
@@ -491,8 +495,8 @@ sub load_commands
     {
       $commands{$command} = sub
       {
-        my $args = shift;
-        handle_output(run_command($command_dir, $file, $args));
+        my ($args, @args) = @_;
+        handle_output(run_command($command_dir, $file, $args, @args));
       }
     }
 
@@ -505,15 +509,23 @@ sub load_commands
 
 sub pack_args
 {
-  join " ", map { $_ eq '' ? "''" : "\Q$_"} @_;
+  return (join " ", map { $_ eq '' ? "''" : "\Q$_"} @_), @_;
 }
 
 sub run_command
 {
-  my ($cdir, $f, $args) = @_;
-  my $output = qx{./$cdir$f $args};
+  my ($cdir, $f, $args, @args) = @_;
+
+  my ($out, $in);
+  my $pid = open2($out, $in, qq{./$cdir$f $args});
+  binmode $out, ':utf8';
+  binmode $in, ':utf8';
+  print $out join("\n", @args), "\n" if @args;
+  close $out;
+
+  my $output = do { local $/; <$in> };
   if ($output =~ /\n!redirect(\S+)/) {
-    return $commands{$1}->($args);
+    return $commands{$1}->($args, @args);
   }
   return $output;
 }
