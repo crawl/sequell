@@ -3,6 +3,9 @@ use strict;
 use warnings;
 do 'commands/message/helper.pl';
 
+binmode STDIN, ':utf8';
+binmode STDOUT, ':utf8';
+
 my $seen_dir = '/home/henzell/henzell/dat/seendb';
 
 if (lc($ARGV[0]) eq lc($ARGV[1]))
@@ -29,4 +32,3 @@ printf 'I last saw %s at %s UTC (%s ago) %s.%s',
        serialize_time(time - $seen_ref->{time}, 1),
        $seen_ref->{doing},
        "\n";
-
