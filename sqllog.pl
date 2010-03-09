@@ -130,8 +130,6 @@ sub current_splat_time {
     system("git clone $SPLAT_REPO $SPLAT_CO")
       and die "Couldn't clone $SPLAT_CO from $SPLAT_REPO\n";
   }
-  system("cd $SPLAT_CO && git pull") and die "Couldn't update $SPLAT_REPO\n";
-
   (stat "$SPLAT_CO/CSplat/Select.pm")[9]
 }
 
