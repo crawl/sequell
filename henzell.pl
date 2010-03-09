@@ -520,10 +520,10 @@ sub run_command
   my $pid = open2($out, $in, qq{./$cdir$f $args});
   binmode $out, ':utf8';
   binmode $in, ':utf8';
-  print $out join("\n", @args), "\n" if @args;
-  close $out;
+  print $in join("\n", @args), "\n" if @args;
+  close $in;
 
-  my $output = do { local $/; <$in> };
+  my $output = do { local $/; <$out> };
   if ($output =~ /\n!redirect(\S+)/) {
     return $commands{$1}->($args, @args);
   }
