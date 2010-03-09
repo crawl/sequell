@@ -16,6 +16,7 @@ sub message_count
 {
   my $nick = cleanse_nick(shift);
   open my $handle, '<', "$message_dir/$nick" or return 0;
+  binmode $handle, ':utf8';
   my @messages = <$handle>;
   return scalar @messages;
 }
@@ -29,6 +30,7 @@ sub message_handle
     print "$error\n";
     exit;
   };
+  binmode $handle, ':utf8';
   return $handle;
 }
 
@@ -54,4 +56,3 @@ sub message_notify
   chmod 0777, "$message_dir/$nick";
   return 1;
 }
-

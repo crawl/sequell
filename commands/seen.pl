@@ -22,6 +22,7 @@ open my $handle, '<', "$seen_dir/$target" or do
   print "Sorry $nick, I haven't seen $ARGV[0].\n";
   exit;
 };
+binmode $handle, ':utf8';
 
 my $line = <$handle>;
 my $seen_ref = demunge_xlogline($line);

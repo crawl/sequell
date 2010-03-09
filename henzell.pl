@@ -554,6 +554,7 @@ sub seen_update {
     warn "Unable to open $seen_dir/\L$nick\E for writing: $!";
     return;
   };
+  binmode $handle, ':utf8';
   print {$handle} join(':',
                        map {$seen{$_} =~ s/:/::/g; "$_=$seen{$_}"}
                        keys %seen),
