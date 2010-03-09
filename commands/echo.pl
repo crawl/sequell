@@ -8,6 +8,6 @@ use Helper;
 
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
-my @args = <STDIN>;
+chomp(my @args = <STDIN>);
 help("Echoes the command to the channel");
 print "$args[1] said: $args[2]";
