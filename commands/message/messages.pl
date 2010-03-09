@@ -3,6 +3,9 @@ use strict;
 use warnings;
 do 'commands/message/helper.pl';
 
+binmode STDIN, ':utf8';
+binmode STDOUT, ':utf8';
+
 my $nick = $ARGV[1];
 my $handle = message_handle($nick, '<', "No messages for $nick.");
 
@@ -32,4 +35,3 @@ printf '(1/%d) %s said (%s ago): %s%s',
   serialize_time(time - $message_ref->{time}, 1),
   $message_ref->{msg},
   "\n";
-
