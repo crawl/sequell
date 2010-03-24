@@ -33,7 +33,11 @@ my @stonefiles     =
    '[cdo]/home/henzell/cdo-milestones-0.4',
    '[cdo]/home/henzell/cdo-milestones-0.5',
    '[cdo]/home/henzell/cdo-milestones-spr',
-   '[cdo;alpha]/home/henzell/cdo-milestones-svn');
+   '[cdo;alpha]/home/henzell/cdo-milestones-svn',
+   '[rhf]/home/henzell/rhf-milestones-0.5',
+   '[rhf]/home/henzell/rhf-milestones-0.6',
+   '[rhf]/home/henzell/rhf-milestones-trunk',
+  );
 
 my @logfiles       = ('/var/www/crawl/allgames.txt',
                       '/home/crawl/chroot/var/games/crawl04/saves/logfile',
@@ -46,6 +50,9 @@ my @logfiles       = ('/var/www/crawl/allgames.txt',
                       '[cdo]/home/henzell/cdo-logfile-0.5',
                       '[cdo]/home/henzell/cdo-logfile-spr',
                       '[cdo;alpha]/home/henzell/cdo-logfile-svn',
+                      '[rhf]/home/henzell/rhf-logfile-0.5',
+                      '[rhf]/home/henzell/rhf-logfile-0.6',
+                      '[rhf]/home/henzell/rhf-logfile-trunk',
                       );
 
 
@@ -285,8 +292,8 @@ sub tail_logfile
 }
 
 sub sibling_fetch_logs {
-  print "*** Fetching logfiles from CDO\n";
-  system "./cdo-fetch-logfile >/dev/null 2>&1 &";
+  print "*** Fetching remote logfiles\n";
+  system "./remote-fetch-logfile >/dev/null 2>&1 &";
   $sibling_last_fetch_time = time();
   $sibling_logs_need_fetch = 0;
 }

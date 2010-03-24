@@ -1,0 +1,37 @@
+#! /bin/bash
+
+LOCKDIR=.remote-logfetch.lock
+CDO=http://crawl.develz.org
+RHF=http://rl.heh.fi/
+cd /home/henzell/
+
+if ! mkdir $LOCKDIR; then
+    echo "Script already running. Please remove $PWD/$LOCKDIR if not."
+    exit 1
+fi
+
+function fetch_url {
+    wget -q -c $1 -O $2 &>/dev/null
+}
+
+# crawl.develz.org (Napkin)
+fetch_url $CDO/allgames-0.4.txt cdo-logfile-0.4
+fetch_url $CDO/allgames-0.5.txt cdo-logfile-0.5
+fetch_url $CDO/allgames-svn.txt cdo-logfile-svn
+fetch_url $CDO/allgames-spr.txt cdo-logfile-spr
+fetch_url $CDO/milestones-0.4.txt cdo-milestones-0.4
+fetch_url $CDO/milestones-0.5.txt cdo-milestones-0.5
+fetch_url $CDO/milestones-svn.txt cdo-milestones-svn
+fetch_url $CDO/milestones-spr.txt cdo-milestones-spr
+
+# rl.heh.fi (joosa)
+fetch_url $RHI/crawl/logfile rhf-logfile-0.5
+fetch_url $RHI/crawl/milestones.txt rhf-milestones-0.5
+
+fetch_url $RHI/crawl-0.6/logfile rhf-logfile-0.6
+fetch_url $RHI/crawl-0.6/milestones.txt rhf-milestones-0.6
+
+fetch_url $RHI/trunk/logfile rhf-logfile-trunk
+fetch_url $RHI/trunk/milestones.txt rhf-milestones-trunk
+
+rmdir $LOCKDIR
