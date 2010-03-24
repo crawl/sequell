@@ -627,6 +627,17 @@ sub milestone_mangle {
   $g->{noun} = $noun;
 }
 
+sub record_is_alpha_version {
+  my ($lf, $g) = @_;
+  return 'y' if $$lf{alpha};
+
+  # Game version that mentions -rc or -a is automatically alpha.
+  my $v = $$g{v};
+  return 'y' if $v =~ /-(?:rc|a)/i;
+
+  return '';
+}
+
 sub add_milestone {
   my ($lf, $offset, $line) = @_;
   chomp $line;
@@ -635,7 +646,7 @@ sub add_milestone {
   $m->{file} = $lf->{file};
   $m->{offset} = $offset;
   $m->{src} = $lf->{server};
-  $m->{alpha} = $lf->{alpha} ? 'y' : '';
+  $m->{alpha} = record_is_alpha_version($lf, $m);
   $m->{verb} = $m->{type};
   $m->{noun} = $m->{milestone};
   $m = fixup_logfields($m);
@@ -651,7 +662,7 @@ sub add_logline {
   chomp $line;
   my $fields = logfield_hash($line);
   $fields->{src} = $lf->{server};
-  $fields->{alpha} = $lf->{alpha} ? 'y' : '';
+  $fields->{alpha} = record_is_alpha_version($lf, $fields);
   $fields = fixup_logfields($fields);
   my $st = $$fields{sprint} ? $spr_insert_st : $insert_st;
   my @bindvalues = ($lf->{file}, $lf->{server}, $offset,
