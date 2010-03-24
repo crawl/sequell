@@ -29,7 +29,7 @@ GODABBRS = %w/zin tso kik yre xom veh oka
               mak sif trog nem ely lug beo/
 GODMAP = { 'tso' => 'The Shining One' }
 
-SOURCES = %w/cao cdo/
+SOURCES = %w/cao cdo rhf/
 
 BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
 
