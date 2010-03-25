@@ -8,7 +8,7 @@ help("Lists milestones for the specified player. Usage: !lm (<player>) (<number>
 
 TV.with_tv_opts(ARGV[2].split()[1 .. -1]) do |args, tvopt|
   args, opts = extract_options(args, 'game')
-  args, extra = extra_field_clause(args, opts[:game] ? CTX_LOG : CTX_STONE)
+  sargs, extra = extra_field_clause(args, opts[:game] ? CTX_LOG : CTX_STONE)
 
   tv = tvopt[:tv]
   sql_show_game(ARGV[1], args, CTX_STONE) do |n, g|
