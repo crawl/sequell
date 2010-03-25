@@ -121,6 +121,16 @@ COLUMN_ALIASES = {
   'cl' => 'xl', 'clev' => 'xl', 'type' => 'verb', 'gid' => 'game_id'
 }
 
+AGGREGATE_FUNC_TYPES = {
+  'cdist' => '*',
+  'avg' => 'I',
+  'max' => '*',
+  'min' => '*',
+  'sum' => 'I',
+  'std' => 'I',
+  'variance' => 'I'
+}
+
 LOGFIELDS_DECORATED = %w/idI file alpha src v cv lv scI name uidI race crace cls
   char xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux
   place br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI
@@ -371,13 +381,136 @@ def with_query_context(ctx)
   end
 end
 
+class QueryField
+  attr_accessor :expr, :field, :calias, :special, :display
+  def initialize(dbexpr, field, display, calias=nil, special=nil)
+    @expr = dbexpr
+    @field = field
+    @display = display
+    @calias = calias
+    @special = special
+  end
+
+  def to_s
+    @calias ? "#{@expr} AS #{@calias}" : @expr
+  end
+
+  def aggregate?
+    return expr =~ /\w+\(/
+  end
+
+  def count?
+    return expr.downcase == 'count(*)'
+  end
+
+  def perc?
+    return count?() && special() == :percentage
+  end
+end
+
+class QueryFieldList
+  @@idbase = 0
+
+  attr_accessor :fields, :extra
+  def initialize(extra, ctx)
+    @fields = []
+    @ctx = ctx
+    @extra = extra
+    fields = extra.gsub(' ', '').split(',')
+    fields.each do |f|
+      if f =~ /^(\w+)\((\w+)\)/
+        @fields << aggregate_function($1, $2)
+      else
+        @fields << simple_field(f)
+      end
+    end
+
+    if not consistent?
+      raise "Cannot mix aggregate and non-aggregate fields in #{extra}"
+    end
+    @aggregate = !@fields.empty?() && @fields[0].aggregate?()
+  end
+
+  def empty?
+    @fields.empty?
+  end
+
+  def aggregate?
+    @aggregate
+  end
+
+  def self.unique_id()
+    @@idbase += 1
+    @@idbase.to_s
+  end
+
+  # Ensure that all fields are aggregate or that all fields are NOT aggregate.
+  def consistent?
+    return true if @fields.empty?
+    aggregate = @fields[0].aggregate?
+    return @fields.all? { |x| x.aggregate?() == aggregate }
+  end
+
+  def simple_field(field)
+    field = field.downcase.strip
+    if field == 'n'
+      return QueryField.new('COUNT(*)', nil, 'N',
+                            "count_" + QueryFieldList::unique_id())
+    elsif field == '%'
+      return QueryField.new('COUNT(*)', nil, '%',
+                            "count_" + QueryFieldList::unique_id(),
+                            :percentage)
+    end
+    field = canonicalize_field(field)
+    return QueryField.new(field, field, field)
+  end
+
+  def aggregate_typematch(func, field)
+    ftype = AGGREGATE_FUNC_TYPES[func]
+    return ftype == '*' || ftype == @ctx.field_type(field)
+  end
+
+  def aggregate_function(func, field)
+    field = canonicalize_field(field)
+    func = canonicalize_aggregate(func)
+
+    # And check that the types match up.
+    if not aggregate_typematch(func, field)
+      raise "#{func} cannot be applied to #{field}"
+    end
+
+    fieldalias = (func + "_" + field.gsub(/[^\w]+/, '_') +
+                  QueryFieldList::unique_id())
+
+    dbf = @ctx.dbfield(field)
+    fieldexpr = "#{func}(#{dbf})"
+    fieldexpr = "COUNT(DISTINCT #{dbf})" if func == 'cdist'
+    return QueryField.new(fieldexpr, field, "#{func}(#{field})", fieldalias)
+  end
+
+  def canonicalize_aggregate(func)
+    func = func.strip.downcase
+    if not AGGREGATE_FUNC_TYPES[func]
+      raise "Unknown aggregate function #{func} in #{extra}"
+    end
+    func
+  end
+
+  def canonicalize_field(field)
+    field = field.strip.downcase
+    field = COLUMN_ALIASES[field] || field
+    raise "Unknown selector #{f} in #{extra}" unless @ctx.field?(field)
+    field
+  end
+end
+
 def update_tv_count(g)
   table = g['milestone'] ? 'milestone' : 'logrecord'
   sql_dbh.do("UPDATE #{table} SET ntv = ntv + 1 " +
              "WHERE id = ?", g['id'])
 end
 
-def sql_build_query(default_nick, args, context=CTX_LOG)
+def sql_build_query(default_nick, args, context=CTX_LOG, extra_fields=nil)
   summarize = args.find { |a| a =~ /^-?s(?:=.*)?$/ }
   args.delete(summarize) if summarize
 
@@ -403,8 +536,9 @@ def sql_build_query(default_nick, args, context=CTX_LOG)
 
     GameContext.with_game(game) do
       with_query_context(context) do
-        q = build_query(nick, num, args, false)
+        q = sql_define_query(nick, num, args, extra_fields, false)
         q.summarize = sfield if summarize
+        q.extra_fields = extra_fields
         q
       end
     end
@@ -413,18 +547,13 @@ end
 
 def clean_extra_fields(extra, ctx)
   return nil unless extra
-  fields = extra.gsub(' ', '').split(',')
-  fields = fields.collect { |f| COLUMN_ALIASES[f] || f }
-  fields.each do |f|
-    raise "Unknown selector #{f} in #{extra}" unless ctx.field?(f)
-  end
-  fields
+  QueryFieldList.new(extra, ctx)
 end
 
 def extra_field_clause(args, ctx)
   combined = args.join(' ')
   extra = nil
-  reg = %r/\bx\s*=\s*(\w+(?:\s*,\s*\w+)*)/
+  reg = %r/\bx\s*=\s*(\w+(?:\(\w+\))?(?:\s*,\s*\w+(?:\(\w+\))?)*)/
   extra = $1 if combined =~ reg
   combined.sub!(reg, '') if extra
   restargs = combined.split().find_all { |x| !x.strip.empty? }
@@ -433,7 +562,9 @@ def extra_field_clause(args, ctx)
 end
 
 def add_extra(extra, fieldmap)
-  fieldmap['extra'] = extra.join(",") if extra && !extra.empty? && fieldmap
+  if extra && !extra.empty? && fieldmap
+    fieldmap['extra'] = extra.fields.join(",")
+  end
   fieldmap
 end
 
@@ -443,7 +574,7 @@ end
 def sql_find_game(default_nick, args, context=CTX_LOG)
   args, extra = extra_field_clause(args, context)
 
-  q = sql_build_query(default_nick, args, context)
+  q = sql_build_query(default_nick, args, context, extra)
 
   with_query_context(context) do
     n, row = sql_exec_query(q.num, q)
@@ -453,9 +584,9 @@ end
 
 def sql_show_game(default_nick, args, context=CTX_LOG)
   args, extra = extra_field_clause(args, context)
-  q = sql_build_query(default_nick, args, context)
+  q = sql_build_query(default_nick, args, context, extra)
   with_query_context(context) do
-    if q.summarize
+    if q.summarize?
       report_grouped_games_for_query(q)
     else
       n, row = sql_exec_query(q.num, q)
@@ -588,7 +719,7 @@ def sql_game_by_id(id)
   with_query_context(CTX_LOG) do
     q = \
       CrawlQuery.new([ 'AND', field_pred(id, '=', 'id') ],
-                     [ ], '*', 1, "id=#{id}")
+                     [ ], nil, '*', 1, "id=#{id}")
     #puts "Query: #{q.select_all}"
     r = nil
     sql_each_row_matching(q) do |row|
@@ -599,14 +730,15 @@ def sql_game_by_id(id)
 end
 
 class CrawlQuery
-  attr_accessor :argstr, :nick, :num, :raw
+  attr_accessor :argstr, :nick, :num, :raw, :extra_fields
 
-  def initialize(predicates, sorts, nick, num, argstr)
+  def initialize(predicates, sorts, extra_fields, nick, num, argstr)
     @table = $CTX.table
     @pred = predicates
     @sort = sorts
     @nick = nick
     @num = num
+    @extra_fields = extra_fields
     @argstr = argstr
     @values = nil
     @summarize = nil
@@ -655,6 +787,10 @@ class CrawlQuery
     @summarize
   end
 
+  def summarize?
+    @summarize || (@extra_fields && @extra_fields.aggregate?)
+  end
+
   def summarize= (s)
     if s =~ /^([+-]?)(.*)/
       @summarize = $2
@@ -698,19 +834,40 @@ class CrawlQuery
   end
 
   def summary_query
-    count_on(@summarize, @summary_sort)
-  end
-
-  def count_on(field, sortdir)
     temp = @sort
     begin
       @sort = []
       @query = nil
-      %{SELECT #{$CTX.dbfield(field)}, COUNT(*) AS fieldcount FROM #@table
-        #{where} GROUP BY #{$CTX.dbfield(field)} ORDER BY fieldcount #{sortdir}}
+      sortdir = @summary_sort
+      %{SELECT #{summary_fields} FROM #@table
+        #{where} #{summary_group} #{summary_order}}
     ensure
       @sort = temp
     end
+  end
+
+  def summary_order
+    @summarize ? "ORDER BY fieldcount #{@summary_sort}" : ''
+  end
+
+  def summary_group
+    @summarize ? "GROUP BY #{$CTX.dbfield(@summarize)}" : ''
+  end
+
+  def summary_fields
+    basefields = ''
+    extras = ''
+    if @summarize
+      basefields = "#{$CTX.dbfield(@summarize)}, COUNT(*) AS fieldcount"
+    end
+    if @extra_fields
+      # At this point extras must be aggregate columns.
+      if !@extra_fields.aggregate?
+        raise "Extra fields (#{@extra_fields.extra}) contain non-aggregates"
+      end
+      extras = @extra_fields.fields.map { |f| f.to_s }.join(", ")
+    end
+    [basefields, extras].find_all { |x| x && !x.empty? }.join(", ")
   end
 
   def query(with_sorts=true)
@@ -739,7 +896,8 @@ class CrawlQuery
   alias where query
 
   def reverse
-    CrawlQuery.new(@pred, reverse_sorts(@sort), @nick, @num, @argstr)
+    CrawlQuery.new(@pred, reverse_sorts(@sort), @extra_fields,
+                   @nick, @num, @argstr)
   end
 
   def clear_sorts!
@@ -811,11 +969,12 @@ def _build_argstr(nick, cargs)
   cargs.empty? ? nick : "#{nick} (#{_clean_argstr(cargs.join(' '))})"
 end
 
-def build_query(nick, num, args, back_combine=true)
+def sql_define_query(nick, num, args, extra_fields, back_combine=true)
   args = _op_back_combine(args) if back_combine
   args = _op_separate(args)
   predicates, sorts, cargs = parse_query_params(nick, num, args)
-  CrawlQuery.new(predicates, sorts, nick, num, _build_argstr(nick, cargs))
+  CrawlQuery.new(predicates, sorts, extra_fields, nick, num,
+                 _build_argstr(nick, cargs))
 end
 
 def _op_separate(args)
@@ -1391,49 +1550,94 @@ def extract_num(args)
   num ? (num > 0 ? num - 1 : num) : -1
 end
 
+class SummaryReporter
+  def initialize(q, defval, separator, formatter)
+    @q = q
+    @defval = defval
+    @sep = separator
+    @formatter = formatter
+    @extra = q.extra_fields
+    @efields = @extra ? @extra.fields : nil
+    if not @formatter
+      @formatter = case q.summarize
+                   when 'char'
+                     Proc.new { |n, w| "#{n}x#{w}" }
+                   else
+                     Proc.new { |n, w| "#{n}x #{w}" }
+                   end
+    end
+  end
+
+  def summary
+    @count = sql_count_rows_matching(@q)
+    if @count == 0
+      "No #{summary_entities} for #{@q.argstr}"
+    else
+      ("#{summary_count} #{summary_entities} " +
+       "for #{@q.argstr}: #{summary_details}")
+    end
+  end
+
+  def report_summary
+    puts(summary)
+  end
+
+  def summary_count
+    @count == 1 ? "One" : "#{@count}"
+  end
+
+  def summary_entities
+    type = $CTX == CTX_LOG ? 'game' : 'milestone'
+    types = type + 's'
+    @count == 1 ? type : types
+  end
+
+  def summary_details
+    group_by = @q.summarize
+    values = []
+    #puts "Query: #{@q.summary_query}"
+    sql_each_row_for_query(@q.summary_query, *@q.values) do |row|
+      if group_by then
+        values << grouped_item(row)
+      else
+        values << aggregate(row)
+      end
+    end
+    values.join(", ")
+  end
+
+  # Given a count and an item (for instance 200, Trog) returns a
+  # readable string: "200x Trog"
+  def format_counted_item(count, item)
+    @formatter.call(count, item)
+  end
+
+  # Stringifies one row in a summary query (s=god), possibly including
+  # extra aggregate fields (x=max(int)).
+  def grouped_item(row)
+    item = row[0]
+    count = row[1]
+    extra = @efields ? aggregate(row[2..-1]) : ''
+    str = format_counted_item(count, item)
+    extra.empty? ? str : str + " [" + extra + "]"
+  end
+
+  # Stringifies aggregate fields (x=max(int)) given an array where
+  # each element corresponds to the value of an aggregate field.
+  def aggregate(row)
+    index = 0
+    fields = []
+    @efields.each do |e|
+      fields << "#{e.display}=#{row[index]}"
+      index += 1
+    end
+    fields.join(";")
+  end
+end
+
 def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
-  count = sql_count_rows_matching(q)
-  name = q.nick
-  chars = []
-  defval ||=
-    case q.summarize
-      when 'killer'
-        "other"
-      when 'god'
-        "No God"
-      else
-        ""
-    end
-  formatter ||=
-    case q.summarize
-      when 'char'
-        Proc.new { |n, w| "#{n}x#{w}" }
-      else
-        Proc.new { |n, w| "#{n}x #{w}" }
-    end
-  if count > 0
-    sql_each_row_for_query(q.summary_query, *q.values) do |row|
-      val = row[0]
-      val = defval if !val
-      chars << [ val, row[1] ]
-    end
-  end
-
-
-  type = $CTX == CTX_LOG ? 'game' : 'milestone'
-  types = type + 's'
-
-  if count == 0
-    puts "No #{types} for #{q.argstr}."
-  else
-    printable = chars.map do |e|
-      formatter ? formatter.call(e[1], e[0]) : "#{e[1]}x#{e[0]}"
-    end
-    scount = count == 1 ? "One" : "#{count}"
-    sgames = count == 1 ? type : types
-    puts("#{scount} #{sgames} for #{q.argstr}: " +
-         printable.join(separator))
-  end
+  sr = SummaryReporter.new(q, defval, separator, formatter)
+  sr.report_summary
 end
 
 def report_grouped_games(group_by, defval, who, args,
