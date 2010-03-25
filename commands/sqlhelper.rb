@@ -1617,18 +1617,18 @@ class SummaryReporter
   def grouped_item(row)
     item = row[0]
     count = row[1]
-    extra = @efields ? aggregate(row[2..-1]) : ''
+    extra = @efields ? aggregate(row[2..-1], true) : ''
     str = format_counted_item(count, item)
     extra.empty? ? str : str + " [" + extra + "]"
   end
 
   # Stringifies aggregate fields (x=max(int)) given an array where
   # each element corresponds to the value of an aggregate field.
-  def aggregate(row)
+  def aggregate(row, simple=false)
     index = 0
     fields = []
     @efields.each do |e|
-      fields << "#{e.display}=#{row[index]}"
+      fields << (simple ? row[index] : "#{e.display}=#{row[index]}")
       index += 1
     end
     fields.join(";")
