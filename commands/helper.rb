@@ -497,3 +497,25 @@ end
 def print_game_n(n, game)
   print "\n#{n}. :#{munge_game(game)}:"
 end
+
+def pretty_duration(durseconds)
+  minutes = durseconds / 60
+  seconds = durseconds % 60
+  hours = minutes / 60
+  minutes = minutes % 60
+  days = hours / 24
+  hours = hours % 24
+
+  timestr = sprintf("%02d:%02d:%02d", hours, minutes, seconds)
+  if days > 0
+    timestr = "#{days}, #{timestr}"
+  end
+  timestr
+end
+
+def pretty_date(date)
+  if date =~ /^(\d{4})(\d{2})(\d{2})/
+    return "$1-#{sprintf('%02d',$2.to_i + 1)}-$3"
+  end
+  date
+end

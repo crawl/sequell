@@ -389,6 +389,15 @@ class QueryField
     @display = display
     @calias = calias
     @special = special
+    @type = $CTX.field_type(field)
+  end
+
+  def format_value(value)
+    if @type
+      return (@field == 'dur' ? pretty_duration(value.to_i) :
+              @type == 'D' ? pretty_date(value) : value)
+    end
+    value
   end
 
   def to_s
@@ -1628,7 +1637,8 @@ class SummaryReporter
     index = 0
     fields = []
     @efields.each do |e|
-      fields << (simple ? row[index] : "#{e.display}=#{row[index]}")
+      value = e.format_value(row[index])
+      fields << (simple ? value : "#{e.display}=#{value}")
       index += 1
     end
     fields.join(";")
