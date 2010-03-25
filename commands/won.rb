@@ -39,9 +39,10 @@ games = nil
 begin
   desc = nick
   if num == 0
-    q = build_query(nick, -1,
-                    ["ktyp=winning"] + paren_args(trail_select)).reverse
-    game_count_query = build_query(nick, -1, trail_select)
+    q = sql_define_query(nick, -1,
+                         ["ktyp=winning"] + paren_args(trail_select),
+                         nil).reverse
+    game_count_query = sql_define_query(nick, -1, trail_select, nil)
     count = sql_count_rows_matching(game_count_query)
     desc = game_count_query.argstr
   else
@@ -49,7 +50,7 @@ begin
       puts "Cannot combine * with win-skip count."
       exit 0
     end
-    q = build_query(nick, -1, trail_select).reverse
+    q = sql_define_query(nick, -1, trail_select, nil).reverse
     desc = q.argstr
     count = 0
   end
