@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/env ruby
 
 CMD = ARGV[0] || 'listgame.rb'
 while true
