@@ -59,7 +59,7 @@ my @logfiles       = ('/var/www/crawl/allgames.txt',
 # The other bots on the channel that might announce milestones and logfiles.
 # When Henzell sees such an announcement, it will fetch logfiles explicitly
 # within $sibling_fetch_delay seconds.
-my @sibling_bots     = qw/Gretell/;
+my @sibling_bots     = qw/Gretell Hehfiel/;
 
 # How long after a sibling announcement that Henzell will force-fetch
 # logfile records. This should be at least 5s because we don't want a badly-
