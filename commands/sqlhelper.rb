@@ -499,7 +499,7 @@ class QueryFieldList
   def canonicalize_field(field)
     field = field.strip.downcase
     field = COLUMN_ALIASES[field] || field
-    raise "Unknown selector #{f} in #{extra}" unless @ctx.field?(field)
+    raise "Unknown selector #{field} in #{extra}" unless @ctx.field?(field)
     field
   end
 end
