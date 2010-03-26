@@ -418,15 +418,114 @@ class QueryField
   end
 end
 
+class QuerySortField
+  def initialize(field, extra)
+    @field = field
+    @extra = extra
+    parse_field_spec
+  end
+
+  def ratio(num, den)
+    num = num.to_f
+    den = den.to_f
+    den == 0 ? 0 : num / den
+  end
+
+  def to_s
+    @field
+  end
+
+  def value(row)
+    if @index.nil?
+      bind_row_index!
+    end
+    @binder.call(row)
+  end
+
+  def bind_row_index!
+    if @value
+      @index = 0
+    elsif @expr == 'n'
+      @index = 1
+    else
+      @index = @expr.fields.index { |x| x.display == @expr }
+    end
+
+    if !@value
+      @base_index = case @base
+                    when 'd'
+                      0
+                    when 'n'
+                      1
+                    when '%'
+                      2
+                    else
+                      0
+                    end
+    end
+
+    if @value
+      @binder = Proc.new { |r| r.key }
+    else
+      extractor = if @base_index == 2
+                    Proc.new { |v| ratio(v[1], v[0]) }
+                  else
+                    Proc.new { |v| v[@base_index] }
+                  end
+
+      if @index == 1
+        @binder = Proc.new { |r| extractor.call(r.counts) }
+      else
+        index = @index - 2
+        @binder = Proc.new { |r| extractor.call(r.extra_values[index]) }
+      end
+    end
+  end
+
+  def parse_field_spec
+    field = @field
+    if field == '.'
+      @value = true
+    else
+      if field =~ /^([dn%]).(.*)/
+        @base = $1
+        field = $2
+      end
+      @expr = field.downcase
+      if @expr != 'n' && !@extra.fields.any? { |x| x.display == @expr }
+        raise "Bad sort condition: '#{field}'"
+      end
+    end
+  end
+end
+
+class QuerySortCondition
+  def initialize(extra, field, reverse=true)
+    @reverse = reverse
+    @field = QuerySortField.new(field, extra)
+  end
+  def sort_value(row)
+    value = @field.value(row)
+  end
+  def sort_cmp(a, b)
+    av, bv = sort_value(a), sort_value(b)
+    @reverse ? av <=> bv : bv <=> av
+  end
+  def inspect
+    "#{@field}#{@reverse ? ' (reverse)' : ''}"
+  end
+end
+
 class QueryFieldList
   @@idbase = 0
 
   attr_accessor :fields, :extra
   def initialize(extra, ctx)
+    extra = extra || ''
     @fields = []
     @ctx = ctx
     @extra = extra
-    fields = extra.gsub(' ', '').split(',')
+    fields = extra.gsub(' ', '').split(',').find_all { |f| !f.empty? }
     fields.each do |f|
       if f =~ /^(\w+)\((\w+)\)/
         @fields << aggregate_function($1, $2)
@@ -439,6 +538,12 @@ class QueryFieldList
       raise "Cannot mix aggregate and non-aggregate fields in #{extra}"
     end
     @aggregate = !@fields.empty?() && @fields[0].aggregate?()
+  end
+
+  def parse_sort_expr(expr)
+    reversed = expr =~ /^-/
+    expr = expr.sub(/^-/, '')
+    QuerySortCondition.new(self, expr, reversed)
   end
 
   def empty?
@@ -564,7 +669,6 @@ def sql_build_query(default_nick, args,
 end
 
 def clean_extra_fields(extra, ctx)
-  return nil unless extra
   QueryFieldList.new(extra, ctx)
 end
 
@@ -586,7 +690,8 @@ end
 def split_query_parts(args)
   combined = args.join(' ')
   if combined =~ %r{(.*)/(.*)}
-    return [ split_combined_arguments($1), split_combined_arguments($2) ]
+    args = [$1, $2].map { |x| x.strip }.find_all { |x| !x.empty? }
+    return args.map { |x| split_combined_arguments(x) }
   end
   [ args ]
 end
@@ -620,6 +725,23 @@ def cloneargs(args)
   args.map { |x| x.dup }
 end
 
+def parse_sort_fields(fields, extra)
+  fields.map { |f| extra.parse_sort_expr(f) }
+end
+
+def extract_sort_fields(args, extra)
+  sortpattern = %r/o=(\S+)/
+  found = args.find { |x| x =~ sortpattern }
+  sorts = []
+  if found
+    args = args.find_all { |x| x != found }
+    if found =~ sortpattern
+      sorts = parse_sort_fields($1.split(','), extra)
+    end
+  end
+  [ args, sorts ]
+end
+
 # Parse a listgame argument string into
 def sql_parse_query(default_nick, args, context=CTX_LOG)
   oargs = args.dup
@@ -627,6 +749,7 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
   split_args = split_query_parts(args)
 
   primary_args = split_args[0]
+  primary_args, sort_fields = extract_sort_fields(primary_args, extra)
 
   nick = extract_nick(primary_args) || default_nick
   primary_query = sql_build_query(nick, cloneargs(primary_args),
@@ -641,7 +764,14 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
                                     context, extra, false)
   end
 
+  # If we have an explicit descending sort, make that the primary sort.
+  psummary = primary_query.summary_sort
+  if psummary && psummary.empty?
+    sort_fields.insert(0, extra.parse_sort_expr('-n'))
+  end
+
   query_list = QueryList.new
+  query_list.sorts = sort_fields
   query_list << primary_query
 
   for fragment_args in split_args[1..-1] do
@@ -832,7 +962,7 @@ def sql_game_by_id(id)
 end
 
 class QueryList < Array
-  attr_accessor :ctx
+  attr_accessor :ctx, :sorts
 
   def primary_query
     self[0]
@@ -847,6 +977,7 @@ end
 
 class CrawlQuery
   attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
+  attr_accessor :summary_sort
 
   def initialize(predicates, sorts, extra_fields, nick, num, argstr)
     @table = $CTX.table
@@ -976,7 +1107,7 @@ class CrawlQuery
     if @summarize
       basefields = "#{$CTX.dbfield(@summarize)}, COUNT(*) AS fieldcount"
     end
-    if @extra_fields
+    if @extra_fields && !@extra_fields.empty?
       # At this point extras must be aggregate columns.
       if !@extra_fields.aggregate?
         raise "Extra fields (#{@extra_fields.extra}) contain non-aggregates"
@@ -1854,37 +1985,32 @@ class SummaryReporter
     raw_values.each do |rv|
       rv.extend!(size)
     end
-    sorted_values = raw_values.sort
+    sorted_values = sort(raw_values)
     sorted_values.join(", ")
+  end
+
+  def sort(values)
+    @sorts = @qgroup.sorts
+    puts "Sorts: #{@sorts.inspect}"
+    cond = @sorts && !@sorts.empty? ? @sorts[0] : nil
+    if cond
+      values.sort do |a,b|
+        cmp = 0
+        for sort in @sorts do
+          cmp = sort.sort_cmp(a, b)
+          break if cmp != 0
+        end
+        cmp
+      end
+    else
+      values.sort
+    end
   end
 
   # Given a count and an item (for instance 200, Trog) returns a
   # readable string: "200x Trog"
   def format_counted_item(count, item)
     @formatter.call(count, item)
-  end
-
-  # Stringifies one row in a summary query (s=god), possibly including
-  # extra aggregate fields (x=max(int)).
-  def grouped_item(row)
-    item = row[0]
-    count = row[1]
-    extra = @efields ? aggregate(row[2..-1], true) : ''
-    str = format_counted_item(count, item)
-    extra.empty? ? str : str + " [" + extra + "]"
-  end
-
-  # Stringifies aggregate fields (x=max(int)) given an array where
-  # each element corresponds to the value of an aggregate field.
-  def aggregate(row, simple=false)
-    index = 0
-    fields = []
-    @efields.each do |e|
-      value = e.format_value(row[index])
-      fields << (simple ? value : "#{e.display}=#{value}")
-      index += 1
-    end
-    fields.join(";")
   end
 end
 
