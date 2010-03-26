@@ -14,7 +14,7 @@ my $LOCK_FILE = "$ENV{HOME}/.henzell.lock";
 my $CONFIG_FILE = 'henzell.rc';
 
 # The largest message that Henzell will paginate in PM.
-my $MAX_PAGINATE_LENGTH = 1197;
+my $MAX_PAGINATE_LENGTH = 9001;
 
 my $nickname       = 'Henzell';
 my $ircname        = 'Henzell the Crawl Bot';
