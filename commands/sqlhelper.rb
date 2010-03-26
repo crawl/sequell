@@ -644,7 +644,7 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
   query_list = QueryList.new
   query_list << primary_query
 
-  for fragment_args in split_args.drop(1) do
+  for fragment_args in split_args[1..-1] do
     combined_args = listgame_combine_argument_lists(cloneargs(primary_args),
                                                     fragment_args)
     query_list << sql_build_query(nick, combined_args,
@@ -1835,7 +1835,7 @@ class SummaryReporter
       sql_each_row_for_query(q.summary_query, *q.values) do |row|
         srow = nil
         if group_by then
-          srow = SummaryRow.new(row[0], row[1], @q.extra_fields, row.drop(2))
+          srow = SummaryRow.new(row[0], row[1], @q.extra_fields, row[2..-1])
         else
           srow = SummaryRow.new(nil, nil, @q.extra_fields, row)
         end
