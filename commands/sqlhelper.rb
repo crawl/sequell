@@ -159,6 +159,7 @@ MILEFIELDS = { }
 FAKEFIELDS = { }
 
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
+OPMATCH = Regexp.new(SORTEDOPS.map { |o| Regexp.quote(o) }.join('|'))
 ARGSPLITTER = Regexp.new('^-?([a-z.:_]+)\s*(' +
                          SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
                          ')\s*(.*)$', Regexp::IGNORECASE)
@@ -519,7 +520,10 @@ def update_tv_count(g)
              "WHERE id = ?", g['id'])
 end
 
-def sql_build_query(default_nick, args, context=CTX_LOG, extra_fields=nil)
+def sql_build_query(default_nick, args,
+                    context=CTX_LOG, extra_fields=nil,
+                    extract_nick_from_args=true)
+  #puts "sql_build_query(#{args.inspect})"
   summarize = args.find { |a| a =~ /^-?s(?:=.*)?$/ }
   args.delete(summarize) if summarize
 
@@ -539,7 +543,11 @@ def sql_build_query(default_nick, args, context=CTX_LOG, extra_fields=nil)
 
   with_group(sfield) do
     args = _op_back_combine(args)
-    nick = extract_nick(args) || default_nick
+    if extract_nick_from_args
+      nick = extract_nick(args) || default_nick
+    else
+      nick = default_nick
+    end
     num  = extract_num(args)
     game = extract_game_type(args)
 
@@ -548,6 +556,7 @@ def sql_build_query(default_nick, args, context=CTX_LOG, extra_fields=nil)
         q = sql_define_query(nick, num, args, extra_fields, false)
         q.summarize = sfield if summarize
         q.extra_fields = extra_fields
+        q.ctx = context
         q
       end
     end
@@ -559,51 +568,135 @@ def clean_extra_fields(extra, ctx)
   QueryFieldList.new(extra, ctx)
 end
 
+def split_combined_arguments(argument_string)
+  argument_string.split().find_all { |x| !x.strip.empty? }
+end
+
 def extra_field_clause(args, ctx)
   combined = args.join(' ')
   extra = nil
   reg = %r/\bx\s*=\s*(\w+(?:\(\w+\))?(?:\s*,\s*\w+(?:\(\w+\))?)*)/
   extra = $1 if combined =~ reg
   combined.sub!(reg, '') if extra
-  restargs = combined.split().find_all { |x| !x.strip.empty? }
+  restargs = split_combined_arguments(combined)
 
   [ restargs, clean_extra_fields(extra, ctx) ]
 end
 
-def add_extra(extra, fieldmap)
-  if extra && !extra.empty? && fieldmap
-    fieldmap['extra'] = extra.fields.join(",")
+def split_query_parts(args)
+  combined = args.join(' ')
+  if combined =~ %r{(.*)/(.*)}
+    return [ split_combined_arguments($1), split_combined_arguments($2) ]
   end
-  fieldmap
+  [ args ]
+end
+
+def listgame_fixup_arglist(arglist)
+  arglist = arglist.dup
+  arglist = _op_back_combine(arglist)
+  arglist = _op_separate(arglist)
+  arglist = _combine_args(arglist)
+  arglist
+end
+
+# Combines to arrays of listgame arguments into one, correctly
+# handling keyword-style arguments at the head of the secondary list.
+# Example:  [ '*', 'killer=orc' ], [ 'xom' ]
+#        => [ '*', 'xom', 'killer=orc']
+def listgame_combine_argument_lists(primary, secondary)
+  result = primary.dup
+  secondary = listgame_fixup_arglist(secondary)
+  for arg in secondary do
+    if arg !~ OPMATCH
+      result.insert(0, arg)
+    else
+      result << arg
+    end
+  end
+  result
+end
+
+def cloneargs(args)
+  args.map { |x| x.dup }
+end
+
+# Parse a listgame argument string into
+def sql_parse_query(default_nick, args, context=CTX_LOG)
+  oargs = args.dup
+  args, extra = extra_field_clause(args, context)
+  split_args = split_query_parts(args)
+
+  primary_args = split_args[0]
+
+  nick = extract_nick(primary_args) || default_nick
+  primary_query = sql_build_query(nick, cloneargs(primary_args),
+                                  context, extra, false)
+
+  # Not all split queries will have an aggregate column. For instance:
+  # !lg * / win has no aggregate column, but the user presumably wants to use
+  # counts. In such cases, add x=n for the user.
+  if split_args.size > 1 && !primary_query.summarize? && !extra
+    _, extra = extra_field_clause(['x=n'], context)
+    primary_query = sql_build_query(nick, cloneargs(primary_args),
+                                    context, extra, false)
+  end
+
+  query_list = QueryList.new
+  query_list << primary_query
+
+  for fragment_args in split_args.drop(1) do
+    combined_args = listgame_combine_argument_lists(cloneargs(primary_args),
+                                                    fragment_args)
+    query_list << sql_build_query(nick, combined_args,
+                                  context, extra, false)
+  end
+
+  # If we have multiple queries, all must be summary queries:
+  if query_list.size > 1 and !query_list.all? { |q| q.summarize? }
+    raise ("Bad input: #{oargs.join(' ')}; when using /, " +
+           "all query pieces must be summary queries")
+  end
+
+  query_list
+end
+
+def add_extra_fields_to_xlog_record(extra_fields, xlog_record)
+  if extra_fields && !extra_fields.empty? && xlog_record
+    xlog_record['extra'] = extra_fields.fields.join(",")
+  end
+  xlog_record
 end
 
 # Given a set of arguments of the form
 #       nick num etc
 # runs the query and returns the matching game.
 def sql_find_game(default_nick, args, context=CTX_LOG)
-  args, extra = extra_field_clause(args, context)
-
-  q = sql_build_query(default_nick, args, context, extra)
-
-  with_query_context(context) do
+  qgroup = sql_parse_query(default_nick, args, context)
+  qgroup.with_context do
+    q = qgroup.primary_query
     n, row = sql_exec_query(q.num, q)
-    [ n, row ? add_extra(extra, row_to_fieldmap(row)) : nil, q.argstr ]
+    [ n,
+      (row ?
+       add_extra_fields_to_xlog_record(q.extra_fields, row_to_fieldmap(row)) :
+       nil),
+      q.argstr ]
   end
 end
 
 def sql_show_game(default_nick, args, context=CTX_LOG)
-  args, extra = extra_field_clause(args, context)
-  q = sql_build_query(default_nick, args, context, extra)
-  with_query_context(context) do
+  qgroup = sql_parse_query(default_nick, args, context)
+  qgroup.with_context do
+    q = qgroup.primary_query
     if q.summarize?
-      report_grouped_games_for_query(q)
+      report_grouped_games_for_query(qgroup)
     else
       n, row = sql_exec_query(q.num, q)
       type = context == CTX_LOG ? 'games' : 'milestones'
       unless row
         puts "No #{type} for #{q.argstr}."
       else
-        game = add_extra(extra, row_to_fieldmap(row))
+        game = add_extra_fields_to_xlog_record(q.extra_fields,
+                                               row_to_fieldmap(row))
         if block_given?
           yield [ n, game ]
         else
@@ -738,8 +831,22 @@ def sql_game_by_id(id)
   end
 end
 
+class QueryList < Array
+  attr_accessor :ctx
+
+  def primary_query
+    self[0]
+  end
+
+  def with_context
+    with_query_context(self[0].ctx) do
+      yield
+    end
+  end
+end
+
 class CrawlQuery
-  attr_accessor :argstr, :nick, :num, :raw, :extra_fields
+  attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
 
   def initialize(predicates, sorts, extra_fields, nick, num, argstr)
     @table = $CTX.table
@@ -1559,16 +1666,120 @@ def extract_num(args)
   num ? (num > 0 ? num - 1 : num) : -1
 end
 
+class SummaryRow
+  attr_accessor :counts, :extra_values, :count
+
+  def initialize(key, count, extra_fields, extra_values)
+    @key = key
+    @counts = count.nil? ? nil : [count]
+    @count = @counts.nil? ? 0 : @counts[0]
+    @extra_fields = extra_fields
+    @extra_values = extra_values.map { |e| [ e ] }
+  end
+
+  def key
+    @key.nil? ? :identity : @key
+  end
+
+  def extend!(size)
+    extend_array(@counts, size)
+    for ev in @extra_values do
+      extend_array(ev, size)
+    end
+  end
+
+  def extend_array(array, size)
+    if not array.nil?
+      (array.size ... size).each do
+        array << 0
+      end
+    end
+  end
+
+  def combine!(sr)
+    @counts << sr.counts[0] if not sr.counts.nil?
+
+    extra_index = 0
+    for eval in sr.extra_values do
+      @extra_values[extra_index] << eval[0]
+      extra_index += 1
+    end
+  end
+
+  def <=> (sr)
+    sr.count <=> @count
+  end
+
+  def to_s
+    if @key
+      [counted_keys, extra_val_string].find_all { |x| !x.empty? }.join(" ")
+    else
+      annotated_extra_val_string
+    end
+  end
+
+  def counted_keys
+    "#{count_string}x #{@key}"
+  end
+
+  def count_string
+    @counts.reverse.join("/")
+  end
+
+  def extra_val_string
+    allvals = []
+    if @counts.size > 1
+      allvals << percentage(@counts[1], @counts[0])
+    end
+    allvals << @extra_values.map { |x| value_string(x) }.join(";")
+    es = allvals.find_all { |x| !x.empty? }.join(";")
+    es.empty? ? es : "[" + es + "]"
+  end
+
+  def annotated_extra_val_string
+    res = []
+    index = 0
+    fields = @extra_fields.fields
+    @extra_values.each do |ev|
+      res << annotated_value(fields[index], ev)
+      index += 1
+    end
+    res.join("; ")
+  end
+
+  def annotated_value(field, value)
+    "#{field.display}=#{value_string(value)}"
+  end
+
+  def value_string(value)
+    sz = value.size
+    if not [1,2].index(sz)
+      raise "Unexpected value array size: #{value.size}"
+    end
+    if sz == 1
+      value[0]
+    else
+      short = value.reverse.join("/") + " (#{percentage(value[1], value[0])})"
+    end
+  end
+
+  def percentage(num, den)
+    den == 0 ? "-" : sprintf("%.2f%%", num.to_f * 100.0 / den.to_f)
+  end
+end
+
 class SummaryReporter
-  def initialize(q, defval, separator, formatter)
-    @q = q
+  def initialize(qgroup, defval, separator, formatter)
+    @qgroup = qgroup
+    @q = qgroup.primary_query
+    @lq = qgroup[-1]
     @defval = defval
     @sep = separator
     @formatter = formatter
-    @extra = q.extra_fields
+    @extra = @q.extra_fields
     @efields = @extra ? @extra.fields : nil
     if not @formatter
-      @formatter = case q.summarize
+      @formatter = case @q.summarize
                    when 'char'
                      Proc.new { |n, w| "#{n}x#{w}" }
                    else
@@ -1578,7 +1789,15 @@ class SummaryReporter
   end
 
   def summary
-    @count = sql_count_rows_matching(@q)
+    @counts = []
+
+    for q in @qgroup do
+      count = sql_count_rows_matching(q)
+      @counts << count
+      break if count == 0
+    end
+
+    @count = @counts[0]
     if @count == 0
       "No #{summary_entities} for #{@q.argstr}"
     else
@@ -1592,27 +1811,51 @@ class SummaryReporter
   end
 
   def summary_count
-    @count == 1 ? "One" : "#{@count}"
+    if @counts.size == 1
+      @count == 1 ? "One" : "#{@count}"
+    else
+      @counts.reverse.join("/")
+    end
   end
 
   def summary_entities
-    type = $CTX == CTX_LOG ? 'game' : 'milestone'
+    type = @q.ctx == CTX_LOG ? 'game' : 'milestone'
     types = type + 's'
     @count == 1 ? type : types
   end
 
   def summary_details
     group_by = @q.summarize
-    values = []
+
+    @rowmap = { }
     #puts "Query: #{@q.summary_query}"
-    sql_each_row_for_query(@q.summary_query, *@q.values) do |row|
-      if group_by then
-        values << grouped_item(row)
-      else
-        values << aggregate(row)
+
+    first = true
+    for q in @qgroup do
+      sql_each_row_for_query(q.summary_query, *q.values) do |row|
+        srow = nil
+        if group_by then
+          srow = SummaryRow.new(row[0], row[1], @q.extra_fields, row.drop(2))
+        else
+          srow = SummaryRow.new(nil, nil, @q.extra_fields, row)
+        end
+        if first
+          @rowmap[srow.key] = srow
+        else
+          existing = @rowmap[srow.key]
+          existing.combine!(srow) if existing
+        end
       end
+      first = false
     end
-    values.join(", ")
+
+    raw_values = @rowmap.values.sort
+    size = @qgroup.size
+    raw_values.each do |rv|
+      rv.extend!(size)
+    end
+    sorted_values = raw_values.sort
+    sorted_values.join(", ")
   end
 
   # Given a count and an item (for instance 200, Trog) returns a
@@ -1646,8 +1889,7 @@ class SummaryReporter
 end
 
 def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
-  sr = SummaryReporter.new(q, defval, separator, formatter)
-  sr.report_summary
+  SummaryReporter.new(q, defval, separator, formatter).report_summary
 end
 
 def report_grouped_games(group_by, defval, who, args,
@@ -1656,7 +1898,9 @@ def report_grouped_games(group_by, defval, who, args,
     begin
       q = sql_build_query(who, args)
       q.summarize = group_by
-      report_grouped_games_for_query(q, defval, separator, formatter)
+      qgroup = QueryList.new
+      qgroup << q
+      report_grouped_games_for_query(qgroup, defval, separator, formatter)
     rescue
       puts $!
       raise

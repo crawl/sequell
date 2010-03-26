@@ -20,12 +20,12 @@ TV.with_tv_opts(ARGV[2].split()[1 .. -1]) do |args, tvopt|
       elsif tv
         TV.request_game_verbosely(id, game, ARGV[1])
       else
-        print_game_n(g['game_id'], add_extra(extra, game))
+        print_game_n(g['game_id'], add_extra_fields_to_xlog_record(extra, game))
       end
     elsif tv
       TV.request_game_verbosely(n, g, ARGV[1])
     else
-      print_game_n(n, add_extra(extra, g))
+      print_game_n(n, add_extra_fields_to_xlog_record(extra, g))
     end
   end
 end
