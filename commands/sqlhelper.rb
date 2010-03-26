@@ -16,6 +16,19 @@ OPERATORS = {
   '~~' => 'REGEXP', '!~~' => 'NOT REGEXP'
 }
 
+FILTER_OPS = {
+  '<'   => Proc.new { |a, b| a.to_f < b },
+  '<='  => Proc.new { |a, b| a.to_f <= b },
+  '>'   => Proc.new { |a, b| a.to_f > b },
+  '>='  => Proc.new { |a, b| a.to_f >= b },
+  '='   => Proc.new { |a, b| a.to_f == b },
+  '!='  => Proc.new { |a, b| a.to_f != b }
+}
+FILTER_PATTERN =
+  Regexp.new('^((?:(?:den|num|%)[.])?\S+)(' +
+             FILTER_OPS.keys.map { |o| Regexp.quote(o) }.join('|') +
+             ')(\S+)$')
+
 # List of abbreviations for branches that have depths > 1. This includes
 # fake branches such as the Ziggurat.
 DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
@@ -418,6 +431,19 @@ class QueryField
   end
 end
 
+class QueryGroupFilter
+  def initialize(field, op, value)
+    @field = field
+    @op = op
+    @opproc = FILTER_OPS[op]
+    @value = value
+  end
+
+  def matches? (row)
+    @opproc.call(@field.value(row), @value)
+  end
+end
+
 class QuerySortField
   def initialize(field, extra)
     @field = field
@@ -453,14 +479,14 @@ class QuerySortField
 
     if !@value
       @base_index = case @base
-                    when 'd'
+                    when 'den'
                       0
-                    when 'n'
+                    when 'num'
                       1
                     when '%'
                       2
                     else
-                      0
+                      1
                     end
     end
 
@@ -487,7 +513,7 @@ class QuerySortField
     if field == '.'
       @value = true
     else
-      if field =~ /^([dn%]).(.*)/
+      if field =~ /^(den|num|%)[.](.*)/
         @base = $1
         field = $2
       end
@@ -742,14 +768,47 @@ def extract_sort_fields(args, extra)
   [ args, sorts ]
 end
 
+def parse_group_filter(filter, extra)
+  if filter !~ FILTER_PATTERN
+    raise "Invalid summary filter: #{filter}"
+  end
+
+  field, op, arg = $1, $2, $3.to_f
+  field = QuerySortField.new(field, extra)
+  QueryGroupFilter.new(field, op, arg)
+end
+
+def parse_group_filters(filter_arg, extra)
+  filters = [ ]
+
+  if filter_arg
+    args = listgame_fixup_arglist(filter_arg.split())
+    for arg in args do
+      filters << parse_group_filter(arg, extra)
+    end
+  end
+  filters
+end
+
+def extract_group_filters(args, extra)
+  combined = args.join(' ')
+  filters = nil
+  if combined =~ /\?:(.*)/
+    filters = $1.strip
+    combined.sub!(/\?:(.*)/, '')
+  end
+  [ split_combined_arguments(combined), parse_group_filters(filters, extra) ]
+end
+
 # Parse a listgame argument string into
 def sql_parse_query(default_nick, args, context=CTX_LOG)
   oargs = args.dup
   args, extra = extra_field_clause(args, context)
-  split_args = split_query_parts(args)
+  args, sort_fields = extract_sort_fields(args, extra)
+  args, group_filters = extract_group_filters(args, extra)
 
+  split_args = split_query_parts(args)
   primary_args = split_args[0]
-  primary_args, sort_fields = extract_sort_fields(primary_args, extra)
 
   nick = extract_nick(primary_args) || default_nick
   primary_query = sql_build_query(nick, cloneargs(primary_args),
@@ -772,6 +831,7 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
 
   query_list = QueryList.new
   query_list.sorts = sort_fields
+  query_list.filters = group_filters
   query_list << primary_query
 
   for fragment_args in split_args[1..-1] do
@@ -962,7 +1022,7 @@ def sql_game_by_id(id)
 end
 
 class QueryList < Array
-  attr_accessor :ctx, :sorts
+  attr_accessor :ctx, :sorts, :filters
 
   def primary_query
     self[0]
@@ -1985,13 +2045,20 @@ class SummaryReporter
     raw_values.each do |rv|
       rv.extend!(size)
     end
+
+    filters = @qgroup.filters
+    if filters
+      raw_values = raw_values.find_all do |row|
+        filters.all? { |f| f.matches?(row) }
+      end
+    end
+
     sorted_values = sort(raw_values)
     sorted_values.join(", ")
   end
 
   def sort(values)
     @sorts = @qgroup.sorts
-    puts "Sorts: #{@sorts.inspect}"
     cond = @sorts && !@sorts.empty? ? @sorts[0] : nil
     if cond
       values.sort do |a,b|
