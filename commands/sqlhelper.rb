@@ -817,7 +817,7 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
   # Not all split queries will have an aggregate column. For instance:
   # !lg * / win has no aggregate column, but the user presumably wants to use
   # counts. In such cases, add x=n for the user.
-  if split_args.size > 1 && !primary_query.summarize? && !extra
+  if split_args.size > 1 && !primary_query.summarize? && extra.empty?
     _, extra = extra_field_clause(['x=n'], context)
     primary_query = sql_build_query(nick, cloneargs(primary_args),
                                     context, extra, false)
