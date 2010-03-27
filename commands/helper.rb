@@ -23,8 +23,9 @@ DGL_TTYREC_URL = DGL_MORGUE_URL
 
 DGL_ALIEN_MORGUES = \
 [
- [ %r/-0.4$/, 'http://crawl.develz.org/morgues/old' ],
- [ %r/-0.5$/, 'http://crawl.develz.org/morgues/stable' ],
+ [ %r/-0.4$/, 'http://crawl.develz.org/morgues/0.4' ],
+ [ %r/-0.5$/, 'http://crawl.develz.org/morgues/0.5' ],
+ [ %r/-0.6$/, 'http://crawl.develz.org/morgues/0.6' ],
  [ %r/-svn$/, 'http://crawl.develz.org/morgues/trunk' ]
 ]
 

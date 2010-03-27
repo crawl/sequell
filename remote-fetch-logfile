@@ -17,10 +17,12 @@ function fetch_url {
 # crawl.develz.org (Napkin)
 fetch_url $CDO/allgames-0.4.txt cdo-logfile-0.4
 fetch_url $CDO/allgames-0.5.txt cdo-logfile-0.5
+fetch_url $CDO/allgames-0.6.txt cdo-logfile-0.6
 fetch_url $CDO/allgames-svn.txt cdo-logfile-svn
 fetch_url $CDO/allgames-spr.txt cdo-logfile-spr
 fetch_url $CDO/milestones-0.4.txt cdo-milestones-0.4
 fetch_url $CDO/milestones-0.5.txt cdo-milestones-0.5
+fetch_url $CDO/milestones-0.6.txt cdo-milestones-0.6
 fetch_url $CDO/milestones-svn.txt cdo-milestones-svn
 fetch_url $CDO/milestones-spr.txt cdo-milestones-spr
 
