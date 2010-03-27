@@ -23,10 +23,13 @@ DGL_TTYREC_URL = DGL_MORGUE_URL
 
 DGL_ALIEN_MORGUES = \
 [
- [ %r/-0.4$/, 'http://crawl.develz.org/morgues/0.4' ],
- [ %r/-0.5$/, 'http://crawl.develz.org/morgues/0.5' ],
- [ %r/-0.6$/, 'http://crawl.develz.org/morgues/0.6' ],
- [ %r/-svn$/, 'http://crawl.develz.org/morgues/trunk' ]
+ [ %r/cdo.*-0.4$/, 'http://crawl.develz.org/morgues/0.4' ],
+ [ %r/cdo.*-0.5$/, 'http://crawl.develz.org/morgues/0.5' ],
+ [ %r/cdo.*-0.6$/, 'http://crawl.develz.org/morgues/0.6' ],
+ [ %r/cdo.*-svn$/, 'http://crawl.develz.org/morgues/trunk' ],
+ [ %r/rhf.*-0.5$/, 'http://rl.heh.fi/crawl/stuff' ],
+ [ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
+ [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
 ]
 
 # The time (approximate) that Crawl switched from local time to UTC in
