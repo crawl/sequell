@@ -464,6 +464,9 @@ class QuerySortField
   def value(row)
     if @index.nil?
       bind_row_index!
+      if row.counts && row.counts.size == 1
+        @base_index = 0
+      end
     end
     @binder.call(row)
   end
@@ -474,7 +477,7 @@ class QuerySortField
     elsif @expr == 'n'
       @index = 1
     else
-      @index = @expr.fields.index { |x| x.display == @expr }
+      @index = 2 + @extra.fields.index { |x| x.display == @expr }
     end
 
     if !@value
@@ -534,7 +537,7 @@ class QuerySortCondition
     value = @field.value(row)
   end
   def sort_cmp(a, b)
-    av, bv = sort_value(a), sort_value(b)
+    av, bv = sort_value(a).to_i, sort_value(b).to_i
     @reverse ? av <=> bv : bv <=> av
   end
   def inspect
