@@ -477,7 +477,7 @@ class QuerySortField
     elsif @expr == 'n'
       @index = 1
     else
-      @index = 2 + @extra.fields.index { |x| x.display == @expr }
+      @index = 2 + (@extra.fields.index { |x| x.display == @expr })
     end
 
     if !@value
