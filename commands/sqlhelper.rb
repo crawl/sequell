@@ -471,13 +471,24 @@ class QuerySortField
     @binder.call(row)
   end
 
+  def find_extra_field_index(expr)
+    index = 0
+    for ef in @extra.fields do
+      if ef.display == expr
+        return index
+      end
+      index += 1
+    end
+    return nil
+  end
+
   def bind_row_index!
     if @value
       @index = 0
     elsif @expr == 'n'
       @index = 1
     else
-      @index = 2 + (@extra.fields.index { |x| x.display == @expr })
+      @index = 2 + find_extra_field_index(@expr)
     end
 
     if !@value
