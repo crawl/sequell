@@ -177,11 +177,11 @@ sub games_for # {{{
 # skill list {{{
 our @skills = (
     'fighting', 'short blades', 'long blades', 'axes', 'maces & flails',
-    'polearms', 'staves', 'slings', 'bows', 'crossbows', 'darts', 'throwing',
+    'polearms', 'staves', 'slings', 'bows', 'crossbows', 'throwing',
     'armour', 'dodging', 'stealth', 'stabbing', 'shields', 'traps & doors',
     'unarmed combat', 'spellcasting', 'conjurations', 'enchantments',
     'summonings', 'necromancy', 'translocations', 'transmutations',
-    'divinations', 'fire magic', 'ice magic', 'air magic', 'earth magic',
+    'fire magic', 'ice magic', 'air magic', 'earth magic',
     'poison magic', 'invocations', 'evocations', 'experience',
 ); # }}}
 # skill names used by the code {{{

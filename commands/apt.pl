@@ -15,19 +15,12 @@ sub parse_apt_file { # {{{
     open(my $fh, '<', $aptfile) or error "Couldn't open $aptfile for reading";
     my $race;
     while (<$fh>) {
-        # kinda ugly, but we have to skip the commented out stats at the
-        # end of the array
-        if (/spec_skills\[/ .. /\*\*\*\*\*\*\*\*\*\*\*/) {
-            if (/\{\s*\/\/\s*(\w+)/) {
-                $race = normalize_race $1;
-                die unless defined $race;
-            }
-            elsif (/^\s*(.*?),\s*\/\/\s*(\w+)/) {
-                next if $2 eq 'undefined' || $2 eq 'SK_UNUSED_1';
-                my $apt = eval "use integer; $1";
-                my $skill = normalize_skill $2;
-                $apts{$race}{$skill} = $apt;
-            }
+        if (/^\s*APT\(\s*(\w+)\s*,\s*(\w+)\s*,\s*(-?\d+)/) {
+            my ($raw_race, $raw_aptname, $raw_aptvalue) = ($1, $2, $3);
+            $race = normalize_race($raw_race);
+            my $apt = $raw_aptvalue;
+            my $skill = normalize_skill($raw_aptname);
+            $apts{$race}{$skill} = $apt;
         }
     }
     close $fh;
