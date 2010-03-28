@@ -468,7 +468,9 @@ class QuerySortField
         @base_index = 0
       end
     end
-    @binder.call(row)
+    v = @binder.call(row)
+    puts "Value for #{self}(#{row})=#{v}"
+    v
   end
 
   def find_extra_field_index(expr)
@@ -548,7 +550,7 @@ class QuerySortCondition
     value = @field.value(row)
   end
   def sort_cmp(a, b)
-    av, bv = sort_value(a).to_i, sort_value(b).to_i
+    av, bv = sort_value(a).to_f, sort_value(b).to_f
     @reverse ? av <=> bv : bv <=> av
   end
   def inspect
