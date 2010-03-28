@@ -469,7 +469,6 @@ class QuerySortField
       end
     end
     v = @binder.call(row)
-    puts "Value for #{self}(#{row})=#{v}"
     v
   end
 
