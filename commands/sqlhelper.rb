@@ -528,6 +528,7 @@ class QuerySortField
     if field == '.'
       @value = true
     else
+      field = "%.n" if field == '%'
       if field =~ /^(den|num|%)[.](.*)/
         @base = $1
         field = $2
