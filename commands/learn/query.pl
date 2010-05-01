@@ -52,7 +52,7 @@ sub fetch_entry {
     $tried{$term} = 1;
     $previous_redirecting_entry = $res;
     $res = read_entry($term, $num);
-    return $res if $res !~ /: see \{.*\}\Z/i;
+    return $res || $previous_redirecting_entry if $res !~ /: see \{.*\}\Z/i;
     my ($redirect) = $res =~ /\{(.*)\}/;
     ($term, $num) = parse_query($redirect);
   }
