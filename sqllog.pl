@@ -83,7 +83,7 @@ my @UNIQUES = ("Ijyb", "Blork the orc", "Blork", "Urug", "Erolcha", "Snorg",
   "Sonja", "Ilsuiw", "Nergalle", "Saint Roka", "Roxanne",
   "Eustachio", "Nessos", "Dowan", "Duvessa", "Grum", "Crazy Yiuf",
   "Gastronok", "Pikel", "Menkaure", "Khufu", "Aizul", "Purgy",
-  "Kirke", "Maurice", "Nikola");
+  "Kirke", "Maurice", "Nikola", "Mara");
 
 my $TLOGFILE   = 'logrecord';
 my $TMILESTONE = 'milestone';
