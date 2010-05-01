@@ -44,14 +44,17 @@ else
 sub fetch_entry {
   my ($term, $num) = @_;
   my %tried;
+  my $previous_redirecting_entry = '';
   my $res = '';
   for (;;) {
-	return $res if !defined($term) || $tried{$term};
+    return $res || $previous_redirecting_entry
+      if !defined($term) || $tried{$term};
     $tried{$term} = 1;
-	$res = read_entry($term, $num);
-	return $res if $res !~ /: see \{.*\}\Z/i;
-	my ($redirect) = $res =~ /\{(.*)\}/;
-	($term, $num) = parse_query($redirect);
+    $previous_redirecting_entry = $res;
+    $res = read_entry($term, $num);
+    return $res if $res !~ /: see \{.*\}\Z/i;
+    my ($redirect) = $res =~ /\{(.*)\}/;
+    ($term, $num) = parse_query($redirect);
   }
 }
 
