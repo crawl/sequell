@@ -512,6 +512,7 @@ sub fixup_logfields {
     for ($g->{ckiller}) {
       s/^an? \w+-headed (hydra.*)$/a $1/;
       s/^.*'s? ghost$/a player ghost/;
+      s/^.*'s? illusion$/a player illusion/;
       s/^an? \w+ (draconian.*)/a $1/;
 
       # If it's an actual kill, merge Pan lords.
