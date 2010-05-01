@@ -4,6 +4,7 @@ use warnings;
 do 'commands/learn/helper.pl';
 
 my ($term, $num) = parse_query($ARGV[1]);
+exit 0 unless $term =~ /\S/;
 if (defined $num)
 {
   my $entry = fetch_entry($term, $num); #read_entry($term, $num);
