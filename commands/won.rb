@@ -40,7 +40,7 @@ begin
   desc = nick
   if num == 0
     q = sql_define_query(nick, -1,
-                         ["ktyp=winning"] + paren_args(trail_select),
+                         trail_select + ["ktyp=winning"],
                          nil).reverse
     game_count_query = sql_define_query(nick, -1, trail_select, nil)
     count = sql_count_rows_matching(game_count_query)
