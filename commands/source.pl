@@ -193,7 +193,7 @@ sub get_function { # {{{
         }
     }
     if ($search_for eq 'source' || $search_for eq 'vault') {
-        my $files = File::Next::files({ descend_filter => sub { 0 },
+        my $files = File::Next::files({ descend_filter => sub { 1 },
                                         file_filter    => sub { /\.des$/ },
                                       }, "$source_dir/source/dat");
         while (defined (my $file = $files->())) {
