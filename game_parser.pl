@@ -96,10 +96,10 @@ sub format_date {
 sub formatted_game_field {
   my ($g, $field) = @_;
   if (grep($_ eq $field, 'end', 'start', 'rend', 'rstart', 'time')) {
-    return format_date($$g{$field});
+    return format_date($$g{$field}) . " [$$g{$field}]";
   }
   elsif ($field eq 'dur') {
-    return serialize_time($$g{$field});
+    return serialize_time($$g{$field}) . " [$$g{$field}]";
   }
   else {
     return $$g{$field};
