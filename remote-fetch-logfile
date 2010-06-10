@@ -2,7 +2,7 @@
 
 LOCKDIR=.remote-logfetch.lock
 CDO=http://crawl.develz.org
-RHF=http://rl.heh.fi/
+RHF=http://rl.heh.fi
 cd /home/henzell/
 
 if ! mkdir $LOCKDIR; then
@@ -27,13 +27,13 @@ fetch_url $CDO/milestones-svn.txt cdo-milestones-svn
 fetch_url $CDO/milestones-spr.txt cdo-milestones-spr
 
 # rl.heh.fi (joosa)
-#fetch_url $RHF/crawl/logfile rhf-logfile-0.5
-#fetch_url $RHF/crawl/milestones.txt rhf-milestones-0.5
+fetch_url $RHF/crawl/logfile rhf-logfile-0.5
+fetch_url $RHF/crawl/milestones.txt rhf-milestones-0.5
 
-#fetch_url $RHF/crawl-0.6/logfile rhf-logfile-0.6
-#fetch_url $RHF/crawl-0.6/milestones.txt rhf-milestones-0.6
+fetch_url $RHF/crawl-0.6/logfile rhf-logfile-0.6
+fetch_url $RHF/crawl-0.6/milestones.txt rhf-milestones-0.6
 
-#fetch_url $RHF/trunk/logfile rhf-logfile-trunk
-#fetch_url $RHF/trunk/milestones.txt rhf-milestones-trunk
+fetch_url $RHF/trunk/logfile rhf-logfile-trunk
+fetch_url $RHF/trunk/milestones.txt rhf-milestones-trunk
 
 rmdir $LOCKDIR
