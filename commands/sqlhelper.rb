@@ -906,7 +906,7 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
         if block_given?
           yield [ n, game ]
         else
-          print "\n#{n}. :#{munge_game(game)}:"
+          print_game_n(n, game)
         end
       end
     end
@@ -914,6 +914,23 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
 rescue
   puts $!
   raise
+end
+
+# Given a Henzell command's command-line, looks up a game and reports it,
+# also recognising -tv and -log options.
+def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
+  TV.with_tv_opts(other_args_string.split()[1 .. -1]) do |args, opts|
+    args, logopts = extract_options(args, 'log')
+    sql_show_game(ARGV[1], args + extra_args) do | n, g |
+      if opts[:tv]
+        TV.request_game_verbosely(n, g, ARGV[1])
+      elsif logopts[:log]
+        report_game_log(n, g)
+      else
+        print_game_n(n, g)
+      end
+    end
+  end
 end
 
 def row_to_fieldmap(row)

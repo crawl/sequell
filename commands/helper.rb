@@ -278,7 +278,7 @@ def game_morgues(name)
 end
 
 def morgue_time(e)
-  timestamp = e["end"].dup
+  timestamp = (e["end"] || e["time"]).dup
   timestamp.sub!(/(\d{4})(\d{2})(\d{2})/) do |m|
     "#$1#{sprintf('%02d', $2.to_i + 1)}#$3-"
   end
@@ -340,9 +340,38 @@ def find_game_morgue_ext(e, ext, full_scan)
   nil
 end
 
+def crashdump_assemble_filename(urlbase, milestone)
+  (urlbase + '/' + milestone["name"]
+   + '/crash-' + e["name"] + '-'
+   + morgue_time(milestone) + ".txt")
+end
+
+def find_milestone_crash_dump(e)
+  return nil if e['type'] != 'crash'
+
+  # Check for cao crashes:
+  return crashdump_assemble_filename(DGL_MORGUE_URL, e) if e['src'] == 'cao'
+
+  # No cao? Look for alien crashes
+  for pair in DGL_ALIEN_MORGUES
+    if e['file'] =~ pair[0]
+      return crashdump_assemble_filename(pair[1], e)
+    end
+  end
+
+  nil
+end
+
 def short_game_summary(g)
   mile = g['milestone'] ? ' (milestone)' : ''
   "#{g['name']}, XL#{g['xl']} #{g['char']}, T:#{g['turn']}#{mile}"
+end
+
+def report_game_log(n, g)
+  puts("#{n.nil? '' : n.to_s + '. '}#{short_game_summary(g)}: " +
+       (find_game_morgue(g) || "Can't find morgue."))
+rescue
+  puts("#{n.nil? '' : n.to_s + '. '}#{short_game_summary(g)}: $!")
 end
 
 def datestr(d)
