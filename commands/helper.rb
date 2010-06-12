@@ -341,9 +341,9 @@ def find_game_morgue_ext(e, ext, full_scan)
 end
 
 def crashdump_assemble_filename(urlbase, milestone)
-  (urlbase + '/' + milestone["name"]
-   + '/crash-' + e["name"] + '-'
-   + morgue_time(milestone) + ".txt")
+  (urlbase + '/' + milestone["name"] +
+   '/crash-' + milestone["name"] + '-' +
+   morgue_time(milestone) + ".txt")
 end
 
 def find_milestone_crash_dump(e)
