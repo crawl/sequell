@@ -368,10 +368,10 @@ def short_game_summary(g)
 end
 
 def report_game_log(n, g)
-  puts("#{n.nil? '' : n.to_s + '. '}#{short_game_summary(g)}: " +
+  puts("#{n.nil? ? '' : n.to_s + '. '}#{short_game_summary(g)}: " +
        (find_game_morgue(g) || "Can't find morgue."))
 rescue
-  puts("#{n.nil? '' : n.to_s + '. '}#{short_game_summary(g)}: $!")
+  puts("#{n.nil? ? '' : n.to_s + '. '}#{short_game_summary(g)}: $!")
 end
 
 def datestr(d)
