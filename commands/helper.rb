@@ -347,7 +347,7 @@ def crashdump_assemble_filename(urlbase, milestone)
 end
 
 def find_milestone_crash_dump(e)
-  return nil if e['type'] != 'crash'
+  return nil if e['verb'] != 'crash'
 
   # Check for cao crashes:
   return crashdump_assemble_filename(DGL_MORGUE_URL, e) if e['src'] == 'cao'

@@ -12,7 +12,7 @@ TV.with_tv_opts(ARGV[2].split()[1 .. -1]) do |args, tvopt|
 
   tv = tvopt[:tv]
   sql_show_game(ARGV[1], args, CTX_STONE) do |n, g|
-    if opts[:log] && g['type'] == 'crash'
+    if opts[:log] && g['verb'] == 'crash'
       puts("#{n}. #{short_game_summary(g)}: " +
            (find_milestone_crash_dump(g) || "Can't find crash dump."))
     elsif (opts[:game] || opts[:log])
