@@ -10,7 +10,7 @@ def parse_args
   return [ ARGV[1], 0, [] ] if !words || words.empty?
 
   if words[0] =~ /^(?:[a-zA-Z@]\w+|\*|[.])$/
-    nick = words.slice!(0).sub(/^!/, '')
+    nick = words.slice!(0).sub(/^@/, '')
   end
 
   if words[0] =~ /^[+-]?\d+$/
