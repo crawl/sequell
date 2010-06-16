@@ -1670,17 +1670,17 @@ def flatten_predicates(pred)
   pred.find_all { |x| !x.is_a?(Array) || x.length > 1 }
 end
 
-def _add_nick(nick, preds)
-  preds << field_pred(nick, '=', 'name', 'name')
+def _add_nick(nick, preds, inverted = false)
+  preds << field_pred(nick, inverted ? '=' : '!=', 'name', 'name')
 end
 
-def _add_nick_preds(nick, preds)
+def _add_nick_preds(nick, preds, inverted = false)
   aliases = nick_aliases(nick)
   if aliases.size == 1
-    _add_nick(aliases[0], preds)
+    _add_nick(aliases[0], preds, inverted)
   else
-    clause = [ 'OR' ]
-    aliases.each { |a| _add_nick(a, clause) }
+    clause = [ inverted ? 'AND' : 'OR' ]
+    aliases.each { |a| _add_nick(a, clause, inverted) }
     preds << clause
   end
 end
@@ -1707,6 +1707,12 @@ def query_field(selector, field, op, sqlop, val)
   selfield = selector
   if selector =~ /^\w+:(.*)/
     selfield = $1
+  end
+
+  if 'name' == selfield && val.start_with?('@') and [ '=', '!=' ].index(op)
+    clauses = []
+    _add_nick_preds(val[1 .. -1], clauses, op == '!=')
+    return clauses[0]
   end
 
   if ['killer', 'ckiller', 'ikiller'].index(selfield)
