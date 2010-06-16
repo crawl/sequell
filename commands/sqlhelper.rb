@@ -1358,13 +1358,17 @@ def _arg_is_grouper?(arg)
   [OPEN_PAREN, CLOSE_PAREN, BOOLEAN_OR].index(arg)
 end
 
+def _uncombinable_args(a, b)
+  return a =~ /^@/ || b =~ /^@/
+end
+
 def _combine_args(args)
   # Second combination: Go through the arg list and check for
   # space-split args that should be combined (such as ['killer=steam',
   # 'dragon'], which should become ['killer=steam dragon']).
   cargs = []
   for arg in args do
-    if cargs.empty? || arg =~ ARGSPLITTER || _arg_is_grouper?(arg) || _arg_is_grouper?(cargs.last)
+    if cargs.empty? || arg =~ ARGSPLITTER || _arg_is_grouper?(arg) || _arg_is_grouper?(cargs.last) || _uncombinable_args(cargs.last, arg)
       cargs << arg
     else
       cargs.last << " " << arg
@@ -1526,6 +1530,11 @@ def fixup_listgame_arg(preds, sorts, arg)
     eqop = negated ? '!=' : '='
     reproc = lambda do |field, value|
       process_param(preds, sorts, field + eqop + value)
+    end
+
+    # Check if it's a nick or nick alias:
+    if arg =~ /^@/ then
+      return reproc.call('name', arg)
     end
 
     # Check if it's a character abbreviation.
