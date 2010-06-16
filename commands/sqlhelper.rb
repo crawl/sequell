@@ -1832,7 +1832,7 @@ def extract_nick(args)
   nick = nil
   (0 ... args.size).each do |i|
     return nick if OPERATORS.keys.find { |x| args[i].index(x) }
-    if args[i] =~ /^([^+0-9!-][\w_`'-]+)$/ ||
+    if args[i] =~ /^([^+0-9@-][\w_`'-]+)$/ ||
        args[i] =~ /^@([\w_`'-]+)$/ ||
        args[i] =~ /^([*.])$/ then
       nick = $1
