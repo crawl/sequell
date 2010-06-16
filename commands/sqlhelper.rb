@@ -1852,7 +1852,7 @@ def nick_exists?(nick)
 end
 
 def self_nick?(nick)
-  nick =~ /^!?[.]$/
+  nick.nil? || nick =~ /^!?[.]$/
 end
 
 def extract_nick(args)
