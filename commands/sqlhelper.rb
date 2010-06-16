@@ -667,6 +667,17 @@ def update_tv_count(g)
              "WHERE id = ?", g['id'])
 end
 
+def resolve_nick(nickexpr, default_nick)
+  if self_nick?(nickexpr)
+    nick = default_nick
+    if nickexpr =~ /^!/
+      nick = "!#{nick}"
+    end
+    return nick
+  end
+  nickexpr
+end
+
 def sql_build_query(default_nick, args,
                     context=CTX_LOG, extra_fields=nil,
                     extract_nick_from_args=true)
@@ -691,7 +702,7 @@ def sql_build_query(default_nick, args,
   with_group(sfield) do
     args = _op_back_combine(args)
     if extract_nick_from_args
-      nick = extract_nick(args) || default_nick
+      nick = resolve_nick(extract_nick(args), default_nick)
     else
       nick = default_nick
     end
@@ -826,7 +837,7 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
   split_args = split_query_parts(args)
   primary_args = split_args[0]
 
-  nick = extract_nick(primary_args) || default_nick
+  nick = resolve_nick(extract_nick(primary_args), default_nick)
   primary_query = sql_build_query(nick, cloneargs(primary_args),
                                   context, extra, false)
 
@@ -1684,6 +1695,11 @@ def _add_nick(nick, preds, inverted = false)
 end
 
 def _add_nick_preds(nick, preds, inverted = false)
+  if nick =~ /^!/
+    nick.sub!(/^!/, '')
+    inverted = !inverted
+  end
+
   aliases = nick_aliases(nick)
   if aliases.size == 1
     _add_nick(aliases[0], preds, inverted)
@@ -1835,16 +1851,22 @@ def nick_exists?(nick)
   return nick_exists
 end
 
+def self_nick?(nick)
+  nick =~ /^!?[.]$/
+end
+
 def extract_nick(args)
   return nil if args.empty?
 
   nick = nil
   (0 ... args.size).each do |i|
     return nick if OPERATORS.keys.find { |x| args[i].index(x) }
-    if args[i] =~ /^([^+0-9@-][\w_`'-]+)$/ ||
-       args[i] =~ /^@([\w_`'-]+)$/ ||
-       args[i] =~ /^([*.])$/ then
+    if args[i] =~ /^!?([^+0-9@-][\w_`'-]+)$/ ||
+        args[i] =~ /^!?@([\w_`'-]+)$/ ||
+        args[i] =~ /^!?([.])$/ ||
+        args[i] =~ /^([*])$/ then
       nick = $1
+      nick = "!#{nick}" if args[i] =~ /^!/
 
       if nick.size == 1 ||
           !(is_class?(nick) || is_race?(nick) || is_charabbrev?(nick)) ||
@@ -1856,7 +1878,7 @@ def extract_nick(args)
       end
     end
   end
-  nick == '.' ? nil : nick
+  nick
 end
 
 def _parse_number(arg)
