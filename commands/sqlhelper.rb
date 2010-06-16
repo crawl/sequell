@@ -1671,7 +1671,7 @@ def flatten_predicates(pred)
 end
 
 def _add_nick(nick, preds, inverted = false)
-  preds << field_pred(nick, inverted ? '=' : '!=', 'name', 'name')
+  preds << field_pred(nick, inverted ? '!=' : '=', 'name', 'name')
 end
 
 def _add_nick_preds(nick, preds, inverted = false)
