@@ -1709,7 +1709,7 @@ def query_field(selector, field, op, sqlop, val)
     selfield = $1
   end
 
-  if 'name' == selfield && val.start_with?('@') and [ '=', '!=' ].index(op)
+  if 'name' == selfield && val[0, 1] == '@' and [ '=', '!=' ].index(op)
     clauses = []
     _add_nick_preds(val[1 .. -1], clauses, op == '!=')
     return clauses[0]
