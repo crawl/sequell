@@ -24,41 +24,8 @@ my $port           = 6667;
 my @CHANNELS         = ('##crawl', '##crawl-dev');
 my $ANNOUNCE_CHANNEL = '##crawl';
 
-my @stonefiles     =
-  ('/var/www/crawl/milestones02.txt',
-   '/home/crawl/chroot/var/games/crawl03/saves/milestones.txt',
-   '/home/crawl/chroot/var/games/crawl04/saves/milestones.txt',
-   '/home/crawl/chroot/var/games/crawl05/saves/milestones.txt',
-   '/home/crawl/chroot/var/games/crawl06/saves/milestones.txt',
-   '[cdo]/home/henzell/cdo-milestones-0.3',
-   '[cdo]/home/henzell/cdo-milestones-0.4',
-   '[cdo]/home/henzell/cdo-milestones-0.5',
-   '[cdo]/home/henzell/cdo-milestones-0.6',
-   '[cdo]/home/henzell/cdo-milestones-spr',
-   '[cdo;alpha]/home/henzell/cdo-milestones-svn',
-   '[rhf]/home/henzell/rhf-milestones-0.5',
-   '[rhf]/home/henzell/rhf-milestones-0.6',
-   '[rhf]/home/henzell/rhf-milestones-trunk',
-  );
-
-my @logfiles       = ('/var/www/crawl/allgames.txt',
-                      '/home/crawl/chroot/var/games/crawl04/saves/logfile',
-                      '/home/crawl/chroot/var/games/crawl05/saves/logfile',
-                      '/home/crawl/chroot/var/games/crawl06/saves/logfile',
-                      # The [cdo] prefix indicates that this is a remote
-                      # logfile, which we'll enter into the db with a source
-                      # of "cdo", and for which we will not make announcements.
-                      '[cdo]/home/henzell/cdo-logfile-0.3',
-                      '[cdo]/home/henzell/cdo-logfile-0.4',
-                      '[cdo]/home/henzell/cdo-logfile-0.5',
-                      '[cdo]/home/henzell/cdo-logfile-0.6',
-                      '[cdo]/home/henzell/cdo-logfile-spr',
-                      '[cdo;alpha]/home/henzell/cdo-logfile-svn',
-                      '[rhf]/home/henzell/rhf-logfile-0.5',
-                      '[rhf]/home/henzell/rhf-logfile-0.6',
-                      '[rhf]/home/henzell/rhf-logfile-trunk',
-                      );
-
+my @stonefiles;
+my @logfiles;
 
 # The other bots on the channel that might announce milestones and logfiles.
 # When Henzell sees such an announcement, it will fetch logfiles explicitly
@@ -82,7 +49,9 @@ my $seen_dir       = '/home/henzell/henzell/dat/seendb';
 my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
                                       greensnark cbus doy/;
 
-my %DEFAULT_CONFIG = (use_pm => 0);
+my %DEFAULT_CONFIG = (use_pm => 0,
+                      milestones => 'def.stones',
+                      logs => 'def.logs');
 my %conf = %DEFAULT_CONFIG;
 
 my %commands;
@@ -90,6 +59,8 @@ my %public_commands;
 
 local $SIG{PIPE} = 'IGNORE';
 local $SIG{CHLD} = 'IGNORE';
+
+load_config();
 
 binmode STDOUT, ':utf8';
 
@@ -455,6 +426,21 @@ sub process_message {
   undef;
 }
 
+sub load_log_paths($$$) {
+  my ($paths, $file, $name) = @_;
+  open my $inf, '<', $file or return;
+  while (<$inf>) {
+    chomp;
+    next unless /\S/ && !/^\s*#/;
+
+    s/^\s+//; s/\s+$//;
+    push @$paths, $_;
+  }
+  close $inf;
+
+  print "$name: ", join(", ", @$paths), "\n";
+}
+
 sub load_config
 {
   %conf = %DEFAULT_CONFIG;
@@ -467,6 +453,11 @@ sub load_config
     }
   }
   close $inf;
+
+  if (!@logfiles && !@stonefiles) {
+    load_log_paths(\@logfiles, $conf{logs}, "Logfiles");
+    load_log_paths(\@stonefiles, $conf{milestones}, "Milestones");
+  }
 }
 
 sub load_public_commands {
