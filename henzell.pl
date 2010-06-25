@@ -16,11 +16,6 @@ my $CONFIG_FILE = 'henzell.rc';
 # The largest message that Henzell will paginate in PM.
 my $MAX_PAGINATE_LENGTH = 3001;
 
-my $nickname       = 'Henzell';
-my $ircname        = 'Henzell the Crawl Bot';
-my $ircserver      = 'irc.freenode.org';
-my $port           = 6667;
-
 my @CHANNELS         = ('##crawl', '##crawl-dev');
 my $ANNOUNCE_CHANNEL = '##crawl';
 
@@ -30,7 +25,7 @@ my @logfiles;
 # The other bots on the channel that might announce milestones and logfiles.
 # When Henzell sees such an announcement, it will fetch logfiles explicitly
 # within $sibling_fetch_delay seconds.
-my @sibling_bots     = qw/Gretell Hehfiel/;
+my @sibling_bots     = qw/Henzell Gretell Hehfiel/;
 
 # How long after a sibling announcement that Henzell will force-fetch
 # logfile records. This should be at least 5s because we don't want a badly-
@@ -50,8 +45,20 @@ my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
                                       greensnark cbus doy/;
 
 my %DEFAULT_CONFIG = (use_pm => 0,
+
                       milestones => 'def.stones',
-                      logs => 'def.logs');
+                      logs => 'def.logs',
+
+                      # Does the bot respond to SQL queries (default: NO)
+                      sql_queries => 0,
+                      # Does the bot store logfiles and milestones in
+                      # a SQL db (default: NO)
+                      sql_store => 0,
+
+                      # IRC nick
+                      bot_nick => 'Henzell'
+                      );
+
 my %conf = %DEFAULT_CONFIG;
 
 my %commands;
@@ -61,6 +68,11 @@ local $SIG{PIPE} = 'IGNORE';
 local $SIG{CHLD} = 'IGNORE';
 
 load_config();
+
+my $nickname       = $conf{bot_nick};
+my $ircname        = "$nickname the Crawl Bot";
+my $ircserver      = 'irc.freenode.org';
+my $port           = 6667;
 
 binmode STDOUT, ':utf8';
 
@@ -80,21 +92,23 @@ system "renice +5 $$ &>/dev/null";
 my @loghandles = open_handles(@logfiles);
 my @stonehandles = open_handles(@stonefiles);
 
-if (@loghandles >= 1) {
-  sql_register_logfiles(map $_->{file}, @loghandles);
-  catchup_logfiles();
-  sql_register_milestones(map $_->{file}, @stonehandles);
+if ($conf{sql_store}) {
+  if (@loghandles >= 1) {
+    sql_register_logfiles(map $_->{file}, @loghandles);
+    catchup_logfiles();
+    sql_register_milestones(map $_->{file}, @stonehandles);
+    catchup_stonefiles();
+  }
+  fixup_db();
+  # And once again, because creating indexes takes time.
   catchup_stonefiles();
+  catchup_logfiles();
 }
-fixup_db();
-# And once again, because creating indexes takes time.
-catchup_stonefiles();
-catchup_logfiles();
 
-my $HENZELL = Henzell->new(nick    => $nickname,
-                           server  => $ircserver,
-                           port    => $port,
-                           ircname => $ircname,
+my $HENZELL = Henzell->new(nick     => $nickname,
+                           server   => $ircserver,
+                           port     => $port,
+                           name     => $ircname,
                            channels => [ @CHANNELS ])
   or die "Unable to create Henzell\n";
 $HENZELL->run();
@@ -194,7 +208,7 @@ sub check_milestone_file
   seek($stonehandle, $href->{pos}, 0);
   if ($line =~ /\S/) {
     # Add milestone to DB.
-    add_milestone($href, $startoffset, $line);
+    add_milestone($href, $startoffset, $line) if $conf{sql_store};
 
     if ($href->{server} eq $SERVER) {
       my $game_ref = demunge_xlogline($line);
@@ -244,7 +258,7 @@ sub tail_logfile
   seek($loghandle, $href->{pos}, 0);
   if ($line =~ /\S/) {
     # Add line to DB.
-    add_logline($href, $startoffset, $line);
+    add_logline($href, $startoffset, $line) if $conf{sql_store};
 
     my $game_ref = demunge_xlogline($line);
     # If this is a local game, announce it.
@@ -258,17 +272,23 @@ sub tail_logfile
       }
     }
 
-    # Link up milestone entries belonging to this player to their corresponding
-    # completed games.
-    my $sprint = $$href{sprint};
-    fixup_milestones($href->{server}, $sprint, $game_ref->{name});
+    if ($conf{sql_store}) {
+      # Link up milestone entries belonging to this player to their
+      # corresponding completed games.
+      my $sprint = $$href{sprint};
+      fixup_milestones($href->{server}, $sprint, $game_ref->{name});
+    }
   }
   1
 }
 
 sub sibling_fetch_logs {
-  print "*** Fetching remote logfiles\n";
-  system "./remote-fetch-logfile >/dev/null 2>&1 &";
+  # If we're saving all logfile and milestone entries, update remote
+  # logs; else we don't care.
+  if ($conf{sql_store}) {
+    print "*** Fetching remote logfiles\n";
+    system "./remote-fetch-logfile >/dev/null 2>&1 &";
+  }
   $sibling_last_fetch_time = time();
   $sibling_logs_need_fetch = 0;
 }
@@ -293,7 +313,7 @@ sub is_sibling_announcement {
 sub check_sibling_announcements
 {
   my ($nick, $verbatim) = @_;
-  if (grep($_ eq $nick, @sibling_bots)) {
+  if (($nick ne $nickname) && grep($_ eq $nick, @sibling_bots)) {
     if (is_sibling_announcement($verbatim)) {
       $sibling_logs_need_fetch = 1;
     }
@@ -441,6 +461,21 @@ sub load_log_paths($$$) {
   print "$name: ", join(", ", @$paths), "\n";
 }
 
+sub process_config() {
+  if (!@logfiles && !@stonefiles) {
+    load_log_paths(\@logfiles, $conf{logs}, "Logfiles");
+    load_log_paths(\@stonefiles, $conf{milestones}, "Milestones");
+  }
+
+  # If sql queries are enabled, set appropriate environment var.
+  if (!$conf{sql_queries}) {
+    delete $ENV{HENZELL_SQL_QUERIES};
+  }
+  else {
+    $ENV{HENZELL_SQL_QUERIES} = 'Y';
+  }
+}
+
 sub load_config
 {
   %conf = %DEFAULT_CONFIG;
@@ -454,10 +489,7 @@ sub load_config
   }
   close $inf;
 
-  if (!@logfiles && !@stonefiles) {
-    load_log_paths(\@logfiles, $conf{logs}, "Logfiles");
-    load_log_paths(\@stonefiles, $conf{milestones}, "Milestones");
-  }
+  process_config();
 }
 
 sub load_public_commands {
