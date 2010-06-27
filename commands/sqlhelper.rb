@@ -4,6 +4,8 @@ require 'dbi'
 require 'commands/helper'
 require 'set'
 
+exit(0) if !ENV['HENZELL_SQL_QUERIES']
+
 GAME_CRAWL = 'crawl'
 GAME_SPRINT = 'sprint'
 GAMES = [GAME_CRAWL, GAME_SPRINT]
@@ -230,7 +232,7 @@ MILEFIELDS_SUMMARIZABLE = \
   Hash[ *MILEFIELDS_DECORATED.map { |x| [ x.name, true ] }.flatten ]
 
 # But suppress attempts to summarize by bad fields.
-%w/id dur turn rtime rstart/.each do |x|
+%w/id dur turn rtime rstart tend ttime tstart/.each do |x|
   MILEFIELDS_SUMMARIZABLE[x] = nil
 end
 

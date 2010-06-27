@@ -1,0 +1,97 @@
+#! /usr/bin/perl
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use File::Find;
+use File::Path;
+use File::Copy;
+use Cwd;
+
+# 20G copy by default.
+my $SIZE = 20 * 1024 * 1024 * 1024;
+my $SAFETY_FREE_SPACE = 10 * 1024 * 1024 * 1024;
+GetOptions("size=s" => \$SIZE) or die "malformed command-line\n";
+
+$SIZE *= 1024 * 1024 * 1024;
+
+# Copy ttyrecs in subdirectories of the current directory out to the
+# designated target directory and create symlinks to point at the ttyrecs.
+# Only bzipped ttyrecs are copied, and we check for and avoid symlinks.
+
+my $destdir = shift;
+if (!$destdir || !-d($destdir)) {
+  die "Expected path to ttyrec destination directory\n";
+}
+$destdir =~ s{/$}{};
+
+main();
+
+sub check_space_available() {
+  my @space = qx/df/;
+  for my $line (@space) {
+    my @cols = split(' ', $line);
+    if ($cols[5] eq '/') {
+      my $spaceleft = $cols[3] * 1024;
+      if ($spaceleft < $SIZE + $SAFETY_FREE_SPACE) {
+        die "Insufficient space on /: $spaceleft (need $SIZE)\n";
+      }
+    }
+  }
+}
+
+sub strip_dir_prefix($$) {
+  my ($dir, $path) = @_;
+  die "$path does not start with $dir\n" unless $path =~ m{^\Q$dir/};
+  substr($path, length($dir) + 1)
+}
+
+sub ttyrec_dest_path($) {
+  my $file = shift;
+  my ($dir, $filename) = $file =~ m{^(.*)/(.*)};
+  my $fulldir = "$destdir/$dir";
+  if (!-d($fulldir) && !mkpath($fulldir)) {
+    die "ttyrec dir $fulldir doesn't exist and I couldn't create it\n";
+  }
+  ("$fulldir/$filename", $filename)
+}
+
+sub main {
+  check_space_available();
+
+  my @files_to_move;
+  my $sizeleft = $SIZE;
+  my $sizefound = 0;
+
+  my $pwd = getcwd();
+  my $cdir = '.';
+  eval {
+    find(sub {
+           if ($sizeleft > 0 && /.ttyrec.bz2$/ && !-l) {
+             $sizeleft -= -s;
+             $sizefound += -s;
+             push @files_to_move, strip_dir_prefix($cdir, $File::Find::name);
+             print("Found ", scalar(@files_to_move),
+                   " files (",
+                   sprintf("%.2fG", $sizefound / (1024.0 * 1024.0 * 1024.0)),
+                   ")\r");
+             die "DONE" if $sizeleft <= 0;
+           }
+         }, $cdir);
+  };
+  die "$@" if $@ !~ /DONE/;
+  chdir($pwd) or die "Couldn't cd back to $pwd\n";
+  print "\n";
+
+  print "Moving ", scalar(@files_to_move), " ttyrecs to $destdir\n";
+  my $done = 0;
+  for my $ttyrec (@files_to_move) {
+    my ($dest, $filename) = ttyrec_dest_path($ttyrec);
+    system("mv $ttyrec $dest") and die "mv $ttyrec $dest failed: $!\n";
+    system("ln -s $dest $ttyrec") and die "ln -s $dest failed\n";
+    ++$done;
+    print "Moved $done / ", scalar(@files_to_move), " files\n";
+    #
+  }
+}
