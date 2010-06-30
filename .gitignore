@@ -1,5 +1,7 @@
 .#*
 \#*
+remote.*
+.remote-*
 dat
 cao-logfile*
 milestones.txt

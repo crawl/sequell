@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use POSIX qw(setsid); # For daemonization.
-use Fcntl qw/:flock/;
+use Fcntl qw/:flock SEEK_END/;
 use IPC::Open2;
 
 use Henzell::Config qw/%CONFIG/;
@@ -11,8 +11,6 @@ $ENV{LC_ALL} = 'en_US.utf8';
 
 my $SERVER = 'cao';     # Local server.
 my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
-
-my $LOCK_FILE = "$ENV{HOME}/.henzell.lock";
 
 # The largest message that Henzell will paginate in PM.
 my $MAX_PAGINATE_LENGTH = 3001;
@@ -60,10 +58,7 @@ my $port           = 6667;
 
 binmode STDOUT, ':utf8';
 
-print "Locking $LOCK_FILE\n";
-open my $outf, '>', $LOCK_FILE or die "Can't open $LOCK_FILE: $!\n";
-flock $outf, LOCK_EX;
-print "Locked $LOCK_FILE, starting up...\n";
+Henzell::Utils::lock(verbose => 1);
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
 daemonify() unless grep($_ eq '-n', @ARGV);
@@ -129,23 +124,20 @@ sub open_handles
   my @handles;
 
   for my $file (@files) {
-    my ($server, $qualifier) = $file =~ /^\[(\w+)(;\w+)?\]/;
-    $server ||= $SERVER;
-    $qualifier ||= '';
-
-    $file =~ s/^\[.*?\]//;
-
-    open my $handle, '<', $file or do {
-      warn "Unable to open $file for reading: $!";
+    my $path = $$file{path};
+    open my $handle, '<', $path or do {
+      warn "Unable to open $path for reading: $!";
       next;
     };
 
-    seek($handle, 0, 2); # EOF
-    push @handles, { file => $file,
+    seek($handle, 0, SEEK_END); # EOF
+    push @handles, { file   => $$file{path},
+                     fref   => $file,
                      handle => $handle,
-                     pos => tell($handle),
-                     server => $server,
-                     alpha => ($qualifier eq ';alpha') };
+                     pos    => tell($handle),
+                     server => $$file{src},
+                     src    => $$file{src},
+                     alpha  => $$file{alpha} };
   }
   return @handles;
 }
@@ -430,26 +422,10 @@ sub process_message {
   undef;
 }
 
-sub load_log_paths($$$) {
-  my ($paths, $file, $name) = @_;
-  open my $inf, '<', $file or return;
-  while (<$inf>) {
-    chomp;
-    next unless /\S/ && !/^\s*#/;
-
-    s/^\s+//; s/\s+$//;
-    push @$paths, $_;
-  }
-  close $inf;
-
-  print "$name: ", join(", ", @$paths), "\n";
-}
 
 sub process_config() {
-  if (!@logfiles && !@stonefiles) {
-    load_log_paths(\@logfiles, $CONFIG{logs}, "Logfiles");
-    load_log_paths(\@stonefiles, $CONFIG{milestones}, "Milestones");
-  }
+  @logfiles = @Henzell::Config::LOGS unless @logfiles;
+  @stonefiles = @Henzell::Config::MILESTONES unless @stonefiles;
 
   # If sql queries are enabled, set appropriate environment var.
   if (!$CONFIG{sql_queries}) {

@@ -1,39 +1,25 @@
-#! /bin/bash
+#! /usr/bin/env perl
 
-LOCKDIR=.remote-logfetch.lock
-CDO=http://crawl.develz.org
-RHF=http://rl.heh.fi
-cd /home/henzell/
+use strict;
+use warnings;
 
-if ! mkdir $LOCKDIR; then
-    echo "Script already running. Please remove $PWD/$LOCKDIR if not."
-    exit 1
-fi
+use Henzell::Config qw/%CONFIG @LOGS @MILESTONES/;
+use Henzell::Utils;
 
-function fetch_url {
-    wget -q -c $1 -O $2 &>/dev/null
+sub fetch_file($) {
+  my $file = shift;
+  unless ($$file{url}) {
+    print "Skipping $$file{path}, no URL\n";
+    return;
+  }
+  print "Fetching $$file{url} -> $$file{path}\n";
+  system(qq{wget -q -c $$file{url} -O $$file{path} >/dev/null 2>&1});
 }
 
-# crawl.develz.org (Napkin)
-fetch_url $CDO/allgames-0.4.txt cdo-logfile-0.4
-fetch_url $CDO/allgames-0.5.txt cdo-logfile-0.5
-fetch_url $CDO/allgames-0.6.txt cdo-logfile-0.6
-fetch_url $CDO/allgames-svn.txt cdo-logfile-svn
-fetch_url $CDO/allgames-spr.txt cdo-logfile-spr
-fetch_url $CDO/milestones-0.4.txt cdo-milestones-0.4
-fetch_url $CDO/milestones-0.5.txt cdo-milestones-0.5
-fetch_url $CDO/milestones-0.6.txt cdo-milestones-0.6
-fetch_url $CDO/milestones-svn.txt cdo-milestones-svn
-fetch_url $CDO/milestones-spr.txt cdo-milestones-spr
+sub main() {
+  Henzell::Utils::lock_or_exit();
+  Henzell::Config::read();
+  fetch_file($_) for (@LOGS, @MILESTONES);
+}
 
-# rl.heh.fi (joosa)
-#fetch_url $RHF/crawl/logfile rhf-logfile-0.5
-#fetch_url $RHF/crawl/milestones.txt rhf-milestones-0.5
-
-#fetch_url $RHF/crawl-0.6/logfile rhf-logfile-0.6
-#fetch_url $RHF/crawl-0.6/milestones.txt rhf-milestones-0.6
-
-#fetch_url $RHF/trunk/logfile rhf-logfile-trunk
-#fetch_url $RHF/trunk/milestones.txt rhf-milestones-trunk
-
-rmdir $LOCKDIR
+main();
