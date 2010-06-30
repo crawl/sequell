@@ -61,12 +61,9 @@ binmode STDOUT, ':utf8';
 Henzell::Utils::lock(verbose => 1);
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
-daemonify() unless grep($_ eq '-n', @ARGV);
+Henzell::Utils::daemonify() unless grep($_ eq '-n', @ARGV);
 
 require 'sqllog.pl';
-
-# Drop process priority.
-system "renice +5 $$ &>/dev/null";
 
 my @loghandles = open_handles(@logfiles);
 my @stonehandles = open_handles(@stonefiles);
@@ -108,14 +105,6 @@ sub catchup_logfiles {
 
 sub catchup_stonefiles {
   catchup_files(\&cat_stonefile, @stonehandles);
-}
-
-sub daemonify {
-  umask 0;
-  defined(my $pid = fork) or die "Unable to fork: $!";
-  exit if $pid;
-  setsid or die "Unable to start a new session: $!";
-  # Done daemonifying.
 }
 
 sub open_handles

@@ -6,7 +6,7 @@ use warnings;
 
 use Fcntl qw/:flock/;
 
-our @EXPORT_OK = qw/lock_or_die lock/;
+our @EXPORT_OK = qw/lock_or_die lock daemonify/;
 
 sub lock_filename {
   my ($basename) = $main::0 =~ m{([^/]+)$};
@@ -14,6 +14,14 @@ sub lock_filename {
     unless $basename;
   my $dir = $ENV{HOME} || '.';
   "$dir/.$basename.lock"
+}
+
+sub daemonify {
+  umask 0;
+  defined(my $pid = fork) or die "Unable to fork: $!";
+  exit if $pid;
+  setsid or die "Unable to start a new session: $!";
+  # Done daemonifying.
 }
 
 sub lock_or_exit {
