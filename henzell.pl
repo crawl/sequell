@@ -186,7 +186,7 @@ sub check_milestone_file
     # Add milestone to DB.
     add_milestone($href, $startoffset, $line) if $CONFIG{sql_store};
 
-    if ($href->{server} eq $SERVER) {
+    if ($CONFIG{announce} && $href->{server} eq $SERVER) {
       my $game_ref = demunge_xlogline($line);
       my $newsworthy = newsworthy($game_ref);
 
@@ -238,7 +238,7 @@ sub tail_logfile
 
     my $game_ref = demunge_xlogline($line);
     # If this is a local game, announce it.
-    if ($href->{server} eq $SERVER) {
+    if ($CONFIG{announce} && $href->{server} eq $CONFIG{host}) {
       if (!suppress_game($game_ref)) {
         my $output = pretty_print($game_ref);
         $output =~ s/ on \d{4}-\d{2}-\d{2}//;

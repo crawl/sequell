@@ -21,6 +21,9 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       # IRC nick
                       bot_nick => 'Henzell',
 
+                      # Make announcements?
+                      announce => 0,
+
                       # Map hostname abbreviations to full hostnames.
                       'abbr.cao' => 'crawl.akrasiac.org',
                       'abbr.cdo' => 'crawl.develz.org',
@@ -155,6 +158,9 @@ sub read() {
     }
     close $inf;
   }
+
+  # So that users don't have to check for undef warnings.
+  $CONFIG{host} ||= '';
 
   load_file_paths();
 
