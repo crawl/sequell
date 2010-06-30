@@ -1,17 +1,50 @@
+[local:cao]
 /var/www/crawl/allgames.txt
+
+[local:cao]
 /home/crawl/chroot/var/games/crawl04/saves/logfile
+
+[local:cao]
 /home/crawl/chroot/var/games/crawl05/saves/logfile
+
+[local:cao]
 /home/crawl/chroot/var/games/crawl06/saves/logfile
 
-# The [cdo] prefix indicates that this is a remote
-# logfile which well enter into the db with a source
-# of "cdo" and for which we will not make announcements.
-[cdo]/home/henzell/cdo-logfile-0.3
-[cdo]/home/henzell/cdo-logfile-0.4
-[cdo]/home/henzell/cdo-logfile-0.5
-[cdo]/home/henzell/cdo-logfile-0.6
-[cdo]/home/henzell/cdo-logfile-spr
-[cdo;alpha]/home/henzell/cdo-logfile-svn
-[rhf]/home/henzell/rhf-logfile-0.5
-[rhf]/home/henzell/rhf-logfile-0.6
-[rhf]/home/henzell/rhf-logfile-trunk
+[remote:cao:http://$cao/allgames.txt]
+remote.cao-logfile-0.3
+
+[remote:cao:http://$cao/logfile04]
+remote.cao-logfile-0.4
+
+[remote:cao:http://$cao/logfile05]
+remote.cao-logfile-0.5
+
+[remote:cao:http://$cao/logfile06]
+remote.cao-logfile-0.6
+
+[remote:cdo]
+remote.cdo-logfile-0.3
+
+[remote:cdo:http://$cdo/allgames-0.4.txt]
+remote.cdo-logfile-0.4
+
+[remote:cdo:http://$cdo/allgames-0.5.txt]
+remote.cdo-logfile-0.5
+
+[remote:cdo:http://$cdo/allgames-0.6.txt]
+remote.cdo-logfile-0.6
+
+[remote:cdo:http://$cdo/allgames-spr.txt]
+remote.cdo-logfile-spr
+
+[remote:cdo:http://$cdo/allgames-svn.txt; alpha]
+remote.cdo-logfile-svn
+
+[remote:rhf]
+remote.rhf-logfile-0.5
+
+[remote:rhf]
+remote.rhf-logfile-0.6
+
+[remote:rhf; alpha]
+remote.rhf-logfile-trunk
