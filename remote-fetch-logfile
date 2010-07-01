@@ -6,13 +6,15 @@ use warnings;
 use Henzell::Config qw/%CONFIG @LOGS @MILESTONES/;
 use Henzell::Utils;
 
+my $verbose = -t STDIN;
+
 sub fetch_file($) {
   my $file = shift;
   unless ($$file{url}) {
-    print "Skipping $$file{path}, no URL\n";
+    print "Skipping $$file{path}, no URL\n" if $verbose;
     return;
   }
-  print "Fetching $$file{url} -> $$file{path}\n";
+  print "Fetching $$file{url} -> $$file{path}\n" if $verbose;
   system(qq{wget -q -c $$file{url} -O $$file{path} >/dev/null 2>&1});
 }
 
