@@ -5,7 +5,7 @@ use warnings;
 
 use base 'Exporter';
 
-our @EXPORT_OK = qw/read get %CONFIG @LOGS @MILESTONES/;
+our @EXPORT_OK = qw/read get %CONFIG %CMD %PUBLIC_CMD @LOGS @MILESTONES/;
 
 my %DEFAULT_CONFIG = (use_pm => 0,
 
@@ -24,6 +24,9 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       # Make announcements?
                       announce => 0,
 
+                      commands_file => 'commands/commands-henzell.txt',
+                      public_commands_file => 'commands/public-commands.txt',
+
                       # Map hostname abbreviations to full hostnames.
                       'abbr.cao' => 'crawl.akrasiac.org',
                       'abbr.cdo' => 'crawl.develz.org',
@@ -31,6 +34,8 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       );
 
 our %CONFIG = %DEFAULT_CONFIG;
+our %CMD;
+our %PUBLIC_CMD;
 our @LOGS;
 our @MILESTONES;
 our $CONFIG_FILE = 'henzell.rc';
@@ -144,6 +149,47 @@ sub load_file_paths() {
   load_log_paths(\@MILESTONES, $CONFIG{milestones}, "milestones");
 }
 
+sub load_public_commands($) {
+  %PUBLIC_CMD = ();
+  open my $inf, '<', $public_commands_file or return;
+  while (<$inf>) {
+    chomp;
+    s/^\s+//; s/\s+$//;
+    next if /^#/;
+    next unless /\S/;
+
+    if (/^!?(\w+)/) {
+      $PUBLIC_CMD{lc($1)} = 1;
+    }
+  }
+  close $inf;
+}
+
+sub load_commands($) {
+  my $commands_file = shift;
+
+  %CMD = ();
+
+  my $loaded = 0;
+  my $skipped = 0;
+
+  my @command_lines = do { local @ARGV = $commands_file; <>};
+
+  foreach my $line (@command_lines)
+  {
+    my ($command, $file) = $line =~ /^(\S+)\s+(.+)$/;
+    print "Loading $command from $file...\n";
+
+    $commands{$command} = sub {
+      my ($args, @args) = @_;
+      handle_output(run_command($command_dir, $file, $args, @args));
+    };
+
+    print "Loaded $command.\n";
+    ++$loaded;
+  }
+}
+
 sub read() {
   %CONFIG = %DEFAULT_CONFIG;
 
@@ -163,6 +209,8 @@ sub read() {
   $CONFIG{host} ||= '';
 
   load_file_paths();
+  load_public_commands($CONFIG{public_commands_file});
+  load_commands($CONFIG{commands_file});
 
   \%CONFIG
 }

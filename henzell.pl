@@ -431,57 +431,9 @@ sub load_config
   process_config();
 }
 
-sub load_public_commands {
-  %public_commands = ();
-  open my $inf, '<', $public_commands_file or return;
-  while (<$inf>) {
-    chomp;
-    s/^\s+//; s/\s+$//;
-    next if /^#/;
-    next unless /\S/;
-
-    if (/^!?(\w+)/) {
-      $public_commands{lc($1)} = 1;
-    }
-  }
-  close $inf;
-}
-
 sub load_commands
 {
   load_config();
-  load_public_commands();
-  %commands = ();
-
-  my $loaded = 0;
-  my $skipped = 0;
-
-  my @command_files = do { local @ARGV = $commands_file; <>};
-
-  foreach my $line (@command_files)
-  {
-    my ($command, $file) = $line =~ /^(\S+)\s+(.+)$/;
-    print "Loading $command from $file...\n";
-
-    if (0 && $file =~ /\.pl$/)
-    {
-      # eventually perl files should be eval'd and loaded into Henzell directly
-      # for efficiency
-    }
-    else
-    {
-      $commands{$command} = sub
-      {
-        my ($args, @args) = @_;
-        handle_output(run_command($command_dir, $file, $args, @args));
-      }
-    }
-
-    print "Loaded $command.\n";
-    ++$loaded;
-  }
-
-  return sprintf 'Loaded %d commands%s.', $loaded, $skipped ? sprintf(' (and %d skipped)', $skipped) : "";
 }
 
 sub pack_args
