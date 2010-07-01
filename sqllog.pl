@@ -652,6 +652,7 @@ sub add_milestone {
   $m->{src} = $lf->{server};
   $m->{alpha} = record_is_alpha_version($lf, $m);
   $m->{verb} = $m->{type};
+  $m->{milestone} ||= '?';
   $m->{noun} = $m->{milestone};
   $m = fixup_logfields($m);
 
