@@ -381,6 +381,8 @@ sub cat_xlog {
     $linestart = tell($loghandle);
     my $line = <$loghandle>;
     last unless $line && $line =~ /\n$/;
+    # Skip blank lines.
+    next unless $line =~ /\S/;
     ++$rows;
     $fadd->($lf, $linestart, $line);
     if (!($rows % $COMMIT_INTERVAL)) {
