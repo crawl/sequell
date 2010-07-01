@@ -181,14 +181,14 @@ sub load_commands($) {
   foreach my $line (@command_lines)
   {
     my ($command, $file) = $line =~ /^(\S+)\s+(.+)$/;
-    print "Loading $command from $file...\n";
+    #print "Loading $command from $file...\n";
 
     $CMD{$command} = sub {
       my ($args, @args) = @_;
       handle_output(run_command($command_dir, $file, $args, @args));
     };
 
-    print "Loaded $command.\n";
+    #print "Loaded $command.\n";
     ++$loaded;
   }
 }
