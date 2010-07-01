@@ -40,6 +40,8 @@ our @LOGS;
 our @MILESTONES;
 our $CONFIG_FILE = 'henzell.rc';
 
+my $command_dir = 'commands';
+
 my %ABBRMAP;
 
 sub get() {
@@ -150,6 +152,7 @@ sub load_file_paths() {
 }
 
 sub load_public_commands($) {
+  my $public_commands_file = shift;
   %PUBLIC_CMD = ();
   open my $inf, '<', $public_commands_file or return;
   while (<$inf>) {
@@ -180,7 +183,7 @@ sub load_commands($) {
     my ($command, $file) = $line =~ /^(\S+)\s+(.+)$/;
     print "Loading $command from $file...\n";
 
-    $commands{$command} = sub {
+    $CMD{$command} = sub {
       my ($args, @args) = @_;
       handle_output(run_command($command_dir, $file, $args, @args));
     };

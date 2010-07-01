@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Fcntl qw/:flock/;
+use POSIX;
 
 our @EXPORT_OK = qw/lock_or_die lock daemonify/;
 

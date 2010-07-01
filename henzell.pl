@@ -5,7 +5,7 @@ use POSIX qw(setsid); # For daemonization.
 use Fcntl qw/:flock SEEK_END/;
 use IPC::Open2;
 
-use Henzell::Config qw/%CONFIG/;
+use Henzell::Config qw/%CONFIG %CMD %PUBLIC_CMD/;
 
 $ENV{LC_ALL} = 'en_US.utf8';
 
@@ -36,15 +36,9 @@ my $sibling_logs_need_fetch;
 # The most recent explicit fetch of logfile records from sibling servers.
 my $sibling_last_fetch_time;
 
-my $command_dir    = 'commands/';
-my $commands_file  = $command_dir . 'commands.txt';
-my $public_commands_file = $command_dir . 'public-commands.txt';
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
 my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
                                       greensnark cbus doy/;
-
-my %commands;
-my %public_commands;
 
 local $SIG{PIPE} = 'IGNORE';
 local $SIG{CHLD} = 'IGNORE';
@@ -350,7 +344,7 @@ sub is_always_public {
   # Every !learn command apart from !learn query has to be public, always.
   return 1 if $command =~ /^!learn/i && $command !~ /^!learn\s+query/i;
   return 1 unless $command =~ /^\W+(\w+)/;
-  return $public_commands{lc($1)};
+  return $PUBLIC_CMD{lc($1)};
 }
 
 sub force_private {
@@ -396,7 +390,7 @@ sub process_message {
                   who => $$m{who},
                   body => load_commands());
   }
-  elsif (exists $commands{$command} &&
+  elsif (exists $CMD{$command} &&
          (!$private || !is_always_public($verbatim)))
   {
     # Log all commands to Henzell.
@@ -404,7 +398,7 @@ sub process_message {
     $ENV{PRIVMSG} = $private ? 'y' : '';
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
-    	$commands{$command}->(pack_args($target, $nick, $verbatim, '', ''));
+      $CMD{$command}->(pack_args($target, $nick, $verbatim, '', ''));
     respond_with_message($m, $output);
   }
 
@@ -454,7 +448,7 @@ sub run_command
 
   my $output = do { local $/; <$out> };
   if ($output =~ /\n!redirect(\S+)/) {
-    return $commands{$1}->($args, @args);
+    return $CMD{$1}->($args, @args);
   }
   return $output;
 }
