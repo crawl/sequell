@@ -6,6 +6,12 @@ use Fcntl qw/:flock SEEK_END/;
 use IPC::Open2;
 
 use Henzell::Config qw/%CONFIG %CMD %PUBLIC_CMD/;
+use Getopt::Long;
+
+my $daemon = 1;
+my $irc = 1;
+GetOptions("daemon!" => \$daemon,
+           "irc!" => \$irc) or die "Invalid options\n";
 
 $ENV{LC_ALL} = 'en_US.utf8';
 
@@ -55,7 +61,7 @@ binmode STDOUT, ':utf8';
 Henzell::Utils::lock(verbose => 1);
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
-Henzell::Utils::daemonify() unless grep($_ eq '-n', @ARGV);
+Henzell::Utils::daemonify() if $daemon;
 
 require 'sqllog.pl';
 
@@ -75,13 +81,16 @@ if ($CONFIG{sql_store}) {
   catchup_logfiles();
 }
 
-my $HENZELL = Henzell->new(nick     => $nickname,
-                           server   => $ircserver,
-                           port     => $port,
-                           name     => $ircname,
-                           channels => [ @CHANNELS ])
-  or die "Unable to create Henzell\n";
-$HENZELL->run();
+my $HENZELL;
+if ($irc) {
+  $HENZELL = Henzell->new(nick     => $nickname,
+                          server   => $ircserver,
+                          port     => $port,
+                          name     => $ircname,
+                          channels => [ @CHANNELS ])
+    or die "Unable to create Henzell\n";
+  $HENZELL->run();
+}
 exit 0;
 
 sub catchup_files {
