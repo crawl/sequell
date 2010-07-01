@@ -1,6 +1,8 @@
 DROP TABLE IF EXISTS logrecord;
+DROP TABLE IF EXISTS spr_logrecord;
 DROP TABLE IF EXISTS logfiles;
 DROP TABLE IF EXISTS milestone;
+DROP TABLE IF EXISTS spr_milestone;
 DROP TABLE IF EXISTS milestone_files;
 
 CREATE TABLE logfiles (
