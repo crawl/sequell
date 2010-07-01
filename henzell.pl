@@ -6,6 +6,7 @@ use Fcntl qw/:flock SEEK_END/;
 use IPC::Open2;
 
 use Henzell::Config qw/%CONFIG %CMD %PUBLIC_CMD/;
+use Henzell::Utils;
 use Getopt::Long;
 
 my $daemon = 1;
