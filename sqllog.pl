@@ -490,7 +490,7 @@ Cleans up xlog dictionary for milestones and logfile entries.
 sub fixup_logfields {
   my $g = shift;
 
-  my $milestone = $g->{milestone};
+  my $milestone = exists($g->{milestone});
 
   ($g->{cv} = $g->{v}) =~ s/^(\d+\.\d+).*/$1/;
 
