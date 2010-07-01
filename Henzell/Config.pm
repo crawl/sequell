@@ -118,7 +118,6 @@ sub log_path($$) {
 sub load_log_paths($$$) {
   my ($paths, $file, $name) = @_;
 
-  print "Reading paths from $file\n";
   @$paths = ();
 
   open my $inf, '<', $file or return;
@@ -196,7 +195,8 @@ sub load_commands($) {
 sub read() {
   %CONFIG = %DEFAULT_CONFIG;
 
-  open my $inf, '<', $CONFIG_FILE;
+  my $inf;
+  open $inf, '<', $CONFIG_FILE or undef $inf;
   if ($inf) {
     while (<$inf>) {
       s/^\s+//; s/\s+$//;
