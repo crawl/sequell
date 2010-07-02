@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 
 require 'set'
+require 'date'
 
 # fields end in S if they're strings, I if integral
 $field_names = %w<vS lvS nameS uidI raceS clsS xlI skS sklevI titleS placeS brS lvlI ltypS hpI mhpI mmhpI strI intI dexI startS durI turnI scI ktypS killerS kauxS endS tmsgS vmsgS godS pietyI penI charS nruneI uruneI>
@@ -508,7 +509,7 @@ def find_alien_ttyrecs(game)
   for pair in DGL_ALIEN_TTYRECS
     if game['file'] =~ pair[0]
       betw = resolve_alien_ttyrecs_between(pair[1], game, tty_start, tty_end)
-      ttyrec_list_string(game, game_user_url(game, pair[1]), betw)
+      return ttyrec_list_string(game, game_user_url(game, pair[1]), betw)
     end
   end
   nil

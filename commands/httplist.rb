@@ -42,6 +42,7 @@ module HttpList
       listing = self.files_matching(raw_html, file_regex)
       PCache::add(key, listing.join('|'), now)
     else
+      STDERR.puts("Using cached file listing for #{key}")
       listing = listing.split('|')
     end
     return listing
