@@ -15,7 +15,7 @@ $ARGV[2] = "!$ARGV[2]" unless substr($ARGV[2], 0, 1) eq '!';
 $ARGV[2] =~ /(\S+)/;
 my $requested = lc(defined($1) ? $1 : "!help");
 
-if ($CMDPATH($requested)) {
+if ($CMDPATH{$requested}) {
   print "$command: ";
   exec $CMDPATH{$requested}, @ARGV;
 }
