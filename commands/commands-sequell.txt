@@ -1,3 +1,4 @@
+!cmdinfo cmdinfo.pl
 !chars chars.rb
 !deathsby deathsby.rb
 !deathsin deathsin.rb

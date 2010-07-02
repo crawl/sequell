@@ -4,7 +4,7 @@
 !aplayers players.pl
 !apt apt.pl
 !cdefine source.pl
-!cmdinfo cmdinfo.py
+!cmdinfo cmdinfo.pl
 !dump dump.pl
 !eplayers players.pl
 !ftw ftw.pl
