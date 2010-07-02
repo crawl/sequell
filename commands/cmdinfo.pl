@@ -3,11 +3,11 @@
 use strict;
 use warnings;
 
-use Henzell::Config qw/%CMD/;
+use Henzell::Config qw/%CMDPATH/;
 use lib 'commands';
 use Helper;
 
 help("Lists available Henzell commands");
 
 Henzell::Config::read();
-print(join(' ', sort keys %CMD));
+print(join(' ', sort keys %CMDPATH));
