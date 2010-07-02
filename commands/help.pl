@@ -19,5 +19,3 @@ if ($CMDPATH($requested)) {
   print "$command: ";
   exec $CMDPATH{$requested}, @ARGV;
 }
-
-print "Unable to find help on $requested.";
