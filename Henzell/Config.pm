@@ -178,8 +178,6 @@ sub load_public_commands($) {
 sub load_commands($$) {
   my ($commands_file, $procmaker) = @_;
 
-  return unless $procmaker;
-
   %CMD = ();
   %CMDPATH = ();
 
@@ -193,7 +191,7 @@ sub load_commands($$) {
     my ($command, $file) = $line =~ /^(\S+)\s+(.+)$/;
     #print "Loading $command from $file...\n";
 
-    $CMD{$command} = $procmaker->($command_dir, $file);
+    $CMD{$command} = $procmaker->($command_dir, $file) if $procmaker;
     $CMDPATH{$command} = "$command_dir/$file";
 
     #print "Loaded $command.\n";
