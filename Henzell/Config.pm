@@ -24,6 +24,9 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       # Make announcements?
                       announce => 0,
 
+                      # Update seen-db
+                      seen_update => 1,
+
                       channels => qq/##crawl ##crawl-dev/,
                       announce_channel => '##crawl',
 

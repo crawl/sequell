@@ -453,7 +453,7 @@ sub run_command
   my ($cdir, $f, $args, @args) = @_;
 
   my ($out, $in);
-  my $pid = open2($out, $in, qq{./$cdir$f $args});
+  my $pid = open2($out, $in, qq{$cdir/$f $args});
   binmode $out, ':utf8';
   binmode $in, ':utf8';
   print $in join("\n", @args), "\n" if @args;
@@ -469,6 +469,7 @@ sub run_command
 sub seen_update {
   my ($e, $doing) = @_;
 
+  return unless $CONFIG{seen_update};
   return if ($$e{channel} || '') eq 'msg' || $$e{who} eq $nickname;
 
   my $nick = $$e{who};

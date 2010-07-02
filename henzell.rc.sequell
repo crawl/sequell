@@ -3,4 +3,5 @@ sql_store = 1
 sql_queries = 1
 commands_file = commands/commands-sequell.txt
 channels = ##crawl-test
-announce_channel = 
+announce_channel =
+seen_update = 0
