@@ -37,7 +37,9 @@ module HttpList
       now = DateTime.now
       raw_html = self.fetch_raw_html(url)
       listing = self.files_matching(raw_html, file_regex)
-      PCache::add(key, listing, now)
+      PCache::add(key, listing.join('|'), now)
+    else
+      listing = listing.split('|')
     end
     return listing
   end
