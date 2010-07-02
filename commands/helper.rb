@@ -486,7 +486,7 @@ def ttyrec_list_string(game, url, ttyreclist)
   if !ttyreclist || ttyreclist.empty?
     nil
   elsif game['milestone'] && ttyreclist.length > 1
-    ttyrec_list_string(game, url, ttyreclist[-1])
+    ttyrec_list_string(game, url, [ttyreclist[-1]])
   else
     spc = ttyreclist.length == 1 ? "" : " "
     "#{url}#{spc}#{ttyreclist.join(" ")}"
@@ -503,13 +503,15 @@ def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
 
   ttyrecs.find_all do |ttyrec|
     filetime = ttyrec_filename_datetime_string(ttyrec)
-    filetime && filetime >= sstart && filetime <= send
+    filetime && (!sstart || filetime >= sstart) && filetime <= send
   end
 end
 
 def find_alien_ttyrecs(game)
-  tty_start = game_ttyrec_datetime(game, 'start')
-  tty_end   = game_ttyrec_datetime(game, 'end') || game_ttyrec_datetime('time')
+  tty_start = (game_ttyrec_datetime(game, 'start') ||
+               game_ttyrec_datetime(game, 'rstart'))
+  tty_end   = (game_ttyrec_datetime(game, 'end') ||
+               game_ttyrec_datetime(game, 'time'))
 
   for pair in DGL_ALIEN_TTYRECS
     if game['file'] =~ pair[0]
@@ -559,7 +561,7 @@ def find_ttyrecs_between(game, s, e)
     filetime = ttyrec_filename_datetime(file)
 
     next unless filetime
-    filetime >= s and filetime <= e
+    (!s || filetime >= s) and filetime <= e
   end
   bracketed.map { |f| f.slice( prefix.length .. -1 ) }.sort
 end
