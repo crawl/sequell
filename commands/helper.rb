@@ -54,6 +54,7 @@ SERVER_TIMEZONE = {
 }
 
 MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S'
+SHORT_DATEFORMAT = '%Y%m%d%H%M%S'
 
 # The time (approximate) that Crawl switched from local time to UTC in
 # logfiles. We'll have lamentable inaccuracy near this time, but that
@@ -496,9 +497,13 @@ def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
   require 'commands/httplist'
   user_url = game_user_url(game, urlbase)
   ttyrecs = HttpList::find_files(user_url, /[.]ttyrec/, tend) || [ ]
+
+  sstart = tstart.strftime(SHORT_DATEFORMAT)
+  send = tend.strftime(SHORT_DATEFORMAT)
+
   ttyrecs.find_all do |ttyrec|
-    filetime = ttyrec_filename_datetime(ttyrec)
-    filetime && filetime >= tstart && filetime <= tend
+    filetime = ttyrec_filename_datetime_string(ttyrec)
+    filetime && filetime >= sstart && filetime <= send
   end
 end
 
@@ -533,11 +538,11 @@ def local_time(time)
   time.utc
 end
 
-def ttyrec_filename_datetime(filename)
+def ttyrec_filename_datetime_string(filename)
   if filename =~ /^(\d{4}-\d{2}-\d{2}\.\d{2}:\d{2}:\d{2})\.ttyrec/
-    DateTime.strptime($1 + "+0000", '%Y-%m-%d.%H:%M:%S%z')
-  elsif filename =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+][\d:]+)/
-    DateTime.strptime($1, '%Y-%m-%d.%H:%M:%S%Z').new_offset(0)
+    $1.gsub(/[-.:]/, '')
+  elsif filename =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})[+]00:?00/
+    $1.gsub(/[-:T]/, '')
   else
     nil
   end
@@ -546,6 +551,9 @@ end
 def find_ttyrecs_between(game, s, e)
   prefix = DGL_TTYREC_DIR + "/" + game['name'] + "/"
   files = Dir[ prefix + "*.ttyrec*" ]
+
+  s = s.strftime(SHORT_DATEFORMAT)
+  e = s.strftime(SHORT_DATEFORMAT)
   bracketed = files.find_all do |rfile|
     file = rfile.slice( prefix.length .. -1 )
     filetime = ttyrec_filename_datetime(file)
