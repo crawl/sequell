@@ -199,7 +199,7 @@ sub load_commands($$) {
 
 sub setup_env() {
   if ($CONFIG{host}) {
-    $ENV{HENZELL_HOST} = $CONFIG{HENZELL_HOST};
+    $ENV{HENZELL_HOST} = $CONFIG{host};
   } else {
     delete $ENV{HENZELL_HOST};
   }
