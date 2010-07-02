@@ -346,7 +346,7 @@ def binary_search_alien_morgue(url, e)
   user_url = url + "/" + e['name'] + "/"
   mtime = morgue_time(e)
   morgues = HttpList::find_files(user_url, /morgue-#{e['name']}.*?[.]txt/,
-                                 morgue_time)
+                                 DateTime.strptime(mtime, MORGUE_DATEFORMAT))
   return nil if morgues.nil?
 
   short_mtime = mtime.sub(/\d{2}$/, '')
@@ -476,9 +476,13 @@ def duration_str(dur)
   sprintf "%d:%02d:%02d", dur / 3600, (dur % 3600) / 60, dur % 60
 end
 
+def game_user_url(game, urlbase)
+  urlbase + "/" + game['name'] + "/"
+end
+
 def ttyrec_list_string(game, url, ttyreclist)
   if !ttyreclist || ttyreclist.empty?
-    "Can't find ttyrecs"
+    nil
   elsif game['milestone'] && ttyreclist.length > 1
     ttyrec_list_string(game, url, ttyreclist[-1])
   else
@@ -488,7 +492,8 @@ def ttyrec_list_string(game, url, ttyreclist)
 end
 
 def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
-  user_url = urlbase + "/" + game['name'] + "/"
+  require 'commands/httplist'
+  user_url = game_user_url(game, urlbase)
   ttyrecs = HttpList::find_files(user_url, /[.]ttyrec/, tend) || [ ]
   ttyrecs.find_all do |ttyrec|
     filetime = ttyrec_filename_datetime(ttyrec)
@@ -496,22 +501,17 @@ def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
   end
 end
 
-def find_alien_ttyrecs_between(game, tstart, tend)
-  require 'commands/httplist'
-  for pair in DGL_ALIEN_TTYRECS
-    if e['file'] =~ pair[0]
-      return resolve_alien_ttyrecs_between(pair[1], game, tstart, tend)
-    end
-  end
-  nil
-end
-
 def find_alien_ttyrecs(game)
   tty_start = game_ttyrec_datetime(game, 'start')
   tty_end   = game_ttyrec_datetime(game, 'end') || game_ttyrec_datetime('time')
 
-  betw = find_alien_ttyrecs_between(game, tty_start, tty_end)
-  ttyrec_list_string(game, base_url, betw)
+  for pair in DGL_ALIEN_TTYRECS
+    if game['file'] =~ pair[0]
+      betw = resolve_alien_ttyrecs_between(pair[1], game, tty_start, tty_end)
+      ttyrec_list_string(game, game_user_url(game, pair[1]), betw)
+    end
+  end
+  nil
 end
 
 def local_time(time)
@@ -580,7 +580,7 @@ def report_game_ttyrecs(n, game)
   puts(game_number_prefix(n) + short_game_summary(game) + ": " +
         (find_game_ttyrecs(game) || "Can't find ttyrec!"))
 rescue
-  puts(game_number_prefix(n) + short_game_summary(game) + ": " + $!
+  puts(game_number_prefix(n) + short_game_summary(game) + ": " + $!)
   raise
 end
 
