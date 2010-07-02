@@ -39,7 +39,7 @@ module HttpList
       if raw_html !~ %r{/html}is
         raise Exception.new("Could not fetch directory listing from #{url}")
       end
-      listing = self.files_matching(raw_html, file_regex)
+      listing = self.files_matching(raw_html, file_regex).sort
       PCache::add(key, listing.join('|'), now)
     else
       STDERR.puts("Using cached file listing for #{key}")

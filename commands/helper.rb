@@ -506,10 +506,26 @@ def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
   sstart = tstart.strftime(SHORT_DATEFORMAT)
   send = tend.strftime(SHORT_DATEFORMAT)
 
-  ttyrecs.find_all do |ttyrec|
+  first_ttyrec_before_start = nil
+  first_ttyrec_is_start = false
+  found = ttyrecs.find_all do |ttyrec|
     filetime = ttyrec_filename_datetime_string(ttyrec)
+    if (filetime && sstart && filetime < sstart)
+      first_ttyrec_before_start = ttyrec
+    end
+
+    if (!first_ttyrec_is_start && filetime && sstart && filetime == sstart)
+      first_ttyrec_is_start = true
+    end
+
     filetime && (!sstart || filetime >= sstart) && filetime <= send
   end
+
+  if first_ttyrec_before_start && !first_ttyrec_is_start
+    found = [ first_ttyrec_before_start ] + found
+  end
+
+  found
 end
 
 def find_alien_ttyrecs(game)
