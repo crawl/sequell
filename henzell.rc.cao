@@ -1,2 +1,4 @@
-sql_queries = 1
-sql_store = 1
+sql_queries = 0
+sql_store = 0
+host = cao
+announce = 1

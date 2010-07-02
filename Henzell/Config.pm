@@ -195,6 +195,22 @@ sub load_commands($) {
   }
 }
 
+sub setup_env() {
+  if ($CONFIG{host}) {
+    $ENV{HENZELL_HOST} = $CONFIG{HENZELL_HOST};
+  } else {
+    delete $ENV{HENZELL_HOST};
+  }
+
+  # If sql queries are enabled, set appropriate environment var.
+  if (!$CONFIG{sql_queries}) {
+    delete $ENV{HENZELL_SQL_QUERIES};
+  }
+  else {
+    $ENV{HENZELL_SQL_QUERIES} = 'Y';
+  }
+}
+
 sub read() {
   %CONFIG = %DEFAULT_CONFIG;
 
@@ -213,6 +229,8 @@ sub read() {
 
   # So that users don't have to check for undef warnings.
   $CONFIG{host} ||= '';
+
+  setup_env();
 
   load_file_paths();
   load_public_commands($CONFIG{public_commands_file});

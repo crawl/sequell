@@ -179,7 +179,7 @@ sub check_milestone_file
     # Add milestone to DB.
     add_milestone($href, $startoffset, $line) if $CONFIG{sql_store};
 
-    if ($CONFIG{announce} && $href->{server} eq $SERVER) {
+    if ($CONFIG{announce} && $ANNOUNCE_CHANNEL && $href->{server} eq $SERVER) {
       my $game_ref = demunge_xlogline($line);
       my $newsworthy = newsworthy($game_ref);
 
@@ -231,7 +231,9 @@ sub tail_logfile
 
     my $game_ref = demunge_xlogline($line);
     # If this is a local game, announce it.
-    if ($CONFIG{announce} && $href->{server} eq $CONFIG{host}) {
+    if ($CONFIG{announce} && $ANNOUNCE_CHANNEL
+        && $href->{server} eq $CONFIG{host})
+    {
       if (!suppress_game($game_ref)) {
         my $output = pretty_print($game_ref);
         $output =~ s/ on \d{4}-\d{2}-\d{2}//;
@@ -419,14 +421,6 @@ sub process_message {
 sub process_config() {
   @logfiles = @Henzell::Config::LOGS unless @logfiles;
   @stonefiles = @Henzell::Config::MILESTONES unless @stonefiles;
-
-  # If sql queries are enabled, set appropriate environment var.
-  if (!$CONFIG{sql_queries}) {
-    delete $ENV{HENZELL_SQL_QUERIES};
-  }
-  else {
-    $ENV{HENZELL_SQL_QUERIES} = 'Y';
-  }
 }
 
 sub load_config
