@@ -11,9 +11,13 @@ module PCache
   def self.create
     if not @@db
       @@db = SQLite3::Database.new("pcache.db")
-      @@db.execute(<<SQL)
+      begin
+        @@db.execute(<<SQL)
 CREATE TABLE pcache (key STRING PRIMARY KEY, value STRING, timestamp STRING);
 SQL
+      rescue
+        # Ignore table create failure
+      end
     end
   end
 
