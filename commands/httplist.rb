@@ -6,7 +6,7 @@ module HttpList
   require 'commands/pcache'
 
   def self.fetch_raw_html(url)
-    text = %x{curl --max-time=180 #{url} 2>/dev/null}
+    %x{curl --max-time 180 #{url} 2>/dev/null}
   end
 
   def self.each_match(regex, text)
@@ -36,6 +36,9 @@ module HttpList
     if not listing
       now = DateTime.now
       raw_html = self.fetch_raw_html(url)
+      if raw_html !~ %r{/html}is
+        raise Exception.new("Could not fetch directory listing from #{url}")
+      end
       listing = self.files_matching(raw_html, file_regex)
       PCache::add(key, listing.join('|'), now)
     else
