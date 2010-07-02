@@ -307,7 +307,7 @@ def find_game_morgue(e)
 end
 
 def find_game_morgue_ext(e, ext, full_scan)
-  if e['src'] != 'cao'
+  if e['src'] != ENV['HENZELL_HOST']
     return find_alien_morgue(e)
   end
 
@@ -352,7 +352,9 @@ def find_milestone_crash_dump(e)
   return nil if e['verb'] != 'crash'
 
   # Check for cao crashes:
-  return crashdump_assemble_filename(DGL_MORGUE_URL, e) if e['src'] == 'cao'
+  if e['src'] == ENV['HENZELL_HOST']
+    return crashdump_assemble_filename(DGL_MORGUE_URL, e)
+  end
 
   # No cao? Look for alien crashes
   for pair in DGL_ALIEN_MORGUES
@@ -458,7 +460,7 @@ def find_cao_ttyrecs(game)
 end
 
 def find_game_ttyrecs(game)
-  if game['src'] != 'cao'
+  if game['src'] != ENV['HENZELL_HOST']
     find_alien_ttyrecs(game)
   else
     find_cao_ttyrecs(game)
