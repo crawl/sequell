@@ -5,7 +5,8 @@ use warnings;
 
 use base 'Exporter';
 
-our @EXPORT_OK = qw/read get %CONFIG %CMD %PUBLIC_CMD @LOGS @MILESTONES/;
+our @EXPORT_OK = qw/read get %CONFIG %CMD %CMDPATH %PUBLIC_CMD
+                    @LOGS @MILESTONES/;
 
 my %DEFAULT_CONFIG = (use_pm => 0,
 
@@ -179,6 +180,7 @@ sub load_commands($$) {
   return unless $procmaker;
 
   %CMD = ();
+  %CMDPATH = ();
 
   my $loaded = 0;
   my $skipped = 0;
@@ -191,6 +193,7 @@ sub load_commands($$) {
     #print "Loading $command from $file...\n";
 
     $CMD{$command} = $procmaker->($command_dir, $file);
+    $CMDPATH{$command} = "$command_dir/$file";
 
     #print "Loaded $command.\n";
     ++$loaded;
