@@ -56,11 +56,16 @@ SERVER_TIMEZONE = {
 MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S'
 SHORT_DATEFORMAT = '%Y%m%d%H%M%S'
 
-# The time (approximate) that Crawl switched from local time to UTC in
-# logfiles. We'll have lamentable inaccuracy near this time, but that
-# can't be helped.
-LOCAL_UTC_EPOCH_DATETIME = DateTime.strptime('200808070330+0000',
-                                             '%Y%m%d%H%M%z')
+begin
+  # The time (approximate) that Crawl switched from local time to UTC in
+  # logfiles. We'll have lamentable inaccuracy near this time, but that
+  # can't be helped.
+  LOCAL_UTC_EPOCH_DATETIME = DateTime.strptime('200808070330+0000',
+                                               '%Y%m%d%H%M%z')
+rescue
+  # Ruby version differences :(
+  LOCAL_UTC_EPOCH_DATETIME = nil
+end
 
 NICK_ALIASES = { }
 NICKMAP_FILE = 'nicks.map'
