@@ -24,6 +24,9 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       # Make announcements?
                       announce => 0,
 
+                      channels => qq/##crawl ##crawl-dev/,
+                      announce_channel => '##crawl',
+
                       commands_file => 'commands/commands-henzell.txt',
                       public_commands_file => 'commands/public-commands.txt',
 
@@ -216,6 +219,14 @@ sub read() {
   load_commands($CONFIG{commands_file});
 
   \%CONFIG
+}
+
+sub array($) {
+  my $key = shift;
+  my $value = $CONFIG{$key} || '';
+  my @subvalues = split(/ /, $value);
+  s/^\s+//, s/\s+$// for @subvalues;
+  grep(/\S/, @subvalues)
 }
 
 1

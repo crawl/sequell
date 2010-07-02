@@ -22,9 +22,6 @@ my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
 # The largest message that Henzell will paginate in PM.
 my $MAX_PAGINATE_LENGTH = 3001;
 
-my @CHANNELS         = ('##crawl', '##crawl-dev');
-my $ANNOUNCE_CHANNEL = '##crawl';
-
 my @stonefiles;
 my @logfiles;
 
@@ -56,6 +53,9 @@ my $nickname       = $CONFIG{bot_nick};
 my $ircname        = "$nickname the Crawl Bot";
 my $ircserver      = 'irc.freenode.org';
 my $port           = 6667;
+
+my @CHANNELS         = Henzell::Config::array('channels');
+my $ANNOUNCE_CHANNEL = $CONFIG{announce_channel};
 
 binmode STDOUT, ':utf8';
 
