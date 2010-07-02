@@ -42,6 +42,7 @@ my %DEFAULT_CONFIG = (use_pm => 0,
 
 our %CONFIG = %DEFAULT_CONFIG;
 our %CMD;
+our %CMDPATH;
 our %PUBLIC_CMD;
 our @LOGS;
 our @MILESTONES;
