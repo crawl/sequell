@@ -72,13 +72,12 @@ if int(details['turn']) != 1:
 turnstr = ' after %d turn%s' % (int(details['turn']), turnstr_suffix)
 if status == 'saved':
     prestr = 'last saved'
-elif status in [ 'dead', 'quit', 'won', 'bailed out' ]:
-    print "\n!redirect!listgame"
-    sys.exit()
 elif status == 'active':
     prestr = 'is currently'
     datestr = ''
 
 sktitle = game_skill_title(details)
-if (status != 'won') and (status != 'bailed out'):
-    print("%s the %s (L%s %s)%s %s %s %s%s%s." % (nick, sktitle, details['xl'], details['char'], godstr, prestr, prep, replace(details['place'], ';', ':'), datestr, turnstr))
+print("%s the %s (L%s %s)%s %s %s %s%s%s." %
+      (nick, sktitle, details['xl'], details['char'],
+       godstr, prestr, prep, replace(details['place'], ';', ':'),
+       datestr, turnstr))
