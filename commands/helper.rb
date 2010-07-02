@@ -334,9 +334,14 @@ def binary_search_alien_morgue(url, e)
   morgues = HttpList::find_files(user_url, /morgue-#{e['name']}.*?[.]txt/,
                                  morgue_time)
   return nil if morgues.nil?
-  morgue_name = "morgue-#{e['name']}-#{morgue_time.strftime('%Y%m%d-%H%M')}.txt"
 
-  found = binary_search(morgues, morgue_name)
+  full_name = "morgue-#{e['name']}-#{morgue_time.strftime('%Y%m%d-%H%M%S')}.txt"
+  short_name = "morgue-#{e['name']}-#{morgue_time.strftime('%Y%m%d-%H%M')}.txt"
+
+  # Look for exact match with the full time or short time
+  found = (morgues.find { |m| m == full_name } ||
+           morgues.find { |m| m == short_name } ||
+           binary_search(morgues, full_name))
   return user_url + found if found
 
   return nil
