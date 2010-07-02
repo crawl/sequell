@@ -34,6 +34,17 @@ DGL_ALIEN_MORGUES = \
  [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
 ]
 
+DGL_ALIEN_TTYRECS = \
+[
+ [ %r/cao-.*/, 'http://crawl.akrasiac.org/rawdata' ],
+ [ %r/cdo.*$/, 'http://crawl.develz.org/ttyrecs' ],
+
+ # [ds] Temporarily disabled: rhf is down.
+ #[ %r/rhf.*-0.5$/, 'http://rl.heh.fi/crawl/stuff' ],
+ #[ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
+ #[ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
+]
+
 SERVER_TIMEZONE = {
   'caoD' => '-0400', # EDT
   'caoS' => '-0500', # EST
@@ -46,7 +57,6 @@ MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S'
 # The time (approximate) that Crawl switched from local time to UTC in
 # logfiles. We'll have lamentable inaccuracy near this time, but that
 # can't be helped.
-LOCAL_UTC_EPOCH = Time.utc(2008, 8, 7, 3, 30)
 LOCAL_UTC_EPOCH_DATETIME = DateTime.strptime('200808070330+0000',
                                              '%Y%m%d%H%M%z')
 
@@ -305,7 +315,8 @@ def morgue_timestring(e, key=nil)
 end
 
 def morgue_time(e, key=nil)
-  morgue_timestring(e, key).sub(/[DS]$/, "")
+  rawts = morgue_timestring(e, key)
+  rawts ? rawts.sub(/[DS]$/, "") : nil
 end
 
 def morgue_time_dst?(e, key=nil)
@@ -314,6 +325,7 @@ end
 
 def game_ttyrec_datetime(e, key=nil)
   time = morgue_time(e, key)
+  return nil if time.nil?
   dt = DateTime.strptime(time + "+0000", MORGUE_DATEFORMAT + '%z')
   if dt < LOCAL_UTC_EPOCH_DATETIME
     dst = morgue_time_dst?(e, key)
@@ -439,11 +451,15 @@ def short_game_summary(g)
   "#{g['name']}, XL#{g['xl']} #{g['char']}, T:#{g['turn']}#{mile}"
 end
 
+def game_number_prefix(n)
+  n.nil? ? '' : n.to_s + '. '
+end
+
 def report_game_log(n, g)
-  puts("#{n.nil? ? '' : n.to_s + '. '}#{short_game_summary(g)}: " +
+  puts(game_number_prefix(n) + short_game_summary(g) + ": " +
        (find_game_morgue(g) || "Can't find morgue."))
 rescue
-  puts("#{n.nil? ? '' : n.to_s + '. '}#{short_game_summary(g)}: " +
+  puts(game_number_prefix(n) + short_game_summary(g) + ": " +
        "Can't find morgue")
   raise
 end
@@ -460,8 +476,42 @@ def duration_str(dur)
   sprintf "%d:%02d:%02d", dur / 3600, (dur % 3600) / 60, dur % 60
 end
 
+def ttyrec_list_string(game, url, ttyreclist)
+  if !ttyreclist || ttyreclist.empty?
+    "Can't find ttyrecs"
+  elsif game['milestone'] && ttyreclist.length > 1
+    ttyrec_list_string(game, url, ttyreclist[-1])
+  else
+    spc = ttyreclist.length == 1 ? "" : " "
+    "#{url}#{spc}#{ttyreclist.join(" ")}"
+  end
+end
+
+def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
+  user_url = urlbase + "/" + game['name'] + "/"
+  ttyrecs = HttpList::find_files(user_url, /[.]ttyrec/, tend) || [ ]
+  ttyrecs.find_all do |ttyrec|
+    filetime = ttyrec_filename_datetime(ttyrec)
+    filetime && filetime >= tstart && filetime <= tend
+  end
+end
+
+def find_alien_ttyrecs_between(game, tstart, tend)
+  require 'commands/httplist'
+  for pair in DGL_ALIEN_TTYRECS
+    if e['file'] =~ pair[0]
+      return resolve_alien_ttyrecs_between(pair[1], game, tstart, tend)
+    end
+  end
+  nil
+end
+
 def find_alien_ttyrecs(game)
-  raise "Can't locate remote ttyrecs"
+  tty_start = game_ttyrec_datetime(game, 'start')
+  tty_end   = game_ttyrec_datetime(game, 'end') || game_ttyrec_datetime('time')
+
+  betw = find_alien_ttyrecs_between(game, tty_start, tty_end)
+  ttyrec_list_string(game, base_url, betw)
 end
 
 def local_time(time)
@@ -482,24 +532,13 @@ def local_time(time)
   time.utc
 end
 
-# Convert the time on a logfile
-def tty_time(game, which)
-  time = game[which]
-
-  match = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/.match(time)
-  # Treat time as UTC and load.
-  raise "Malformed time: #{time}" unless match
-
-  all = match.captures.map { |x| x.to_i }
-
-  # Month is zero-based in logfile.
-  all[1] += 1
-
-  mtime = Time.utc(*all)
-  if mtime < LOCAL_UTC_EPOCH
-    local_time(time)
+def ttyrec_filename_datetime(filename)
+  if filename =~ /^(\d{4}-\d{2}-\d{2}\.\d{2}:\d{2}:\d{2})\.ttyrec/
+    DateTime.strptime($1 + "+0000", '%Y-%m-%d.%H:%M:%S%z')
+  elsif filename =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+][\d:]+)/
+    DateTime.strptime($1, '%Y-%m-%d.%H:%M:%S%Z').new_offset(0)
   else
-    mtime
+    nil
   end
 end
 
@@ -508,17 +547,17 @@ def find_ttyrecs_between(game, s, e)
   files = Dir[ prefix + "*.ttyrec*" ]
   bracketed = files.find_all do |rfile|
     file = rfile.slice( prefix.length .. -1 )
-    mtm = /^(\d{4})-(\d{2})-(\d{2})\.(\d{2}):(\d{2}):(\d{2})\.ttyrec/.match(file)
-    next unless mtm
-    filetime = Time.utc(*(mtm.captures.map { |x| x.to_i }))
+    filetime = ttyrec_filename_datetime(file)
+
+    next unless filetime
     filetime >= s and filetime <= e
   end
   bracketed.map { |f| f.slice( prefix.length .. -1 ) }.sort
 end
 
 def find_cao_ttyrecs(game)
-  tty_start = tty_time(game, 'start')
-  tty_end   = tty_time(game, 'end')
+  tty_start = game_ttyrec_datetime(game, 'start')
+  tty_end   = game_ttyrec_datetime(game, 'end')
 
   betw = find_ttyrecs_between(game, tty_start, tty_end)
 
@@ -535,6 +574,14 @@ def find_game_ttyrecs(game)
   else
     find_cao_ttyrecs(game)
   end
+end
+
+def report_game_ttyrecs(n, game)
+  puts(game_number_prefix(n) + short_game_summary(game) + ": " +
+        (find_game_ttyrecs(game) || "Can't find ttyrec!"))
+rescue
+  puts(game_number_prefix(n) + short_game_summary(game) + ": " + $!
+  raise
 end
 
 def help(helpstring)

@@ -6,7 +6,7 @@ module HttpList
   require 'commands/pcache'
 
   def self.fetch_raw_html(url)
-    text = %x{curl #{url} 2>/dev/null}
+    text = %x{curl --max-time=180 #{url} 2>/dev/null}
   end
 
   def self.each_match(regex, text)

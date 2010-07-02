@@ -937,12 +937,14 @@ end
 # also recognising -tv and -log options.
 def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
   TV.with_tv_opts(other_args_string.split()[1 .. -1]) do |args, opts|
-    args, logopts = extract_options(args, 'log')
+    args, logopts = extract_options(args, 'log', 'ttyrec')
     sql_show_game(ARGV[1], args + extra_args) do | n, g |
       if opts[:tv]
         TV.request_game_verbosely(n, g, ARGV[1])
       elsif logopts[:log]
         report_game_log(n, g)
+      elsif logopts[:ttyrec]
+        report_game_ttyrecs(n, g)
       else
         print_game_n(n, g)
       end
