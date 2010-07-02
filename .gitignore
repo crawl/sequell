@@ -1,5 +1,6 @@
 .#*
 \#*
+pcache.db
 remote.*
 .remote-*
 dat
