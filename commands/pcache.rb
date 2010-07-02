@@ -13,7 +13,7 @@ module PCache
       @@db = SQLite3::Database.new("pcache.db")
       begin
         @@db.execute(<<SQL)
-CREATE TABLE pcache (key STRING PRIMARY KEY, value STRING, timestamp STRING);
+CREATE TABLE pcache (key STRING PRIMARY KEY, value STRING, vtstamp STRING);
 SQL
       rescue
         # Ignore table create failure
@@ -32,7 +32,7 @@ SQL
   def self.add(key, value, timestamp = DateTime.now)
     self.create
     @@db.execute('DELETE FROM pcache WHERE key = ?', key)
-    @@db.execute('INSERT INTO pcache (key, value, timestamp) VALUES (?, ?, ?)',
+    @@db.execute('INSERT INTO pcache (key, value, vtstamp) VALUES (?, ?, ?)',
                  key, value, self.format_time(timestamp))
   end
 
@@ -40,7 +40,7 @@ SQL
   # and more recent than the given timestamp, or if the timestamp is nil.
   def self.find(key, timestamp = nil)
     self.create
-    @@db.execute('SELECT value, timestamp FROM pcache WHERE key = ?', key) do
+    @@db.execute('SELECT value, vtstamp FROM pcache WHERE key = ?', key) do
       |row|
       rowts = self.parse_time(row[1])
       if rowts >= timestamp
