@@ -331,7 +331,7 @@ def binary_search_alien_morgue(url, e)
   require 'commands/httplist'
   user_url = url + "/" + e['name'] + "/"
   morgue_time = morgue_datetime(e)
-  morgues = HttpList::find_files(user_url, /morgue-#{e['name']}/,
+  morgues = HttpList::find_files(user_url, /morgue-#{e['name']}.*?[.]txt/,
                                  morgue_time)
   return nil if morgues.nil?
   morgue_name = "morgue-#{e['name']}-#{morgue_time.strftime('%Y%m%d-%H%M')}.txt"
