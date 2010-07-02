@@ -34,10 +34,13 @@ DGL_ALIEN_MORGUES = \
  [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
 ]
 
+MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S%z'
+
 # The time (approximate) that Crawl switched from local time to UTC in
 # logfiles. We'll have lamentable inaccuracy near this time, but that
 # can't be helped.
 LOCAL_UTC_EPOCH = Time.utc(2008, 8, 7, 3, 30)
+LOCAL_UTC_EPOCH_DATETIME = DateTime.strptime('200808070330', '%Y%m%d%H%M')
 
 NICK_ALIASES = { }
 NICKMAP_FILE = 'nicks.map'
@@ -279,21 +282,71 @@ def game_morgues(name)
   Dir[ DGL_MORGUE_DIR + '/' + name + '/' + 'morgue-*.txt*' ].sort
 end
 
-def morgue_time(e)
-  timestamp = (e["end"] || e["time"]).dup
+def morgue_timestring(e, key=nil)
+  return nil if key && !e[key]
+
+  if key
+    timestamp = e[key].dup
+  else
+    timestamp = (e["end"] || e["time"]).dup
+  end
   timestamp.sub!(/(\d{4})(\d{2})(\d{2})/) do |m|
     "#$1#{sprintf('%02d', $2.to_i + 1)}#$3-"
   end
-  timestamp.sub(/[DS]$/, "")
+  timestamp
+end
+
+def morgue_time(e, key=nil)
+  morgue_timestring(e, key).sub(/[DS]$/, "")
+end
+
+def morgue_time_dst?(e, key=nil)
+  morgue_timestring(e, key) =~ /D$/
+end
+
+def morgue_datetime(e, key=nil)
+  time = morgue_time(e, key)
+  dt = DateTime.strptime(time + "+0000", MORGUE_DATEFORMAT)
+  if dt < LOCAL_UTC_EPOCH_DATETIME
+    dst = morgue_time_dst?(e, key)
+    src = e['src']
+    src = src + (dst ? 'D' : 'S')
+
+    tz = SERVER_TIMEZONE[src]
+    if tz
+      dt = DateTime.strptime(time + tz, MORGUE_DATEFORMAT)
+    end
+  end
+  dt
+end
+
+def binary_search_alien_morgue(url, e)
+  require 'commands/httplist'
+  user_url = url + "/" + e['name'] + "/"
+  morgue_time = morgue_datetime(e)
+  morgues = HttpList::find_files(user_url, /morgue-#{e['name']}/,
+                                 morgue_time)
+  return nil if morgues.nil?
+  morgue_name = "morgue-#{e['name']}-#{morgue_time.strftime('%Y%m%d-%H%M')}.txt"
+
+  found = binary_search(morgues, morgue_name)
+  return user_url + found if found
+
+  return nil
+end
+
+def resolve_alien_morgue(url, e)
+  if e['v'] < '0.4'
+    return binary_search_alien_morgue(url, e)
+  else
+    return morgue_assemble_filename(url, e, morgue_time(e), '.txt')
+  end
 end
 
 def find_alien_morgue(e)
-  if e['v'] < '0.4'
-    raise "Can't locate remote morgues with v<0.4"
-  end
   for pair in DGL_ALIEN_MORGUES
     if e['file'] =~ pair[0]
-      return morgue_assemble_filename(pair[1], e, morgue_time(e), '.txt')
+      return resolve_alien_morgue(pair[1], e)
     end
   end
   nil
