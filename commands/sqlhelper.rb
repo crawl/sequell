@@ -2014,13 +2014,24 @@ class SummaryRow
     "#{field.display}=#{value_string(value)}"
   end
 
+  def format_value(v)
+    if v.is_a?(BigDecimal) || v.is_a?(Float)
+      rawv = sprintf("%.2f", v)
+      rawv.sub!(/([.]\d*)0+$/, "$1")
+      rawv.sub!(/[.]$/, '')
+      rawv
+    else
+      v
+    end
+  end
+
   def value_string(value)
     sz = value.size
     if not [1,2].index(sz)
       raise "Unexpected value array size: #{value.size}"
     end
     if sz == 1
-      value[0]
+      format_value(value[0])
     else
       short = value.reverse.join("/") + " (#{percentage(value[1], value[0])})"
     end
