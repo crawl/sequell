@@ -34,6 +34,13 @@ DGL_ALIEN_MORGUES = \
  [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
 ]
 
+SERVER_TIMEZONE = {
+  'caoD' => '-0400', # EDT
+  'caoS' => '-0500', # EST
+  'cdoD' => '+0200', # CEST
+  'cdoS' => '+0100', # CET
+}
+
 MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S%z'
 
 # The time (approximate) that Crawl switched from local time to UTC in
