@@ -41,13 +41,14 @@ SERVER_TIMEZONE = {
   'cdoS' => '+0100', # CET
 }
 
-MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S%z'
+MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S'
 
 # The time (approximate) that Crawl switched from local time to UTC in
 # logfiles. We'll have lamentable inaccuracy near this time, but that
 # can't be helped.
 LOCAL_UTC_EPOCH = Time.utc(2008, 8, 7, 3, 30)
-LOCAL_UTC_EPOCH_DATETIME = DateTime.strptime('200808070330', '%Y%m%d%H%M')
+LOCAL_UTC_EPOCH_DATETIME = DateTime.strptime('200808070330+0000',
+                                             '%Y%m%d%H%M%z')
 
 NICK_ALIASES = { }
 NICKMAP_FILE = 'nicks.map'
@@ -311,9 +312,9 @@ def morgue_time_dst?(e, key=nil)
   morgue_timestring(e, key) =~ /D$/
 end
 
-def morgue_datetime(e, key=nil)
+def game_ttyrec_datetime(e, key=nil)
   time = morgue_time(e, key)
-  dt = DateTime.strptime(time + "+0000", MORGUE_DATEFORMAT)
+  dt = DateTime.strptime(time + "+0000", MORGUE_DATEFORMAT + '%z')
   if dt < LOCAL_UTC_EPOCH_DATETIME
     dst = morgue_time_dst?(e, key)
     src = e['src']
@@ -321,7 +322,8 @@ def morgue_datetime(e, key=nil)
 
     tz = SERVER_TIMEZONE[src]
     if tz
-      dt = DateTime.strptime(time + tz, MORGUE_DATEFORMAT)
+      # Parse the time as the server's local TZ, and convert it to UTC.
+      dt = DateTime.strptime(time + tz, MORGUE_DATEFORMAT + '%z').new_offset(0)
     end
   end
   dt
@@ -330,13 +332,14 @@ end
 def binary_search_alien_morgue(url, e)
   require 'commands/httplist'
   user_url = url + "/" + e['name'] + "/"
-  morgue_time = morgue_datetime(e)
+  mtime = morgue_time(e)
   morgues = HttpList::find_files(user_url, /morgue-#{e['name']}.*?[.]txt/,
                                  morgue_time)
   return nil if morgues.nil?
 
-  full_name = "morgue-#{e['name']}-#{morgue_time.strftime('%Y%m%d-%H%M%S')}.txt"
-  short_name = "morgue-#{e['name']}-#{morgue_time.strftime('%Y%m%d-%H%M')}.txt"
+  short_mtime = mtime.sub(/\d{2}$/, '')
+  full_name = "morgue-#{e['name']}-#{mtime}.txt"
+  short_name = "morgue-#{e['name']}-#{short_mtime}.txt"
 
   # Look for exact match with the full time or short time
   found = (morgues.find { |m| m == full_name } ||
