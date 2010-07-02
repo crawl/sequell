@@ -240,7 +240,7 @@ sub read {
   load_public_commands($CONFIG{public_commands_file});
   load_commands($CONFIG{commands_file}, $procmaker);
 
-  \%CONFIG
+  "Loaded " . scalar(keys(%CMD)) . " commands"
 }
 
 sub array($) {

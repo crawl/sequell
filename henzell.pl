@@ -434,8 +434,9 @@ sub command_proc
 
 sub load_config
 {
-  Henzell::Config::read(\&command_proc);
+  my $loaded = Henzell::Config::read(\&command_proc);
   process_config();
+  $loaded
 }
 
 sub load_commands
