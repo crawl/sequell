@@ -436,6 +436,7 @@ def report_game_log(n, g)
        (find_game_morgue(g) || "Can't find morgue."))
 rescue
   puts("#{n.nil? ? '' : n.to_s + '. '}#{short_game_summary(g)}: #{$!}")
+  raise
 end
 
 def datestr(d)
