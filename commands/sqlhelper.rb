@@ -2026,7 +2026,7 @@ class SummaryRow
   def format_value(v)
     if v.is_a?(BigDecimal) || v.is_a?(Float)
       rawv = sprintf("%.2f", v)
-      rawv.sub!(/([.]\d*)0+$/, "$1")
+      rawv.sub!(/([.]\d*)0+$/, '\1')
       rawv.sub!(/[.]$/, '')
       rawv
     else
