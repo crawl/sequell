@@ -423,9 +423,18 @@ sub process_config() {
   @stonefiles = @Henzell::Config::MILESTONES unless @stonefiles;
 }
 
+sub command_proc
+{
+  my ($command_dir, $file) = @_;
+  return sub {
+      my ($args, @args) = @_;
+      handle_output(run_command($command_dir, $file, $args, @args));
+  };
+}
+
 sub load_config
 {
-  Henzell::Config::read();
+  Henzell::Config::read(\&command_proc);
   process_config();
 }
 

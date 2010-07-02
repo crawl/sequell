@@ -170,8 +170,10 @@ sub load_public_commands($) {
   close $inf;
 }
 
-sub load_commands($) {
-  my $commands_file = shift;
+sub load_commands($$) {
+  my ($commands_file, $procmaker) = @_;
+
+  return unless $procmaker;
 
   %CMD = ();
 
@@ -185,10 +187,7 @@ sub load_commands($) {
     my ($command, $file) = $line =~ /^(\S+)\s+(.+)$/;
     #print "Loading $command from $file...\n";
 
-    $CMD{$command} = sub {
-      my ($args, @args) = @_;
-      handle_output(run_command($command_dir, $file, $args, @args));
-    };
+    $CMD{$command} = $procmaker->($command_dir, $file);
 
     #print "Loaded $command.\n";
     ++$loaded;
@@ -211,7 +210,9 @@ sub setup_env() {
   }
 }
 
-sub read() {
+sub read {
+  my $procmaker = shift();
+
   %CONFIG = %DEFAULT_CONFIG;
 
   my $inf;
@@ -234,7 +235,7 @@ sub read() {
 
   load_file_paths();
   load_public_commands($CONFIG{public_commands_file});
-  load_commands($CONFIG{commands_file});
+  load_commands($CONFIG{commands_file}, $procmaker);
 
   \%CONFIG
 }
