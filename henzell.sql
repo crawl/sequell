@@ -43,6 +43,8 @@ CREATE TABLE logrecord (
     kaux VARCHAR(255),
     ckaux VARCHAR(255),
     place VARCHAR(16),
+    mapname VARCHAR(80),
+    mapdesc VARCHAR(80),
     br VARCHAR(16),
     lvl INT,
     ltyp VARCHAR(16),
@@ -108,6 +110,7 @@ CREATE TABLE milestone (
     sklev INT,
     title VARCHAR(50),
     place VARCHAR(16),
+    oplace VARCHAR(16),
 
     br VARCHAR(16),
     lvl INT,

@@ -12,13 +12,14 @@ do 'game_parser.pl';
 my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
   xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux place
   br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
-  end durI turnI uruneI nruneI tmsg vmsg splat/;
+  end durI turnI uruneI nruneI tmsg vmsg splat map mapdesc/;
 
 my %LOG2SQL = ( name => 'pname',
                 char => 'charabbrev',
                 str => 'sstr',
                 dex => 'sdex',
                 int => 'sint',
+                map => 'mapname',
                 start => 'tstart',
                 end => 'tend',
                 time => 'ttime');
@@ -38,7 +39,7 @@ my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
 my @MILEFIELDS_DECORATED =
     qw/alpha v cv name race crace cls char xlI sk sklevI title
        place br lvlI ltyp hpI mhpI mmhpI strI intI dexI god
-       durI turnI uruneI nruneI time verb noun milestone/;
+       durI turnI uruneI nruneI time verb noun milestone oplace/;
 
 my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS, 'rstart', 'rend');
 
@@ -52,7 +53,7 @@ my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
 my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
 ktyp killer ckiller ikiller kpath kmod kaux ckaux place str int dex god
-start end dur turn urune nrune splat dam rstart alpha ntv/;
+start end dur turn urune nrune splat dam rstart alpha ntv map mapdesc/;
 
 my @MILE_INDEX_COLS = ('src',
                        grep($_ ne 'milestone', @MILEFIELDS),
@@ -499,7 +500,7 @@ sub fixup_logfields {
     $g->{v}  .= "-a" unless $g->{v} =~ /-a/;
   }
 
-  my $sprint = $$g{lv} =~ /sprint/i;
+  my $sprint = $$g{lv} =~ /spr/i;
   if ($sprint) {
     $$g{sprint} = 1;
     my $oldplace = $$g{place};
@@ -508,7 +509,14 @@ sub fixup_logfields {
     $$g{place} = $place;
   }
 
+  # Milestone may have oplace
+  if ($milestone) {
+    $g->{oplace} ||= $g->{place}
+  }
+
   unless ($milestone) {
+    $g->{map} ||= '';
+    $g->{mapdesc} ||= '';
     $g->{ikiller} ||= $g->{killer};
     $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
     for ($g->{ckiller}) {
@@ -518,7 +526,8 @@ sub fixup_logfields {
       s/^an? \w+ (draconian.*)/a $1/;
 
       # If it's an actual kill, merge Pan lords.
-      if ($g->{killer}) {
+      my $kill = $g->{killer};
+      if ($kill && $kill =~ /^[A-Z]/) {
         my ($name) = /^([^,]*)/;
         $_ = 'a pandemonium lord'
           if !/^(?:an?|the) / && !$UNIQUES{$name} && !/,/;

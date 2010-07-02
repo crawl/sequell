@@ -118,23 +118,39 @@ sub parse_extras {
   $extra
 }
 
+sub game_place($) {
+  my $g = shift;
+
+  my $loc_string = "";
+  my $place = $g->{place};
+
+  my $qualifier = '';
+  if ($$g{map}) {
+    my $map = $$g{map};
+    $map = "$$g{mapdesc} : $map" if $$g{mapdesc};
+    $qualifier = " ($map)"
+  }
+
+  my $prep = grep($_ eq $place, qw/Temple Blade Hell/)? "in" : "on";
+  $prep = "in" if $g->{ltyp} ne 'D';
+  $place = "the $place" if grep($_ eq $place, qw/Temple Abyss/);
+  $place = "a Labyrinth" if $place eq 'Lab';
+  $place = "a Bazaar" if $place eq 'Bzr';
+  $place = "Pandemonium" if $place eq 'Pan';
+  $loc_string = " $prep $place$qualifier";
+
+  $loc_string = "" # For escapes of the dungeon, so it doesn't print the loc
+    if $g->{ktyp} eq 'winning' or $g->{ktyp} eq 'leaving';
+
+  return $loc_string;
+}
+
 sub pretty_print
 {
   my $game_ref = shift;
   my $extra = parse_extras($game_ref);
 
-  my $loc_string = "";
-  my $place = $game_ref->{place};
-  my $prep = grep($_ eq $place, qw/Temple Blade Hell/)? "in" : "on";
-  $prep = "in" if $game_ref->{ltyp} ne 'D';
-  $place = "the $place" if grep($_ eq $place, qw/Temple Abyss/);
-  $place = "a Labyrinth" if $place eq 'Lab';
-  $place = "a Bazaar" if $place eq 'Bzr';
-  $place = "Pandemonium" if $place eq 'Pan';
-  $loc_string = " $prep $place";
-
-  $loc_string = "" # For escapes of the dungeon, so it doesn't print the loc
-    if $game_ref->{ktyp} eq 'winning' or $game_ref->{ktyp} eq 'leaving';
+  my $loc_string = game_place($game_ref);
 
   my $death_date = " on " . format_date($$game_ref{end});
   my $deathmsg = $game_ref->{vmsg} || $game_ref->{tmsg};
@@ -162,7 +178,8 @@ sub milestone_string
   my ($g, $show_time) = @_;
   my $extra = parse_extras($g);
 
-  my $placestring = " ($g->{place})";
+  my $place = $$g{oplace} || $$g{place};
+  my $placestring = " ($place)";
   if ($g->{milestone} eq "escaped from the Abyss!")
   {
     $placestring = "";

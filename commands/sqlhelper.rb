@@ -149,21 +149,23 @@ AGGREGATE_FUNC_TYPES = {
 LOGFIELDS_DECORATED = %w/idI file alpha src v cv lv scI name uidI race crace cls
   char xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux
   place br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI
-  startD endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend ntvI/
+  startD endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend ntvI
+  map mapdesc/
 
 MILEFIELDS_DECORATED = %w/game_idI idI file alpha src v cv name race crace cls
                           char xlI
                           sk sklevI title place br lvlI ltyp
                           hpI mhpI mmhpI strI intI dexI
                           god durI turnI uruneI nruneI timeD rtime rstart
-                          verb noun milestone ntvI/
+                          verb noun milestone ntvI oplace/
 
 FAKEFIELDS_DECORATED = %w/when/
 
 LOGFIELDS_SUMMARIZABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br lvl ltyp
               killer ikiller god urune nrune src str int dex kaux ckiller cv
-              ckaux crace kmod splat dam hp mhp mmhp piety pen alpha ntv/.
+              ckaux crace kmod splat dam hp mhp mmhp piety pen alpha ntv
+              map mapdesc/.
              map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
@@ -221,7 +223,8 @@ LOG2SQL = {
   'int' => 'sint',
   'start' => 'tstart',
   'end' => 'tend',
-  'time' => 'ttime'
+  'time' => 'ttime',
+  'map' => 'mapname'
 }
 
 (LOGFIELDS_DECORATED + MILEFIELDS_DECORATED).each do |x|
