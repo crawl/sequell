@@ -26,6 +26,7 @@ SQL
   end
 
   def self.add(key, value, timestamp = DateTime.now)
+    self.create
     @@db.execute('DELETE FROM pcache WHERE key = ?', key)
     @@db.execute('INSERT INTO pcache (key, value, timestamp) VALUES (?, ?, ?)',
                  key, value, self.format_time(timestamp))
@@ -34,6 +35,7 @@ SQL
   # Queries the cache for the given key and returns the result if found
   # and more recent than the given timestamp, or if the timestamp is nil.
   def self.find(key, timestamp = nil)
+    self.create
     @@db.execute('SELECT value, timestamp FROM pcache WHERE key = ?', key) do
       |row|
       rowts = self.parse_time(row[1])
