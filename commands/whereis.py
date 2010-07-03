@@ -70,6 +70,7 @@ status = details['status']
 if int(details['turn']) != 1:
     turnstr_suffix = 's'
 turnstr = ' after %d turn%s' % (int(details['turn']), turnstr_suffix)
+prestr = status
 if status == 'saved':
     prestr = 'last saved'
 elif status == 'active':
