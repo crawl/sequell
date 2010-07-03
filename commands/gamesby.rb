@@ -25,6 +25,10 @@ def winstr(wcount, ngames)
   s
 end
 
+def sqlnumber(num)
+  sprintf("%.0f", num)
+end
+
 if rows.empty? || rows[0][1].to_i == 0
   puts "No games for #{q.argstr}."
 else
@@ -42,6 +46,6 @@ else
   tend = sql2logdate(r[3])
   puts "#{q.argstr} has played #{ngames} game#{plural}, between " +
       "#{datestr(tstart)} and #{datestr(tend)}, won #{winstr(win_count, ngames)}, " +
-      "high score #{r[4]}, total score #{r[5]}, total turns #{r[6]}, " +
+      "high score #{r[4]}, total score #{sqlnumber(r[5])}, total turns #{sqlnumber(r[6])}, " +
       "total time #{duration_str(r[7].to_i)}."
 end
