@@ -1092,7 +1092,7 @@ end
 
 class CrawlQuery
   attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
-  attr_accessor :summary_sort
+  attr_accessor :summary_sort, :table
 
   def initialize(predicates, sorts, extra_fields, nick, num, argstr)
     @table = $CTX.table
@@ -1258,8 +1258,10 @@ class CrawlQuery
   alias where query
 
   def reverse
-    CrawlQuery.new(@pred, reverse_sorts(@sort), @extra_fields,
-                   @nick, @num, @argstr)
+    rq = CrawlQuery.new(@pred, reverse_sorts(@sort), @extra_fields,
+                        @nick, @num, @argstr)
+    rq.table = @table
+    rq
   end
 
   def clear_sorts!
