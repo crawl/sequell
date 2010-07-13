@@ -1084,7 +1084,7 @@ class QueryList < Array
   end
 
   def with_context
-    with_query_context(self[0].ctx) do
+    self[0].with_contexts do
       yield
     end
   end
@@ -1092,7 +1092,7 @@ end
 
 class CrawlQuery
   attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
-  attr_accessor :summary_sort, :table
+  attr_accessor :summary_sort, :table, :game
 
   def initialize(predicates, sorts, extra_fields, nick, num, argstr)
     @table = $CTX.table
@@ -1107,8 +1107,18 @@ class CrawlQuery
     @summary_sort = nil
     @raw = nil
     @joins = false
+    @ctx = $CTX
+    @game = GameContext.game
 
     check_joins(predicates) if $CTX == CTX_STONE
+  end
+
+  def with_contexts
+    GameContext.with_game(@game) do
+      with_query_context(@ctx) do
+        yield
+      end
+    end
   end
 
   def has_joins?(preds)
