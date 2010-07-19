@@ -20,7 +20,7 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       sql_store => 0,
 
                       # IRC nick
-                      bot_nick => 'Henzell',
+                      bot_nick => 'Exxorn',
 
                       # Make announcements?
                       announce => 0,
@@ -31,7 +31,7 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       channels => qq/##crawl-test/,
                       announce_channel => '',
 
-                      commands_file => 'commands/commands-henzell.txt',
+                      commands_file => 'commands/commands-un.txt',
                       public_commands_file => 'commands/public-commands.txt',
 
                       # Map hostname abbreviations to full hostnames.
