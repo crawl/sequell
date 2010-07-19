@@ -262,7 +262,6 @@ module TV
       puts "#{n}. #{summary}#{suffix} requested for #{tv}."
     end
 
-    update_tv_count(g)
     g['req'] = ARGV[1]
 
     if @@tv_args

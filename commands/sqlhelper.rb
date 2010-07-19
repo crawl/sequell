@@ -53,7 +53,8 @@ BOOLEAN_OR_Q = Regexp.quote(BOOLEAN_OR)
 COLUMN_ALIASES = {
   'cls' => 'role', 'class' => 'role', 'species' => 'race',
   'ktyp' => 'ktype', 'mtyp' => 'mtype', 'score' => 'points', 'sc' => 'points',
-  'turn' => 'turns',
+  'turn' => 'turns', 'dlev' => 'lev', 'death_dnum' => 'branch',
+  'dnum' => 'branch', 'death_dlev' => 'lev', 'v' => 'version',
   'r' => 'race', 'c' => 'role', 'sp' => 'race',
   'type' => 'mtype', 'gid' => 'game_id'
 }
@@ -68,31 +69,26 @@ AGGREGATE_FUNC_TYPES = {
   'variance' => 'I'
 }
 
-LOGFIELDS_DECORATED = %w/idI file alpha src v cv lv scI name uidI race crace cls
-  char xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux
-  place br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI
-  startD endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend ntvI
-  map mapdesc/
+SPECIES = %w/Dwa Elf Gno Hum Orc Vam/
+CLASSES = %w/Arc Bar Cav Hea Kni Mon Pri Ran Rog Sam Tou Val Wiz/
+ALIGNS = %w/Cha Law Neu/
+GENDERS = %w/Fem Mal/
 
-MILEFIELDS_DECORATED = %w/game_idI idI file alpha src v cv name race crace cls
-                          char xlI
-                          sk sklevI title place br lvlI ltyp
-                          hpI mhpI mmhpI strI intI dexI
-                          god durI turnI uruneI nruneI timeD rtime rstart
-                          verb noun milestone ntvI oplace/
+LOGFIELDS_DECORATED = %w/idI file alpha src
+     version cversion points branch levI place maxlvlI hpI maxhpI
+     deathsI deathdateD birthdateD role race gender align gender0 align0
+     name deathmsg killer ktype kaux helpless praying conduct nconductI achieve
+     nachieveI turnsI realtimeI starttimeD endtimeD/
 
-FAKEFIELDS_DECORATED = %w/when/
-
-LOGFIELDS_SUMMARIZABLE =
-  Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br lvl ltyp
-              killer ikiller god urune nrune src str int dex kaux ckiller cv
-              ckaux crace kmod splat dam hp mhp mmhp piety pen alpha ntv
-              map mapdesc/.
-             map { |x| [x, true] }.flatten) ]
+MILEFIELDS_DECORATED = %w/game_idI idI file alpha src
+       version cversion branch levI place maxlvlI
+       hpI maxhpI deathsI birthdateD role race gender align
+       gender0 align0 name conduct nconductI achieve nachieveI turnsI realtimeI
+       starttimeD currenttimeD mtype mobj mdesc shop shopliftedI
+       wish_countI/
 
 # Never fetch more than 5000 rows, kthx.
 ROWFETCH_MAX = 5000
-DBFILE = "#{ENV['HOME']}/logfile.db"
 LOGFIELDS = { }
 MILEFIELDS = { }
 FAKEFIELDS = { }
@@ -107,10 +103,9 @@ DB_NICKS = { }
 
 # Automatically limit search to a specific server, unless explicitly
 # otherwise requested.
-SERVER = ENV['CRAWL_SERVER'] || 'cao'
+SERVER = ENV['NH_SERVER'] || 'unn'
 
 [ [ LOGFIELDS_DECORATED, LOGFIELDS ],
-  [ FAKEFIELDS_DECORATED, FAKEFIELDS ],
   [ MILEFIELDS_DECORATED, MILEFIELDS ] ].each do |fdec,fdict|
   fdec.each do |lf|
     class << lf
@@ -139,25 +134,35 @@ end
 
 LOG2SQL = {
   'name' => 'pname',
-  'char' => 'charabbrev',
-  'str' => 'sstr',
-  'dex' => 'sdex',
-  'int' => 'sint',
-  'start' => 'tstart',
-  'end' => 'tend',
-  'time' => 'ttime',
-  'map' => 'mapname'
+  'role' => 'prole',
+  'race' => 'prace',
+
+  'lev'  => 'bdepth',
+
+  'gender'   => 'pgender',
+  'align'    => 'palign',
+  'gender0' => 'pgender0',
+  'align0'  => 'palign0',
+
+  'death' => 'deathmsg'
 }
 
 (LOGFIELDS_DECORATED + MILEFIELDS_DECORATED).each do |x|
   LOG2SQL[x.name] = x.name unless LOG2SQL[x.name]
 end
 
+
+LOGFIELDS_SUMMARIZABLE = \
+  Hash[ *LOGFIELDS_DECORATED.map { |x| [ x.name, true ] }.flatten ]
+%w/id points turns starttime endtime birthtime deathtime realtime/.each do |x|
+  LOGFIELDS_SUMMARIZABLE[x] = nil
+end
+
 MILEFIELDS_SUMMARIZABLE = \
   Hash[ *MILEFIELDS_DECORATED.map { |x| [ x.name, true ] }.flatten ]
 
 # But suppress attempts to summarize by bad fields.
-%w/id dur turn rtime rstart tend ttime tstart/.each do |x|
+%w/id game_id turns starttime birthtime currenttime/.each do |x|
   MILEFIELDS_SUMMARIZABLE[x] = nil
 end
 
@@ -259,7 +264,7 @@ class QueryContext
       @summarizable = LOGFIELDS_SUMMARIZABLE
       @fieldmap = LOGFIELDS
       @synthmap = FAKEFIELDS
-      @defsort = 'end'
+      @defsort = 'endtime'
     else
       @fields = MILEFIELDS_DECORATED
       @synthetic = FAKEFIELDS_DECORATED
@@ -269,7 +274,7 @@ class QueryContext
       @summarizable = MILEFIELDS_SUMMARIZABLE.dup
       @fieldmap = MILEFIELDS
 
-      @defsort = 'time'
+      @defsort = 'id'
       nverbs = %w/abyss.enter abyss.exit rune orb ghost ghost.ban
                   uniq uniq.ban br.enter br.end/
       nverbs.each do |verb|
@@ -278,7 +283,7 @@ class QueryContext
         @synthmap[verb] = true
       end
 
-      @noun_verb_fields = [ 'noun', 'verb' ]
+      @noun_verb_fields = [ 'mtype', 'mobj' ]
     end
   end
 end
@@ -299,8 +304,7 @@ def sql2logdate(v)
     v = v.to_s
   end
   if v =~ /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/
-    # Note we're munging back to POSIX month (0-11) here.
-    $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
+    $1 + $2 + $3 + $4 + $5 + $6
   else
     v
   end
@@ -339,7 +343,7 @@ class QueryField
 
   def format_value(value)
     if @type
-      return (@field == 'dur' ? pretty_duration(value.to_i) :
+      return (@field == 'realtime' ? pretty_duration(value.to_i) :
               @type == 'D' ? pretty_date(value) : value)
     end
     value
@@ -590,12 +594,6 @@ class QueryFieldList
     raise "Unknown selector #{field} in #{extra}" unless @ctx.field?(field)
     field
   end
-end
-
-def update_tv_count(g)
-  table = g['milestone'] ? 'milestone' : 'logrecord'
-  sql_dbh.do("UPDATE #{table} SET ntv = ntv + 1 " +
-             "WHERE id = ?", g['id'])
 end
 
 def resolve_nick(nickexpr, default_nick)
@@ -1426,19 +1424,6 @@ def parse_param_group(preds, sorts, args)
   end
 end
 
-def is_charabbrev? (arg)
-  arg =~ /^([a-z]{2})([a-z]{2})/i && RACE_EXPANSIONS[$1.downcase] &&
-    CLASS_EXPANSIONS[$2.downcase]
-end
-
-def is_race? (arg)
-  RACE_EXPANSIONS[arg]
-end
-
-def is_class? (arg)
-  CLASS_EXPANSIONS[arg]
-end
-
 LISTGAME_SHORTCUTS =
   [
    lambda do |arg, reproc|
@@ -1450,21 +1435,7 @@ LISTGAME_SHORTCUTS =
      nil
    end,
    lambda do |value, reproc|
-     %w/win won quit left leav mon beam
-        pois cloud star/.any? { |ktyp| value =~ /^#{ktyp}[a-z]*$/i } && 'ktyp'
-   end,
-   lambda do |value, reproc|
-     if value =~ /^drown/i
-       reproc.call('ktyp', 'water')
-       return true
-     end
-     nil
-   end,
-   lambda do |value, reproc|
-     if value =~ /^\d+[.]\d+([.]\d+)*$/
-       return value =~ /^\d+[.]\d+$/ ? 'cv' : 'v'
-     end
-     nil
+     %w/win won quit left leav/.any? { |ktyp| value =~ /^#{ktyp}[a-z]*$/i } && 'ktype'
    end,
    lambda do |value, reproc|
      SOURCES.index(value) ? 'src' : nil
@@ -1477,6 +1448,22 @@ LISTGAME_SHORTCUTS =
      nil
    end
   ]
+
+def abbr_is_race?(abbr)
+  return SPECIES.index(abbr)
+end
+
+def abbr_is_role?(abbr)
+  return CLASSES.index(abbr)
+end
+
+def abbr_is_gender?(abbr)
+  return GENDERS.index(abbr)
+end
+
+def abbr_is_align?(abbr)
+  return ALIGNS.index(abbr)
+end
 
 def fixup_listgame_arg(preds, sorts, arg)
   atom = arg =~ /^\S+$/
@@ -1493,21 +1480,14 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('name', arg)
     end
 
-    # Check if it's a character abbreviation.
-    if is_charabbrev?(arg) then
-      return reproc.call('char', arg)
-    elsif arg =~ /^[a-z]{2}$/i then
-      cls = is_class?(arg)
-      sp = is_race?(arg)
-      return reproc.call('cls', arg) if cls && !sp
-      return reproc.call('race', arg) if sp && !cls
-      if cls && sp
-        clause = [negated ? 'AND' : 'OR']
-        process_param(clause, sorts, "cls" + eqop + arg)
-        process_param(clause, sorts, "race" + eqop + arg)
-        preds << clause
-        return
-      end
+    if abbr_is_race?(arg) then
+      return reproc.call('race', arg)
+    elsif abbr_is_role?(arg) then
+      return reproc.call('role', arg)
+    elsif abbr_is_gender?(arg) then
+      return reproc.call('gender', arg)
+    elsif abbr_is_align?(arg) then
+      return reproc.call('align', arg)
     end
 
     if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
@@ -1543,19 +1523,10 @@ def fixup_listgame_selector(key, op, val)
   cval = val.downcase.strip
   rkey = COLUMN_ALIASES[key.downcase] || key.downcase
   eqop = ['=', '!='].index(op)
-  if ['kaux', 'ckaux', 'killer', 'ktyp'].index(rkey) && eqop then
-    if ['poison', 'poisoning'].index(cval)
-      key, val = %w/ktyp pois/
-    end
-    if cval =~ /drown/
-      key, val = %w/ktyp water/
-    end
-  end
 
-  if rkey == 'ktyp' && eqop
-    val = 'winning' if cval =~ /^win/ || cval =~ /^won/
-    val = 'leaving' if cval =~ /^leav/ || cval == 'left'
-    val = 'quitting' if cval =~ /^quit/
+  if rkey == 'ktype' && eqop
+    val = 'ascended' if cval =~ /^win/ || cval =~ /^won/
+    val = 'quit' if cval =~ /^leav/ || cval =~ /^quit/
   end
 
   [key, op, val]
@@ -1685,26 +1656,12 @@ def query_field(selector, field, op, sqlop, val)
     return clauses[0]
   end
 
-  if ['killer', 'ckiller', 'ikiller'].index(selfield)
+  if ['killer'].index(selfield)
     if [ '=', '!=' ].index(op) and val !~ /^an? /i then
-      if val.downcase == 'uniq' and ['killer', 'ikiller'].index(selfield)
-        # Handle check for uniques.
-        uniq = op == '='
-        clause = [ uniq ? 'AND' : 'OR' ]
-
-        # killer field should not be empty.
-        clause << field_pred('', OPERATORS[uniq ? '!=' : '='], selector, field)
-        # killer field should not start with "a " or "an " for uniques
-        clause << field_pred("^an? |^the ", OPERATORS[uniq ? '!~~' : '~~'],
-                             selector, field)
-        clause << field_pred("ghost", OPERATORS[uniq ? '!~' : '=~'],
-                             selector, field)
-      else
-        clause = [ op == '=' ? 'OR' : 'AND' ]
-        clause << field_pred(val, sqlop, selector, field)
-        clause << field_pred("a " + val, sqlop, selector, field)
-        clause << field_pred("an " + val, sqlop, selector, field)
-      end
+      clause = [ op == '=' ? 'OR' : 'AND' ]
+      clause << field_pred(val, sqlop, selector, field)
+      clause << field_pred("a " + val, sqlop, selector, field)
+      clause << field_pred("an " + val, sqlop, selector, field)
       return clause
     end
   end
@@ -1728,50 +1685,6 @@ def query_field(selector, field, op, sqlop, val)
     val = val + ':%'
     op = op == '=' ? '=~' : '!~'
     sqlop = OPERATORS[op]
-  end
-
-  if selfield == 'race' || selfield == 'crace'
-    if val.downcase == 'dr' && (op == '=' || op == '!=')
-      sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
-      val = "%#{val}"
-    else
-      val = RACE_EXPANSIONS[val.downcase] || val
-    end
-  end
-  if selfield == 'cls'
-    val = CLASS_EXPANSIONS[val.downcase] || val
-  end
-
-  if (selfield == 'place' and val =~ /^shoals?:(.*)/i and
-      ['=', '!=', '=~', '!~'].index(op)) then
-    val = $1
-    inclusive = op.index('=') == 0
-    clause = [inclusive ? 'OR' : 'AND']
-    clause << field_pred("Shoal:#{val}", sqlop, selector, field)
-    clause << field_pred("Shoals:#{val}", sqlop, selector, field)
-    return clause
-  end
-
-  if selfield == 'when'
-    if %w/t tourney tournament/.index(val) and [ '=', '!=' ].index(op)
-      tourney = op == '='
-      clause = [ tourney ? 'AND' : 'OR' ]
-      lop = tourney ? '>' : '<'
-      rop = tourney ? '<' : '>'
-
-      tstart = '20080801'
-      tend   = '20080901'
-      if $CTX == CTX_LOG
-        clause << query_field('start', 'start', lop, lop, tstart)
-        clause << query_field('end', 'end', rop, rop, tend)
-      else
-        clause << query_field('time', 'time', lop, lop, tstart)
-        clause << query_field('time', 'time', rop, rop, tend)
-      end
-      return clause
-    else
-      raise "Bad selector #{selector} (#{selector}=t for tourney games)"
-    end
   end
 
   field_pred(val, sqlop, selector, field)
@@ -1814,7 +1727,10 @@ def extract_nick(args)
       nick = "!#{nick}" if args[i] =~ /^!/
 
       if nick.size == 1 ||
-          !(is_class?(nick) || is_race?(nick) || is_charabbrev?(nick)) ||
+          !(abbr_is_role?(nick) ||
+            abbr_is_race?(nick) ||
+            abbr_is_gender?(nick) ||
+            abbr_is_align?(nick)) ||
           nick_exists?(nick) then
         args.slice!(i)
         break
@@ -1996,12 +1912,7 @@ class SummaryReporter
     @extra = @q.extra_fields
     @efields = @extra ? @extra.fields : nil
     if not @formatter
-      @formatter = case @q.summarize
-                   when 'char'
-                     Proc.new { |n, w| "#{n}x#{w}" }
-                   else
-                     Proc.new { |n, w| "#{n}x #{w}" }
-                   end
+      @formatter = Proc.new { |n, w| "#{n}x #{w}" }
     end
   end
 
