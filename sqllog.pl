@@ -116,10 +116,6 @@ my $TMILESTONE = 'milestone';
 
 my $COMMIT_INTERVAL = 3000;
 
-my $SPLAT_TS = 'splat.timestamp';
-my $SPLAT_REPO = '../c-splat.git';
-my $SPLAT_CO = '../csplatco';
-
 # Dump indexes if we need to add more than around 9000 lines of data.
 my $INDEX_DISCARD_THRESHOLD = 300 * 9000;
 
@@ -138,44 +134,6 @@ sub initialize_sqllog {
   setup_db();
   load_splat_defs();
   load_splat();
-}
-
-sub last_splat_time {
-  open my $inf, '<', $SPLAT_TS or return;
-  chomp(my $ts = <$inf>);
-  close $inf;
-  $ts
-}
-
-sub current_splat_time {
-  if (!-d $SPLAT_CO) {
-    system("git clone $SPLAT_REPO $SPLAT_CO")
-      and die "Couldn't clone $SPLAT_CO from $SPLAT_REPO\n";
-  }
-  (stat "$SPLAT_CO/CSplat/Select.pm")[9]
-}
-
-sub load_splat_defs {
-  if (-d $SPLAT_CO) {
-    push @INC, $SPLAT_CO;
-    print "Loading $SPLAT_CO/CSplat/Select.pm\n";
-    $ENV{SPLAT_HOME} = $SPLAT_CO;
-    do "$SPLAT_CO/CSplat/Select.pm";
-  }
-}
-
-sub load_splat {
-  my $splat_time = last_splat_time();
-  my $now_splat_time = current_splat_time();
-  # Disabled for the nonce
-  if ($standalone && (!$splat_time || $splat_time < $now_splat_time)) {
-    load_splat_defs();
-    update_log_rows();
-
-    open my $outf, '>', $SPLAT_TS or die "Can't write $SPLAT_TS: $!\n";
-    print $outf "$now_splat_time\n";
-    close $outf;
-  }
 }
 
 sub setup_db {
