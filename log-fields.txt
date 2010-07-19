@@ -1,0 +1,78 @@
+UnNH log
+--------
+game <- Un / Spork
+version
+points
+deathdnum
+deathlev
+maxlvl
+hp
+maxhp
+deaths
+deathdate (20090730)
+birthdate
+role
+race
+gender
+align
+gender0
+align0
+name
+death(msg)
+conduct
+turns
+achieve
+realtime
+starttime
+endtime
+
+Milestones
+----------
+game <- Un / Spork
+version
+dnum
+lev
+maxlvl
+hp
+maxhp
+deaths
+birthdate
+role
+race
+gender
+align
+gender0
+align0
+name
+conduct
+achieve
+turns
+realtime
+starttime
+currenttime
+
+mtype
+desc
+obj
+
+Un livelog
+----------
+player (name)
+turns
+starttime
+race
+role
+
+
+Spork wishtracker
+-----------------
+<name> wished for <thing> (<n>XX wish, T:<turn>)
+
+
+Optional field:
+game_action / shout / wish + wish_count / achieve, achieve_diff
+shopkeeper / shop / shoplifted
+bones_killed / bones_rank / bones_monst
+killed_uniq = Medusa
+
+The first unrecognised field could be used as the custom payload.

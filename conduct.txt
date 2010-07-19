@@ -1,0 +1,12 @@
+# Note: all conduct bits must be *negated*.
+0 = foodless
+1 = vegan
+2 = vegetarian
+3 = atheist
+4 = weaponless
+5 = pacifist
+6 = nopolyitem
+7 = nopolyself
+8 = nowish
+9 = noartiwish
+10 = nogeno

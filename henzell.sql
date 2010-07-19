@@ -52,20 +52,15 @@ CREATE TABLE logrecord (
     deathmsg VARCHAR(50),
 
     -- quit, killed, petrified
-    ktyp   VARCHAR(30),
+    ktype  VARCHAR(30),
     killer VARCHAR(50),
 
     helpless CHAR(1),
     praying  CHAR(1),
 
-    conduct BIGINT,
-
-    -- Number of conducts
+    conduct VARCHAR(150),
     nconduct TINYINT DEFAULT 0,
-    
-    achieve BIGINT,
-
-    -- Number of achievements.
+    achieve VARCHAR(150),
     nachieve TINYINT DEFAULT 0,
 
     turns BIGINT,
@@ -126,9 +121,9 @@ CREATE TABLE milestone (
     helpless CHAR(1),
     praying  CHAR(1),
 
-    conduct BIGINT,
+    conduct VARCHAR(150),
     nconduct TINYINT DEFAULT 0,
-    achieve BIGINT,
+    achieve VARCHAR(150),
     nachieve TINYINT DEFAULT 0,
 
     turns BIGINT,
@@ -147,9 +142,9 @@ CREATE TABLE milestone (
     -- name of the shopkeeper.
     mobj VARCHAR(50),
 
-    shop_type VARCHAR(25) DEFAULT '',
+    shop VARCHAR(25) DEFAULT '',
     
-    stolen_value INT DEFAULT 0,
+    shoplifted INT DEFAULT 0,
 
     wish_count INT DEFAULT 0,
 

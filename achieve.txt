@@ -1,0 +1,12 @@
+0 = bell ; obtained the Bell of Opening
+1 = geh  ; entered Gehennom
+2 = candelabrum ; obtained the Candelabrum
+3 = book ; obtained the Book of the Dead
+4 = invocation ; performed the invocation ritual
+5 = amulet ; obtained the Amulet of Yendor
+6 = plane ; entered the Elemental Planes
+7 = astral ; entered the Astral Plane
+8 = ascended ; ascended
+9 = luckstone ; obtained the Mines luckstone
+10 = sokoban ; obtained the Sokoban prize
+11 = medusa ; killed Medusa

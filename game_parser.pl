@@ -7,9 +7,6 @@ BEGIN {
 }
 use Helper qw/demunge_xlogline serialize_time/;
 
-my %adjective_skill_title =
-  map(($_ => 1), ('Deadly Accurate', 'Spry', 'Covert', 'Unseen'));
-
 # Uncool words intended to cause offence will be righteously filtered.
 my $BANNED_WORDS_FILE = 'banned_words.txt';
 my @banned_words;
@@ -44,27 +41,6 @@ sub contains_banned_word {
   return undef;
 }
 
-sub game_skill_title
-{
-  my $game_ref = shift;
-  my $title = $game_ref->{title};
-  $title = skill_farming($title) if $game_ref->{turn} > 200000;
-  return $title;
-}
-
-sub skill_farming
-{
-  my $title = shift;
-  if ($adjective_skill_title{$title} || $title =~ /(?:ed|ble|ous)$/) {
-    return "$title Farmer";
-  } elsif ($title =~ /Crazy /) {
-    $title =~ s/Crazy/Crazy Farming/;
-    return $title;
-  } else {
-    return "Farming $title";
-  }
-}
-
 sub handle_output
 {
   my $output = shift;
@@ -78,7 +54,7 @@ sub handle_output
     my $post = defined($1) ? $1 : '';
 
     my $g = demunge_xlogline($output);
-    my $str = $g->{milestone} ? milestone_string($g, 1) : pretty_print($g);
+    my $str = exists($g->{mtype}) ? milestone_string($g, 1) : pretty_print($g);
     $output = $pre . $str . $post;
   }
 
@@ -90,15 +66,15 @@ sub handle_output
 sub format_date {
   my $date = shift;
   $date =~ /^(\d{4})(\d{2})(\d{2})/;
-  return $1 . "-" . sprintf("%02d", $2 + 1) . "-" . $3;
+  $date
 }
 
 sub formatted_game_field {
   my ($g, $field) = @_;
-  if (grep($_ eq $field, 'end', 'start', 'rend', 'rstart', 'time')) {
+  if (grep($_ eq $field, 'endtime', 'starttime', 'currenttime')) {
     return format_date($$g{$field}) . " [$$g{$field}]";
   }
-  elsif ($field eq 'dur') {
+  elsif ($field eq 'realtime') {
     return serialize_time($$g{$field}) . " [$$g{$field}]";
   }
   else {
@@ -120,85 +96,58 @@ sub parse_extras {
 
 sub game_place($) {
   my $g = shift;
+  $$g{place}
+}
 
-  my $loc_string = "";
-  my $place = $g->{place};
+sub game_title($) {
+  my $g = shift;
+  my @items = grep($_, map($$g{$_}, qw/role race align gender/));
+  join(" ", @items)
+}
 
-  my $qualifier = '';
-  if ($$g{map}) {
-    my $map = $$g{map};
-    $map = "$$g{mapdesc} : $map" if $$g{mapdesc};
-    $qualifier = " ($map)"
-  }
-
-  my $prep = grep($_ eq $place, qw/Temple Blade Hell/)? "in" : "on";
-  $prep = "in" if $g->{ltyp} ne 'D';
-  $place = "the $place" if grep($_ eq $place, qw/Temple Abyss/);
-  $place = "a Labyrinth" if $place eq 'Lab';
-  $place = "a Bazaar" if $place eq 'Bzr';
-  $place = "Pandemonium" if $place eq 'Pan';
-  $loc_string = " $prep $place$qualifier";
-
-  $loc_string = "" # For escapes of the dungeon, so it doesn't print the loc
-    if $g->{ktyp} eq 'winning' or $g->{ktyp} eq 'leaving';
-
-  return $loc_string;
+sub pluralize($$) {
+  my ($n, $thing) = @_;
+  "$n " . ($n == 1? $thing : "${thing}s")
 }
 
 sub pretty_print
 {
-  my $game_ref = shift;
-  my $extra = parse_extras($game_ref);
+  my $g = shift;
 
-  my $loc_string = game_place($game_ref);
+  my $extra_fields = parse_extras($g);
+  my $name = $$g{name};
+  my $title = game_title($g);
+  my $place = game_place($g);
+  my $dur = serialize_time($$g{realtime});
+  my $time = $$g{deathtime};
 
-  my $death_date = " on " . format_date($$game_ref{end});
-  my $deathmsg = $game_ref->{vmsg} || $game_ref->{tmsg};
-  $deathmsg =~ s/!$//;
-  my $title = game_skill_title($game_ref);
-  sprintf '%s%s the %s (L%d %s)%s, %s%s%s, with %d point%s after %d turn%s and %s.',
-      $extra,
-      $game_ref->{name},
-	  $title,
-      $game_ref->{xl},
-      $game_ref->{char},
-      $game_ref->{god} ? ", worshipper of $game_ref->{god}" : '',
-      $deathmsg,
-      $loc_string,
-      $death_date,
-      $game_ref->{sc},
-      $game_ref->{sc} == 1 ? '' : 's',
-      $game_ref->{turn},
-      $game_ref->{turn} == 1 ? '' : 's',
-      serialize_time($game_ref->{dur})
+  my $points = pluralize($$g{points}, "point");
+  my $turns  = pluralize($$g{turns}, "turn");
+
+  "$extra_fields$name ($title) $$g{death}$place with $points after " .
+    " $turns and $dur on $time"
 }
 
-sub milestone_string
-{
+sub milestone_string($$) {
   my ($g, $show_time) = @_;
-  my $extra = parse_extras($g);
 
-  my $place = $$g{oplace} || $$g{place};
-  my $placestring = " ($place)";
-  if ($g->{milestone} eq "escaped from the Abyss!")
-  {
-    $placestring = "";
-  }
+  my $extra_fields = parse_extras($g);
 
-  my $ms = $$g{milestone};
-  my $turn = $$g{turn};
-  $ms =~ s/\.$/ on turn $turn./;
+  my $name = $$g{name};
+  my $title = game_title($g);
+  my $place = game_place($g);
+  my $dur = serialize_time($$g{realtime});
+  my $time = $$g{deathtime};
 
-  my $time = format_date($$g{time});
-  my $prefix = $show_time? "[" . $time . "] " : '';
-  sprintf("$prefix%s%s the %s (L%s %s) %s%s",
-          $extra,
-          $g->{name},
-          game_skill_title($g),
-          $g->{xl},
-          $g->{char},
-          $ms,
-          $placestring)
+
+  my @extras;
+  push @extras, "T:$$g{turns}" if $$g{turns};
+  push @extras, "time:" . serialize_time($$g{realtime}) if $$g{realtime};
+
+  my $extra = '';
+  $extra = " (" . join(", ", @extras) . ")" if @extras;
+
+  "$extra_fields$name ($title) $$g{mdesc}$extra"
 }
 
 1;

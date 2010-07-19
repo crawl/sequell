@@ -7,6 +7,8 @@ use IO::Handle;
 use DateTime;
 use Time::gmtime;
 
+use Henzell::Achieve;
+
 use DBI;
 
 do 'game_parser.pl';
@@ -14,7 +16,7 @@ do 'game_parser.pl';
 my @LOGFIELDS_DECORATED =
   qw/alpha game version cversion points branch levI place maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
-     name deathmsg killer ktyp helpless praying conductI nconductI achieveI
+     name deathmsg killer ktype helpless praying conduct nconductI achieve
      nachieveI turnsI realtimeI starttimeS endtimeS/;
 
 my %LOG2SQL = ( name => 'pname',
@@ -46,19 +48,36 @@ my @SPORKBRANCHES;
 my %GAME_BRANCHES = (un    => \@UNBRANCHES,
                      spork => \@SPORKBRANCHES);
 
+my @MILESTONE_IDENTIFIER = qw/game_action wish achieve_diff crash shout
+                              killed_uniq sokobanprize shoplifted
+                              bones_killed/;
+
+my %MILESTONE_PARSER = (game_action => \&milestone_parse_game_action,
+                        achieve_diff => \&milestone_parse_achieve,
+                        shoplifted => \&milestone_parse_shoplifted,
+                        wish => \&milestone_parse_wish,
+                        crash => \&milestone_parse_crash,
+                        shout => \&milestone_parse_shout,
+                        killed_uniq => \&milestone_parse_killed_uniq,
+                        sokobanprize => \&milestone_parse_sokobanprize,
+                        bones_killed => \&milestone_parse_bones_killed);
+
 sub strip_suffix($) {
   my $val = shift;
   $val =~ s/[IDS]$//;
   $val
 }
 
+my $ORIG_LINE;
+
 my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
 
 my @MILEFIELDS_DECORATED =
     qw/alpha game version cversion branch levI place maxlvlI
        hpI maxhpI deathsI birthdateD role race gender align
-       gender0 align0 name conductI achieveI turnsI realtimeI
-       starttimeS currenttimeS/;
+       gender0 align0 name conduct nconductI achieve nachieveI turnsI realtimeI
+       starttimeS currenttimeS mtype mobj mdesc shop shopliftedI
+       wish_countI/;
 
 my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS);
 
@@ -426,9 +445,9 @@ sub fixup_milestones {
        SET m.game_id = (SELECT l.id FROM ${prefix}logrecord l
                          WHERE l.pname = m.pname
                            AND l.src = m.src
-                           AND l.rstart = m.rstart
+                           AND l.starttime = m.starttime
                          LIMIT 1)
-     WHERE m.game_id IS NULL
+     WHERE m.game_id IS NULL AND m.starttime IS NOT NULL
        AND m.src = ?
 QUERY
 
@@ -480,14 +499,9 @@ sub execute_st {
 
 sub xlog_is_milestone($) {
   my $g = shift;
-  # No nice uniform way of handling this any more.
-  return $$g{src} =~ /wish/ || $$g{src} =~ /livelog/;
-}
-
-sub fixup_milestone_record($) {
-  my $g = shift;
-  fixup_logfile_record($g);
-  $g
+  # No nice uniform way of handling this:
+  my $file = $$g{file};
+  return $file =~ /wish/ || $file =~ /livelog/;
 }
 
 sub default_field_value($$) {
@@ -530,10 +544,145 @@ sub field_type($) {
   $type || ''
 }
 
+sub trim(@) {
+  for (@_) {
+    s/^\s+//, s/\s+$// if defined $_;
+  }
+}
+
+sub upcase_first($) {
+  my $value = shift;
+  if ($value) {
+    $value = uc(substr($value, 0, 1)) . substr($value, 1);
+  }
+  $value
+}
+
+sub milestone_identify_type($) {
+  my $g = shift;
+  for my $id (@MILESTONE_IDENTIFIER) {
+    return $id if $$g{$id};
+  }
+  undef
+}
+
+sub milestone_parse_achieve($) {
+  my $g = shift;
+  $$g{mtype} = 'achieve';
+  $$g{achieve_diff} = hexnum($$g{achieve_diff});
+  $$g{mobj} = Henzell::Achieve::achievement_name($$g{achieve_diff});
+  $$g{mdesc} = Henzell::Achieve::achievement_desc($$g{achieve_diff});
+}
+
+sub milestone_parse_shoplifted($) {
+  my $g = shift;
+  $$g{mdesc} = ("stole \$$$g{shoplifted} of merchandise from "
+                . "$$g{shopkeeper} ($$g{shop})");
+  $$g{mobj} = $$g{shopkeeper};
+}
+
+sub milestone_parse_sokobanprize($) {
+  my $g = shift;
+  $$g{mdesc} = "obtained the Sokoban prize ($$g{mobj})";
+}
+
+sub milestone_parse_bones_killed($) {
+  my $g = shift;
+  $$g{mdesc} = "killed the $$g{bones_monst} of $$g{mobj} the $$g{bones_rank}";
+}
+
+sub milestone_parse_killed_uniq($) {
+  my $g = shift;
+  $$g{mdesc} = "killed $$g{mobj}";
+}
+
+sub milestone_parse_shout($) {
+  my $g = shift;
+  $$g{mdesc} = "shouted \"$$g{mobj}\"";
+}
+
+sub milestone_parse_crash($) {
+  my $g = shift;
+  $$g{mdesc} = "crashed the game";
+}
+
+sub milestone_parse_wish($) {
+  my $g = shift;
+  $$g{mdesc} = "wished for '$$g{mobj}'";
+}
+
+sub game_gender($) {
+  my $g = shift;
+  my $gender = $$g{gender};
+  return $gender || 'Unk';
+}
+
+sub game_possessive_pronoun($) {
+  my $g = shift;
+  my $gender = game_gender($g);
+  return "his" if $gender eq 'Mal';
+  return 'her' if $gender eq 'Fem';
+  return 'their';
+}
+
+sub milestone_parse_game_action($) {
+  my $g = shift;
+  my $pronoun = game_possessive_pronoun($g);
+  $$g{mdesc} = "$$g{mobj} $pronoun game";
+  $$g{mdesc} = "started a new game" if $$g{mobj} eq 'started';
+}
+
+# Figures out what kind of milestone this is and sets up data accordingly.
+sub parse_milestone_record($) {
+  my $g = shift;
+  my $type = $$g{type} || milestone_identify_type($g);
+  if ($type) {
+    $$g{mtype} = $type;
+    $$g{mobj} ||= $$g{$type} || $$g{obj};
+    $$g{mdesc} = $$g{$type};
+    my $parser = $MILESTONE_PARSER{$type};
+    $parser->($g) if $parser;
+    die "No mtype in $ORIG_LINE\n" unless $$g{mtype};
+  } else {
+    warn "Unknown milestone in '$ORIG_LINE'\n";
+  }
+}
+
+sub fixup_milestone_record($) {
+  my $g = shift;
+  fixup_logfile_record($g);
+
+  trim($$g{align});
+
+  if ($$g{align} =~ /(\w+) (\w+)/) {
+    $$g{align} = $1;
+    $$g{gender} = $2;
+  }
+
+  # Strip overlong values and uppercase first letter.
+  for (qw/alignment gender race role/) {
+    if ($$g{$_}) {
+      $$g{$_} = upcase_first(substr($$g{$_}, 0, 3));
+    }
+  }
+
+  parse_milestone_record($g);
+
+  $g
+}
+
+sub hexnum {
+  my $value = shift;
+  return $value unless defined $value;
+  hex($value)
+}
+
 sub fixup_logfile_record($) {
   my $g = shift;
 
   $$g{game} ||= game_from_filename($$g{file});
+  $$g{name} ||= $$g{player};
+  $$g{align} ||= $$g{alignment};
 
   die "Could not resolve game from $$g{file}\n" unless $$g{game};
 
@@ -560,9 +709,35 @@ sub fixup_logfile_record($) {
     s/:$// for $$g{branch};
   }
 
+  $$g{deathmsg} = $$g{death};
+  $$g{praying} = 'N';
+  $$g{helpless} = 'N';
+  if ($$g{deathmsg}) {
+    my $deathmsg = $$g{deathmsg};
+    my ($ktyp, $killer) = $deathmsg =~ /^(\w+) by an? ([^,]*)/i;
+    $$g{ktype} = $ktyp;
+    $$g{killer} = $killer;
+    $$g{praying} = 'Y' if $deathmsg =~ /while praying/i;
+    if ($deathmsg =~ /while helpless/i
+        || $deathmsg =~ /while paralyzed/i)
+    {
+      $$g{helpless} = 'Y';
+    }
+  }
+
   $$g{starttime} = utc_epoch_seconds_to_fulltime($$g{starttime});
   $$g{endtime} = utc_epoch_seconds_to_fulltime($$g{endtime});
   $$g{currenttime} = utc_epoch_seconds_to_fulltime($$g{currenttime});
+
+  for (qw/achieve conduct/) {
+    $$g{$_} = hexnum($$g{$_});
+  }
+  my @achievements = Henzell::Achieve::achievement_names($$g{achieve} || 0);
+  my @conducts = Henzell::Achieve::conduct_names($$g{conduct} || 0);
+  $$g{achieve} = join(",", @achievements);
+  $$g{conduct} = join(",", @conducts);
+  $$g{nachieve} = scalar(@achievements);
+  $$g{nconduct} = scalar(@conducts);
 
   $g
 }
@@ -595,8 +770,8 @@ sub record_is_alpha_version {
   return 'y' if $$lf{alpha};
 
   # Game version that mentions -rc or -a is automatically alpha.
-  my $v = $$g{version};
-  return 'y' if $v =~ /-(?:rc|a)/i;
+  my $v = $$g{version} || '';
+  return 'Y' if $v =~ /-(?:rc|a)/i;
 
   return '';
 }
@@ -606,12 +781,17 @@ sub add_milestone {
   chomp $line;
   my $m = logfield_hash($line);
 
+  $ORIG_LINE = $line;
   $m->{file} = $lf->{file};
   $m->{offset} = $offset;
   $m->{src} = $lf->{server};
   $m->{alpha} = record_is_alpha_version($lf, $m);
   $m->{milestone} ||= '?';
-  $m = fixup_logfields($m);
+  eval {
+    $m = fixup_logfields($m);
+  };
+  die "Failed to parse '$line': $@" if $@;
+  return unless $$m{mtype};
 
   my $st = $milestone_insert_st;
   my @bindvals = map(field_val($_, $m), @MILE_INSERTFIELDS_DECORATED);
@@ -622,11 +802,17 @@ sub add_milestone {
 sub add_logline {
   my ($lf, $offset, $line) = @_;
   chomp $line;
+  $ORIG_LINE = $line;
   my $fields = logfield_hash($line);
   $fields->{src} = $lf->{server};
   $fields->{alpha} = record_is_alpha_version($lf, $fields);
   $fields->{file} = $lf->{file};
-  $fields = fixup_logfields($fields);
+
+  eval {
+    $fields = fixup_logfields($fields);
+  };
+  die "Failed to parse '$line': $@" if $@;
+
   my $st = $insert_st;
   my @bindvalues = ($lf->{file}, $lf->{server}, $offset,
                     map(field_val($_, $fields), @LOGFIELDS_DECORATED));
@@ -635,7 +821,7 @@ sub add_logline {
 }
 
 sub xlog_escape {
-  my $str = shift;
+  my $str = shift() || '';
   $str =~ s/:/::/g;
   $str
 }
