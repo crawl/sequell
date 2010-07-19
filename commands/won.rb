@@ -77,15 +77,15 @@ begin
       allwins += 1
       offset -= 1
       nfinalwin = count
-      finalwin = game_char(g)
+      finalwin = game_short_char(g)
       if offset == 0
         first = count
-	lastwin = game_char(g)
+	lastwin = game_short_char(g)
       end
       if offset < 0
         nwins += 1
-        wins << game_char(g)
-        whash[game_char(g)] += 1
+        wins << game_short_char(g)
+        whash[game_short_char(g)] += 1
       end
     end
   end

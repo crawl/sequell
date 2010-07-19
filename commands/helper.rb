@@ -435,6 +435,11 @@ def find_milestone_crash_dump(e)
   nil
 end
 
+def game_short_char(g)
+  pieces = %w/role race/.collect { |x| g[x] }.find_all { |x| x }
+  pieces.join(" ")
+end
+
 def game_char(g)
   pieces = %w/role race align gender/.collect { |x| g[x] }.find_all { |x| x }
   pieces.join(" ")
