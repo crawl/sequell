@@ -132,8 +132,6 @@ initialize_sqllog();
 
 sub initialize_sqllog {
   setup_db();
-  load_splat_defs();
-  load_splat();
 }
 
 sub setup_db {
