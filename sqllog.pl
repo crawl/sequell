@@ -16,7 +16,7 @@ do 'game_parser.pl';
 my @LOGFIELDS_DECORATED =
   qw/alpha game version cversion points branch levI place maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
-     name deathmsg killer ktype helpless praying conduct nconductI achieve
+     name deathmsg killer ktype kaux helpless praying conduct nconductI achieve
      nachieveI turnsI realtimeI starttimeS endtimeS/;
 
 my %LOG2SQL = ( name => 'pname',
@@ -39,7 +39,7 @@ my %SERVER_MAP = (unn => 'un.nethack.nu',
 
 # Mapping of dnum -> dungeon name in Un; if suffixed with :, they have depths.
 my @UNBRANCHES = ('D:', 'Geh:', 'Gnome:', 'Quest:', 'Sok:',
-                  'Town', 'Ludios', 'Sam', 'Vlad',
+                  'Town', 'Ludios', 'Blackmarket', 'Vlad',
                   'Plane:');
 
 # FIXME:
@@ -718,10 +718,9 @@ sub fixup_logfile_record($) {
     $$g{ktype} = $ktyp;
     $$g{killer} = $killer;
     $$g{praying} = 'Y' if $deathmsg =~ /while praying/i;
-    if ($deathmsg =~ /while helpless/i
-        || $deathmsg =~ /while paralyzed/i)
-    {
+    if ($deathmsg =~ /, while (.*)/i) {
       $$g{helpless} = 'Y';
+      $$g{kaux} = $1;
     }
   }
 

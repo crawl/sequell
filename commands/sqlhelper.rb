@@ -6,11 +6,10 @@ require 'set'
 
 exit(0) if !ENV['HENZELL_SQL_QUERIES']
 
-GAME_CRAWL = 'crawl'
-GAME_SPRINT = 'sprint'
-GAMES = [GAME_CRAWL, GAME_SPRINT]
+GAME_NH = 'nh'
+GAMES = [GAME_NH]
 
-GAME_PREFIXES = { GAME_CRAWL => '', GAME_SPRINT => 'spr_' }
+GAME_PREFIXES = { GAME_NH => '' }
 
 OPERATORS = {
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
@@ -33,94 +32,17 @@ FILTER_PATTERN =
 
 # List of abbreviations for branches that have depths > 1. This includes
 # fake branches such as the Ziggurat.
-DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
-                   Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig/
+DEEP_BRANCHES = %w/D Geh Gnome Quest Sok Plane/;
 
-BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
-              Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig
-              Lab Pan Bazaar Bzr Hell Blade Temple Abyss Sprint/
+BRANCHES = %w/D Geh Gnome Quest Sok Town Ludios Blackmarket Vlad Plane/;
 
-GODABBRS = %w/zin tso kik yre xom veh oka
-              mak sif trog nem ely lug beo/
-GODMAP = { 'tso' => 'The Shining One' }
-
-SOURCES = %w/cao cdo rhf/
+SOURCES = %w/unn spo/;
 
 BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
 
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
 
 BOOL_FIELDS =%w/splat alpha/
-
-CLASS_EXPANSIONS = {
-  "Fi" => "Fighter",
-  "Wz" => "Wizard",
-  "Pr" => "Priest",
-  "Th" => "Thief",
-  "Gl" => "Gladiator",
-  "Ne" => "Necromancer",
-  "Pa" => "Paladin",
-  "As" => "Assassin",
-  "Ar" => "Artificer",
-  "AM" => "Arcane Marksman",
-  "Be" => "Berserker",
-  "Hu" => "Hunter",
-  "Cj" => "Conjurer",
-  "En" => "Enchanter",
-  "FE" => "Fire Elementalist",
-  "IE" => "Ice Elementalist",
-  "Su" => "Summoner",
-  "AE" => "Air Elementalist",
-  "EE" => "Earth Elementalist",
-  "Cr" => "Crusader",
-  "DK" => "Death Knight",
-  "VM" => "Venom Mage",
-  "CK" => "Chaos Knight",
-  "Tm" => "Transmuter",
-  "He" => "Healer",
-  "Re" => "Reaver",
-  "St" => "Stalker",
-  "Mo" => "Monk",
-  "Wr" => "Warper",
-  "Wn" => "Wanderer"
-}
-
-RACE_EXPANSIONS = {
-  'Hu' => 'Human',
-  'El' => 'Elf',
-  'HE' => 'High Elf',
-  'GE' => 'Grey Elf',
-  'DE' => 'Deep Elf',
-  'DD' => 'Deep Dwarf',
-  'SE' => 'Sludge Elf',
-  'HD' => 'Hill Dwarf',
-  'MD' => 'Mountain Dwarf',
-  'Ha' => 'Halfling',
-  'HO' => 'Hill Orc',
-  'Ko' => 'Kobold',
-  'Mu' => 'Mummy',
-  'Na' => 'Naga',
-  'Gn' => 'Gnome',
-  'Og' => 'Ogre',
-  'Tr' => 'Troll',
-  'OM' => 'Ogre-Mage',
-  'Dr' => 'Draconian',
-  'Ce' => 'Centaur',
-  'DG' => 'Demigod',
-  'Sp' => 'Spriggan',
-  'Mi' => 'Minotaur',
-  'DS' => 'Demonspawn',
-  'Gh' => 'Ghoul',
-  'Ke' => 'Kenku',
-  'Mf' => 'Merfolk',
-  'Vp' => 'Vampire'
-}
-
-[ CLASS_EXPANSIONS, RACE_EXPANSIONS ].each do |hash|
-  hash.keys.each do |key|
-    hash[key.downcase] = hash[key]
-  end
-end
 
 OPEN_PAREN = '(('
 CLOSE_PAREN = '))'
@@ -129,11 +51,11 @@ BOOLEAN_OR = '||'
 BOOLEAN_OR_Q = Regexp.quote(BOOLEAN_OR)
 
 COLUMN_ALIASES = {
-  'role' => 'cls', 'class' => 'cls', 'species' => 'race',
-  'ktype' => 'ktyp', 'score' => 'sc', 'turns' => 'turn',
-  'skill' => 'sk',
-  'ch' => 'char', 'r' => 'race', 'c' => 'cls', 'sp' => 'race',
-  'cl' => 'xl', 'clev' => 'xl', 'type' => 'verb', 'gid' => 'game_id'
+  'cls' => 'role', 'class' => 'role', 'species' => 'race',
+  'ktyp' => 'ktype', 'mtyp' => 'mtype', 'score' => 'points', 'sc' => 'points',
+  'turn' => 'turns',
+  'r' => 'race', 'c' => 'role', 'sp' => 'race',
+  'type' => 'mtype', 'gid' => 'game_id'
 }
 
 AGGREGATE_FUNC_TYPES = {

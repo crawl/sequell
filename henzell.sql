@@ -55,6 +55,9 @@ CREATE TABLE logrecord (
     ktype  VARCHAR(30),
     killer VARCHAR(50),
 
+    -- while <yadda>
+    kaux VARCHAR(80),
+
     helpless CHAR(1),
     praying  CHAR(1),
 
