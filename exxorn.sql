@@ -54,6 +54,7 @@ CREATE TABLE logrecord (
     -- quit, killed, petrified
     ktype  VARCHAR(30),
     killer VARCHAR(80),
+    ckiller VARCHAR(80),
 
     -- while <yadda>
     kaux VARCHAR(80),

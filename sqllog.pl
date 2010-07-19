@@ -16,8 +16,8 @@ do 'game_parser.pl';
 my @LOGFIELDS_DECORATED =
   qw/alpha game version cversion points branch levI place maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
-     name deathmsg killer ktype kaux helpless praying conduct nconductI achieve
-     nachieveI turnsI realtimeI starttimeS endtimeS/;
+     name deathmsg killer ckiller ktype kaux helpless praying conduct
+     nconductI achieve nachieveI turnsI realtimeI starttimeS endtimeS/;
 
 my %LOG2SQL = ( name => 'pname',
                 role => 'prole',
@@ -675,6 +675,7 @@ sub fixup_logfile_record($) {
     my ($ktyp, $killer) = $deathmsg =~ /^(\w+)(?: by an? ([^,]*))?/i;
     $$g{ktype} = $ktyp;
     $$g{killer} = $killer || '';
+    $$g{ckiller} = $killer || $ktyp;
     $$g{praying} = 'Y' if $deathmsg =~ /while praying/i;
     if ($deathmsg =~ /, while (.*)/i) {
       $$g{helpless} = 'Y';

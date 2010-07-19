@@ -77,8 +77,8 @@ GENDERS = %w/Fem Mal/
 LOGFIELDS_DECORATED = %w/idI file alpha src
      version cversion points branch levI place maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
-     name death killer ktype kaux helpless praying conduct nconductI achieve
-     nachieveI turnsI realtimeI starttimeD endtimeD/
+     name death killer ckiller ktype kaux helpless praying conduct nconductI
+     achieve nachieveI turnsI realtimeI starttimeD endtimeD/
 
 MILEFIELDS_DECORATED = %w/game_idI idI file alpha src
        version cversion branch levI place maxlvlI
