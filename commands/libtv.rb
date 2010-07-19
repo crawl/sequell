@@ -219,10 +219,13 @@ module TV
   end
 
   def self.request_game_verbosely(n, g, who)
-    #raise "Cannot request games for TV on PM." if ENV['PRIVMSG'] == 'y'
-
     summary = short_game_summary(g)
-    tv = 'FooTV'
+
+    if !g['endtime'] && !g['currenttime']
+      raise "#{n}. #{summary}: no time information"
+    end
+
+    tv = 'UnTV'
 
     if @@tv_args && @@tv_args['nuke']
       puts "FooTV playlist clear requested by #{who}."
