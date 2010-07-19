@@ -28,8 +28,8 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       # Update seen-db
                       seen_update => 1,
 
-                      channels => qq/##crawl ##crawl-dev/,
-                      announce_channel => '##crawl',
+                      channels => qq/##crawl-test/,
+                      announce_channel => '',
 
                       commands_file => 'commands/commands-henzell.txt',
                       public_commands_file => 'commands/public-commands.txt',

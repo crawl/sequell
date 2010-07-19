@@ -41,7 +41,8 @@ module TV
 
   # Serves TV requests to FooTV instances.
   class TVServ < GServer
-    def initialize(port = 21976, host = "0.0.0.0")
+    # 29976 for Un TV
+    def initialize(port = 29976, host = "0.0.0.0")
       puts "Starting TV notification server."
       @started = Time.now.strftime("%s").to_i
       @clients = []
@@ -165,10 +166,6 @@ module TV
       STDOUT.reopen(logfile)
       STDERR.reopen(logfile)
       STDIN.close()
-
-      # Start the ttyrec listing server.
-      ttyrec_lister = TtyrecDirectoryServ.new
-      ttyrec_lister.start()
 
       # Start the notification server and wait on it.
       tv = TVServ.new
