@@ -50,7 +50,7 @@ sql_each_row_matching(query.reverse) do |row|
 
   $name ||= game['name']
   $games += 1
-  win = game['ktyp'] == 'winning'
+  win = game['ktype'] == 'winning'
 
   if win
     if $between_wins > 0 &&
@@ -59,7 +59,7 @@ sql_each_row_matching(query.reverse) do |row|
     end
 
     $wins += 1
-    $streak_chars << game['char']
+    $streak_chars << game_char(game)
     $streak_games += 1
     $between_wins = 0
     $seen_win = true
@@ -102,7 +102,7 @@ begin
 
   if $wins == 1
     if $streak_games > 0
-      puts "#$name has one win (#{cstreak}) " + 
+      puts "#$name has one win (#{cstreak}) " +
         "in #$games games, and can keep going!"
     else
       puts "#$name has one win (#{best_streaks}) in #{p($games, "game")}, and has played #{p($between_wins, "game")} since."

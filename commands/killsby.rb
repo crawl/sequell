@@ -3,16 +3,12 @@
 require 'commands/helper.rb'
 require 'commands/sqlhelper.rb'
 
-help("Lists the most frequent victims for a given monster. " +
-     "Use -i to show indirect kills (e.g. rat summoned by vampire).")
+help("Lists the most frequent victims for a given monster or death type.")
 
 args = (ARGV[2].split)[1 .. -1]
 
-$ikiller = args.include?('-i')
-args = args.select { |x| x != '-i' }
-
 def killer_field(key)
-  field = $ikiller ? 'ikiller' : 'ckiller'
+  field = 'ckiller'
   "#{field}=#{key}"
 end
 

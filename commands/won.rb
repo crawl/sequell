@@ -42,7 +42,7 @@ begin
   desc = nick
   if num == 0
     q = sql_define_query(nick, -1,
-                         trail_select + ["ktyp=winning"],
+                         trail_select + ["ktype=ascended"],
                          nil).reverse
     game_count_query = sql_define_query(nick, -1, trail_select, nil)
     count = sql_count_rows_matching(game_count_query)
@@ -73,19 +73,19 @@ begin
     count += 1 if num != 0
 
     name = g['name'] unless name == '*'
-    if g['ktyp'] == 'winning'
+    if g['ktype'] == 'ascended'
       allwins += 1
       offset -= 1
       nfinalwin = count
-      finalwin = g['char']
+      finalwin = game_char(g)
       if offset == 0
         first = count
-	lastwin = g['char']
+	lastwin = game_char(g)
       end
       if offset < 0
         nwins += 1
-        wins << g['char']
-        whash[g['char']] += 1
+        wins << game_char(g)
+        whash[game_char(g)] += 1
       end
     end
   end

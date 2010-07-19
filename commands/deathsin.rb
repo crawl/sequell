@@ -9,9 +9,8 @@ args = sanitize_args((ARGV[2].split)[1 .. -1])
 
 params = [ "*",
            "place=#{args[0]}",
-           "ktyp!=quitting",
-           "ktyp!=leaving",
-           "ktyp!=winning" ]
+           "ktype!=quit",
+           "ktype!=ascended"]
 
 args = args[1 .. -1]
 

@@ -3,7 +3,6 @@
 !deathsby deathsby.rb
 !deathsin deathsin.rb
 !gamesby gamesby.rb
-!gkills gkills.rb
 !hs hsn.rb
 !killsby killsby.rb
 !log lastlog.rb
