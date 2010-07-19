@@ -1,0 +1,6 @@
+bot_nick = Gridbug
+sql_store = 1
+sql_queries = 1
+commands_file = commands/commands-un.txt
+announce_channel =
+seen_update = 0
