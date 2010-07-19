@@ -49,11 +49,11 @@ CREATE TABLE logrecord (
     palign0 CHAR(3),
 
     -- Death message as in death field.
-    deathmsg VARCHAR(50),
+    deathmsg VARCHAR(150),
 
     -- quit, killed, petrified
     ktype  VARCHAR(30),
-    killer VARCHAR(50),
+    killer VARCHAR(80),
 
     -- while <yadda>
     kaux VARCHAR(80),

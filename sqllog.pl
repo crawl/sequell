@@ -636,6 +636,7 @@ sub milestone_parse_game_action($) {
 sub parse_milestone_record($) {
   my $g = shift;
   my $type = $$g{type} || milestone_identify_type($g);
+  $type = 'achieve_diff' if $type && $type =~ /achieve/;
   if ($type) {
     $$g{mtype} = $type;
     $$g{mobj} ||= $$g{$type} || $$g{obj};
@@ -660,7 +661,7 @@ sub fixup_milestone_record($) {
   }
 
   # Strip overlong values and uppercase first letter.
-  for (qw/alignment gender race role/) {
+  for (qw/alignment align gender race role/) {
     if ($$g{$_}) {
       $$g{$_} = upcase_first(substr($$g{$_}, 0, 3));
     }
@@ -703,6 +704,7 @@ sub fixup_logfile_record($) {
     $$g{branch} = resolve_branch_name($$g{game},
                                       $$g{deathdnum} || $$g{dnum});
     $$g{lev} = $$g{deathlev};
+    $$g{place} = $$g{branch};
     if (defined($$g{lev}) && $$g{branch} =~ /:$/) {
       $$g{place} = "$$g{branch}$$g{lev}";
     }
@@ -714,9 +716,9 @@ sub fixup_logfile_record($) {
   $$g{helpless} = 'N';
   if ($$g{deathmsg}) {
     my $deathmsg = $$g{deathmsg};
-    my ($ktyp, $killer) = $deathmsg =~ /^(\w+) by an? ([^,]*)/i;
+    my ($ktyp, $killer) = $deathmsg =~ /^(\w+)(?: by an? ([^,]*))?/i;
     $$g{ktype} = $ktyp;
-    $$g{killer} = $killer;
+    $$g{killer} = $killer || '';
     $$g{praying} = 'Y' if $deathmsg =~ /while praying/i;
     if ($deathmsg =~ /, while (.*)/i) {
       $$g{helpless} = 'Y';
@@ -761,6 +763,7 @@ sub field_val {
   my $ftype = field_type($key);
   $key = strip_suffix($key);
   my $val = $g->{$key} || default_field_value($key, $ftype);
+  $val =~ tr/_/ / if $val;
   $val
 }
 
@@ -773,6 +776,15 @@ sub record_is_alpha_version {
   return 'Y' if $v =~ /-(?:rc|a)/i;
 
   return '';
+}
+
+sub milestone_is_useless($) {
+  my $m = shift;
+
+  my $type = $$m{mtype} || '';
+  my $obj = $$m{mobj} || '';
+  ($type eq 'game_action'
+    && ($obj eq 'saved' || $obj eq 'restored') || $obj eq 'started')
 }
 
 sub add_milestone {
@@ -790,7 +802,7 @@ sub add_milestone {
     $m = fixup_logfields($m);
   };
   die "Failed to parse '$line': $@" if $@;
-  return unless $$m{mtype};
+  return unless $$m{mtype} && !milestone_is_useless($m);
 
   my $st = $milestone_insert_st;
   my @bindvals = map(field_val($_, $m), @MILE_INSERTFIELDS_DECORATED);

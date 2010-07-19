@@ -56,7 +56,7 @@ COLUMN_ALIASES = {
   'turn' => 'turns', 'dlev' => 'lev', 'death_dnum' => 'branch',
   'dnum' => 'branch', 'death_dlev' => 'lev', 'v' => 'version',
   'r' => 'race', 'c' => 'role', 'sp' => 'race',
-  'type' => 'mtype', 'gid' => 'game_id'
+  'type' => 'mtype', 'gid' => 'game_id', 'dur' => 'realtime'
 }
 
 AGGREGATE_FUNC_TYPES = {
@@ -77,7 +77,7 @@ GENDERS = %w/Fem Mal/
 LOGFIELDS_DECORATED = %w/idI file alpha src
      version cversion points branch levI place maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
-     name deathmsg killer ktype kaux helpless praying conduct nconductI achieve
+     name death killer ktype kaux helpless praying conduct nconductI achieve
      nachieveI turnsI realtimeI starttimeD endtimeD/
 
 MILEFIELDS_DECORATED = %w/game_idI idI file alpha src
@@ -91,7 +91,6 @@ MILEFIELDS_DECORATED = %w/game_idI idI file alpha src
 ROWFETCH_MAX = 5000
 LOGFIELDS = { }
 MILEFIELDS = { }
-FAKEFIELDS = { }
 
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 OPMATCH = Regexp.new(SORTEDOPS.map { |o| Regexp.quote(o) }.join('|'))
@@ -167,7 +166,7 @@ MILEFIELDS_SUMMARIZABLE = \
 end
 
 module GameContext
-  @@game = GAME_CRAWL
+  @@game = GAME_NH
 
   def self.with_game(game)
     begin
@@ -249,7 +248,7 @@ class QueryContext
   def initialize(table, alt=nil)
     @table = table
     @alt = alt
-    @game = GAME_CRAWL
+    @game = GAME_NH
 
     if @table =~ / (\w+)$/
       @table_alias = $1
@@ -260,30 +259,30 @@ class QueryContext
     @noun_verb = { }
     if @table =~ /^logrecord/
       @fields = LOGFIELDS_DECORATED
-      @synthetic = FAKEFIELDS_DECORATED
+      @synthetic = []
       @summarizable = LOGFIELDS_SUMMARIZABLE
       @fieldmap = LOGFIELDS
-      @synthmap = FAKEFIELDS
+      @synthmap = { }
       @defsort = 'endtime'
     else
       @fields = MILEFIELDS_DECORATED
-      @synthetic = FAKEFIELDS_DECORATED
+      @synthetic = []
 
-      @synthmap = FAKEFIELDS.dup
+      @synthmap = { }
 
       @summarizable = MILEFIELDS_SUMMARIZABLE.dup
       @fieldmap = MILEFIELDS
 
       @defsort = 'id'
-      nverbs = %w/abyss.enter abyss.exit rune orb ghost ghost.ban
-                  uniq uniq.ban br.enter br.end/
+      nverbs = %w/achieve bones_killed crash game_action killed_uniq
+                  shoplifted shout sokobanprize wish/
       nverbs.each do |verb|
         @noun_verb[verb] = true
         @summarizable[verb] = true
         @synthmap[verb] = true
       end
 
-      @noun_verb_fields = [ 'mtype', 'mobj' ]
+      @noun_verb_fields = [ 'mobj', 'mtype' ]
     end
   end
 end
@@ -913,7 +912,7 @@ class DBHandle
 end
 
 def connect_sql_db
-  DBHandle.new(DBI.connect('DBI:Mysql:henzell', 'henzell', ''))
+  DBHandle.new(DBI.connect('DBI:Mysql:exxorn', 'exxorn', ''))
 end
 
 def sql_dbh
@@ -958,7 +957,7 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
-  #puts "Query: #{q.select_all} (#{q.values.join(', ')})"
+  #STDERR.puts "Query: #{q.select_all} (#{q.values.join(', ')})"
   sql_dbh.get_first_value(q.select_count, *q.values).to_i
 end
 
@@ -971,6 +970,7 @@ def sql_each_row_matching(q, limit=0)
       query += " LIMIT #{limit}"
     end
   end
+  #STDERR.puts("Running query: #{query}")
   sql_dbh.execute(query, *q.values) do |row|
     yield row
   end
@@ -1083,6 +1083,10 @@ class CrawlQuery
     @summarize || (@extra_fields && @extra_fields.aggregate?)
   end
 
+  def clean_field_value(thing)
+    thing ? thing.sub('_', ' ') : thing
+  end
+
   def summarize= (s)
     if s =~ /^([+-]?)(.*)/
       @summarize = $2
@@ -1091,7 +1095,8 @@ class CrawlQuery
       if $CTX.noun_verb[@summarize]
         noun, verb = $CTX.noun_verb_fields
         # Ulch, we have to modify our predicates.
-        add_predicate('AND', field_pred(@summarize, '=', verb))
+        add_predicate('AND', field_pred(clean_field_value(@summarize), '=',
+                                        verb))
         @summarize = noun
       end
 
@@ -1426,14 +1431,6 @@ end
 
 LISTGAME_SHORTCUTS =
   [
-   lambda do |arg, reproc|
-     if ((GODABBRS.any? { |g| arg.downcase.index(g) == 0 }) &&
-         arg =~ /^[a-z]+$/i)
-       reproc.call('god', GODMAP[arg.downcase] || arg)
-       return true
-     end
-     nil
-   end,
    lambda do |value, reproc|
      %w/win won quit left leav/.any? { |ktyp| value =~ /^#{ktyp}[a-z]*$/i } && 'ktype'
    end,
@@ -1755,13 +1752,13 @@ end
 def game_negated_match(game, arg, found=nil)
   return [game, found] if found
   if arg =~ /^!/ && GAMES[1..-1].index(arg[1..-1])
-    return [GAME_CRAWL, true]
+    return [GAME_NH, true]
   end
   return [game, nil]
 end
 
 def extract_game_type(args)
-  game = GAME_CRAWL
+  game = GAME_NH
   (0 ... args.size).each do |i|
     dcarg = args[i].downcase
     game, found = game_direct_match(game, dcarg)

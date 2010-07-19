@@ -96,7 +96,12 @@ sub parse_extras {
 
 sub game_place($) {
   my $g = shift;
-  $$g{place}
+
+  my $place = $$g{place};
+  return '' unless $place;
+
+  my $prep = $place =~ /:/? 'on' : 'in';
+  " $prep $place"
 }
 
 sub game_title($) {
@@ -110,6 +115,14 @@ sub pluralize($$) {
   "$n " . ($n == 1? $thing : "${thing}s")
 }
 
+sub pretty_date_time($) {
+  my $rawdate = shift;
+  if ($rawdate =~ /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/) {
+    return "$1-$2-$3 $4:$5:$6";
+  }
+  $rawdate
+}
+
 sub pretty_print
 {
   my $g = shift;
@@ -117,15 +130,16 @@ sub pretty_print
   my $extra_fields = parse_extras($g);
   my $name = $$g{name};
   my $title = game_title($g);
+  $title = " ($title)" if $title;
   my $place = game_place($g);
   my $dur = serialize_time($$g{realtime});
-  my $time = $$g{deathtime};
+  my $time = pretty_date_time($$g{endtime});
 
   my $points = pluralize($$g{points}, "point");
   my $turns  = pluralize($$g{turns}, "turn");
 
-  "$extra_fields$name ($title) $$g{death}$place with $points after " .
-    " $turns and $dur on $time"
+  "$extra_fields$name$title $$g{death}$place with $points on $time after " .
+    "$turns ($dur)"
 }
 
 sub milestone_string($$) {
@@ -135,6 +149,7 @@ sub milestone_string($$) {
 
   my $name = $$g{name};
   my $title = game_title($g);
+  $title = " ($title)" if $title;
   my $place = game_place($g);
   my $dur = serialize_time($$g{realtime});
   my $time = $$g{deathtime};
@@ -147,7 +162,7 @@ sub milestone_string($$) {
   my $extra = '';
   $extra = " (" . join(", ", @extras) . ")" if @extras;
 
-  "$extra_fields$name ($title) $$g{mdesc}$extra"
+  "$extra_fields$name$title $$g{mdesc}$extra"
 }
 
 1;

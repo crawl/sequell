@@ -11,34 +11,6 @@ module TV
   LOCK_FILE = 'tv.queue.lock'
   LOG_FILE = 'tv.queue.log'
 
-  # Serves ttyrec directory listings to whoever asks.
-  class TtyrecDirectoryServ < GServer
-    def initialize(port = 21977, host = "0.0.0.0")
-      puts "Starting ttyrec listing server."
-      super(port, host, Float::MAX, $stderr, true)
-    end
-
-    def serve(sock)
-      while true
-        nick = sock.gets.chomp
-        puts "ttyrec listing requested for '#{nick}'"
-        last unless nick
-        list_ttyrecs(nick, sock)
-      end
-    end
-
-    def list_ttyrecs(nick, sock)
-      if nick =~ /^[a-z0-9_ -]+$/i
-        for ttyrec in Dir[DGL_TTYREC_DIR + "/#{nick}/*.ttyrec*"]
-          if ttyrec =~ %r{.*/(.*)}
-            sock.write("#$1 #{File.size(ttyrec)} ")
-          end
-        end
-      end
-      sock.write("\r\n")
-    end
-  end
-
   # Serves TV requests to FooTV instances.
   class TVServ < GServer
     # 29976 for Un TV
