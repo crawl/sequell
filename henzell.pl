@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 use strict;
 use warnings;
 use POSIX qw(setsid); # For daemonization.
@@ -28,7 +28,7 @@ my @logfiles;
 # The other bots on the channel that might announce milestones and logfiles.
 # When Henzell sees such an announcement, it will fetch logfiles explicitly
 # within $sibling_fetch_delay seconds.
-my @sibling_bots     = qw/Henzell Gretell Hehfiel/;
+my @sibling_bots     = qw/demogorgon/;
 
 # How long after a sibling announcement that Henzell will force-fetch
 # logfile records. This should be at least 5s because we don't want a badly-
@@ -50,7 +50,7 @@ local $SIG{CHLD} = 'IGNORE';
 load_config();
 
 my $nickname       = $CONFIG{bot_nick};
-my $ircname        = "$nickname the Crawl Bot";
+my $ircname        = "$nickname the Bot";
 my $ircserver      = 'irc.freenode.org';
 my $port           = 6667;
 
@@ -89,7 +89,7 @@ if ($irc) {
                           port     => $port,
                           name     => $ircname,
                           channels => [ @CHANNELS ])
-    or die "Unable to create Henzell\n";
+    or die "Unable to create IRC bot\n";
   $HENZELL->run();
 }
 exit 0;
@@ -246,8 +246,7 @@ sub tail_logfile
     if ($CONFIG{sql_store}) {
       # Link up milestone entries belonging to this player to their
       # corresponding completed games.
-      my $sprint = $$href{sprint};
-      fixup_milestones($href->{server}, $sprint, $game_ref->{name});
+      fixup_milestones($href->{server}, $game_ref->{name});
     }
   }
   1

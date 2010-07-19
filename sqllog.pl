@@ -1,63 +1,83 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
 use Fcntl qw/SEEK_SET SEEK_CUR SEEK_END/;
 use IO::Handle;
+use DateTime;
+use Time::gmtime;
 
 use DBI;
 
 do 'game_parser.pl';
 
-my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
-  xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux place
-  br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
-  end durI turnI uruneI nruneI tmsg vmsg splat map mapdesc/;
+my @LOGFIELDS_DECORATED =
+  qw/alpha game version cversion points branch levI place maxlvlI hpI maxhpI
+     deathsI deathdateD birthdateD role race gender align gender0 align0
+     name deathmsg killer ktyp helpless praying conductI nconductI achieveI
+     nachieveI turnsI realtimeI starttimeS endtimeS/;
 
 my %LOG2SQL = ( name => 'pname',
-                char => 'charabbrev',
-                str => 'sstr',
-                dex => 'sdex',
-                int => 'sint',
-                map => 'mapname',
-                start => 'tstart',
-                end => 'tend',
-                time => 'ttime');
+                role => 'prole',
+                race => 'prace',
 
-my %SERVER_MAP = (cao => 'crawl.akrasiac.org',
-                  cdo => 'crawl.develz.org',
-                  rhf => 'rl.heh.fi');
+                lev  => 'bdepth',
 
-sub strip_suffix {
+                gender   => 'pgender',
+                align    => 'palign',
+                gender0 => 'pgender0',
+                align0  => 'palign0',
+
+                death => 'deathmsg'
+              );
+
+my %SERVER_MAP = (unn => 'un.nethack.nu',
+                  spo => 'sporkhack.org',
+                  nao  => 'nethack.alt.org');
+
+# Mapping of dnum -> dungeon name in Un; if suffixed with :, they have depths.
+my @UNBRANCHES = ('D:', 'Geh:', 'Gnome:', 'Quest:', 'Sok:',
+                  'Town', 'Ludios', 'Sam', 'Vlad',
+                  'Plane:');
+
+# FIXME:
+my @SPORKBRANCHES;
+
+my %GAME_BRANCHES = (un    => \@UNBRANCHES,
+                     spork => \@SPORKBRANCHES);
+
+sub strip_suffix($) {
   my $val = shift;
-  $val =~ s/[ID]$//;
+  $val =~ s/[IDS]$//;
   $val
 }
 
 my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
 
 my @MILEFIELDS_DECORATED =
-    qw/alpha v cv name race crace cls char xlI sk sklevI title
-       place br lvlI ltyp hpI mhpI mmhpI strI intI dexI god
-       durI turnI uruneI nruneI time verb noun milestone oplace/;
+    qw/alpha game version cversion branch levI place maxlvlI
+       hpI maxhpI deathsI birthdateD role race gender align
+       gender0 align0 name conductI achieveI turnsI realtimeI
+       starttimeS currenttimeS/;
 
-my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS, 'rstart', 'rend');
+my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS);
 
 my @MILE_INSERTFIELDS_DECORATED =
-  (qw/file src offsetI/, @MILEFIELDS_DECORATED, qw/rstart rtime/);
+  (qw/file src offsetI/, @MILEFIELDS_DECORATED);
 
 my @MILEFIELDS = map(strip_suffix($_), @MILEFIELDS_DECORATED);
 my @MILE_INSERTFIELDS = map(strip_suffix($_), @MILE_INSERTFIELDS_DECORATED);
 
 my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
-my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
-ktyp killer ckiller ikiller kpath kmod kaux ckaux place str int dex god
-start end dur turn urune nrune splat dam rstart alpha ntv map mapdesc/;
+my @INDEX_COLS =
+  qw/src file game version cversion points branch lev place maxlvl hp maxhp
+     deaths deathdate birthdate role race gender align gender0 align0
+     name deathmsg conduct nconduct achieve nachieve turns realtime starttime
+     endtime/;
 
 my @MILE_INDEX_COLS = ('src',
-                       grep($_ ne 'milestone', @MILEFIELDS),
-                      'ntv');
+                       grep($_ ne 'milestone', @MILEFIELDS));
 
 my %MILESTONE_VERB =
 (
@@ -72,26 +92,9 @@ for (@LOGFIELDS, @INDEX_COLS, @SELECTFIELDS) {
 
 my @INDEX_CASES = ( '' );
 
-my @UNIQUES = ("Ijyb", "Blork the orc", "Blork", "Urug", "Erolcha", "Snorg",
-  "Polyphemus", "Adolf", "Antaeus", "Xtahua", "Tiamat", "Boris",
-  "Murray", "Terence", "Jessica", "Sigmund", "Edmund", "Psyche",
-  "Donald", "Michael", "Joseph", "Erica", "Josephine", "Harold",
-  "Norbert", "Jozef", "Agnes", "Maud", "Louise", "Francis", "Frances",
-  "Rupert", "Wayne", "Duane", "Norris", "Frederick", "Margery",
-  "Mnoleg", "Lom Lobon", "Cerebov", "Gloorx Vloq", "Geryon",
-  "Dispater", "Asmodeus", "Ereshkigal", "the royal jelly",
-  "the Lernaean hydra", "Dissolution", "Azrael", "Prince Ribbit",
-  "Sonja", "Ilsuiw", "Nergalle", "Saint Roka", "Roxanne",
-  "Eustachio", "Nessos", "Dowan", "Duvessa", "Grum", "Crazy Yiuf",
-  "Gastronok", "Pikel", "Menkaure", "Khufu", "Aizul", "Purgy",
-  "Kirke", "Maurice", "Nikola", "Mara");
-
 my $TLOGFILE   = 'logrecord';
 my $TMILESTONE = 'milestone';
 
-my %UNIQUES = map(($_ => 1), @UNIQUES);
-
-my $LOGFILE = "allgames.txt";
 my $COMMIT_INTERVAL = 3000;
 
 my $SPLAT_TS = 'splat.timestamp';
@@ -109,8 +112,6 @@ my $dbh;
 my $insert_st;
 my $update_st;
 my $milestone_insert_st;
-my $spr_insert_st;
-my $spr_milestone_insert_st;
 
 initialize_sqllog();
 
@@ -161,9 +162,7 @@ sub load_splat {
 sub setup_db {
   $dbh = open_db();
   $insert_st = prepare_insert_st($dbh, 'logrecord');
-  $spr_insert_st = prepare_insert_st($dbh, 'spr_logrecord');
   $milestone_insert_st = prepare_milestone_insert_st($dbh, 'milestone');
-  $spr_milestone_insert_st = prepare_milestone_insert_st($dbh, 'spr_milestone');
   $update_st = prepare_update_st($dbh);
 }
 
@@ -173,7 +172,7 @@ sub reopen_db {
 }
 
 sub new_db_handle {
-  DBI->connect("dbi:mysql:henzell", 'henzell', '')
+  DBI->connect("dbi:mysql:exxorn", 'exxorn', '')
 }
 
 sub open_db {
@@ -189,9 +188,7 @@ sub check_indexes {
 
 sub cleanup_db {
   undef $insert_st;
-  undef $spr_insert_st;
   undef $milestone_insert_st;
-  undef $spr_milestone_insert_st;
   undef $update_st;
   $dbh->disconnect();
 }
@@ -401,17 +398,16 @@ sub cat_xlog {
 
 sub cat_logfile {
   my ($lf, $offset) = @_;
-  my $table = $$lf{file} =~ /-spr/? "spr_$TLOGFILE" : $TLOGFILE;
+  my $table = $TLOGFILE;
   cat_xlog($table, $lf, \&add_logline, $offset)
 }
 
 sub cat_stonefile {
   my ($lf, $offset) = @_;
-  my $sprint = $$lf{file} =~ /-spr/;
-  my $table = $sprint? "spr_$TMILESTONE" : $TMILESTONE;
+  my $table = $TMILESTONE;
   my $res = cat_xlog($table, $lf, \&add_milestone, $offset);
   print "Linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
-  fixup_milestones($lf->{server}, $sprint) if $res;
+  fixup_milestones($lf->{server}) if $res;
   print "Done linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
 }
 
@@ -423,8 +419,8 @@ table. Pretty expensive.
 =cut
 
 sub fixup_milestones {
-  my ($source, $sprint, @players) = @_;
-  my $prefix = $sprint? 'spr_' : '';
+  my ($source, @players) = @_;
+  my $prefix = '';
   my $query = <<QUERY;
      UPDATE ${prefix}milestone m
        SET m.game_id = (SELECT l.id FROM ${prefix}logrecord l
@@ -482,117 +478,105 @@ sub execute_st {
   }
 }
 
-=head2 fixup_logfields
+sub xlog_is_milestone($) {
+  my $g = shift;
+  # No nice uniform way of handling this any more.
+  return $$g{src} =~ /wish/ || $$g{src} =~ /livelog/;
+}
 
-Cleans up xlog dictionary for milestones and logfile entries.
+sub fixup_milestone_record($) {
+  my $g = shift;
+  fixup_logfile_record($g);
+  $g
+}
 
-=cut
+sub default_field_value($$) {
+  my ($field, $type) = @_;
+  return 0 if $type eq 'I' || $type eq 'S';
+  return undef if $type eq 'D';
+  return '';
+}
+
+sub resolve_branch_name($$) {
+  my ($game, $branchid) = @_;
+  my $resolved = $GAME_BRANCHES{$game}[$branchid];
+  die "Could not resolve branch id $branchid for $game\n"
+    unless defined $resolved;
+  $resolved
+}
+
+sub game_from_filename($) {
+  my $filename = shift;
+  return 'spork' if $filename =~ /spork/i;
+  return 'un' if $filename =~ /un/i;
+  return 'nh';
+}
+
+sub utc_epoch_seconds_to_fulltime($) {
+  my $epoch_seconds = shift;
+  my $time = gmtime($epoch_seconds);
+  sprintf("%04d%02d%02d%02d%02d%02d",
+          $time->year + 1900,
+          $time->mon + 1,
+          $time->mday,
+          $time->hour,
+          $time->min,
+          $time->sec)
+}
+
+sub field_type($) {
+  my $field = shift;
+  my ($type) = $field =~ /([SDI])$/;
+  $type || ''
+}
+
+sub fixup_logfile_record($) {
+  my $g = shift;
+
+  $$g{game} ||= game_from_filename($$g{file});
+
+  die "Could not resolve game from $$g{file}\n" unless $$g{game};
+
+  # Stub fields that may be missing.
+  for (@LOGFIELDS_DECORATED) {
+    my $type = field_type($_);
+    my $field = strip_suffix($_);
+    if (!defined($$g{$field})) {
+      $$g{$field} = default_field_value($field, $type || '');
+    }
+  }
+
+  $$g{dnum} ||= $$g{deathdnum};
+
+  my $dnum = $$g{dnum};
+
+  if (defined $dnum) {
+    $$g{branch} = resolve_branch_name($$g{game},
+                                      $$g{deathdnum} || $$g{dnum});
+    $$g{lev} = $$g{deathlev};
+    if (defined($$g{lev}) && $$g{branch} =~ /:$/) {
+      $$g{place} = "$$g{branch}$$g{lev}";
+    }
+    s/:$// for $$g{branch};
+  }
+
+  $$g{starttime} = utc_epoch_seconds_to_fulltime($$g{starttime});
+  $$g{endtime} = utc_epoch_seconds_to_fulltime($$g{endtime});
+  $$g{currenttime} = utc_epoch_seconds_to_fulltime($$g{currenttime});
+
+  $g
+}
 
 sub fixup_logfields {
   my $g = shift;
 
-  my $milestone = exists($g->{milestone});
-
-  ($g->{cv} = $g->{v}) =~ s/^(\d+\.\d+).*/$1/;
-
-  if ($g->{alpha}) {
-    $g->{cv} .= "-a";
-    $g->{v}  .= "-a" unless $g->{v} =~ /-a/;
-  }
-
-  my $sprint = $$g{lv} =~ /spr/i;
-  if ($sprint) {
-    $$g{sprint} = 1;
-    my $oldplace = $$g{place};
-    my $place = 'Sprint';
-    $place = "$oldplace (Sprint)" unless $oldplace eq 'D' || $oldplace =~ /^D:/;
-    $$g{place} = $place;
-  }
-
-  # Milestone may have oplace
-  if ($milestone) {
-    $g->{oplace} ||= $g->{place}
-  }
-
-  unless ($milestone) {
-    $g->{map} ||= '';
-    $g->{mapdesc} ||= '';
-    $g->{ikiller} ||= $g->{killer};
-    $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
-    for ($g->{ckiller}) {
-      s/^an? \w+-headed (hydra.*)$/a $1/;
-      s/^.*'s? ghost$/a player ghost/;
-      s/^.*'s? illusion$/a player illusion/;
-      s/^an? \w+ (draconian.*)/a $1/;
-
-      # If it's an actual kill, merge Pan lords.
-      my $kill = $g->{killer};
-      if ($kill && $kill =~ /^[A-Z]/) {
-        my ($name) = /^([^,]*)/;
-        $_ = 'a pandemonium lord'
-          if !/^(?:an?|the) / && !$UNIQUES{$name} && !/,/;
-        # Fix Blork and variants thereof.
-        $_ = 'Blork' if /^Blork/;
-      }
-    }
-
-    $g->{kmod} = $g->{killer} || '';
-    for ($g->{kmod}) {
-      if (/spectral (?!warrior)/) {
-        $_ = 'a spectral thing';
-      }
-      elsif (/shapeshifter/) {
-        $_ = 'shapeshifter';
-      }
-      elsif (!s/.*(zombie|skeleton|simulacrum)$/$1/) {
-        $_ = '';
-      }
-    }
-
-    $g->{ckaux} = $g->{kaux} || '';
-    for ($g->{ckaux}) {
-      s/\{.*?\}//g;
-      s/\(.*?\)//g;
-      s/[+-]\d+,?\s*//g;
-      s/^an? //g;
-      s/(?:elven|orcish|dwarven) //g;
-      s/^Hit by (.*) thrown .*$/$1/;
-      s/^Shot with (.*) by .*$/$1/;
-      s/\b(?:un)?cursed //;
-      s/\s+$//;
-      s/  / /g;
-    }
-
-    $g->{rend} = $g->{end};
-  }
-
-  $g->{crace} = $g->{race};
-  for ($g->{crace}) {
-    s/.*(Draconian)$/$1/;
-  }
-
-  # Milestones will have start time.
-  $g->{rstart} = $g->{start};
-  if ($milestone) {
-    $g->{rtime} = $g->{time};
-  }
-
-  for ($g->{start}, $g->{end}, $g->{time}) {
-    if ($_) {
-      s/^(\d{4})(\d{2})/$1 . sprintf("%02d", $2 + 1)/e;
-      s/[SD]$//;
-    }
-  }
+  my $milestone = xlog_is_milestone($g);
+  $$g{cversion} = $$g{version};
 
   if ($milestone) {
-    milestone_mangle($g);
-  }
-  else {
-    my $src = $g->{src};
-    # Fixup src for interesting_game.
-    $g->{src} = "http://$SERVER_MAP{$src}/";
-    $g->{splat} = CSplat::Select::interesting_game($g) ? 'y' : '';
-    $g->{src} = $src;
+    fixup_milestone_record($g);
+  } else {
+    fixup_logfile_record($g);
   }
 
   $g
@@ -600,44 +584,10 @@ sub fixup_logfields {
 
 sub field_val {
   my ($key, $g) = @_;
-  my $integer = $key =~ /I$/;
-  $key =~ s/I$//;
-  my $val = $g->{$key} || ($integer? 0 : '');
+  my $ftype = field_type($key);
+  $key = strip_suffix($key);
+  my $val = $g->{$key} || default_field_value($key, $ftype);
   $val
-}
-
-sub milestone_mangle {
-  my ($g) = shift;
-
-  $g->{verb} = $MILESTONE_VERB{$g->{verb}} || $g->{verb};
-  my ($verb, $noun) = @$g{qw/verb noun/};
-  if ($verb eq 'uniq') {
-    my ($action, $unique) = $noun =~ /^(\w+) (.*?)\.?$/;
-    $verb = 'uniq.ban' if $action eq 'banished';
-    $noun = $unique;
-  }
-  elsif ($verb eq 'ghost') {
-    my ($action, $ghost) = $noun =~ /(\w+) the ghost of (\S+)/;
-    $verb = 'ghost.ban' if $action eq 'banished';
-    $noun = $ghost;
-  }
-  elsif ($verb eq 'abyss.enter') {
-    my ($cause) = $noun =~ /.*\((.*?)\)$/;
-    $noun = $cause ? $cause : '?';
-  }
-  elsif ($verb eq 'br.enter' || $verb eq 'br.end') {
-    $noun = $g->{place};
-    $noun =~ s/:.*//;
-  }
-  elsif ($verb eq 'rune') {
-    my ($rune) = $noun =~ /found an? (\S+)/;
-    $noun = $rune if $rune;
-  }
-  elsif ($verb eq 'orb') {
-    $noun = 'orb';
-  }
-  $g->{verb} = $verb;
-  $g->{noun} = $noun;
 }
 
 sub record_is_alpha_version {
@@ -645,7 +595,7 @@ sub record_is_alpha_version {
   return 'y' if $$lf{alpha};
 
   # Game version that mentions -rc or -a is automatically alpha.
-  my $v = $$g{v};
+  my $v = $$g{version};
   return 'y' if $v =~ /-(?:rc|a)/i;
 
   return '';
@@ -660,12 +610,10 @@ sub add_milestone {
   $m->{offset} = $offset;
   $m->{src} = $lf->{server};
   $m->{alpha} = record_is_alpha_version($lf, $m);
-  $m->{verb} = $m->{type};
   $m->{milestone} ||= '?';
-  $m->{noun} = $m->{milestone};
   $m = fixup_logfields($m);
 
-  my $st = $$m{sprint} ? $spr_milestone_insert_st : $milestone_insert_st;
+  my $st = $milestone_insert_st;
   my @bindvals = map(field_val($_, $m), @MILE_INSERTFIELDS_DECORATED);
   execute_st($st, @bindvals) or
     die "Can't insert record for $line: $!\n";
@@ -677,12 +625,11 @@ sub add_logline {
   my $fields = logfield_hash($line);
   $fields->{src} = $lf->{server};
   $fields->{alpha} = record_is_alpha_version($lf, $fields);
+  $fields->{file} = $lf->{file};
   $fields = fixup_logfields($fields);
-  my $st = $$fields{sprint} ? $spr_insert_st : $insert_st;
+  my $st = $insert_st;
   my @bindvalues = ($lf->{file}, $lf->{server}, $offset,
-                    map(field_val($_, $fields), @LOGFIELDS_DECORATED),
-                    field_val('rstart', $fields),
-                    field_val('rend', $fields));
+                    map(field_val($_, $fields), @LOGFIELDS_DECORATED));
   execute_st($st, @bindvalues) or
     die "Can't insert record for $line: $!\n";
 }

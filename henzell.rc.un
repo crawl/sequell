@@ -1,4 +1,4 @@
-bot_nick = Gridbug
+bot_nick = Exxorn
 sql_store = 1
 sql_queries = 1
 commands_file = commands/commands-un.txt

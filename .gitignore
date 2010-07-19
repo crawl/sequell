@@ -1,5 +1,6 @@
 .#*
 \#*
+logs
 pcache.db
 remote.*
 .remote-*
@@ -21,3 +22,5 @@ TAGS
 splat.timestamp
 nicks.map
 unwon.txt
+henzell.rc
+password.txt

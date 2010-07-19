@@ -35,9 +35,7 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       public_commands_file => 'commands/public-commands.txt',
 
                       # Map hostname abbreviations to full hostnames.
-                      'abbr.cao' => 'crawl.akrasiac.org',
-                      'abbr.cdo' => 'crawl.develz.org',
-                      'abbr.rhf' => 'rl.heh.fi'
+                      'abbr.unn' => 'un.nethack.nu',
                       );
 
 our %CONFIG = %DEFAULT_CONFIG;
