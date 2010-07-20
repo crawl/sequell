@@ -41,8 +41,7 @@ my $sibling_logs_need_fetch;
 my $sibling_last_fetch_time;
 
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
-my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
-                                      greensnark cbus doy/;
+my %admins         = map {$_ => 1} qw/greensnark/;
 
 local $SIG{PIPE} = 'IGNORE';
 local $SIG{CHLD} = 'IGNORE';
@@ -387,7 +386,7 @@ sub process_message {
 
   $target =~ s/^\?[?>]/!learn query /;
   $target =~ s/^!>/!/;
-  $target =~ s/^([!@]\w+) ?// or return;
+  $target =~ s/^([!@=]\w+) ?// or return;
   my $command = lc $1;
 
   $target   =~ s/ .*$//;
