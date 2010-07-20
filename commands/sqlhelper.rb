@@ -1705,7 +1705,7 @@ def query_field(selector, field, op, sqlop, val)
     return clauses[0]
   end
 
-  if ['killer'].index(selfield)
+  if ['killer', 'ckiller'].index(selfield)
     if [ '=', '!=' ].index(op) and val !~ /^an? /i then
       clause = [ op == '=' ? 'OR' : 'AND' ]
       clause << field_pred(val, sqlop, selector, field)
