@@ -57,7 +57,7 @@ COLUMN_ALIASES = {
   'dnum' => 'branch', 'death_dlev' => 'lev', 'v' => 'version',
   'r' => 'race', 'c' => 'role', 'sp' => 'race',
   'type' => 'mtype', 'gid' => 'game_id', 'dur' => 'realtime',
-  'uniq' => 'killed_uniq', 'ghost' => 'bones_killed', 'bones' => 'bones_killed'
+  'uniq' => 'killed_uniq', 'ghost' => 'bones_killed', 'bones' => 'bones_killed',
   'soko' => 'sokobanprize'
 }
 
