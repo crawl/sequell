@@ -218,10 +218,14 @@ module TV
     end
   end
 
+  def dud_time(t)
+    !t || t =~ /^1970/
+  end
+
   def self.request_game_verbosely(n, g, who)
     summary = short_game_summary(g)
 
-    if !g['endtime'] && !g['currenttime']
+    if dud_time(g['endtime']) && dud_time(g['currenttime'])
       raise "#{n}. #{summary}: no time information"
     end
 
