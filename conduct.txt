@@ -1,4 +1,3 @@
-# Note: all conduct bits must be *negated*.
 0 = foodless
 1 = vegan
 2 = vegetarian

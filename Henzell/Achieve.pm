@@ -81,9 +81,9 @@ sub conduct_names($) {
   my @conducts;
   for my $i (0 .. $CONDUCT_MAX_SHIFT) {
     my $id = 1 << $i;
-    # Conduct checks must be negated:
-    push @conducts, conduct_name($id) unless $ids & $id;
+    push @conducts, conduct_name($id) if $ids & $id;
   }
+  @conducts
 }
 
 sub conduct_name($) {
