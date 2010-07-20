@@ -996,6 +996,10 @@ def sql_game_by_id(id)
   end
 end
 
+def clean_field_value(thing)
+  thing ? thing.sub('_', ' ') : thing
+end
+
 class QueryList < Array
   attr_accessor :ctx, :sorts, :filters
 
@@ -1081,10 +1085,6 @@ class CrawlQuery
 
   def summarize?
     @summarize || (@extra_fields && @extra_fields.aggregate?)
-  end
-
-  def clean_field_value(thing)
-    thing ? thing.sub('_', ' ') : thing
   end
 
   def summarize= (s)
@@ -1672,7 +1672,7 @@ def query_field(selector, field, op, sqlop, val)
     clause = [ 'AND' ]
     key = $CTX.noun_verb[selector]
     noun, verb = $CTX.noun_verb_fields
-    clause << field_pred(selector, '=', verb, verb)
+    clause << field_pred(clean_field_value(selector), '=', verb, verb)
     clause << field_pred(val, sqlop, noun, noun)
     return clause
   end
