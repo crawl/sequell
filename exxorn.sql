@@ -57,7 +57,7 @@ CREATE TABLE logrecord (
     ckiller VARCHAR(80),
 
     -- while <yadda>
-    kaux VARCHAR(80),
+    kstate VARCHAR(80),
 
     helpless CHAR(1),
     praying  CHAR(1),
