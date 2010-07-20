@@ -9,6 +9,11 @@ exit(0) if !ENV['HENZELL_SQL_QUERIES']
 GAME_NH = 'nh'
 GAMES = [GAME_NH]
 
+GAME_FILTER = ENV['GAME_FILTER']
+#GAME_FILTER = 'spork'
+
+GAME_ABBRS = %w/spork un/
+
 GAME_PREFIXES = { GAME_NH => '' }
 
 OPERATORS = {
@@ -82,13 +87,13 @@ for x in [ SPECIES, CLASSES, ALIGNS, GENDERS ]
   end
 end
 
-LOGFIELDS_DECORATED = %w/idI file alpha src
+LOGFIELDS_DECORATED = %w/idI file alpha src game
      version cversion points branch levI place placename maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
      name death killer ckiller ktype kstate helpless praying conduct nconductI
      achieve nachieveI turnsI realtimeI starttimeD endtimeD/
 
-MILEFIELDS_DECORATED = %w/game_idI idI file alpha src
+MILEFIELDS_DECORATED = %w/game_idI idI file alpha src game
        version cversion branch levI place placename maxlvlI
        hpI maxhpI deathsI birthdateD role race gender align
        gender0 align0 name conduct nconductI achieve nachieveI turnsI realtimeI
@@ -1026,9 +1031,27 @@ class CrawlQuery
   attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
   attr_accessor :summary_sort, :table, :game
 
+  def apply_game_filter!
+    if GAME_FILTER && !has_field_named('game', @pred)
+      add_predicate('AND', field_pred(GAME_FILTER, '=', 'game'))
+    end
+  end
+
+  def has_field_named(field, pred)
+    return false if !pred || pred.empty?
+
+    if pred[0].is_a?(Symbol)
+      return (pred[0] == :field and
+              (pred[3] =~ /^#{field}$/ || pred[3] =~ /\.#{field}$/))
+    end
+
+    return pred[1 .. -1].any? { |x| has_field_named(field, x) }
+  end
+
   def initialize(predicates, sorts, extra_fields, nick, num, argstr)
     @table = $CTX.table
     @pred = predicates
+    apply_game_filter!
     @sort = sorts
     @nick = nick
     @num = num
@@ -1470,6 +1493,10 @@ def abbr_is_align?(abbr)
   return ALIGNS.index(abbr.downcase)
 end
 
+def abbr_is_game?(abbr)
+  GAME_ABBRS.index(abbr.downcase)
+end
+
 def fixup_listgame_arg(preds, sorts, arg)
   atom = arg =~ /^\S+$/
   if atom
@@ -1493,6 +1520,10 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('gender', arg)
     elsif abbr_is_align?(arg) then
       return reproc.call('align', arg)
+    end
+
+    if abbr_is_game?(arg) then
+      return reproc.call('game', arg)
     end
 
     if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||

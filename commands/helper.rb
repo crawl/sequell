@@ -31,7 +31,7 @@ DGL_ALIEN_TTYRECS = \
 [
  [ %r/unn-.*/, 'http://un.nethack.nu/users/$user/ttyrecs' ],
  [ %r/spo-.*/, 'http://sporkhack.com/ttyrec' ],
- [ %r/nao-.*/, 'http://alt.org/nethack/userdata/$user' ],
+ [ %r/nao-.*/, 'http://alt.org/nethack/userdata' ],
 ]
 
 MORGUE_DATEFORMAT = '%Y%m%d%H%M%S'
