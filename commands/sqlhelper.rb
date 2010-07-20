@@ -76,6 +76,12 @@ CLASSES = %w/Arc Bar Cav Hea Kni Mon Pri Ran Rog Sam Tou Val Wiz/
 ALIGNS = %w/Cha Law Neu/
 GENDERS = %w/Fem Mal/
 
+for x in [ SPECIES, CLASSES, ALIGNS, GENDERS ]
+  x.each do |y|
+    y.downcase!
+  end
+end
+
 LOGFIELDS_DECORATED = %w/idI file alpha src
      version cversion points branch levI place maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
