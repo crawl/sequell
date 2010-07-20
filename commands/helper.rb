@@ -435,7 +435,8 @@ def game_short_char(g)
 end
 
 def game_char(g)
-  pieces = %w/role race align gender/.collect { |x| g[x] }.find_all { |x| x }
+  pieces = %w/role race align gender/.collect { |x| g[x] }
+  pieces = pieces.find_all { |x| x && !x.empty? }
   pieces.join(" ")
 end
 
