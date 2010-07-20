@@ -83,13 +83,13 @@ for x in [ SPECIES, CLASSES, ALIGNS, GENDERS ]
 end
 
 LOGFIELDS_DECORATED = %w/idI file alpha src
-     version cversion points branch levI place maxlvlI hpI maxhpI
+     version cversion points branch levI place placename maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
      name death killer ckiller ktype kstate helpless praying conduct nconductI
      achieve nachieveI turnsI realtimeI starttimeD endtimeD/
 
 MILEFIELDS_DECORATED = %w/game_idI idI file alpha src
-       version cversion branch levI place maxlvlI
+       version cversion branch levI place placename maxlvlI
        hpI maxhpI deathsI birthdateD role race gender align
        gender0 align0 name conduct nconductI achieve nachieveI turnsI realtimeI
        starttimeD currenttimeD mtype mobj mdesc shop shopliftedI
@@ -283,7 +283,7 @@ class QueryContext
 
       @defsort = 'id'
       nverbs = %w/achieve bones_killed crash game_action killed_uniq
-                  shoplifted shout sokobanprize wish/
+                  shoplifted shout sokobanprize wish lifesaved plane/
       nverbs.each do |verb|
         @noun_verb[verb] = true
         @summarizable[verb] = true
@@ -1532,6 +1532,11 @@ def fixup_listgame_selector(key, op, val)
   if rkey == 'ktype' && eqop
     val = 'ascended' if cval =~ /^win/ || cval =~ /^won/
     val = 'quit' if cval =~ /^leav/ || cval =~ /^quit/
+  end
+
+  if rkey == 'mtype' && eqop
+    val = 'bones_killed' if cval == 'ghost'
+    val = 'killed_uniq' if cval == 'uniq'
   end
 
   [key, op, val]

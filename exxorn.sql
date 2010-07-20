@@ -31,6 +31,7 @@ CREATE TABLE logrecord (
     branch VARCHAR(20),
     bdepth INT,
     place VARCHAR(30),
+    placename VARCHAR(80),
 
     maxlvl INT,
     hp INT,
@@ -98,6 +99,7 @@ CREATE TABLE milestone (
     branch VARCHAR(20),
     bdepth INT,
     place VARCHAR(30),
+    placename VARCHAR(80),
 
     maxlvl INT,
     hp INT,

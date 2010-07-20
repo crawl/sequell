@@ -8,13 +8,15 @@ use DateTime;
 use Time::gmtime;
 
 use Henzell::Achieve;
+use Henzell::Spork;
 
 use DBI;
 
 do 'game_parser.pl';
 
 my @LOGFIELDS_DECORATED =
-  qw/alpha game version cversion points branch levI place maxlvlI hpI maxhpI
+  qw/alpha game version cversion points branch levI place placename
+     maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
      name deathmsg killer ckiller ktype kstate helpless praying conduct
      nconductI achieve nachieveI turnsI realtimeI starttimeS endtimeS/;
@@ -73,7 +75,7 @@ my $ORIG_LINE;
 my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
 
 my @MILEFIELDS_DECORATED =
-    qw/alpha game version cversion branch levI place maxlvlI
+    qw/alpha game version cversion branch levI place placename maxlvlI
        hpI maxhpI deathsI birthdateD role race gender align
        gender0 align0 name conduct nconductI achieve nachieveI turnsI realtimeI
        starttimeS currenttimeS mtype mobj mdesc shop shopliftedI
@@ -441,6 +443,18 @@ sub logfield_hash {
   return \%fieldh;
 }
 
+sub parse_logline($$) {
+  my ($line, $sourcefile) = @_;
+  my $g;
+  if ($sourcefile =~ /wish/ && $sourcefile =~ /spo/) {
+    $g = Henzell::Spork::spork_wishtracker_xdict($line);
+  } else {
+    $g = logfield_hash($line);
+  }
+  $$g{file} = $sourcefile;
+  $g
+}
+
 sub execute_st {
   my $st = shift;
   while (1) {
@@ -477,7 +491,7 @@ sub resolve_branch_name($$) {
 
 sub game_from_filename($) {
   my $filename = shift;
-  return 'spork' if $filename =~ /spork/i;
+  return 'spork' if $filename =~ /spo/i;
   return 'un' if $filename =~ /un/i;
   return 'nh';
 }
@@ -591,6 +605,7 @@ sub milestone_parse_game_action($) {
 # Figures out what kind of milestone this is and sets up data accordingly.
 sub parse_milestone_record($) {
   my $g = shift;
+  return $g if $$g{mtype} && $$g{mtype_finished};
   my $type = $$g{type} || milestone_identify_type($g);
   $type = 'achieve_diff' if $type && $type =~ /achieve/;
   if ($type) {
@@ -716,6 +731,8 @@ sub fixup_logfields {
   } else {
     fixup_logfile_record($g);
   }
+  $$g{placename} ||= $$g{place};
+  $$g{place} ||= $$g{placename};
 
   $g
 }
@@ -751,8 +768,9 @@ sub milestone_is_useless($) {
 
 sub add_milestone {
   my ($lf, $offset, $line) = @_;
+
   chomp $line;
-  my $m = logfield_hash($line);
+  my $m = parse_logline($line, $lf->{file});
 
   $ORIG_LINE = $line;
   $m->{file} = $lf->{file};

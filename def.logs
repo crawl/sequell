@@ -3,3 +3,10 @@ remote.unn-xlogfile
 
 [remote:spo:http://sporkhack.com/logs/xlogfile]
 remote.spo-xlogfile
+
+# Spork logs must have spork in the name for game type identification.
+[remote:nao:http://alt.org/nethack/sporkhack_r764_xlogfile]
+remote.nao-spork-r764-xlogfile
+
+[remote:nao:http://alt.org/nethack/sporkhack_xlogfile]
+remote.nao-spork-xlogfile
