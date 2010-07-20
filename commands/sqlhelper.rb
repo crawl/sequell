@@ -56,7 +56,9 @@ COLUMN_ALIASES = {
   'turn' => 'turns', 'dlev' => 'lev', 'death_dnum' => 'branch',
   'dnum' => 'branch', 'death_dlev' => 'lev', 'v' => 'version',
   'r' => 'race', 'c' => 'role', 'sp' => 'race',
-  'type' => 'mtype', 'gid' => 'game_id', 'dur' => 'realtime'
+  'type' => 'mtype', 'gid' => 'game_id', 'dur' => 'realtime',
+  'uniq' => 'killed_uniq', 'ghost' => 'bones_killed', 'bones' => 'bones_killed'
+  'soko' => 'sokobanprize'
 }
 
 AGGREGATE_FUNC_TYPES = {
