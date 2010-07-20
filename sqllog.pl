@@ -655,6 +655,7 @@ sub fixup_logfile_record($) {
   $$g{game} ||= game_from_filename($$g{file});
   $$g{name} ||= $$g{player};
   $$g{align} ||= $$g{alignment};
+  $$g{placename} ||= $$g{dlev_name};
 
   die "Could not resolve game from $$g{file}\n" unless $$g{game};
 

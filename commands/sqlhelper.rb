@@ -65,7 +65,7 @@ COLUMN_ALIASES = {
   'r' => 'race', 'c' => 'role', 'sp' => 'race',
   'type' => 'mtype', 'gid' => 'game_id', 'dur' => 'realtime',
   'uniq' => 'killed_uniq', 'ghost' => 'bones_killed', 'bones' => 'bones_killed',
-  'soko' => 'sokobanprize'
+  'soko' => 'sokobanprize', 'dlev_name' => 'placename'
 }
 
 AGGREGATE_FUNC_TYPES = {
