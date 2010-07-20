@@ -446,7 +446,7 @@ end
 
 def short_game_summary(g)
   mile = g['milestone'] ? ' (milestone)' : ''
-  infos = [g['name'], game_char(g), game_turns(g)].find_all { |x| x }
+  infos = [g['name'], game_char(g), game_turns(g)].find_all { |x| x && !x.empty? }
   "#{infos.join(', ')}#{mile}"
 end
 
