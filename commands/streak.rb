@@ -50,7 +50,7 @@ sql_each_row_matching(query.reverse) do |row|
 
   $name ||= game['name']
   $games += 1
-  win = game['ktype'] == 'winning'
+  win = game['ktype'] == 'ascended'
 
   if win
     if $between_wins > 0 &&
