@@ -763,7 +763,7 @@ sub milestone_is_useless($) {
   my $type = $$m{mtype} || '';
   my $obj = $$m{mobj} || '';
   ($type eq 'game_action'
-    && ($obj eq 'saved' || $obj eq 'restored') || $obj eq 'started')
+    && ($obj eq 'saved' || $obj eq 'resumed') || $obj eq 'started')
 }
 
 sub add_milestone {
