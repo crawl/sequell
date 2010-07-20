@@ -14,6 +14,8 @@ GAME_FILTER = ENV['GAME_FILTER']
 
 GAME_ABBRS = %w/spork un/
 
+SRC_ABBRS = %w/nao unn spo/
+
 GAME_PREFIXES = { GAME_NH => '' }
 
 OPERATORS = {
@@ -1497,6 +1499,10 @@ def abbr_is_game?(abbr)
   GAME_ABBRS.index(abbr.downcase)
 end
 
+def abbr_is_src?(abbr)
+  SRC_ABBRS.index(abbr.downcase)
+end
+
 def fixup_listgame_arg(preds, sorts, arg)
   atom = arg =~ /^\S+$/
   if atom
@@ -1525,6 +1531,8 @@ def fixup_listgame_arg(preds, sorts, arg)
     if abbr_is_game?(arg) then
       return reproc.call('game', arg)
     end
+
+    return reproc.call('src', arg) if abbr_is_src?(arg)
 
     if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
         BRANCH_SET.include?(arg.downcase)

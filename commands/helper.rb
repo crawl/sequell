@@ -31,7 +31,7 @@ DGL_ALIEN_TTYRECS = \
 [
  [ %r/unn-.*/, 'http://un.nethack.nu/users/$user/ttyrecs' ],
  [ %r/spo-.*/, 'http://sporkhack.com/ttyrec' ],
- [ %r/nao-.*/, 'http://alt.org/nethack/userdata' ],
+ [ %r/nao-.*/, 'http://alt.org/nethack/userdata/$user/ttyrec' ],
 ]
 
 MORGUE_DATEFORMAT = '%Y%m%d%H%M%S'
@@ -324,7 +324,7 @@ def game_resolve_url(url, g)
     url += "/" unless url =~ %r{/$}
     url
   else
-    url + "/" + e['name'] + "/"
+    url + "/" + g['name'] + "/"
   end
 end
 
