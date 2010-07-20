@@ -218,7 +218,7 @@ module TV
     end
   end
 
-  def dud_time(t)
+  def self.dud_time(t)
     !t || t =~ /^1970/
   end
 
