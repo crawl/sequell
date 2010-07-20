@@ -34,13 +34,6 @@ DGL_ALIEN_TTYRECS = \
  [ %r/nao-.*/, 'http://alt.org/nethack/userdata/$user' ],
 ]
 
-SERVER_TIMEZONE = {
-  'caoD' => '-0400', # EDT
-  'caoS' => '-0500', # EST
-  'cdoD' => '+0200', # CEST
-  'cdoS' => '+0100', # CET
-}
-
 MORGUE_DATEFORMAT = '%Y%m%d%H%M%S'
 SHORT_DATEFORMAT = '%Y%m%d%H%M%S'
 EPOCH_SECONDS_FORMAT = '%s'
