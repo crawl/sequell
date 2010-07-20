@@ -2,13 +2,13 @@
 do 'commands/helper.pl';
 use Henzell::Config qw/%CMDPATH/;
 
-help("Displays help on a command. For a list of commands, see !cmdinfo.");
+my ($key) = $ARGV[2] =~ /^(.)help/i;
+help("Displays help on a command. For a list of commands, see ${key}cmdinfo.");
 
 Henzell::Config::read();
 
 # prep the new @ARGV for the help command
 $ARGV[3] = 1;
-my ($key) = $ARGV[2] =~ /^(.)help/i;
 
 $ARGV[2] =~ s/^.help\s+//i;
 $ARGV[2] = "$key$ARGV[2]" unless !$ARGV[2] || substr($ARGV[2], 0, 1) eq $key;
