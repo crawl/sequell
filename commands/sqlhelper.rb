@@ -1034,7 +1034,7 @@ class CrawlQuery
   attr_accessor :summary_sort, :table, :game
 
   def apply_game_filter!
-    if GAME_FILTER && !has_field_named('game', @pred)
+    if GAME_FILTER && !GAME_FILTER.empty? && !has_field_named('game', @pred)
       add_predicate('AND', field_pred(GAME_FILTER, '=', 'game'))
     end
   end
