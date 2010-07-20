@@ -2,4 +2,4 @@
 remote.unn-xlogfile
 
 [remote:spo:http://sporkhack.com/logs/xlogfile]
-remote.spork-xlogfile
+remote.spo-xlogfile
