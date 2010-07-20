@@ -229,7 +229,7 @@ module TV
       raise "#{n}. #{summary}: no time information"
     end
 
-    tv = 'UnTV'
+    tv = 'UnSporkTV'
 
     if @@tv_args && @@tv_args['nuke']
       puts "#{tv} playlist clear requested by #{who}."
