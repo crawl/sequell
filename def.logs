@@ -1,2 +1,5 @@
 [remote:unn:http://un.nethack.nu/logs/xlogfile]
 remote.unn-xlogfile
+
+[remote:spo:http://sporkhack.com/logs/xlogfile]
+remote.spork-xlogfile

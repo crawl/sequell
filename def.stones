@@ -1,2 +1,5 @@
 [remote:unn:http://un.nethack.nu/logs/livelog]
 remote.unn-livelog
+
+[remote:spo:http://sporkhack.com/wishtracker]
+remote.spo-wishtracker
