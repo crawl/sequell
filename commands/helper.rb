@@ -347,8 +347,6 @@ def binary_search_alien_morgue(url, e)
   STDERR.puts("Looking for #{full_name} in #{morgues.join(', ')}")
   # Look for exact match with the full time or short time
   found = (morgues.find { |m| m == full_name } ||
-           binary_search(morgues.find_all { |x| x =~ /.html$/ },
-                         full_name + '.html') ||
            binary_search(morgues, full_name))
   return user_url + found if found
 
