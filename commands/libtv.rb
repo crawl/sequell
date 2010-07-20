@@ -228,7 +228,7 @@ module TV
     tv = 'UnTV'
 
     if @@tv_args && @@tv_args['nuke']
-      puts "FooTV playlist clear requested by #{who}."
+      puts "#{tv} playlist clear requested by #{who}."
     else
       suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
       puts "#{n}. #{summary}#{suffix} requested for #{tv}."
