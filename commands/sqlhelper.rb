@@ -1455,19 +1455,19 @@ LISTGAME_SHORTCUTS =
   ]
 
 def abbr_is_race?(abbr)
-  return SPECIES.index(abbr)
+  return SPECIES.index(abbr.downcase)
 end
 
 def abbr_is_role?(abbr)
-  return CLASSES.index(abbr)
+  return CLASSES.index(abbr.downcase)
 end
 
 def abbr_is_gender?(abbr)
-  return GENDERS.index(abbr)
+  return GENDERS.index(abbr.downcase)
 end
 
 def abbr_is_align?(abbr)
-  return ALIGNS.index(abbr)
+  return ALIGNS.index(abbr.downcase)
 end
 
 def fixup_listgame_arg(preds, sorts, arg)
