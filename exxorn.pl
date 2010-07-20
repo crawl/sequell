@@ -362,6 +362,13 @@ sub force_private {
   return $CONFIG{use_pm} && ($command =~ /^!\w/ || $command =~ /^[?]{2}/);
 }
 
+sub channel_game($) {
+  my $channel = shift;
+  return 'un' if $channel =~ /un/i;
+  return 'spork' if $channel =~ /spork/i;
+  return undef
+}
+
 sub process_message {
   my ($m) = @_;
 
@@ -406,7 +413,7 @@ sub process_message {
     # Log all commands to Henzell.
     print "CMD($private): $nick: $verbatim\n";
     $ENV{PRIVMSG} = $private ? 'y' : '';
-    $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
+    $ENV{GAME_FILTER} = channel_game($$m{channel});
     my $output =
       $CMD{$command}->(pack_args($target, $nick, $verbatim, '', ''));
     respond_with_message($m, $output);
