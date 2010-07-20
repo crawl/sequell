@@ -272,10 +272,9 @@ sub is_sibling_announcement {
 
     # Milestone announcements have two sets of parens:
     # Ex: wya (L26 DSAM) reached level 3 of the Tomb of the Ancients. (Tomb:3)
-    return 1 if /\(.*?\).*?\(.*?\)/;
+    return 1 if /after.*turn/;
 
-    # Logfile announcements have a paren and a turn count.
-    return 1 if /\(.*?\).*turn/;
+    return 1 if /score was/;
   }
   return undef;
 }
