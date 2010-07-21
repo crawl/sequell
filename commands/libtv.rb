@@ -2,7 +2,6 @@
 
 require 'gserver'
 require 'commands/helper'
-require 'commands/sqlhelper'
 
 module TV
   @@tv_args = nil
