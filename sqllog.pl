@@ -763,8 +763,11 @@ sub milestone_is_useless($) {
 
   my $type = $$m{mtype} || '';
   my $obj = $$m{mobj} || '';
-  ($type eq 'game_action'
-    && ($obj eq 'saved' || $obj eq 'resumed') || $obj eq 'started')
+
+  # Discard game actions and shouts.
+  (($type eq 'game_action'
+    && grep($_ eq $obj, qw/saved resumed started/))
+   || $type eq 'shout')
 }
 
 sub add_milestone {
