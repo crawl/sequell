@@ -148,6 +148,31 @@ module TV
     nil
   end
 
+  def self.launch_dirserv()
+    return if fork()
+
+    begin
+      Process.setsid
+    ensure
+    end
+
+    # Try for a lock, but do not block
+    oflock(LOCK_FILE, File::LOCK_EX | File::LOCK_NB) do |f|
+      # Be a good citizen:
+      logfile = File.open(LOG_FILE, 'w')
+      logfile.sync = true
+      STDOUT.reopen(logfile)
+      STDERR.reopen(logfile)
+      STDIN.close()
+
+      # Start the ttyrec listing server.
+      ttyrec_lister = TtyrecDirectoryServ.new
+      ttyrec_lister.start()
+      ttyrec_lister.join()
+    end
+    exit 0
+  end
+
   def self.launch_daemon()
     return if fork()
 
