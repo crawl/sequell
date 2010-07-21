@@ -284,6 +284,7 @@ sub check_sibling_announcements
   my ($nick, $verbatim) = @_;
   if (($nick ne $nickname) && grep($_ eq $nick, @sibling_bots)) {
     if (is_sibling_announcement($verbatim)) {
+      print "Sibling announcement: $nick: $verbatim\n";
       $sibling_logs_need_fetch = 1;
     }
   }
