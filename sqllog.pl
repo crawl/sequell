@@ -701,15 +701,16 @@ sub fixup_logfile_record($) {
 
     my ($ktyp, $killer) = $deathmsg =~ /^(\w+)(?: by (.*))?/i;
     $$g{ktype} = $ktyp;
-    $$g{killer} = $killer || '';
 
-    for ($$g{killer}) {
+    $killer ||= '';
+    for ($killer) {
       s/^an? //;
       if (!/stalker/) {
         s/^invisible//;
       }
     }
 
+    $$g{killer} = $killer;
     $$g{ckiller} = $killer || $ktyp;
     $$g{praying} = 'Y' if $while =~ /while praying/i;
     if ($while =~ /, while (.*)/i) {
