@@ -9,8 +9,8 @@ exit(0) if !ENV['HENZELL_SQL_QUERIES']
 GAME_NH = 'nh'
 GAMES = [GAME_NH]
 
-GAME_FILTER = ENV['GAME_FILTER']
-#GAME_FILTER = 'spork'
+$GAME_FILTER = ENV['$GAME_FILTER']
+#$GAME_FILTER = 'spork'
 
 GAME_ABBRS = %w/spork un/
 
@@ -1042,8 +1042,8 @@ class CrawlQuery
   attr_accessor :summary_sort, :table, :game
 
   def apply_game_filter!
-    if GAME_FILTER && !GAME_FILTER.empty? && !has_field_named('game', @pred)
-      add_predicate('AND', field_pred(GAME_FILTER, '=', 'game'))
+    if $GAME_FILTER && !$GAME_FILTER.empty? && !has_field_named('game', @pred)
+      add_predicate('AND', field_pred($GAME_FILTER, '=', 'game'))
     end
   end
 
@@ -1526,7 +1526,7 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('name', arg)
     end
 
-    if GAME_FILTER == 'spork' && E_PLANES[arg] then
+    if $GAME_FILTER == 'spork' && E_PLANES[arg] then
       return reproc.call('place', E_PLANES[arg])
     end
 
@@ -1541,7 +1541,7 @@ def fixup_listgame_arg(preds, sorts, arg)
     end
 
     if abbr_is_game?(arg) then
-      GAME_FILTER = arg.downcase
+      $GAME_FILTER = arg.downcase
       return reproc.call('game', arg)
     end
 
@@ -1728,7 +1728,7 @@ def query_field(selector, field, op, sqlop, val)
     end
   end
 
-  if (GAME_FILTER == 'spork' && selfield == 'place' &&
+  if ($GAME_FILTER == 'spork' && selfield == 'place' &&
       [ '=', '!=' ].index(op)) then
     val = E_PLANES[val] if E_PLANES[val]
   end
