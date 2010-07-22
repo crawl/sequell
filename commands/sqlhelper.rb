@@ -97,13 +97,13 @@ for x in [ SPECIES, CLASSES, ALIGNS, GENDERS ]
   end
 end
 
-LOGFIELDS_DECORATED = %w/idI file alpha src game
+LOGFIELDS_DECORATED = %w/idI file alpha src game amulet
      version cversion points branch levI place placename maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
      name death killer ckiller ktype kstate helpless praying conduct nconductI
      achieve nachieveI turnsI realtimeI starttimeD endtimeD/
 
-MILEFIELDS_DECORATED = %w/game_idI idI file alpha src game
+MILEFIELDS_DECORATED = %w/game_idI idI file alpha src game amulet
        version cversion branch levI place placename maxlvlI
        hpI maxhpI deathsI birthdateD role race gender align
        gender0 align0 name conduct nconductI achieve nachieveI turnsI realtimeI

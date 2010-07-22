@@ -33,6 +33,8 @@ CREATE TABLE logrecord (
     place VARCHAR(30),
     placename VARCHAR(80),
 
+    amulet CHAR(1) DEFAULT 'N',
+
     maxlvl INT,
     hp INT,
     maxhp INT,
@@ -101,6 +103,8 @@ CREATE TABLE milestone (
     place VARCHAR(30),
     placename VARCHAR(80),
 
+    amulet CHAR(1) DEFAULT 'N',
+    
     maxlvl INT,
     hp INT,
     maxhp INT,

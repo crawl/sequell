@@ -16,7 +16,7 @@ do 'game_parser.pl';
 
 my @LOGFIELDS_DECORATED =
   qw/alpha game version cversion points branch levI place placename
-     maxlvlI hpI maxhpI
+     amulet maxlvlI hpI maxhpI
      deathsI deathdateD birthdateD role race gender align gender0 align0
      name deathmsg killer ckiller ktype kstate helpless praying conduct
      nconductI achieve nachieveI turnsI realtimeI starttimeS endtimeS/;
@@ -75,7 +75,7 @@ my $ORIG_LINE;
 my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
 
 my @MILEFIELDS_DECORATED =
-    qw/alpha game version cversion branch levI place placename maxlvlI
+    qw/alpha game version cversion branch levI place placename amulet maxlvlI
        hpI maxhpI deathsI birthdateD role race gender align
        gender0 align0 name conduct nconductI achieve nachieveI turnsI realtimeI
        starttimeS currenttimeS mtype mobj mdesc shop shopliftedI
@@ -686,6 +686,7 @@ sub fixup_logfile_record($) {
   $$g{deathmsg} = $$g{death};
   $$g{praying} = 'N';
   $$g{helpless} = 'N';
+  $$g{amulet} = 'N';
   if ($$g{deathmsg}) {
     my $deathmsg = $$g{deathmsg};
 
@@ -693,9 +694,22 @@ sub fixup_logfile_record($) {
     $while ||= '';
     $deathmsg =~ s/, while .*$//;
 
+    if ($deathmsg =~ s/\(with the Amulet\)//i) {
+      $$g{amulet} = 'Y';
+      trim($deathmsg);
+    }
+
     my ($ktyp, $killer) = $deathmsg =~ /^(\w+)(?: by (.*))?/i;
     $$g{ktype} = $ktyp;
     $$g{killer} = $killer || '';
+
+    for ($$g{killer}) {
+      s/^an? //;
+      if (!/stalker/) {
+        s/^invisible//;
+      }
+    }
+
     $$g{ckiller} = $killer || $ktyp;
     $$g{praying} = 'Y' if $while =~ /while praying/i;
     if ($while =~ /, while (.*)/i) {
