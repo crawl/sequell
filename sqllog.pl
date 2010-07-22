@@ -705,6 +705,7 @@ sub fixup_logfile_record($) {
     $killer ||= '';
     for ($killer) {
       s/^an? //;
+      s/^the //;
       if (!/stalker/) {
         s/^invisible//;
       }
