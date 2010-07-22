@@ -9,7 +9,7 @@ exit(0) if !ENV['HENZELL_SQL_QUERIES']
 GAME_NH = 'nh'
 GAMES = [GAME_NH]
 
-$GAME_FILTER = ENV['$GAME_FILTER']
+$GAME_FILTER = ENV['GAME_FILTER']
 #$GAME_FILTER = 'spork'
 
 GAME_ABBRS = %w/spork un/
