@@ -1511,6 +1511,10 @@ def abbr_is_src?(abbr)
   SRC_ABBRS.index(abbr.downcase)
 end
 
+def shortcut_to_elemental_plane(key)
+  return $GAME_FILTER == 'spork' ? E_PLANES[key.downcase] : nil
+end
+
 def fixup_listgame_arg(preds, sorts, arg)
   atom = arg =~ /^\S+$/
   if atom
@@ -1526,8 +1530,8 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('name', arg)
     end
 
-    if $GAME_FILTER == 'spork' && E_PLANES[arg] then
-      return reproc.call('place', E_PLANES[arg])
+    if shortcut_to_elemental_plane(arg) then
+      return reproc.call('place', shortcut_to_elemental_plane(arg))
     end
 
     if abbr_is_race?(arg) then
@@ -1728,9 +1732,8 @@ def query_field(selector, field, op, sqlop, val)
     end
   end
 
-  if ($GAME_FILTER == 'spork' && selfield == 'place' &&
-      [ '=', '!=' ].index(op)) then
-    val = E_PLANES[val] if E_PLANES[val]
+  if (selfield == 'place' && [ '=', '!=' ].index(op)) then
+    val = shortcut_to_elemental_plane(val) || val
   end
 
   # Convert game_id="" into game_id IS NULL.
