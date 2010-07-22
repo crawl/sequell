@@ -47,6 +47,14 @@ SOURCES = %w/unn spo/;
 
 BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
 
+E_PLANES = {
+  'earth' => 'Plane:-1',
+  'air' => 'Plane:-2',
+  'fire' => 'Plane:-3',
+  'water' => 'Plane:-4',
+  'astral' => 'Plane:-5'
+}
+
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
 
 BOOL_FIELDS =%w/splat alpha/
@@ -1518,6 +1526,10 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('name', arg)
     end
 
+    if GAME_FILTER == 'spork' && E_PLANES[arg] then
+      return reproc.call('place', E_PLANES[arg])
+    end
+
     if abbr_is_race?(arg) then
       return reproc.call('race', arg)
     elsif abbr_is_role?(arg) then
@@ -1529,6 +1541,7 @@ def fixup_listgame_arg(preds, sorts, arg)
     end
 
     if abbr_is_game?(arg) then
+      GAME_FILTER = arg.downcase
       return reproc.call('game', arg)
     end
 
@@ -1713,6 +1726,11 @@ def query_field(selector, field, op, sqlop, val)
       clause << field_pred("an " + val, sqlop, selector, field)
       return clause
     end
+  end
+
+  if (GAME_FILTER == 'spork' && selfield == 'place' &&
+      [ '=', '!=' ].index(op)) then
+    val = E_PLANES[val] if E_PLANES[val]
   end
 
   # Convert game_id="" into game_id IS NULL.
