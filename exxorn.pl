@@ -35,10 +35,8 @@ my @sibling_bots     = qw/demogorgon Forkney/;
 # behaved bot to cause us to hammer cdo with http requests.
 my $sibling_fetch_delay = 40;
 
-my $sibling_logs_need_fetch;
-
 # The most recent explicit fetch of logfile records from sibling servers.
-my $sibling_last_fetch_time;
+my $sibling_fetch_request_time = time();
 
 my $seen_dir       = '/home/henzell/henzell/dat/seendb';
 my %admins         = map {$_ => 1} qw/greensnark/;
@@ -258,8 +256,7 @@ sub sibling_fetch_logs {
     print "*** Fetching remote logfiles\n";
     system "./remote-fetch-logfile >/dev/null 2>&1 &";
   }
-  $sibling_last_fetch_time = time();
-  $sibling_logs_need_fetch = 0;
+  undef $sibling_fetch_request_time;
 }
 
 # This check is not perfect; it will also latch on to whereis responses,
@@ -282,10 +279,11 @@ sub is_sibling_announcement {
 sub check_sibling_announcements
 {
   my ($nick, $verbatim) = @_;
+  return if $sibling_fetch_request_time;
   if (($nick ne $nickname) && grep($_ eq $nick, @sibling_bots)) {
     if (is_sibling_announcement($verbatim)) {
       print "Sibling announcement: $nick: $verbatim\n";
-      $sibling_logs_need_fetch = 1;
+      $sibling_fetch_request_time = time();
     }
   }
 }
@@ -558,9 +556,8 @@ sub said {
 }
 
 sub tick {
-  if ($sibling_logs_need_fetch
-      && (!$sibling_last_fetch_time
-          || (time() - $sibling_last_fetch_time) > $sibling_fetch_delay))
+  if ($sibling_fetch_request_time
+      && (time() - $sibling_fetch_request_time) > $sibling_fetch_delay)
   {
     main::sibling_fetch_logs();
   }
