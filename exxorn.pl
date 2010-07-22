@@ -33,7 +33,7 @@ my @sibling_bots     = qw/demogorgon Forkney/;
 # How long after a sibling announcement that Henzell will force-fetch
 # logfile records. This should be at least 5s because we don't want a badly-
 # behaved bot to cause us to hammer cdo with http requests.
-my $sibling_fetch_delay = 10;
+my $sibling_fetch_delay = 40;
 
 my $sibling_logs_need_fetch;
 
