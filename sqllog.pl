@@ -706,9 +706,8 @@ sub fixup_logfile_record($) {
     for ($killer) {
       s/^an? //;
       s/^the //;
-      if (!/stalker/) {
-        s/^invisible//;
-      }
+      s/^invisible// unless /stalker/;
+      s/ of .*// if /^Angel/;
     }
 
     $$g{killer} = $killer;
