@@ -233,7 +233,7 @@ sub check_all_logfiles
 
 sub suppress_game {
   my $g = shift;
-  return 0 unless newsworthy($g);
+  return 1 unless newsworthy($g);
   return ($g->{sc} <= 2000 &&
     ($g->{ktyp} eq 'quitting' || $g->{ktyp} eq 'leaving'
      || $g->{turn} < 30
