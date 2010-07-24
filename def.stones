@@ -13,6 +13,12 @@
 [local:cao]
 /home/crawl/chroot/var/games/crawl06/saves/milestones.txt
 
+[local:cao]
+/home/crawl/chroot/var/games/crawl07/saves/milestones
+
+[local:cao]
+/home/crawl/chroot/var/games/crawl07/saves/milestones-sprint
+
 [remote:cao:http://$cao/milestones02.txt]
 remote.cao-milestones-0.2
 
@@ -27,6 +33,12 @@ remote.cao-milestones-0.5
 
 [remote:cao:http://$cao/milestones06.txt]
 remote.cao-milestones-0.6
+
+[remote:cao:http://$cao/milestones07]
+remote.cao-milestones-0.7
+
+[remote:cao:http://$cao/milestones07-sprint]
+remote.cao-milestones-0.7-sprint
 
 [remote:cdo]
 remote.cdo-milestones-0.3

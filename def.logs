@@ -10,6 +10,12 @@
 [local:cao]
 /home/crawl/chroot/var/games/crawl06/saves/logfile
 
+[local:cao]
+/home/crawl/chroot/var/games/crawl07/saves/logfile
+
+[local:cao]
+/home/crawl/chroot/var/games/crawl07/saves/logfile-sprint
+
 [remote:cao:http://$cao/allgames.txt]
 remote.cao-logfile-0.3
 
@@ -21,6 +27,12 @@ remote.cao-logfile-0.5
 
 [remote:cao:http://$cao/logfile06]
 remote.cao-logfile-0.6
+
+[remote:cao:http://$cao/logfile07]
+remote.cao-logfile-0.7
+
+[remote:cao:http://$cao/logfile07-sprint]
+remote.cao-logfile-0.7-sprint
 
 [remote:cdo]
 remote.cdo-logfile-0.3
