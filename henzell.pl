@@ -56,6 +56,7 @@ my $port           = 6667;
 
 my @CHANNELS         = Henzell::Config::array('channels');
 my $ANNOUNCE_CHANNEL = $CONFIG{announce_channel};
+my $DEV_CHANNEL      = $CONFIG{dev_channel};
 
 binmode STDOUT, ':utf8';
 
@@ -142,15 +143,36 @@ sub newsworthy
 {
   my $s = shift;
 
+  # Milestone type, empty if this is not a milestone.
+  my $type = $$s{type} || '';
+
   return 0
-    if $s->{type} eq 'enter'
+    if ($type eq 'enter' || $type eq 'br.enter')
       and grep {$s->{br} eq $_} qw/Temple/;
 
   return 0
-    if $s->{type} =~ /abyss/ and ($s->{god} eq 'Lugonu' || !$s->{god})
+    if $type =~ /abyss/ and ($s->{god} eq 'Lugonu' || !$s->{god})
       and $s->{cls} eq 'Chaos Knight' and $s->{turn} < 5000;
 
+  # Suppress all Sprint events <300 turns.
+  return 0
+    if $s->{lv} =~ 'sprint' && ($$s{ktyp} || '') ne 'winning'
+      && $$s{turn} < 300;
+
+  return 0
+    if $s->{lv} =~ 'sprint'
+      and $type eq 'uniq'
+        and (grep {index($s->{milestone}, $_) > -1}
+             qw/Ijyb Sigmund Sonja/);
+
   return 1;
+}
+
+sub devworthy
+{
+  my $g = shift;
+  my $type = $$g{type} || '';
+  return $type eq 'crash';
 }
 
 sub check_stonefiles
@@ -191,6 +213,11 @@ sub check_milestone_file
         unless (contains_banned_word($ms)) {
           raw_message_post({ channel => $ANNOUNCE_CHANNEL }, $ms);
         }
+      }
+
+      if (devworthy($game_ref)) {
+        my $ms = milestone_string($game_ref);
+        raw_message_post({ channel => $DEV_CHANNEL }, $ms);
       }
     }
   }
