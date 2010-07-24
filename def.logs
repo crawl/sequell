@@ -16,13 +16,16 @@
 [local:cao]
 /home/crawl/chroot/var/games/crawl07/saves/logfile-sprint
 
-[remote:cao:http://$cao/allgames.txt]
+# http://$cao/allgames.txt
+[remote:cao]
 remote.cao-logfile-0.3
 
-[remote:cao:http://$cao/logfile04]
+# http://$cao/logfile04
+[remote:cao]
 remote.cao-logfile-0.4
 
-[remote:cao:http://$cao/logfile05]
+# http://$cao/logfile05
+[remote:cao]
 remote.cao-logfile-0.5
 
 [remote:cao:http://$cao/logfile06]
@@ -37,10 +40,12 @@ remote.cao-logfile-0.7-sprint
 [remote:cdo]
 remote.cdo-logfile-0.3
 
-[remote:cdo:http://$cdo/allgames-0.4.txt]
+# http://$cdo/allgames-0.4.txt
+[remote:cdo]
 remote.cdo-logfile-0.4
 
-[remote:cdo:http://$cdo/allgames-0.5.txt]
+# http://$cdo/allgames-0.5.txt
+[remote:cdo]
 remote.cdo-logfile-0.5
 
 [remote:cdo:http://$cdo/allgames-0.6.txt]
