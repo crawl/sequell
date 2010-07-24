@@ -118,20 +118,28 @@ sub parse_extras {
   $extra
 }
 
+sub game_is_sprint($) {
+  my $g = shift;
+  $$g{lv} =~ /spr/i;
+}
+
 sub game_place($) {
   my $g = shift;
 
   my $loc_string = "";
   my $place = $g->{place};
 
+  $place = 'Sprint' if game_is_sprint($g) && $place eq 'D';
+
   my $qualifier = '';
   if ($$g{map}) {
     my $map = $$g{map};
     $map = "$$g{mapdesc} : $map" if $$g{mapdesc};
+    $map = $$g{mapdesc} if $$g{mapdesc} && game_is_sprint($g);
     $qualifier = " ($map)"
   }
 
-  my $prep = grep($_ eq $place, qw/Temple Blade Hell/)? "in" : "on";
+  my $prep = $place =~ /:/? 'on' : 'in';
   $prep = "in" if $g->{ltyp} ne 'D';
   $place = "the $place" if grep($_ eq $place, qw/Temple Abyss/);
   $place = "a Labyrinth" if $place eq 'Lab';
