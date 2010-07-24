@@ -58,6 +58,12 @@ remote.cdo-milestones-0.5
 [remote:cdo:http://$cdo/milestones-0.6.txt]
 remote.cdo-milestones-0.6
 
+[remote:cdo:http://$cdo/milestones-0.7.txt]
+remote.cdo-milestones-0.7
+
+[remote:cdo:http://$cdo/milestones-spr-0.7.txt]
+remote.cdo-milestones-0.7-sprint
+
 [remote:cdo:http://$cdo/milestones-spr.txt]
 remote.cdo-milestones-spr
 
