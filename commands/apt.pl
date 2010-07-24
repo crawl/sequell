@@ -51,12 +51,21 @@ sub add_exp_apts { # {{{
     close $fh;
     return %apts;
 } # }}}
+
+sub skill_is_better($$$) {
+  my ($skill, $a, $b) = @_;
+
+  my $va = $a->{$skill};
+  my $vb = $b->{$skill};
+  return ($skill eq 'experience'? $va < $vb : $va > $vb);
+}
+
 sub is_best_apt { # {{{
     my ($race, $skill) = @_;
     return 0 unless $race && $skill;
     for (@races) {
       no warnings 'uninitialized';
-      return 0 if $apts{$_}{$skill} > $apts{$race}{$skill};
+      return 0 if skill_is_better($skill, $apts{$_}, $apts{$race});
     }
     return 1;
 } # }}}
@@ -65,7 +74,7 @@ sub is_worst_apt { # {{{
     return 0 unless $race && $skill;
     for (@races) {
       no warnings 'uninitialized';
-      return 0 if $apts{$_}{$skill} < $apts{$race}{$skill};
+      return 0 if skill_is_better($skill, $apts{$race}, $apts{$_});
     }
     return 1;
 } # }}}
