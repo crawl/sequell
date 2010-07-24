@@ -29,6 +29,8 @@ $screen   = 0 if $ARGV[2] =~ /-[^ ]*l/;
 $extended = 1 if $hp || $time || $god;
 
 my @inprogpaths = ( '/home/crawl/chroot/dgldir/inprogress-crawl06',
+                    '/home/crawl/chroot/dgldir/inprogress-crawl07',
+                    '/home/crawl/chroot/dgldir/inprogress-crawl07-sprint',
                     '/home/crawl/chroot/dgldir/inprogress-crawl05',
                     '/home/crawl/chroot/dgldir/inprogress-crawl04' );
 my $rawdatapath = '/var/www/crawl/rawdata';
