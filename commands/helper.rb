@@ -465,7 +465,7 @@ end
 
 def datestr(d)
   if d =~ /^(\d{4})(\d{2})(\d{2})/
-    sprintf("%s%02d%s", $1, $2.to_i + 1, $3)
+    sprintf("%s%02d%s", $1, $2.to_i, $3)
   else
     d
   end
