@@ -156,11 +156,11 @@ sub newsworthy
 
   # Suppress all Sprint events <300 turns.
   return 0
-    if $s->{lv} =~ 'sprint' && ($$s{ktyp} || '') ne 'winning'
+    if game_is_sprint($s) && ($$s{ktyp} || '') ne 'winning'
       && $$s{turn} < 300;
 
   return 0
-    if $s->{lv} =~ 'sprint'
+    if game_is_sprint($s)
       and $type eq 'uniq'
         and (grep {index($s->{milestone}, $_) > -1}
              qw/Ijyb Sigmund Sonja/);
