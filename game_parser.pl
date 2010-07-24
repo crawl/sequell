@@ -138,8 +138,12 @@ sub pretty_print
   my $points = pluralize($$g{points}, "point");
   my $turns  = pluralize($$g{turns}, "turn");
 
+  my $durbyturns = ($$g{turns} > 0? serialize_time($$g{realtime} / $$g{turns})
+                    : '');
+  $durbyturns = "; $durbyturns per turn" if $durbyturns;
+
   "$extra_fields$name$title $$g{death}$place with $points on $time after " .
-    "$turns ($dur)"
+    "$turns ($dur$durbyturns)"
 }
 
 sub milestone_string($$) {
