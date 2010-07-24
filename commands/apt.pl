@@ -56,7 +56,7 @@ sub is_best_apt { # {{{
     return 0 unless $race && $skill;
     for (@races) {
       no warnings 'uninitialized';
-      return 0 if $apts{$_}{$skill} < $apts{$race}{$skill};
+      return 0 if $apts{$_}{$skill} > $apts{$race}{$skill};
     }
     return 1;
 } # }}}
@@ -65,7 +65,7 @@ sub is_worst_apt { # {{{
     return 0 unless $race && $skill;
     for (@races) {
       no warnings 'uninitialized';
-      return 0 if $apts{$_}{$skill} > $apts{$race}{$skill};
+      return 0 if $apts{$_}{$skill} < $apts{$race}{$skill};
     }
     return 1;
 } # }}}
