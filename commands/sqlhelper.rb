@@ -177,7 +177,7 @@ FAKEFIELDS = { }
 
 MILE_TYPES = %w/abyss.enter abyss.exit rune orb ghost ghost.ban
                 uniq uniq.ban br.enter br.end god.mollify god.renounce
-                god.worship shaft crash/
+                god.worship shaft crash monstrous/
 
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 OPMATCH = Regexp.new(SORTEDOPS.map { |o| Regexp.quote(o) }.join('|'))
