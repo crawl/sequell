@@ -175,6 +175,10 @@ LOGFIELDS = { }
 MILEFIELDS = { }
 FAKEFIELDS = { }
 
+MILE_TYPES = %w/abyss.enter abyss.exit rune orb ghost ghost.ban
+                uniq uniq.ban br.enter br.end god.mollify god.renounce
+                god.worship shaft crash/
+
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 OPMATCH = Regexp.new(SORTEDOPS.map { |o| Regexp.quote(o) }.join('|'))
 ARGSPLITTER = Regexp.new('^-?([a-z.:_]+)\s*(' +
@@ -348,8 +352,7 @@ class QueryContext
       @fieldmap = MILEFIELDS
 
       @defsort = 'time'
-      nverbs = %w/abyss.enter abyss.exit rune orb ghost ghost.ban
-                  uniq uniq.ban br.enter br.end/
+      nverbs = MILE_TYPES
       nverbs.each do |verb|
         @noun_verb[verb] = true
         @summarizable[verb] = true
@@ -1586,6 +1589,10 @@ def fixup_listgame_arg(preds, sorts, arg)
         preds << clause
         return
       end
+    end
+
+    if MILE_TYPES.index(arg.downcase)
+      return reproc.call('verb', arg.downcase)
     end
 
     if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
