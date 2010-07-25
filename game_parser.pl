@@ -44,6 +44,15 @@ sub contains_banned_word {
   return undef;
 }
 
+sub game_place_branch($) {
+  my $g = shift;
+  my $place = $$g{place};
+  if ($place =~ /:/) {
+    ($place) = $place =~ /(.*):/;
+  }
+  $place
+}
+
 sub game_skill_title
 {
   my $game_ref = shift;

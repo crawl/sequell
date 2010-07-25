@@ -146,13 +146,19 @@ sub newsworthy
   # Milestone type, empty if this is not a milestone.
   my $type = $$s{type} || '';
 
+  my $br_enter = $type eq 'enter' || $type eq 'br.enter';
+  my $place_branch = game_place_branch($s);
+
   return 0
-    if ($type eq 'enter' || $type eq 'br.enter')
-      and grep {$s->{br} eq $_} qw/Temple/;
+    if $br_enter
+      && grep($place_branch eq $_, qw/Temple Lair Hive Snake Swamp Shoals D
+                                      Orc Elf Vault Crypt Blade/);
 
   return 0
     if $type =~ /abyss/ and ($s->{god} eq 'Lugonu' || !$s->{god})
       and $s->{cls} eq 'Chaos Knight' and $s->{turn} < 5000;
+
+  return 0 if grep($type eq $_, qw/god.mollify god.renounce god.worship/);
 
   # Suppress all Sprint events <300 turns.
   return 0
@@ -207,17 +213,17 @@ sub check_milestone_file
     if ($CONFIG{announce} && $ANNOUNCE_CHANNEL && $href->{server} eq $SERVER) {
       my $game_ref = demunge_xlogline($line);
       my $newsworthy = newsworthy($game_ref);
+      my $devworthy = devworthy($game_ref);
 
-      if ($newsworthy) {
+      if ($devworthy) {
+        my $ms = milestone_string($game_ref);
+        raw_message_post({ channel => $DEV_CHANNEL }, $ms);
+      }
+      elsif ($newsworthy) {
         my $ms = milestone_string($game_ref);
         unless (contains_banned_word($ms)) {
           raw_message_post({ channel => $ANNOUNCE_CHANNEL }, $ms);
         }
-      }
-
-      if (devworthy($game_ref)) {
-        my $ms = milestone_string($game_ref);
-        raw_message_post({ channel => $DEV_CHANNEL }, $ms);
       }
     }
   }

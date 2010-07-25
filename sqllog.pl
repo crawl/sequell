@@ -636,8 +636,23 @@ sub milestone_mangle {
   elsif ($verb eq 'orb') {
     $noun = 'orb';
   }
+  elsif ($verb eq 'god.mollify') {
+    ($noun) = $noun =~ /^(?:partially )?mollified (.*)[.]$/;
+  }
+  elsif ($verb eq 'god.renounce') {
+    ($noun) = $noun =~ /^abandoned (.*)[.]$/;
+  }
+  elsif ($verb eq 'god.worship') {
+    ($noun) = $noun =~ /^became a worshipper of (.*)[.]$/;
+  }
+  elsif ($verb eq 'monstrous') {
+    $noun = 'demonspawn';
+  }
+  elsif ($verb eq 'shaft') {
+    ($noun) = $noun =~ /fell down a shaft to (.*)[.]$/;
+  }
   $g->{verb} = $verb;
-  $g->{noun} = $noun;
+  $g->{noun} = $noun || $$g{noun};
 }
 
 sub record_is_alpha_version {
