@@ -120,7 +120,7 @@ sub print_race_apt { # {{{
     @list = sort @list if !defined $sort || $sort eq 'alpha';
     my @out;
     for (@list) {
-        push @out, (short_skill $_) . '=' . (apt $race, $_);
+        push @out, (short_skill $_) . ': ' . (apt $race, $_);
     }
     print short_race($race), ": ", join(', ', @out), "\n";
 } # }}}
@@ -131,7 +131,7 @@ sub print_skill_apt { # {{{
     @list = sort @list if !defined $sort || $sort eq 'alpha';
     my @out;
     for (@list) {
-        push @out, (short_race $_) . '=' . (apt $_, $skill);
+        push @out, (short_race $_) . ': ' . (apt $_, $skill);
     }
     print short_skill($skill), ": ", join(', ', @out), "\n";
 } # }}}
