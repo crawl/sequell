@@ -58,6 +58,11 @@ my @CHANNELS         = Henzell::Config::array('channels');
 my $ANNOUNCE_CHANNEL = $CONFIG{announce_channel};
 my $DEV_CHANNEL      = $CONFIG{dev_channel};
 
+my @BORING_UNIQUES = qw/Jessica Ijyb Blork Terence Edmund Psyche
+                        Joseph Josephine Harold Norbert Jozef
+                        Maud Duane Grum Gastronok Dowan Duvessa
+                        Pikel Menkaure Purgy Grinder Maurice/;
+
 binmode STDOUT, ':utf8';
 
 Henzell::Utils::lock(verbose => 1);
@@ -139,6 +144,12 @@ sub open_handles
   return @handles;
 }
 
+sub milestone_is_uniq($) {
+  my $g = shift;
+  my $type = $$g{type} || '';
+  return grep($type, qw/uniq unique/);
+}
+
 sub newsworthy
 {
   my $s = shift;
@@ -153,14 +164,11 @@ sub newsworthy
 
   return 0
     if $br_enter
-      && grep($place_branch eq $_, qw/Temple Lair Hive Snake Swamp Shoals D
-                                      Orc Elf Vault Crypt Blade/);
+      && grep($place_branch eq $_, qw/Temple Lair Hive D Orc/);
 
   return 0
     if $type =~ /abyss/ and ($s->{god} eq 'Lugonu' || !$s->{god})
       and $s->{cls} eq 'Chaos Knight' and $s->{turn} < 5000;
-
-  return 0 if grep($type eq $_, qw/god.mollify god.renounce god.worship/);
 
   # Suppress all Sprint events <300 turns.
   return 0
@@ -168,8 +176,12 @@ sub newsworthy
       && $$s{turn} < 300;
 
   return 0
+    if milestone_is_uniq($s) && grep(index($$s{milestone}, $_) != -1,
+                                     @BORING_UNIQUES);
+
+  return 0
     if game_is_sprint($s)
-      and $type eq 'uniq'
+      and milestone_is_uniq($s)
         and (grep {index($s->{milestone}, $_) > -1}
              qw/Ijyb Sigmund Sonja/);
 
