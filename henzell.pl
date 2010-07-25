@@ -149,6 +149,8 @@ sub newsworthy
   my $br_enter = $type eq 'enter' || $type eq 'br.enter';
   my $place_branch = game_place_branch($s);
 
+  return 0 if grep($type eq $_, 'monstrous');
+
   return 0
     if $br_enter
       && grep($place_branch eq $_, qw/Temple Lair Hive Snake Swamp Shoals D
