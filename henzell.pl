@@ -62,7 +62,7 @@ my @BORING_UNIQUES = qw/Jessica Ijyb Blork Terence Edmund Psyche
                         Joseph Josephine Harold Norbert Jozef
                         Maud Duane Grum Gastronok Dowan Duvessa
                         Pikel Menkaure Purgy Grinder Maurice Yiuf
-                        Urug Snorg Eustachio Ilsuiw/;
+                        Urug Snorg Eustachio Ilsuiw Ribbit Nergalle/;
 
 binmode STDOUT, ':utf8';
 
