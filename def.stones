@@ -73,8 +73,11 @@ remote.cdo-milestones-svn
 [remote:rhf]
 remote.rhf-milestones-0.5
 
-[remote:rhf]
+[remote:rhf:http://$rhf/crawl-0.6/milestones.txt]
 remote.rhf-milestones-0.6
+
+[remote:rhf:http://$rhf/crawl-0.7/milestones]
+remote.rhf-milestones-0.7
 
 [remote:rhf]
 remote.rhf-milestones-trunk
