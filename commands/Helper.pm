@@ -483,6 +483,14 @@ sub once # {{{
   $times == 3 ? "thrice" :
                 $times
 } # }}}
+
+sub strip_trailing_decimal_zeros($) {
+  my $number = shift;
+  return $number if $number =~ s/[.]0+$//;
+  $number =~ s/([.]\d+?)0+$/$1/;
+  $number
+}
+
 sub serialize_time # {{{
 {
   my $seconds = shift;
@@ -499,8 +507,9 @@ sub serialize_time # {{{
     my $minutes = int($seconds/60);
     $seconds %= 60;
 
-    return sprintf("%d:%02d:%02f",
-                   $hours, $minutes, ($seconds + $fraction_seconds));
+    my $dur = sprintf("%d:%02d:%06.3f",
+                      $hours, $minutes, ($seconds + $fraction_seconds));
+    return strip_trailing_decimal_zeros($dur);
   }
 
   my $minutes = int($seconds / 60);

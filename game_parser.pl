@@ -123,6 +123,13 @@ sub pretty_date_time($) {
   $rawdate
 }
 
+sub duration_strip_leading_zeros($) {
+  my $dur = shift;
+  $dur =~ s/^[0:]+//;
+  $dur = "0$dur" if $dur =~ /^[.]/;
+  $dur
+}
+
 sub pretty_print
 {
   my $g = shift;
@@ -141,7 +148,7 @@ sub pretty_print
   my $durbyturns = ($$g{turns} > 0?
                     serialize_time($$g{realtime} * 1.0 / $$g{turns})
                     : '');
-  $durbyturns =~ s/^[0:]+//;
+  $durbyturns =~ duration_strip_leading_zeros($durbyturns);
   $durbyturns = "; $durbyturns per turn" if $durbyturns;
 
   "$extra_fields$name$title $$g{death}$place with $points on $time after " .
