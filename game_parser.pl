@@ -148,7 +148,7 @@ sub pretty_print
   my $durbyturns = ($$g{turns} > 0?
                     serialize_time($$g{realtime} * 1.0 / $$g{turns})
                     : '');
-  $durbyturns =~ duration_strip_leading_zeros($durbyturns);
+  $durbyturns = duration_strip_leading_zeros($durbyturns);
   $durbyturns = "; $durbyturns per turn" if $durbyturns;
 
   "$extra_fields$name$title $$g{death}$place with $points on $time after " .
