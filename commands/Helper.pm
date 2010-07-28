@@ -485,7 +485,7 @@ sub once # {{{
 } # }}}
 sub serialize_time # {{{
 {
-  my $seconds = int shift;
+  my $seconds = shift;
   my $long = shift;
 
   if (not $long)
