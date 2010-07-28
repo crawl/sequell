@@ -488,6 +488,10 @@ sub serialize_time # {{{
   my $seconds = shift;
   my $long = shift;
 
+  my $fraction_seconds = $seconds - int($seconds);
+
+  $seconds = int($seconds);
+
   if (not $long)
   {
     my $hours = int($seconds/3600);
@@ -495,7 +499,8 @@ sub serialize_time # {{{
     my $minutes = int($seconds/60);
     $seconds %= 60;
 
-    return sprintf "%d:%02d:%02d", $hours, $minutes, $seconds;
+    return sprintf("%d:%02d:%02f",
+                   $hours, $minutes, ($seconds + $fraction_seconds));
   }
 
   my $minutes = int($seconds / 60);
