@@ -153,13 +153,13 @@ sub milestone_is_uniq($) {
 
 sub newsworthy
 {
-  my $s = shift;
+  my $g = shift;
 
   # Milestone type, empty if this is not a milestone.
-  my $type = $$s{type} || '';
+  my $type = $$g{type} || '';
 
   my $br_enter = $type eq 'enter' || $type eq 'br.enter';
-  my $place_branch = game_place_branch($s);
+  my $place_branch = game_place_branch($g);
 
   return 0 if grep($type eq $_, 'monstrous');
 
@@ -167,23 +167,28 @@ sub newsworthy
     if $br_enter
       && grep($place_branch eq $_, qw/Temple Lair Hive D Orc/);
 
+  if ($type eq 'zig') {
+    my ($depth) = ($$g{milestone} || '') =~ /reached level (\d+)/;
+    return 0 if $depth < 18 && $$g{xl} >= 27;
+  }
+
   return 0
-    if $type =~ /abyss/ and ($s->{god} eq 'Lugonu' || !$s->{god})
-      and $s->{cls} eq 'Chaos Knight' and $s->{turn} < 5000;
+    if $type =~ /abyss/ and ($g->{god} eq 'Lugonu' || !$g->{god})
+      and $g->{cls} eq 'Chaos Knight' and $g->{turn} < 5000;
 
   # Suppress all Sprint events <300 turns.
   return 0
-    if game_is_sprint($s) && ($$s{ktyp} || '') ne 'winning'
-      && $$s{turn} < 300;
+    if game_is_sprint($g) && ($$g{ktyp} || '') ne 'winning'
+      && $$g{turn} < 300;
 
   return 0
-    if milestone_is_uniq($s) && grep(index($$s{milestone}, $_) != -1,
+    if milestone_is_uniq($g) && grep(index($$g{milestone}, $_) != -1,
                                      @BORING_UNIQUES);
 
   return 0
-    if game_is_sprint($s)
-      and milestone_is_uniq($s)
-        and (grep {index($s->{milestone}, $_) > -1}
+    if game_is_sprint($g)
+      and milestone_is_uniq($g)
+        and (grep {index($g->{milestone}, $_) > -1}
              qw/Ijyb Sigmund Sonja/);
 
   return 1;
