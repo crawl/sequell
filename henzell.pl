@@ -262,7 +262,7 @@ sub suppress_game {
   return 1 unless newsworthy($g);
   return ($g->{sc} <= 2000 &&
     ($g->{ktyp} eq 'quitting' || $g->{ktyp} eq 'leaving'
-     || $g->{turn} < 30
+     || $g->{turn} < 500
      || ($g->{turn} < 5000 && $g->{place} eq 'Abyss'
          && ($g->{god} eq 'Lugonu' || !$g->{god}) && $g->{cls} eq 'Chaos Knight')));
 }
