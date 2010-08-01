@@ -1863,8 +1863,8 @@ def query_field(selector, field, op, sqlop, val)
       rop = tourney ? '<' : '>'
       eqop = tourney ? '=' : '!='
 
-      tstart = '#{year}0701'
-      tend   = '#{year}0801'
+      tstart = "#{year}0701"
+      tend   = "#{year}0801"
       if $CTX == CTX_LOG
         clause << query_field('rstart', 'rstart', lop, lop, tstart)
         clause << query_field('rend', 'rend', rop, rop, tend)
