@@ -179,6 +179,10 @@ MILE_TYPES = %w/abyss.enter abyss.exit rune orb ghost ghost.ban
                 uniq uniq.ban br.enter br.end god.mollify god.renounce
                 god.worship shaft crash monstrous/
 
+TOURNEY_PREFIXES = %w/t tourney tournament/
+TOURNEY_VERSIONS = { 2008 => '0.4', 2009 => '0.5', 2010 => '0.7' }
+TOURNEY_REGEXES = TOURNEY_PREFIXES.map { |p| %r/^(#{p})(\d*)$/i }
+
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 OPMATCH = Regexp.new(SORTEDOPS.map { |o| Regexp.quote(o) }.join('|'))
 ARGSPLITTER = Regexp.new('^-?([a-z.:_]+)\s*(' +
@@ -1838,14 +1842,27 @@ def query_field(selector, field, op, sqlop, val)
   end
 
   if selfield == 'when'
-    if %w/t tourney tournament/.index(val) and [ '=', '!=' ].index(op)
+    year = 2010
+    for reg in TOURNEY_REGEXES
+      if val =~ reg && $2 && !$2.empty?
+        year = $2.to_i
+        val.sub!(reg, '\1')
+        year += 2000 if year < 100
+        break
+      end
+    end
+
+    if TOURNEY_PREFIXES.index(val.downcase) and [ '=', '!=' ].index(op)
+      cv = TOURNEY_VERSIONS[year]
+
       tourney = op == '='
       clause = [ tourney ? 'AND' : 'OR' ]
       lop = tourney ? '>' : '<'
       rop = tourney ? '<' : '>'
+      eqop = tourney ? '=' : '!='
 
-      tstart = '20100701'
-      tend   = '20100801'
+      tstart = '#{year}0701'
+      tend   = '#{year}0801'
       if $CTX == CTX_LOG
         clause << query_field('rstart', 'rstart', lop, lop, tstart)
         clause << query_field('rend', 'rend', rop, rop, tend)
@@ -1853,6 +1870,7 @@ def query_field(selector, field, op, sqlop, val)
         clause << query_field('rstart', 'rstart', lop, lop, tstart)
         clause << query_field('rtime', 'rtime', rop, rop, tend)
       end
+      clause << query_field('cv', 'cv', eqop, eqop, cv)
       return clause
     else
       raise "Bad selector #{selector} (#{selector}=t for tourney games)"
