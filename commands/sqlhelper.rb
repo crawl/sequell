@@ -1604,6 +1604,8 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('place', arg)
     end
 
+    return reproc.call('when', arg) if TOURNEY_REGEXES.find { |r| arg =~ r }
+
     for s in LISTGAME_SHORTCUTS
       res = s.call(arg, reproc)
       if res
