@@ -9,9 +9,9 @@ use File::Copy;
 use File::Path;
 use POSIX qw/strftime/;
 
-my $VERSION = '0.6';
+my $VERSION = '0.7';
 
-my $SAVEDIR_PATH = "/home/crawl/chroot/var/games/crawl06/saves/";
+my $SAVEDIR_PATH = "/home/crawl/chroot/var/games/crawl07/saves/";
 my $DESTINATION = "/home/henzell/copied-saves";
 
 my $SAVE_NAME_SUFFIX = "-5.";
