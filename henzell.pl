@@ -54,7 +54,7 @@ load_config($config_file);
 my $nickname       = $CONFIG{bot_nick};
 my $ircname        = "$nickname the Crawl Bot";
 my $ircserver      = $CONFIG{irc_server};
-my $port           = 6667;
+my $port           = $CONFIG{irc_port} || 6667;
 
 my @CHANNELS         = Henzell::Config::array('channels');
 my $ANNOUNCE_CHANNEL = $CONFIG{announce_channel};
