@@ -569,6 +569,9 @@ def ttyrec_filename_datetime_string(filename)
     $1.gsub(/[-.:]/, '')
   elsif filename =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})[+]00:?00/
     $1.gsub(/[-:T]/, '')
+  elsif filename =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+]\d{2}:\d{2})/
+    date = DateTime.strptime($1, '%Y-%m-%dT%H:%M:%S%Z')
+    date.new_offset(0).strftime('%Y%m%d%H%M%S')
   else
     nil
   end
