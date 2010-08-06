@@ -33,6 +33,7 @@ DGL_ALIEN_MORGUES = \
  [ %r/cdo.*-spr$/, 'http://crawl.develz.org/morgues/sprint' ],
  [ %r/rhf.*-0.5$/, 'http://rl.heh.fi/crawl/stuff' ],
  [ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
+ [ %r/rhf.*-0.7$/, 'http://rl.heh.fi/crawl-0.7/stuff' ],
  [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
 ]
 
@@ -42,9 +43,10 @@ DGL_ALIEN_TTYRECS = \
  [ %r/cdo.*$/, 'http://crawl.develz.org/ttyrecs' ],
 
  # [ds] Temporarily disabled: rhf is down.
- #[ %r/rhf.*-0.5$/, 'http://rl.heh.fi/crawl/stuff' ],
- #[ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
- #[ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
+ [ %r/rhf.*-0.5$/, 'http://rl.heh.fi/crawl/stuff' ],
+ [ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
+ [ %r/rhf.*-0.7$/, 'http://rl.heh.fi/crawl-0.7/stuff' ],
+ [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
 ]
 
 SERVER_TIMEZONE = {
