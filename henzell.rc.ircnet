@@ -1,4 +1,5 @@
-irc_server = irc.belwue.de
+irc_server = irc.fu-berlin.de
+irc_port = 6666
 lock_name = ircnet
 bot_nick = Sequell
 sql_store = 0
