@@ -220,7 +220,7 @@ sub setup_env() {
   }
 }
 
-sub read($$) {
+sub read {
   my ($config, $procmaker) = @_;
 
   %CONFIG = %DEFAULT_CONFIG;
