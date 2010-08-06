@@ -11,8 +11,10 @@ use Getopt::Long;
 
 my $daemon = 1;
 my $irc = 1;
+my $config_file = 'henzell.rc';
 GetOptions("daemon!" => \$daemon,
-           "irc!" => \$irc) or die "Invalid options\n";
+           "irc!" => \$irc,
+           "rc=s" => \$config_file) or die "Invalid options\n";
 
 $ENV{LC_ALL} = 'en_US.utf8';
 
@@ -47,7 +49,7 @@ my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
 local $SIG{PIPE} = 'IGNORE';
 local $SIG{CHLD} = 'IGNORE';
 
-load_config();
+load_config($config_file);
 
 my $nickname       = $CONFIG{bot_nick};
 my $ircname        = "$nickname the Crawl Bot";
@@ -492,14 +494,15 @@ sub command_proc
 
 sub load_config
 {
-  my $loaded = Henzell::Config::read(\&command_proc);
+  my $config_file = shift;
+  my $loaded = Henzell::Config::read($config_file, \&command_proc);
   process_config();
   $loaded
 }
 
 sub load_commands
 {
-  load_config();
+  load_config($config_file);
 }
 
 sub pack_args

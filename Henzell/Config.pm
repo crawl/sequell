@@ -219,13 +219,13 @@ sub setup_env() {
   }
 }
 
-sub read {
-  my $procmaker = shift();
+sub read($$) {
+  my ($config, $procmaker) = @_;
 
   %CONFIG = %DEFAULT_CONFIG;
 
   my $inf;
-  open $inf, '<', $CONFIG_FILE or undef $inf;
+  open $inf, '<', ($config || $CONFIG_FILE) or undef $inf;
   if ($inf) {
     while (<$inf>) {
       s/^\s+//; s/\s+$//;
