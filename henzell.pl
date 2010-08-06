@@ -51,7 +51,7 @@ load_config();
 
 my $nickname       = $CONFIG{bot_nick};
 my $ircname        = "$nickname the Crawl Bot";
-my $ircserver      = 'irc.freenode.org';
+my $ircserver      = $CONFIG{irc_server};
 my $port           = 6667;
 
 my @CHANNELS         = Henzell::Config::array('channels');
@@ -66,7 +66,8 @@ my @BORING_UNIQUES = qw/Jessica Ijyb Blork Terence Edmund Psyche
 
 binmode STDOUT, ':utf8';
 
-Henzell::Utils::lock(verbose => 1);
+Henzell::Utils::lock(verbose => 1,
+                     lock_name => $CONFIG{lock_name});
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
 Henzell::Utils::daemonify() if $daemon;

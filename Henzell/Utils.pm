@@ -10,7 +10,9 @@ use POSIX;
 our @EXPORT_OK = qw/lock_or_die lock daemonify/;
 
 sub lock_filename {
-  my ($basename) = $main::0 =~ m{([^/]+)$};
+  my $basename = shift;
+
+  ($basename) = $main::0 =~ m{([^/]+)$} unless $basename;
   die "Could not discover program name in ($0) to acquire lock\n"
     unless $basename;
   my $dir = $ENV{HOME} || '.';
@@ -36,7 +38,7 @@ sub lock_or_exit {
 sub lock {
   my %pars = @_;
 
-  my $lockf = lock_filename();
+  my $lockf = lock_filename($pars{lock_name});
   warn "Locking $lockf\n" if $pars{verbose};
   open LOCKFILE, '>', $lockf or die "Couldn't open $lockf: $!\n";
   flock(LOCKFILE, LOCK_EX) or die "Couldn't lock $lockf: $!\n";

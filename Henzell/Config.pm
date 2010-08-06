@@ -10,6 +10,9 @@ our @EXPORT_OK = qw/read get %CONFIG %CMD %CMDPATH %PUBLIC_CMD
 
 my %DEFAULT_CONFIG = (use_pm => 0,
 
+                      irc_server => 'irc.freenode.org',
+                      lock_name => 'henzell',
+
                       milestones => 'def.stones',
                       logs => 'def.logs',
 
