@@ -35,6 +35,7 @@ DGL_ALIEN_MORGUES = \
  [ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
  [ %r/rhf.*-0.7$/, 'http://rl.heh.fi/crawl-0.7/stuff' ],
  [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
+ [ %r/rhf.*-spr$/, 'http://rl.heh.fi/sprint/stuff' ],
 ]
 
 DGL_ALIEN_TTYRECS = \
@@ -47,6 +48,7 @@ DGL_ALIEN_TTYRECS = \
  [ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
  [ %r/rhf.*-0.7$/, 'http://rl.heh.fi/crawl-0.7/stuff' ],
  [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
+ [ %r/rhf.*-spr$/, 'http://rl.heh.fi/sprint/stuff' ],
 ]
 
 SERVER_TIMEZONE = {

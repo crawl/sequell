@@ -79,5 +79,8 @@ remote.rhf-milestones-0.6
 [remote:rhf:http://$rhf/crawl-0.7/milestones]
 remote.rhf-milestones-0.7
 
+[remote:rhf:http://$rhf/sprint/milestones-sprint]
+remote.rhf-milestones-spr
+
 [remote:rhf]
 remote.rhf-milestones-trunk

@@ -74,3 +74,6 @@ remote.rhf-logfile-0.7
 
 [remote:rhf; alpha]
 remote.rhf-logfile-trunk
+
+[remote:rhf:http://$rhf/sprint/logfile-sprint]
+remote.rhf-logfile-spr
