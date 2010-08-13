@@ -21,7 +21,7 @@ else
     print "#{n}. " + summary + ": " +
       (find_game_ttyrecs(game) || "Can't find ttyrec!")
   rescue
-    print "#{n}. " + summary + ": " + $!
+    puts "#{n}. " + summary + ": " + $!
     raise
   end
 end
