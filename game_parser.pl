@@ -61,10 +61,15 @@ sub game_skill_title
   return $title;
 }
 
+sub skill_title_is_adjective($) {
+  my $title = shift;
+  $adjective_skill_title{$title} || $title =~ /(?:ed|ble|ous|id)$/
+}
+
 sub skill_farming
 {
   my $title = shift;
-  if ($adjective_skill_title{$title} || $title =~ /(?:ed|ble|ous)$/) {
+  if (skill_title_is_adjective($title)) {
     return "$title Farmer";
   } elsif ($title =~ /Crazy /) {
     $title =~ s/Crazy/Crazy Farming/;

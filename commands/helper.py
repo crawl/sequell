@@ -13,7 +13,7 @@ adjective_skills = \
   dict( [ (title, True) for
           title in [ 'Deadly Accurate', 'Spry', 'Covert', 'Unseen' ] ] )
 
-adjective_end = re.compile(r'(?:ed|ble|ous)$')
+adjective_end = re.compile(r'(?:ed|ble|ous|id)$')
 
 details_names = ['v', 'lv', 'name', 'uid', 'race', 'cls', 'xl', 'sk', 'sklev',
                  'title', 'place', 'br', 'lvl', 'ltyp', 'hp', 'mhp', 'mmhp',
@@ -197,8 +197,11 @@ def game_skill_title(game):
     else:
         return game_skill_farming(title)
 
+def skill_title_is_adjective(title):
+    return adjective_skills.has_key(title) or adjective_end.search(title)
+
 def game_skill_farming(title):
-    if adjective_skills.has_key(title) or adjective_end.search(title):
+    if skill_title_is_adjective(title):
         return title + " Farmer"
     else:
         return "Farming " + title
