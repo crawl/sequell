@@ -3,7 +3,7 @@
 require 'commands/helper.rb'
 require 'commands/sqlhelper.rb'
 
-help("Summarizes a player's crawl.akrasiac.org career.")
+help("Summarizes a player's public server career.")
 
 q = sql_build_query(ARGV[1], (ARGV[2].split)[1 .. -1])
 
