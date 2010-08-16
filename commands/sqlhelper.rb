@@ -10,6 +10,8 @@ GAME_CRAWL = 'crawl'
 GAME_SPRINT = 'sprint'
 GAMES = [GAME_CRAWL, GAME_SPRINT]
 
+TOURNEY_SPRINT_MAP = { 2010 => 'dungeon sprint mu' }
+
 GAME_PREFIXES = { GAME_CRAWL => '', GAME_SPRINT => 'spr_' }
 
 OPERATORS = {
@@ -1865,6 +1867,8 @@ def query_field(selector, field, op, sqlop, val)
 
       tstart = "#{year}0701"
       tend   = "#{year}0801"
+      tstart = "#{year}0715" if GameContext.game == GAME_SPRINT
+
       if $CTX == CTX_LOG
         clause << query_field('rstart', 'rstart', lop, lop, tstart)
         clause << query_field('rend', 'rend', rop, rop, tend)
@@ -1873,6 +1877,10 @@ def query_field(selector, field, op, sqlop, val)
         clause << query_field('rtime', 'rtime', rop, rop, tend)
       end
       clause << query_field('cv', 'cv', eqop, eqop, cv)
+      if GameContext.game == GAME_SPRINT and TOURNEY_SPRINT_MAP[year]
+        clause << query_field('map', 'map', eqop, eqop,
+                              TOURNEY_SPRINT_MAP[year])
+      end
       return clause
     else
       raise "Bad selector #{selector} (#{selector}=t for tourney games)"
