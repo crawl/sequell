@@ -16,8 +16,10 @@ def killer_field(key)
   "#{field}=#{key}"
 end
 
-args = sanitize_args(args)
-killer = killer_field(args[0])
+GameContext.with_game(extract_game_type(args)) do
+  args = sanitize_args(args)
+  killer = killer_field(args[0])
 
-report_grouped_games('name', '', '*',
-                     [ '*', killer ] + paren_args(args[1 .. -1]))
+  report_grouped_games('name', '', '*',
+                       [ '*', killer ] + paren_args(args[1 .. -1]))
+end
