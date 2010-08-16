@@ -306,7 +306,7 @@ sub tail_logfile
     if ($CONFIG{sql_store}) {
       # Link up milestone entries belonging to this player to their
       # corresponding completed games.
-      my $sprint = game_is_sprint($href);
+      my $sprint = game_is_sprint($game_ref);
       fixup_milestones($href->{server}, $sprint, $game_ref->{name});
     }
   }
