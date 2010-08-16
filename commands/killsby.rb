@@ -16,7 +16,7 @@ def killer_field(key)
   "#{field}=#{key}"
 end
 
-game = extract_game_type(arg)
+game = extract_game_type(args)
 args = sanitize_args(args)
 killer = killer_field(args[0])
 
