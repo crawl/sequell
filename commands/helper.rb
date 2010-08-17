@@ -518,7 +518,8 @@ end
 
 def find_alien_ttyrecs(game)
   tty_start = game_ttyrec_datetime(game, 'starttime')
-  tty_end   = game_ttyrec_datetime(game, 'endtime')
+  tty_end   = (game_ttyrec_datetime(game, 'endtime') ||
+               game_ttyrec_datetime(game, 'currenttime'))
 
   for pair in DGL_ALIEN_TTYRECS
     if game['file'] =~ pair[0]
