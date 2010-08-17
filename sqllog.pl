@@ -606,7 +606,7 @@ sub milestone_parse_game_action($) {
 sub parse_milestone_record($) {
   my $g = shift;
   return $g if $$g{mtype} && $$g{mtype_finished};
-  my $type = $$g{type} || milestone_identify_type($g);
+  my $type = milestone_identify_type($g);
   $type = 'achieve_diff' if $type && $type =~ /achieve/;
   if ($type) {
     $$g{mtype} = $type;
