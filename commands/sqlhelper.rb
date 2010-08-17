@@ -298,7 +298,8 @@ class QueryContext
 
       @defsort = 'id'
       nverbs = %w/achieve bones_killed crash game_action killed_uniq
-                  shoplifted shout sokobanprize wish lifesaved plane/
+                  killed_shopkeeper shoplifted shout sokobanprize wish
+                  lifesaved plane/
       nverbs.each do |verb|
         @noun_verb[verb] = true
         @summarizable[verb] = true
