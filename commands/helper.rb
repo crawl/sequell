@@ -444,8 +444,12 @@ def game_turns(g)
   g['turns'] ? "T:#{g['turns']}" : nil
 end
 
+def game_is_milestone(g)
+  return g['mtype']
+end
+
 def short_game_summary(g)
-  mile = g['milestone'] ? ' (milestone)' : ''
+  mile = game_is_milestone(g) ? ' (milestone)' : ''
   infos = [g['name'], game_char(g), game_turns(g)].find_all { |x| x && !x.empty? }
   "#{infos.join(', ')}#{mile}"
 end
@@ -478,7 +482,7 @@ end
 def ttyrec_list_string(game, url, ttyreclist)
   if !ttyreclist || ttyreclist.empty?
     nil
-  elsif game['milestone'] && ttyreclist.length > 1
+  elsif game_is_milestone(game) && ttyreclist.length > 1
     ttyrec_list_string(game, url, [ttyreclist[-1]])
   else
     spc = ttyreclist.length == 1 ? "" : " "
