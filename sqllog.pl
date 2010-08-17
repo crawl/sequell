@@ -52,7 +52,7 @@ my %GAME_BRANCHES = (un    => \@UNBRANCHES,
 
 my @MILESTONE_IDENTIFIER = qw/game_action wish achieve_diff crash shout
                               killed_uniq sokobanprize shoplifted
-                              bones_killed/;
+                              bones_killed killed_shopkeeper/;
 
 my %MILESTONE_PARSER = (game_action => \&milestone_parse_game_action,
                         achieve_diff => \&milestone_parse_achieve,
@@ -61,6 +61,7 @@ my %MILESTONE_PARSER = (game_action => \&milestone_parse_game_action,
                         crash => \&milestone_parse_crash,
                         shout => \&milestone_parse_shout,
                         killed_uniq => \&milestone_parse_killed_uniq,
+                        killed_shopkeeper => \&milestone_parse_killed_shk,
                         sokobanprize => \&milestone_parse_sokobanprize,
                         bones_killed => \&milestone_parse_bones_killed);
 
@@ -564,6 +565,12 @@ sub milestone_parse_bones_killed($) {
 sub milestone_parse_killed_uniq($) {
   my $g = shift;
   $$g{mdesc} = "killed $$g{mobj}";
+}
+
+sub milestone_parse_killed_shk($) {
+  my $g = shift;
+  $$g{mobj} =~ s/'$//;
+  $$g{mdesc} = "killed $$g{mobj}, the shopkeeper.";
 }
 
 sub milestone_parse_shout($) {
