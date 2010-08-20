@@ -1,0 +1,99 @@
+===================
+The listgame manual
+===================
+
+If you're on ##crawl on Freenode IRC, you can use *listgame* to see
+game statistics for Crawl games played on the public Crawl servers CAO
+(crawl.akrasiac.org), CDO (crawl.develz.org) and RHF (rl.heh.fi).
+
+The bot 'Sequell' responds to listgame queries on ##crawl.
+
+This document describes listgame: specifically, it covers the !lg and
+!lm commands, as well as the specialised listgame commands !hs, !won,
+etc.
+
+!lg
+---
+
+!lg (short for listgame) shows you games matching any filter
+conditions you specify.
+
+By default, !lg reports on your most-recently-completed Crawl game on
+any of the public servers. For instance, if your nick is 'test':
+
+> !lg
+<Sequell> 212. test the Covered (L1 HuFi), slain by a giant newt on D:1 on 2010-07-28, with 34 points after 188 turns and 0:02:00.
+
+The number prefix to !lg responses indicates the number of games
+matching your query. In this case it means the player 'test' has 212
+games.
+
+If you want to see the last complete game by some other player, you
+can use their nick as the first parameter to !lg:
+
+> !lg qwqw
+<Sequell> 144. qwqw the Backstabber (L14 SpEn), worshipper of Jiyva, escaped with the Orb and 3 runes on 2010-07-28, with 3551323 points after 17680 turns and 1:14:27.
+
+If you'd like to see the last game by any player, you can use * as the
+first parameter to !lg:
+
+> !lg *
+<Sequell> 727628. SwaRR the Sneak (L1 SpAs), quit the game on D:1 (lemuel entry room) on 2010-07-28, with 50 points after 0 turns and 0:00:11.
+
+By default !lg shows you the last matching game in terms of game-end
+time. If you'd like it to sort by some other conditions, you can use
+max=<field> or min=<field>, where <field> is the name of a logfile
+field. See the Logfile Fields section for a list of fields.
+
+As an example, if you'd like to see the fastest win in terms of turn
+count:
+
+> !lg * ktyp=winning min=turn
+<Sequell> 2815. hyperbolic the Severer (L20 DDBe), worshipper of Trog, escaped with the Orb and 3 runes on 2009-09-20, with 4733437 points after 13435 turns and 3:03:41.
+
+The 2815 here indicates that there are 2815 winning games on all the
+public servers combined, and that hyperbolic's win is the fastest of
+the 2815 wins in terms of turn count.
+
+The ktyp=winning is a filter condition to show only games that ended
+in a win, where 'ktyp' is the field name in the log file, and
+'winning' is the value of the ktyp field for winning games.
+
+Let's say you want to find the most recent drowning death by an XL 27
+player, but you're not sure what the value of 'ktyp' is for drowning.
+In such cases you can use a *summary* query to summarise the values of
+a field. To summarise the different 'ktyp' values, you'd use:
+
+> !lg * s=ktyp
+<Sequell> 727637 games for *: 357478x mon, 125760x quitting, 112502x leaving, 86581x beam, 27005x pois, 2815x winning, 2282x trap, 1924x cloud, 1754x acid, 1622x wild magic, 1418x starvation, 1171x targeting, 834x draining, 558x rotting, 548x spore, 521x burning, 506x disintegration, 419x stupidity, 383x water, 361x curare, 303x falling down stairs, 262x lava, 139x self aimed, 134x weakness, [...]
+
+We can see that the value of ktyp for drowning deaths is 'water', and
+look up the last XL 27 drowning as:
+
+> !lg * xl=27 ktyp=water
+<Sequell> 12. Deza the Farming Slayer (L27 KoCr), worshipper of The Shining One, drowned on Coc:7 on 2010-07-10, with 711420 points after 220723 turns and 26:27:44.
+
+Logfile Fields
+--------------
+
+v:
+Game version
+
+lv:
+Logfile format version
+
+sc:
+Game score
+
+name:
+Player name
+
+race:
+Character race (for instance: "Deep Dwarf")
+
+crace:
+Canonicalised character race with draconians merged. For instance,
+when race = "Red Draconian", crace = "Draconian".
+
+cls:
+Character class or job.
