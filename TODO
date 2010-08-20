@@ -1,12 +1,56 @@
-* Have greensnark add realtime, possibly also number of monsters in sight, to each where file.
+- Test setup for Henzell queries:
+  - Small logfile snapshot.
+  - Load into test db
+  - Run queries and check for expected results.
 
-* PM support.
+  -
 
-* doy (probably also other people) milestone idea: when HP drops below a certain percent (say, 10%).. probably also a minimum level cap so the milestone file doesn't get too large.
+Extended Henzell queries (joins, yay):
 
-* Message-leaving system needs some improvements before it can be called done
-  - really needs PM support
-  - limit of say, 5 messages
-  - when we get a seendb, limit message-target to someone who is in the seendb
-  - probably need to make sure the target is identified to nickserv as well
+ - Games by players who have more than X wins:
+
+   SELECT * FROM logrecord WHERE pname IN (
+      SELECT pname FROM logrecord WHERE ktyp='winning' GROUP BY pname
+      HAVING COUNT(*) > 3 );
+
+   !lg * [[ * win s=name x=name :: count > 3 ]]
+
+- Games that are first wins:
+   SELECT * FROM logrecord a,
+     (SELECT pname, MIN(starttime) FROM logrecord
+      WHERE ktyp = 'winning' GROUP BY pname) b
+   WHERE a.pname = b.name AND a.starttime = b.starttime
+
+   !lg * [[ * win s=name x=name,min(start) ]] s=char
+
+   Use: x= in subqueries to select join fields.
+
+- Player who has the most combo highscores:
+
+   Combo highscores: char, MAX(score) FROM logrecord GROUP BY char
+
+   Players with combo highscores:
+   SELECT name, COUNT(*) c FROM logrecord WHERE char = ch.char AND sc = ch.sc
+   GROUP BY name ORDER BY c DESC
+
+   !lg * [[ * s=char x=char,max(sc) ]] s=name
+
+- Game with most Boris kills:
+   !lg * [[ !lm * uniq=Boris s=game_id ]]
+   (The implicit order by COUNT(*) is used here).
+
+- Games with most milestones in Shoals:
+   !lg * [[ !lm * Shoals s=game_id ]]
+
+ Real query parser.
+
+---------------------------------------------------
+
+- Save query:
+  !alias blarg !lg <xyz>
+  !blarg <stuff> => !lg <xyz> +++ <stuff>
+  !blarg is checked only if none of the existing commands match.
+         Would be nice if !alias <keywords> could work.
+
+  +++ operator to combine multiple arglists.
 
