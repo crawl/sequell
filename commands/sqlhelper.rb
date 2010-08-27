@@ -1543,7 +1543,7 @@ end
 LISTGAME_SHORTCUTS =
   [
    lambda do |arg, reproc|
-     godmatch = GODABBRS.find? { |g| arg.downcase.index(g) == 0 }
+     godmatch = GODABBRS.find { |g| arg.downcase.index(g) == 0 }
      if godmatch && arg =~ /^[a-z]+$/i
        reproc.call('god', GODMAP[godmatch] || arg)
        return true
