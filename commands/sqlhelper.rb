@@ -43,8 +43,22 @@ BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
               Lab Pan Bazaar Bzr Hell Blade Temple Abyss Sprint/
 
 GODABBRS = %w/zin tso kik yre xom veh oka
-              mak sif trog nem ely lug beo/
-GODMAP = { 'tso' => 'The Shining One' }
+              mak sif trog nem ely lug beo fed jiy che/
+GODMAP = {
+  'tso'  => 'The Shining One',
+  'kik'  => 'Kikubaaqudgha',
+  'yre'  => 'Yredelemnul',
+  'veh'  => 'Vehumet',
+  'oka'  => 'Okawaru',
+  'mak'  => 'Makhleb',
+  'nem'  => 'Nemelex Xobeh',
+  'ely'  => 'Elyvilon',
+  'lug'  => 'Lugonu',
+  'beo'  => 'Beogh',
+  'fed'  => 'Fedhas',
+  'jiy'  => 'Jiyva',
+  'che'  => 'Cheibriados'
+}
 
 SOURCES = %w/cao cdo rhf/
 
@@ -1529,9 +1543,9 @@ end
 LISTGAME_SHORTCUTS =
   [
    lambda do |arg, reproc|
-     if ((GODABBRS.any? { |g| arg.downcase.index(g) == 0 }) &&
-         arg =~ /^[a-z]+$/i)
-       reproc.call('god', GODMAP[arg.downcase] || arg)
+     godmatch = GODABBRS.find? { |g| arg.downcase.index(g) == 0 }
+     if godmatch && arg =~ /^[a-z]+$/i
+       reproc.call('god', GODMAP[godmatch] || arg)
        return true
      end
      nil
