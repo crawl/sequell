@@ -349,54 +349,6 @@ skip. For instance:
 !gamesby gives general stats for games played by a particular player
 or by all players, and accepts !lg-style filters.
 
-Nick Aliases
-------------
-
-The !nick command maps IRC nicks to names used on public servers:
-
-Syntax
-======
-
-  !nick ircnick charactername1 [charactername2 ...]
-  !nick -rm ircnick
-  !nick -rm . charactername1
-
-The listgame commands normally assume that the user's IRC nick is the
-same as their player name on the public server. For instance, when
-a person with the IRC name 'aardvark' runs the query "!lg .", Sequell
-expects that aardvark plays their games using the same name "aardvark"
-on the public servers. Let's assume aardvark actually plays their games
-as "kravdraa" on the public servers (as a contrived example).
-
-aardvark may then query their games using "!lg kravdraa", or they may
-create a *nick mapping* from aardvark -> kravdraa as:
-
-!nick aardvark kravdraa
-
-after which aardvark can run listgame queries as "!lg ." and find
-games played under the name kravdraa.
-
-It's also possible that aardvark plays their games under two names:
-aardvark and kravdraa, and would like listgame queries to find games
-under both those names. aardvark can do that by running:
-
-!nick aardvark kravdraa aardvark
-
-Once a nick mapping is established, all listgame commands will use the
-mapping.
-
-You can bypass nick mappings in listgame queries by using an explicit
-name=foo expression:
-
-  "!lg * name=elliptic"  finds games by elliptic, without applying nick
-                         mappings.
-
-You can delete a nick mapping using:
-
-!nick -rm <ircnick>
-or
-!nick -rm . <servercharactername>
-
 
 Listgame Keywords
 -----------------
@@ -806,6 +758,56 @@ The available aggregate functions [usable as x=aggregate(field)]:
 You may use avg, sum, std and variance only for numeric fields.
 
 max, min, cdist may also be used on text (character) fields.
+
+
+Nick Aliases
+------------
+
+The !nick command maps IRC nicks to names used on public servers:
+
+Syntax
+======
+
+  !nick ircnick charactername1 [charactername2 ...]
+  !nick -rm ircnick
+  !nick -rm . charactername1
+
+The listgame commands normally assume that the user's IRC nick is the
+same as their player name on the public server. For instance, when
+a person with the IRC name 'aardvark' runs the query "!lg .", Sequell
+expects that aardvark plays their games using the same name "aardvark"
+on the public servers. Let's assume aardvark actually plays their games
+as "kravdraa" on the public servers (as a contrived example).
+
+aardvark may then query their games using "!lg kravdraa", or they may
+create a *nick mapping* from aardvark -> kravdraa as:
+
+!nick aardvark kravdraa
+
+after which aardvark can run listgame queries as "!lg ." and find
+games played under the name kravdraa.
+
+It's also possible that aardvark plays their games under two names:
+aardvark and kravdraa, and would like listgame queries to find games
+under both those names. aardvark can do that by running:
+
+!nick aardvark kravdraa aardvark
+
+Once a nick mapping is established, all listgame commands will use the
+mapping.
+
+You can bypass nick mappings in listgame queries by using an explicit
+name=foo expression:
+
+  "!lg * name=elliptic"  finds games by elliptic, without applying nick
+                         mappings.
+
+You can delete a nick mapping using:
+
+!nick -rm <ircnick>
+or
+!nick -rm . <servercharactername>
+
 
 FooTV
 -----
