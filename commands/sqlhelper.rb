@@ -1830,8 +1830,8 @@ def query_field(selector, field, op, sqlop, val)
     return clause
   end
 
-  if selfield == 'place' and !val.index(':') and
-    [ '=', '!=' ].index(op) and DEEP_BRANCH_SET.include?(val) then
+  if ((selfield == 'place' || selfield == 'oplace') and !val.index(':') and
+      [ '=', '!=' ].index(op) and DEEP_BRANCH_SET.include?(val)) then
     val = val + ':%'
     op = op == '=' ? '=~' : '!~'
     sqlop = OPERATORS[op]
