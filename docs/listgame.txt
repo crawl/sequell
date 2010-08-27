@@ -326,6 +326,7 @@ Examples:
 
 !won
 ----
+
 The !won command shows winning games by the named player, or by all
 players.
 
@@ -342,6 +343,11 @@ skip. For instance:
 
 "!won stabwound 5"  shows stabwound's win stats, skipping the first 5 wins.
 
+!gamesby
+--------
+
+!gamesby gives general stats for games played by a particular player
+or by all players, and accepts !lg-style filters.
 
 Nick Aliases
 ------------
