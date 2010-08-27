@@ -1906,7 +1906,7 @@ end
 
 def proc_val(val, sqlop)
   if sqlop =~ /LIKE/
-    val = val.index('*') or val.index('?') ? val.tr('*?', '%_') : "%#{val}%"
+    val = val.index('*') || val.index('?') ? val.tr('*?', '%_') : "%#{val}%"
   end
   val
 end
