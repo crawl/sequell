@@ -278,6 +278,13 @@ same as !lg, with a few nuances:
   "!lm * rune killer=centaur" finds the most recent rune milestone from
                               a game where the character died to a centaur.
 
+  In some cases you may want to check the value of a logfile field even
+  though milestones also have a field of the same name. For instance, if
+  you want to see the last orb milestone by a player who died on D:1, you'd
+  use "!lm * orb lg:place=D:1". Qualifying a field X as lg:X forces
+  the search to use the value of X from the game itself, not from the
+  milestone.
+
 - Milestone Options:
 
   -tv   plays back the portion of the game just before and after the chosen
@@ -878,3 +885,5 @@ Examples
                                   but start playback as the character descends
                                   the stairs and play 20 times more of the
                                   ttyrec than FooTV normally would.
+!lm * rune=obsidian lg:place=Coc  Last obsidian-rune (Geh) milestone for a game
+                                  that ended in Cocytus.
