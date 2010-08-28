@@ -241,6 +241,11 @@ are sorted by the counts of the broader query, which is usually
 irrelevant. You may request sorting by the percentage (descending)
 using o=%, or o=-% for ascending sort by percentage.
 
+NOTE: In ratio queries you may use multiple sort conditions:
+
+"!lg * s=char / win o=N,%" Show win rates of different characters, sorting
+                           by number of wins, and subsorting by win percentage.
+
 You may also perform rudimentary extended filtering when using the !lg
 ratio form. ?: <expr> requests extended filtering and must always be
 the *last* thing on the !lg line.
