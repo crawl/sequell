@@ -2183,10 +2183,11 @@ class SummaryReporter
         else
           srow = SummaryRow.new(nil, nil, @q.extra_fields, row)
         end
+        filter_key = srow.key.to_s.downcase
         if first
-          @rowmap[srow.key] = srow
+          @rowmap[filter_key] = srow
         else
-          existing = @rowmap[srow.key]
+          existing = @rowmap[filter_key]
           existing.combine!(srow) if existing
         end
       end
