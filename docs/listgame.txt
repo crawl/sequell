@@ -692,6 +692,8 @@ Listgame expressions may use these operators:
 
 =    equals (important: see note below)
 !=   not-equal
+==   exact equals
+!==  exact not-equals
 <    less-than
 >    greater-than
 <=   less-than-or-equal
@@ -744,8 +746,7 @@ Example: "!lg * class=He" => "!lg * class=Healer"
 Any X=Y query will be converted to an X~~Y query if Y contains these
 regex metacharacters: ()|?
 
-There is currently no way to disable these fixups for the '=' operator,
-but I plan to add a '==' operator for exact equality semantics.
+If you want to test (in)equality without any mangling, use == or !==
 
 Glob Matches
 ============
