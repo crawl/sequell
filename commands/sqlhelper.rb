@@ -15,6 +15,7 @@ TOURNEY_SPRINT_MAP = { 2010 => 'dungeon sprint mu' }
 GAME_PREFIXES = { GAME_CRAWL => '', GAME_SPRINT => 'spr_' }
 
 OPERATORS = {
+  '==' => '=', '!==' => '!=',
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
   '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE',
   '~~' => 'REGEXP', '!~~' => 'NOT REGEXP'
