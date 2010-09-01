@@ -13,14 +13,17 @@ def parse_args
     nick = words.slice!(0).sub(/^@/, '')
   end
 
-  if words[0] =~ /^[+-]?\d+$/
-    num = words.slice!(0).to_i
+  num = 0
+  words.size.times do |i|
+    if words[i] =~ /^[+-]?\d+$/
+      num = words.slice!(i).to_i
+      break
+    end
   end
 
   nick = nil if nick == '.'
 
   nick ||= ARGV[1]
-  num  ||= 0
   [ nick, num, words ]
 end
 
@@ -40,11 +43,14 @@ end
 games = nil
 begin
   desc = nick
+  game = extract_game_type(trail_select)
   if num == 0
-    q = sql_define_query(nick, -1,
-                         trail_select + ["ktyp=winning"],
-                         nil).reverse
-    game_count_query = sql_define_query(nick, -1, trail_select, nil)
+    q, game_count_query = GameContext.with_game(game) do
+      [sql_define_query(nick, -1,
+                        trail_select + ["ktyp=winning"],
+                        nil).reverse,
+       sql_define_query(nick, -1, trail_select, nil)]
+    end
     count = sql_count_rows_matching(game_count_query)
     desc = game_count_query.argstr
   else
@@ -52,7 +58,9 @@ begin
       puts "Cannot combine * with win-skip count."
       exit 0
     end
-    q = sql_define_query(nick, -1, trail_select, nil).reverse
+    q = GameContext.with_game(game) do
+      sql_define_query(nick, -1, trail_select, nil).reverse
+    end
     desc = q.argstr
     count = 0
   end
