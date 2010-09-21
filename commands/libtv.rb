@@ -6,9 +6,11 @@ require 'commands/helper'
 module TV
   @@tv_args = nil
 
-  QUEUE_FILE = 'tv.queue'
-  LOCK_FILE = 'tv.queue.lock'
-  LOG_FILE = 'tv.queue.log'
+  TV_QUEUE_FILE = 'tv.queue'
+  TV_LOCK_FILE = 'tv.queue.lock'
+  DIRSERV_LOCK_FILE = 'dirserv.queue.lock'
+  TV_LOG_FILE = 'tv.queue.log'
+  DIRSERV_LOG_FILE = 'dirserv.queue.log'
 
   # Serves ttyrec directory listings to whoever asks.
   class TtyrecDirectoryServ < GServer
@@ -72,7 +74,7 @@ module TV
     def run_monitor
       begin
         while true
-          open(QUEUE_FILE, 'r+') do |af|
+          open(TV_QUEUE_FILE, 'r+') do |af|
             TV.flock(af, File::LOCK_EX) do |f|
               lines = f.readlines
               f.truncate(0)
@@ -156,9 +158,9 @@ module TV
     end
 
     # Try for a lock, but do not block
-    oflock(LOCK_FILE, File::LOCK_EX | File::LOCK_NB) do |f|
+    oflock(DIRSERV_LOCK_FILE, File::LOCK_EX | File::LOCK_NB) do |f|
       # Be a good citizen:
-      logfile = File.open(LOG_FILE, 'w')
+      logfile = File.open(DIRSERV_LOG_FILE, 'w')
       logfile.sync = true
       STDOUT.reopen(logfile)
       STDERR.reopen(logfile)
@@ -181,10 +183,10 @@ module TV
     end
 
     # Try for a lock, but do not block
-    oflock(LOCK_FILE, File::LOCK_EX | File::LOCK_NB) do |f|
+    oflock(TV_LOCK_FILE, File::LOCK_EX | File::LOCK_NB) do |f|
 
       # Be a good citizen:
-      logfile = File.open(LOG_FILE, 'w')
+      logfile = File.open(TV_LOG_FILE, 'w')
       logfile.sync = true
       STDOUT.reopen(logfile)
       STDERR.reopen(logfile)
@@ -263,7 +265,7 @@ module TV
     # parties (i.e. C-SPLAT) to listen in.
     launch_daemon()
 
-    open(QUEUE_FILE, 'a') do |file|
+    open(TV_QUEUE_FILE, 'a') do |file|
       flock(file, File::LOCK_EX) do |f|
         # Make sure we're really at eof.
         f.seek(0, IO::SEEK_END)
