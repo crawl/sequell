@@ -192,10 +192,6 @@ module TV
       STDERR.reopen(logfile)
       STDIN.close()
 
-      # Start the ttyrec listing server.
-      ttyrec_lister = TtyrecDirectoryServ.new
-      ttyrec_lister.start()
-
       # Start the notification server and wait on it.
       tv = TVServ.new
       tv.start()
