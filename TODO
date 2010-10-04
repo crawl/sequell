@@ -54,3 +54,13 @@ Extended Henzell queries (joins, yay):
 
   +++ operator to combine multiple arglists.
 
+---------------------------------------------------  
+  
+!won * t pa <- fix
+!won * sprint ?
+
+Allow multiple s= conditions:
+
+s=char,god => group by char + god: 10x DEFE (3x Okawaru, 2x Xom, ...), 5x MuPr
+
+Allow !ttyrec to use ruby dir lister.
