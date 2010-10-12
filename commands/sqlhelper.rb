@@ -43,7 +43,7 @@ BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
               Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig
               Lab Pan Bazaar Bzr Hell Blade Temple Abyss Sprint/
 
-GODABBRS = %w/zin tso kik yre xom veh oka
+GODABBRS = %w/ash zin tso kik yre xom veh oka
               mak sif trog nem ely lug beo fed jiy che/
 GODMAP = {
   'ash'  => 'Ashenzari',
