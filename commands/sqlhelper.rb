@@ -46,6 +46,7 @@ BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
 GODABBRS = %w/zin tso kik yre xom veh oka
               mak sif trog nem ely lug beo fed jiy che/
 GODMAP = {
+  'ash'  => 'Ashenzari',
   'tso'  => 'The Shining One',
   'kik'  => 'Kikubaaqudgha',
   'yre'  => 'Yredelemnul',
@@ -112,6 +113,7 @@ RACE_EXPANSIONS = {
   'SE' => 'Sludge Elf',
   'HD' => 'Hill Dwarf',
   'MD' => 'Mountain Dwarf',
+  'Fe' => 'Felid',
   'Ha' => 'Halfling',
   'HO' => 'Hill Orc',
   'Ko' => 'Kobold',
