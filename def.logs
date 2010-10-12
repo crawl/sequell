@@ -57,7 +57,7 @@ remote.cdo-logfile-0.7
 [remote:cdo:http://$cdo/allgames-spr-0.7.txt]
 remote.cdo-logfile-0.7-sprint
 
-[remote:cdo:http://$cdo/allgames-spr.txt]
+[remote:cdo:http://$cdo/allgames-spr-svn.txt]
 remote.cdo-logfile-spr
 
 [remote:cdo:http://$cdo/allgames-svn.txt; alpha]
