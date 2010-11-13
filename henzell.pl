@@ -164,7 +164,7 @@ sub newsworthy
   my $br_enter = $type eq 'enter' || $type eq 'br.enter';
   my $place_branch = game_place_branch($g);
 
-  return 0 if grep($type eq $_, 'monstrous');
+  return 0 if grep($type eq $_, 'monstrous', 'death');
 
   return 0
     if $br_enter
