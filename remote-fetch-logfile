@@ -15,7 +15,7 @@ sub fetch_file($) {
     return;
   }
   print "Fetching $$file{url} -> $$file{path}\n" if $verbose;
-  system(qq{wget -q -c $$file{url} -O $$file{path} >/dev/null 2>&1});
+  system(qq{wget --timeout=15 -q -c $$file{url} -O $$file{path} >/dev/null 2>&1});
 }
 
 sub main() {
