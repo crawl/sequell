@@ -8,6 +8,10 @@
 Allow quo
 
 Extended Henzell queries (joins, yay):
+- Fork query as a separate process, keep track of PID.
+- When child exits, display its output (presumably dumped to a file)
+- Set alarm to kill child after 30s
+- Allow !cancelquery to cancel any running query immediately
 
 Join steps:
 1. Identify subqueries
@@ -60,6 +64,26 @@ explain extended
 
 - Games with most milestones in Shoals:
    !lg * [[!lm * Shoals s=game_id]]
+
+- Lairless wins:
+   !lg * win [[!lm * br.enter=Lair match=start,name x=count]]=0
+
+   OR
+
+   !lg * win [[!lm * br.enter=Lair start=q:start name=q:name x=count]]=0
+
+   Prefixes:
+   where qp: implies the parent query, q: the top-level query. Other queries
+   may use aliases specified in the subquery.
+
+
+Different kinds of subqueries:
+- General JOIN query -- just use x=fields to join
+- Correlated subquery: use match=field1,field2 to correlate on those field
+  values.
+- Correlated subquery as expression: use subquery OP value to match.
+- EXISTS subquery: exists[[ ]] (may also be correlated)
+- NOT EXISTS subquery: !exists[[ ]] (may also be correlated)
 
  Real query parser.
 

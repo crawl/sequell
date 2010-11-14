@@ -28,7 +28,7 @@ grammar ListgameQuery
   end
 
   rule having_value
-    query_value
+    query_typed_value
   end
 
   rule query_mode
@@ -84,19 +84,41 @@ grammar ListgameQuery
   end
 
   rule query_part
-    ( query_parenthesized / field_grouping / field_extract / ordering / result_index / key_op_val_arg / query_flag ) whitespace?
+    ( query_parenthesized / field_grouping / field_extract / field_subquery_match / ordering / result_index / key_op_val_arg / query_flag ) whitespace?
   end
 
   rule query_parenthesized
-    query_subpart / query_subquery
+    query_subpart / query_subquery_clause
   end
 
   rule query_subpart
     "((" whitespace? query_clauses whitespace? "))" whitespace?
   end
 
+  rule query_subquery_clause
+    query_subquery_condition / query_subquery_join
+  end
+
+  rule query_subquery_condition
+    query_subquery whitespace? query_operator &(whitespace (key_op_val_arg / query_parenthesized)) /
+    query_subquery whitespace? query_operator whitespace? query_sloppy_value_expr /
+    query_subquery whitespace? query_operator
+  end
+
+  rule query_subquery_join
+    query_subquery
+  end
+
   rule query_subquery
-    "[[" whitespace? query whitespace? "]]" whitespace?
+    query_subquery_prefix whitespace? query whitespace? "]]" whitespace?
+  end
+
+  rule query_subquery_prefix
+    "[" subquery_alias "[" / "[["
+  end
+
+  rule subquery_alias
+    [a-zA-Z] [a-zA-Z_0-9]*
   end
 
   rule result_index
@@ -159,6 +181,10 @@ grammar ListgameQuery
     "-"? "s" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
   end
 
+  rule field_subquery_match
+    "-"? "match" whitespace? "=" whitespace? query_field ( whitespace? "," whitespace? query_field )*
+  end
+
   rule field_extract
     "-"? "x" whitespace? "=" whitespace? ordered_aggregate_field ( whitespace? "," whitespace? ordered_aggregate_field )*
   end
@@ -169,7 +195,7 @@ grammar ListgameQuery
 
   rule key_op_val_arg
     "-"? query_field whitespace? query_operator &(whitespace (key_op_val_arg / query_parenthesized)) /
-    "-"? query_field whitespace? query_operator whitespace? query_value /
+    "-"? query_field whitespace? query_operator whitespace? query_sloppy_value_expr /
     "-"? query_field whitespace? query_operator
   end
 
@@ -177,7 +203,40 @@ grammar ListgameQuery
     word_part ( ":" word_part )?
   end
 
-  rule query_value
+  rule query_sloppy_value_expr
+    query_field_name_expr / query_sloppy_value
+  end
+
+  rule query_field_name_expr
+    "{" query_calculation "}"
+  end
+
+  rule query_calculation
+    "(" whitespace? query_calculation whitespace? ")" whitespace?
+    / 
+    query_op_terms
+    /
+    query_term
+  end
+
+  rule query_op_terms
+    # FIXME: SQL operators for expressions.
+    query_term
+  end
+
+  rule query_term
+    query_function_term / query_subquery / query_field / query_typed_value
+  end
+
+  rule query_function_term
+    query_identifier whitespace? "(" whitespace? query_calculation whitespace? ")" whitespace?
+  end
+
+  rule query_typed_value
+    query_typed_string  / query_typed_float / query_typed_integer / query_typed_null / query_bareword_string
+  end
+
+  rule query_sloppy_value
     ((" " !query_part) / ")" !")" / "]" !"]" / "|" !"|" / [^\s)\]|])+
   end
 
