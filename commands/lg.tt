@@ -1,6 +1,34 @@
 grammar ListgameQuery
   rule query
-    query_mode? query_body
+    query_mode? query_body ( whitespace? query_ratio_sep query_ratio_tail )?
+  end
+
+  rule query_ratio_sep
+    "/" whitespace?
+  end
+
+  rule query_ratio_tail
+    query_body whitespace? query_having_filter?
+  end
+
+  rule query_having_filter
+    "?:" whitespace? having_clauses
+  end
+
+  rule having_clauses
+    having_clause*
+  end
+
+  rule having_clause
+    having_key whitespace? query_operator whitespace? having_value
+  end
+
+  rule having_key
+    "count" / "n" / "num.n" / "den.n" / "%" / query_field
+  end
+
+  rule having_value
+    [^\s]+
   end
 
   rule query_mode
@@ -44,7 +72,7 @@ grammar ListgameQuery
   end
 
   rule query_part
-    ( query_flag / query_subpart / field_grouping / field_extract / ordering / min_max / key_op_val_arg / result_index ) whitespace?
+    ( query_flag / query_subpart / field_grouping / field_extract / ordering / key_op_val_arg / result_index ) whitespace?
   end
 
   rule query_subpart
@@ -76,15 +104,21 @@ grammar ListgameQuery
   end
 
   rule ordering
-    "o=" ordered_field ( "," ordered_field )*
+    "o" whitespace? "=" whitespace? ordered_special_field ( whitespace? "," whitespace? ordered_special_field )*
     /
-    "max=" query_field
-    /
-    "min=" query_field
+    sort_op whitespace? "=" whitespace? special_field
   end
 
   rule ordered_field
     [+-]? query_field
+  end
+
+  rule ordered_special_field
+    [+-]? special_field
+  end
+
+  rule special_field
+    "%" / query_field
   end
 
   rule field_grouping
@@ -93,14 +127,6 @@ grammar ListgameQuery
 
   rule field_extract
     "x" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
-  end
-
-  rule ordering
-    "o" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
-  end
-
-  rule min_max
-    sort_op whitespace? "=" whitespace? query_field
   end
 
   rule sort_op
