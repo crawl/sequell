@@ -174,7 +174,9 @@ sub reopen_db {
 }
 
 sub new_db_handle {
-  DBI->connect("dbi:mysql:henzell", 'henzell', '')
+  my $dbh = DBI->connect("dbi:mysql:henzell", 'henzell', '');
+  $dbh->{mysql_auto_reconnect} = 1;
+  $dbh
 }
 
 sub open_db {
