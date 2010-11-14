@@ -150,7 +150,9 @@ sub reopen_db {
 }
 
 sub new_db_handle {
-  DBI->connect("dbi:mysql:exxorn", 'exxorn', '')
+  my $dbh = DBI->connect("dbi:mysql:exxorn", 'exxorn', '');
+  $dbh->{mysql_auto_reconnect} = 1;
+  $dbh
 }
 
 sub open_db {
