@@ -44,11 +44,15 @@ grammar ListgameQuery
   end
 
   rule query_clauses
-    query_keyword* query_part*
+    query_keyword_or_index* query_part*
   end
 
   rule nick_selector
     negation? nickref_symbol? nick whitespace?
+  end
+
+  rule query_keyword_or_index
+    result_index / query_keyword
   end
 
   rule query_keyword

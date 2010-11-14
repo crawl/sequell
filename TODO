@@ -21,7 +21,7 @@ Conditions:
 2. Must handle top-level ratio queries.
 3. Must handle milestone + logfile joins as subqueries.
 
-
+Parser special cases:
  - Games by players who have more than X wins:
 
    SELECT * FROM logrecord WHERE pname IN (
