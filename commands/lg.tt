@@ -28,7 +28,7 @@ grammar ListgameQuery
   end
 
   rule having_value
-    [^\s]+
+    query_value
   end
 
   rule query_mode
@@ -40,15 +40,23 @@ grammar ListgameQuery
   end
 
   rule query_body
-    nick_selector? query_clauses
+    nick_selector? query_clauses query_having_filter?
   end
 
   rule query_clauses
+    query_expression query_or query_clauses / query_expression
+  end
+
+  rule query_or
+    whitespace? "||" whitespace?
+  end
+
+  rule query_expression
     query_keyword_or_index* query_part*
   end
 
   rule nick_selector
-    negation? nickref_symbol? nick whitespace?
+    negation? nickref_symbol? nick whitespace? !query_operator
   end
 
   rule query_keyword_or_index
@@ -60,7 +68,7 @@ grammar ListgameQuery
   end
 
   rule query_keyword_body
-    [a-zA-Z0-9] [:a-zA-Z0-9.]+ !(!" " .)
+    [a-zA-Z0-9] [:a-zA-Z0-9.]+
   end
 
   rule negation
@@ -72,15 +80,23 @@ grammar ListgameQuery
   end
 
   rule nick
-    ( [a-zA-Z0-9_+`'-]+ / "." / "*" ) !(!" " .)
+    ( [a-zA-Z0-9_+`'-]+ / "." / "*" )
   end
 
   rule query_part
-    ( query_subpart / field_grouping / field_extract / ordering / key_op_val_arg / query_flag / result_index ) whitespace?
+    ( query_parenthesized / field_grouping / field_extract / ordering / result_index / key_op_val_arg / query_flag ) whitespace?
+  end
+
+  rule query_parenthesized
+    query_subpart / query_subquery
   end
 
   rule query_subpart
-    "((" whitespace? query_clauses ( whitespace? "||" whitespace? query_clauses )* whitespace? "))"
+    "((" whitespace? query_clauses whitespace? "))" whitespace?
+  end
+
+  rule query_subquery
+    "[[" whitespace? query whitespace? "]]" whitespace?
   end
 
   rule result_index
@@ -114,6 +130,19 @@ grammar ListgameQuery
     sort_op whitespace? "=" whitespace? special_field )
   end
 
+  rule ordered_aggregate_field
+    [+-]? aggregate_field
+  end
+
+  rule aggregate_field
+    aggregate_func whitespace? "(" whitespace? query_field whitespace? ")" /
+    query_field
+  end
+
+  rule aggregate_func
+    [a-zA-Z0-9_]+
+  end
+  
   rule ordered_field
     [+-]? query_field
   end
@@ -131,7 +160,7 @@ grammar ListgameQuery
   end
 
   rule field_extract
-    "-"? "x" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
+    "-"? "x" whitespace? "=" whitespace? ordered_aggregate_field ( whitespace? "," whitespace? ordered_aggregate_field )*
   end
 
   rule sort_op
@@ -139,8 +168,9 @@ grammar ListgameQuery
   end
 
   rule key_op_val_arg
-    "-"? query_field whitespace? query_operator &(whitespace key_op_val_arg) /
-    "-"? query_field whitespace? query_operator whitespace? query_value
+    "-"? query_field whitespace? query_operator &(whitespace (key_op_val_arg / query_parenthesized)) /
+    "-"? query_field whitespace? query_operator whitespace? query_value /
+    "-"? query_field whitespace? query_operator
   end
 
   rule query_field
@@ -148,7 +178,7 @@ grammar ListgameQuery
   end
 
   rule query_value
-    ((" " !query_part) / [^\s])+
+    ((" " !query_part) / ")" !")" / "]" !"]" / [^\s)\]])+
   end
 
   rule word_part
