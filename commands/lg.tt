@@ -20,7 +20,7 @@ grammar ListgameQuery
   end
 
   rule having_clause
-    having_key whitespace? query_operator whitespace? having_value
+    "-"? having_key whitespace? query_operator whitespace? having_value
   end
 
   rule having_key
@@ -76,7 +76,7 @@ grammar ListgameQuery
   end
 
   rule query_part
-    ( query_flag / query_subpart / field_grouping / field_extract / ordering / key_op_val_arg / result_index ) whitespace?
+    ( query_subpart / field_grouping / field_extract / ordering / key_op_val_arg / query_flag / result_index ) whitespace?
   end
 
   rule query_subpart
@@ -108,9 +108,10 @@ grammar ListgameQuery
   end
 
   rule ordering
+    "-"? (
     "o" whitespace? "=" whitespace? ordered_special_field ( whitespace? "," whitespace? ordered_special_field )*
     /
-    sort_op whitespace? "=" whitespace? special_field
+    sort_op whitespace? "=" whitespace? special_field )
   end
 
   rule ordered_field
@@ -126,11 +127,11 @@ grammar ListgameQuery
   end
 
   rule field_grouping
-    "s" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
+    "-"? "s" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
   end
 
   rule field_extract
-    "x" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
+    "-"? "x" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
   end
 
   rule sort_op
@@ -138,8 +139,8 @@ grammar ListgameQuery
   end
 
   rule key_op_val_arg
-    query_field whitespace? query_operator &(whitespace key_op_val_arg) /
-    query_field whitespace? query_operator whitespace? query_value
+    "-"? query_field whitespace? query_operator &(whitespace key_op_val_arg) /
+    "-"? query_field whitespace? query_operator whitespace? query_value
   end
 
   rule query_field
