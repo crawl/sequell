@@ -178,7 +178,7 @@ grammar ListgameQuery
   end
 
   rule query_value
-    ((" " !query_part) / ")" !")" / "]" !"]" / [^\s)\]])+
+    ((" " !query_part) / ")" !")" / "]" !"]" / "|" !"|" / [^\s)\]|])+
   end
 
   rule word_part
