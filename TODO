@@ -3,9 +3,24 @@
   - Load into test db
   - Run queries and check for expected results.
 
-  -
+!lg * cow bar=moo cow foo zap=tao
+
+Allow quo
 
 Extended Henzell queries (joins, yay):
+
+Join steps:
+1. Identify subqueries
+2. Identify join parameters. Subquery must have x=<field> to specify joins,
+   OR must have s=<field> to specify grouping, in which case the same <field>
+   is assumed as the join condition.
+3. Create query with joins. Easy!
+
+Conditions:
+1. Robust parser.
+2. Must handle top-level ratio queries.
+3. Must handle milestone + logfile joins as subqueries.
+
 
  - Games by players who have more than X wins:
 
@@ -13,13 +28,17 @@ Extended Henzell queries (joins, yay):
       SELECT pname FROM logrecord WHERE ktyp='winning' GROUP BY pname
       HAVING COUNT(*) > 3 );
 
-   !lg * [[ * win s=name x=name :: count > 3 ]]
+   !lg * [[ * win s=name :: count > 3 ]]
+     ^^ x=field is implied if no x=<foo> is specified and there's an s=field
 
 - Games that are first wins:
-   SELECT * FROM logrecord a,
-     (SELECT pname, MIN(starttime) FROM logrecord
+explain extended
+   SELECT charabbrev, count(*) AS c FROM logrecord a,
+     (SELECT pname, MIN(tstart) AS tstart FROM logrecord
       WHERE ktyp = 'winning' GROUP BY pname) b
-   WHERE a.pname = b.name AND a.starttime = b.starttime
+   WHERE a.pname = b.pname AND a.tstart = b.tstart
+   group by charabbrev
+   order by c DESC;
 
    !lg * [[ * win s=name x=name,min(start) ]] s=char
 
@@ -40,7 +59,7 @@ Extended Henzell queries (joins, yay):
    (The implicit order by COUNT(*) is used here).
 
 - Games with most milestones in Shoals:
-   !lg * [[ !lm * Shoals s=game_id ]]
+   !lg * [[!lm * Shoals s=game_id]]
 
  Real query parser.
 
@@ -59,8 +78,18 @@ Extended Henzell queries (joins, yay):
 !won * t pa <- fix
 !won * sprint ?
 
+---------------------------------------------------
 Allow multiple s= conditions:
 
 s=char,god => group by char + god: 10x DEFE (3x Okawaru, 2x Xom, ...), 5x MuPr
 
 Allow !ttyrec to use ruby dir lister.
+
+---------------------------------------------------
+
+!lg general syntax:
+
+[(mode-select)] (query-form) [s=grouping] [x=show-fields] [o=ordering]
+[ / (query-form) [?: extended filters]]
+
+where query-form = <nick-selector> [keywords...] [key-op-val arguments]

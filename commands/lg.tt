@@ -1,0 +1,98 @@
+grammar ListgameQuery
+  rule query
+    query_mode? query_body
+  end
+
+  rule query_mode
+    ("!lm" / "!lg") whitespace?
+  end
+
+  rule whitespace
+    [\s]+
+  end
+
+  rule query_body
+    nick_selector? query_keyword* query_part*
+  end
+
+  rule nick_selector
+    negation? nickref_symbol? nick whitespace?
+  end
+
+  rule query_keyword
+    negation? query_keyword_body whitespace?
+  end
+
+  rule query_keyword_body
+    [a-zA-Z0-9] [a-zA-Z0-9.]+ !(!" " .)
+  end
+
+  rule negation
+    "!"
+  end
+
+  rule nickref_symbol
+    "@"
+  end
+
+  rule nick
+    ( [a-zA-Z0-9_+`'-]+ / "." / "*" ) !(!" " .)
+  end
+
+  rule query_part
+    ( field_grouping / field_extract / ordering / key_op_val_arg / result_index ) whitespace?
+  end
+
+  rule result_index
+    integer
+  end
+
+  rule integer
+    [+-]? [0-9]+
+  end
+
+  rule ordering
+    "o=" ordered_field ( "," ordered_field )*
+    /
+    "max=" query_field
+    /
+    "min=" query_field
+  end
+
+  rule ordered_field
+    [+-]? query_field
+  end
+
+  rule field_grouping
+    "s=" query_field ( "," query_field )*
+  end
+
+  rule field_extract
+    "x=" query_field ( "," query_field )*
+  end
+
+  rule ordering
+    "o=" ordered_field ( "," ordered_field )*
+  end
+
+  rule key_op_val_arg
+    query_field whitespace? query_operator &(whitespace key_op_val_arg) /
+    query_field whitespace? query_operator whitespace? query_value
+  end
+
+  rule query_field
+    word_part ( ":" word_part )?
+  end
+
+  rule query_value
+    ((" " !key_op_val_arg) / [^\s])+
+  end
+
+  rule word_part
+    [a-zA-Z.0-9_]+
+  end
+
+  rule query_operator
+    "<=" / "<" / ">=" / ">" / "==" / "=" / "!==" / "!=" / "=~" / "~~" / "!~" / "!~~"
+  end
+end
