@@ -151,6 +151,9 @@ module ListgameQuery
   end
 
   module QueryBody0
+    def query_clauses
+      elements[1]
+    end
   end
 
   def _nt_query_body
@@ -173,30 +176,8 @@ module ListgameQuery
     end
     s0 << r1
     if r1
-      s3, i3 = [], index
-      loop do
-        r4 = _nt_query_keyword
-        if r4
-          s3 << r4
-        else
-          break
-        end
-      end
-      r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+      r3 = _nt_query_clauses
       s0 << r3
-      if r3
-        s5, i5 = [], index
-        loop do
-          r6 = _nt_query_part
-          if r6
-            s5 << r6
-          else
-            break
-          end
-        end
-        r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
-        s0 << r5
-      end
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
@@ -207,6 +188,58 @@ module ListgameQuery
     end
 
     node_cache[:query_body][start_index] = r0
+
+    r0
+  end
+
+  module QueryClauses0
+  end
+
+  def _nt_query_clauses
+    start_index = index
+    if node_cache[:query_clauses].has_key?(index)
+      cached = node_cache[:query_clauses][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    s1, i1 = [], index
+    loop do
+      r2 = _nt_query_keyword
+      if r2
+        s1 << r2
+      else
+        break
+      end
+    end
+    r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+    s0 << r1
+    if r1
+      s3, i3 = [], index
+      loop do
+        r4 = _nt_query_part
+        if r4
+          s3 << r4
+        else
+          break
+        end
+      end
+      r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+      s0 << r3
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(QueryClauses0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:query_clauses][start_index] = r0
 
     r0
   end
@@ -309,6 +342,17 @@ module ListgameQuery
           r4 = instantiate_node(SyntaxNode,input, index...index)
         end
         s0 << r4
+        if r4
+          i6 = index
+          r7 = _nt_query_operator
+          if r7
+            r6 = nil
+          else
+            @index = i6
+            r6 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s0 << r6
+        end
       end
     end
     if s0.last
@@ -352,7 +396,7 @@ module ListgameQuery
     if r1
       s2, i2 = [], index
       loop do
-        if has_terminal?('\G[a-zA-Z0-9.]', true, index)
+        if has_terminal?('\G[:a-zA-Z0-9.]', true, index)
           r3 = true
           @index += 1
         else
@@ -616,28 +660,43 @@ module ListgameQuery
 
     i0, s0 = index, []
     i1 = index
-    r2 = _nt_field_grouping
+    r2 = _nt_query_flag
     if r2
       r1 = r2
     else
-      r3 = _nt_field_extract
+      r3 = _nt_query_subpart
       if r3
         r1 = r3
       else
-        r4 = _nt_ordering
+        r4 = _nt_field_grouping
         if r4
           r1 = r4
         else
-          r5 = _nt_key_op_val_arg
+          r5 = _nt_field_extract
           if r5
             r1 = r5
           else
-            r6 = _nt_result_index
+            r6 = _nt_ordering
             if r6
               r1 = r6
             else
-              @index = i1
-              r1 = nil
+              r7 = _nt_min_max
+              if r7
+                r1 = r7
+              else
+                r8 = _nt_key_op_val_arg
+                if r8
+                  r1 = r8
+                else
+                  r9 = _nt_result_index
+                  if r9
+                    r1 = r9
+                  else
+                    @index = i1
+                    r1 = nil
+                  end
+                end
+              end
             end
           end
         end
@@ -645,13 +704,13 @@ module ListgameQuery
     end
     s0 << r1
     if r1
-      r8 = _nt_whitespace
-      if r8
-        r7 = r8
+      r11 = _nt_whitespace
+      if r11
+        r10 = r11
       else
-        r7 = instantiate_node(SyntaxNode,input, index...index)
+        r10 = instantiate_node(SyntaxNode,input, index...index)
       end
-      s0 << r7
+      s0 << r10
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
@@ -662,6 +721,134 @@ module ListgameQuery
     end
 
     node_cache[:query_part][start_index] = r0
+
+    r0
+  end
+
+  module QuerySubpart0
+    def query_clauses
+      elements[3]
+    end
+  end
+
+  module QuerySubpart1
+    def query_clauses
+      elements[2]
+    end
+
+  end
+
+  def _nt_query_subpart
+    start_index = index
+    if node_cache[:query_subpart].has_key?(index)
+      cached = node_cache[:query_subpart][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?("((", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 2))
+      @index += 2
+    else
+      terminal_parse_failure("((")
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      r3 = _nt_whitespace
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      s0 << r2
+      if r2
+        r4 = _nt_query_clauses
+        s0 << r4
+        if r4
+          s5, i5 = [], index
+          loop do
+            i6, s6 = index, []
+            r8 = _nt_whitespace
+            if r8
+              r7 = r8
+            else
+              r7 = instantiate_node(SyntaxNode,input, index...index)
+            end
+            s6 << r7
+            if r7
+              if has_terminal?("||", false, index)
+                r9 = instantiate_node(SyntaxNode,input, index...(index + 2))
+                @index += 2
+              else
+                terminal_parse_failure("||")
+                r9 = nil
+              end
+              s6 << r9
+              if r9
+                r11 = _nt_whitespace
+                if r11
+                  r10 = r11
+                else
+                  r10 = instantiate_node(SyntaxNode,input, index...index)
+                end
+                s6 << r10
+                if r10
+                  r12 = _nt_query_clauses
+                  s6 << r12
+                end
+              end
+            end
+            if s6.last
+              r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+              r6.extend(QuerySubpart0)
+            else
+              @index = i6
+              r6 = nil
+            end
+            if r6
+              s5 << r6
+            else
+              break
+            end
+          end
+          r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+          s0 << r5
+          if r5
+            r14 = _nt_whitespace
+            if r14
+              r13 = r14
+            else
+              r13 = instantiate_node(SyntaxNode,input, index...index)
+            end
+            s0 << r13
+            if r13
+              if has_terminal?("))", false, index)
+                r15 = instantiate_node(SyntaxNode,input, index...(index + 2))
+                @index += 2
+              else
+                terminal_parse_failure("))")
+                r15 = nil
+              end
+              s0 << r15
+            end
+          end
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(QuerySubpart1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:query_subpart][start_index] = r0
 
     r0
   end
@@ -743,6 +930,234 @@ module ListgameQuery
     end
 
     node_cache[:integer][start_index] = r0
+
+    r0
+  end
+
+  module QueryFlag0
+  end
+
+  module QueryFlag1
+    def query_flag_body
+      elements[1]
+    end
+
+  end
+
+  def _nt_query_flag
+    start_index = index
+    if node_cache[:query_flag].has_key?(index)
+      cached = node_cache[:query_flag][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?("-", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
+    else
+      terminal_parse_failure("-")
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      r2 = _nt_query_flag_body
+      s0 << r2
+      if r2
+        i3 = index
+        i4, s4 = index, []
+        i5 = index
+        if has_terminal?(" ", false, index)
+          r6 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure(" ")
+          r6 = nil
+        end
+        if r6
+          r5 = nil
+        else
+          @index = i5
+          r5 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s4 << r5
+        if r5
+          if index < input_length
+            r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure("any character")
+            r7 = nil
+          end
+          s4 << r7
+        end
+        if s4.last
+          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
+          r4.extend(QueryFlag0)
+        else
+          @index = i4
+          r4 = nil
+        end
+        if r4
+          r3 = nil
+        else
+          @index = i3
+          r3 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s0 << r3
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(QueryFlag1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:query_flag][start_index] = r0
+
+    r0
+  end
+
+  module QueryFlagBody0
+    def query_flag_name
+      elements[0]
+    end
+
+  end
+
+  def _nt_query_flag_body
+    start_index = index
+    if node_cache[:query_flag_body].has_key?(index)
+      cached = node_cache[:query_flag_body][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    r1 = _nt_query_flag_name
+    s0 << r1
+    if r1
+      r3 = _nt_query_flag_extra
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      s0 << r2
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(QueryFlagBody0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:query_flag_body][start_index] = r0
+
+    r0
+  end
+
+  module QueryFlagName0
+  end
+
+  def _nt_query_flag_name
+    start_index = index
+    if node_cache[:query_flag_name].has_key?(index)
+      cached = node_cache[:query_flag_name][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?('\G[a-zA-Z]', true, index)
+      r1 = true
+      @index += 1
+    else
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      s2, i2 = [], index
+      loop do
+        if has_terminal?('\G[a-zA-Z_]', true, index)
+          r3 = true
+          @index += 1
+        else
+          r3 = nil
+        end
+        if r3
+          s2 << r3
+        else
+          break
+        end
+      end
+      if s2.empty?
+        @index = i2
+        r2 = nil
+      else
+        r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      end
+      s0 << r2
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(QueryFlagName0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:query_flag_name][start_index] = r0
+
+    r0
+  end
+
+  def _nt_query_flag_extra
+    start_index = index
+    if node_cache[:query_flag_extra].has_key?(index)
+      cached = node_cache[:query_flag_extra][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    s0, i0 = [], index
+    loop do
+      if has_terminal?('\G[^\\s]', true, index)
+        r1 = true
+        @index += 1
+      else
+        r1 = nil
+      end
+      if r1
+        s0 << r1
+      else
+        break
+      end
+    end
+    if s0.empty?
+      @index = i0
+      r0 = nil
+    else
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+    end
+
+    node_cache[:query_flag_extra][start_index] = r0
 
     r0
   end
@@ -944,14 +1359,14 @@ module ListgameQuery
   end
 
   module FieldGrouping0
-    def query_field
-      elements[1]
+    def ordered_field
+      elements[3]
     end
   end
 
   module FieldGrouping1
-    def query_field
-      elements[1]
+    def ordered_field
+      elements[4]
     end
 
   end
@@ -968,48 +1383,94 @@ module ListgameQuery
     end
 
     i0, s0 = index, []
-    if has_terminal?("s=", false, index)
-      r1 = instantiate_node(SyntaxNode,input, index...(index + 2))
-      @index += 2
+    if has_terminal?("s", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
     else
-      terminal_parse_failure("s=")
+      terminal_parse_failure("s")
       r1 = nil
     end
     s0 << r1
     if r1
-      r2 = _nt_query_field
+      r3 = _nt_whitespace
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
       s0 << r2
       if r2
-        s3, i3 = [], index
-        loop do
-          i4, s4 = index, []
-          if has_terminal?(",", false, index)
-            r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
-            @index += 1
+        if has_terminal?("=", false, index)
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure("=")
+          r4 = nil
+        end
+        s0 << r4
+        if r4
+          r6 = _nt_whitespace
+          if r6
+            r5 = r6
           else
-            terminal_parse_failure(",")
-            r5 = nil
+            r5 = instantiate_node(SyntaxNode,input, index...index)
           end
-          s4 << r5
+          s0 << r5
           if r5
-            r6 = _nt_query_field
-            s4 << r6
-          end
-          if s4.last
-            r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
-            r4.extend(FieldGrouping0)
-          else
-            @index = i4
-            r4 = nil
-          end
-          if r4
-            s3 << r4
-          else
-            break
+            r7 = _nt_ordered_field
+            s0 << r7
+            if r7
+              s8, i8 = [], index
+              loop do
+                i9, s9 = index, []
+                r11 = _nt_whitespace
+                if r11
+                  r10 = r11
+                else
+                  r10 = instantiate_node(SyntaxNode,input, index...index)
+                end
+                s9 << r10
+                if r10
+                  if has_terminal?(",", false, index)
+                    r12 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                    @index += 1
+                  else
+                    terminal_parse_failure(",")
+                    r12 = nil
+                  end
+                  s9 << r12
+                  if r12
+                    r14 = _nt_whitespace
+                    if r14
+                      r13 = r14
+                    else
+                      r13 = instantiate_node(SyntaxNode,input, index...index)
+                    end
+                    s9 << r13
+                    if r13
+                      r15 = _nt_ordered_field
+                      s9 << r15
+                    end
+                  end
+                end
+                if s9.last
+                  r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                  r9.extend(FieldGrouping0)
+                else
+                  @index = i9
+                  r9 = nil
+                end
+                if r9
+                  s8 << r9
+                else
+                  break
+                end
+              end
+              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+              s0 << r8
+            end
           end
         end
-        r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
-        s0 << r3
       end
     end
     if s0.last
@@ -1026,14 +1487,14 @@ module ListgameQuery
   end
 
   module FieldExtract0
-    def query_field
-      elements[1]
+    def ordered_field
+      elements[3]
     end
   end
 
   module FieldExtract1
-    def query_field
-      elements[1]
+    def ordered_field
+      elements[4]
     end
 
   end
@@ -1050,48 +1511,94 @@ module ListgameQuery
     end
 
     i0, s0 = index, []
-    if has_terminal?("x=", false, index)
-      r1 = instantiate_node(SyntaxNode,input, index...(index + 2))
-      @index += 2
+    if has_terminal?("x", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
     else
-      terminal_parse_failure("x=")
+      terminal_parse_failure("x")
       r1 = nil
     end
     s0 << r1
     if r1
-      r2 = _nt_query_field
+      r3 = _nt_whitespace
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
       s0 << r2
       if r2
-        s3, i3 = [], index
-        loop do
-          i4, s4 = index, []
-          if has_terminal?(",", false, index)
-            r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
-            @index += 1
+        if has_terminal?("=", false, index)
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure("=")
+          r4 = nil
+        end
+        s0 << r4
+        if r4
+          r6 = _nt_whitespace
+          if r6
+            r5 = r6
           else
-            terminal_parse_failure(",")
-            r5 = nil
+            r5 = instantiate_node(SyntaxNode,input, index...index)
           end
-          s4 << r5
+          s0 << r5
           if r5
-            r6 = _nt_query_field
-            s4 << r6
-          end
-          if s4.last
-            r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
-            r4.extend(FieldExtract0)
-          else
-            @index = i4
-            r4 = nil
-          end
-          if r4
-            s3 << r4
-          else
-            break
+            r7 = _nt_ordered_field
+            s0 << r7
+            if r7
+              s8, i8 = [], index
+              loop do
+                i9, s9 = index, []
+                r11 = _nt_whitespace
+                if r11
+                  r10 = r11
+                else
+                  r10 = instantiate_node(SyntaxNode,input, index...index)
+                end
+                s9 << r10
+                if r10
+                  if has_terminal?(",", false, index)
+                    r12 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                    @index += 1
+                  else
+                    terminal_parse_failure(",")
+                    r12 = nil
+                  end
+                  s9 << r12
+                  if r12
+                    r14 = _nt_whitespace
+                    if r14
+                      r13 = r14
+                    else
+                      r13 = instantiate_node(SyntaxNode,input, index...index)
+                    end
+                    s9 << r13
+                    if r13
+                      r15 = _nt_ordered_field
+                      s9 << r15
+                    end
+                  end
+                end
+                if s9.last
+                  r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                  r9.extend(FieldExtract0)
+                else
+                  @index = i9
+                  r9 = nil
+                end
+                if r9
+                  s8 << r9
+                else
+                  break
+                end
+              end
+              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+              s0 << r8
+            end
           end
         end
-        r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
-        s0 << r3
       end
     end
     if s0.last
@@ -1109,13 +1616,13 @@ module ListgameQuery
 
   module Ordering0
     def ordered_field
-      elements[1]
+      elements[3]
     end
   end
 
   module Ordering1
     def ordered_field
-      elements[1]
+      elements[4]
     end
 
   end
@@ -1132,48 +1639,94 @@ module ListgameQuery
     end
 
     i0, s0 = index, []
-    if has_terminal?("o=", false, index)
-      r1 = instantiate_node(SyntaxNode,input, index...(index + 2))
-      @index += 2
+    if has_terminal?("o", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
     else
-      terminal_parse_failure("o=")
+      terminal_parse_failure("o")
       r1 = nil
     end
     s0 << r1
     if r1
-      r2 = _nt_ordered_field
+      r3 = _nt_whitespace
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
       s0 << r2
       if r2
-        s3, i3 = [], index
-        loop do
-          i4, s4 = index, []
-          if has_terminal?(",", false, index)
-            r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
-            @index += 1
+        if has_terminal?("=", false, index)
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure("=")
+          r4 = nil
+        end
+        s0 << r4
+        if r4
+          r6 = _nt_whitespace
+          if r6
+            r5 = r6
           else
-            terminal_parse_failure(",")
-            r5 = nil
+            r5 = instantiate_node(SyntaxNode,input, index...index)
           end
-          s4 << r5
+          s0 << r5
           if r5
-            r6 = _nt_ordered_field
-            s4 << r6
-          end
-          if s4.last
-            r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
-            r4.extend(Ordering0)
-          else
-            @index = i4
-            r4 = nil
-          end
-          if r4
-            s3 << r4
-          else
-            break
+            r7 = _nt_ordered_field
+            s0 << r7
+            if r7
+              s8, i8 = [], index
+              loop do
+                i9, s9 = index, []
+                r11 = _nt_whitespace
+                if r11
+                  r10 = r11
+                else
+                  r10 = instantiate_node(SyntaxNode,input, index...index)
+                end
+                s9 << r10
+                if r10
+                  if has_terminal?(",", false, index)
+                    r12 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                    @index += 1
+                  else
+                    terminal_parse_failure(",")
+                    r12 = nil
+                  end
+                  s9 << r12
+                  if r12
+                    r14 = _nt_whitespace
+                    if r14
+                      r13 = r14
+                    else
+                      r13 = instantiate_node(SyntaxNode,input, index...index)
+                    end
+                    s9 << r13
+                    if r13
+                      r15 = _nt_ordered_field
+                      s9 << r15
+                    end
+                  end
+                end
+                if s9.last
+                  r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                  r9.extend(Ordering0)
+                else
+                  @index = i9
+                  r9 = nil
+                end
+                if r9
+                  s8 << r9
+                else
+                  break
+                end
+              end
+              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+              s0 << r8
+            end
           end
         end
-        r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
-        s0 << r3
       end
     end
     if s0.last
@@ -1185,6 +1738,117 @@ module ListgameQuery
     end
 
     node_cache[:ordering][start_index] = r0
+
+    r0
+  end
+
+  module MinMax0
+    def sort_op
+      elements[0]
+    end
+
+    def query_field
+      elements[4]
+    end
+  end
+
+  def _nt_min_max
+    start_index = index
+    if node_cache[:min_max].has_key?(index)
+      cached = node_cache[:min_max][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    r1 = _nt_sort_op
+    s0 << r1
+    if r1
+      r3 = _nt_whitespace
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      s0 << r2
+      if r2
+        if has_terminal?("=", false, index)
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure("=")
+          r4 = nil
+        end
+        s0 << r4
+        if r4
+          r6 = _nt_whitespace
+          if r6
+            r5 = r6
+          else
+            r5 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s0 << r5
+          if r5
+            r7 = _nt_query_field
+            s0 << r7
+          end
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(MinMax0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:min_max][start_index] = r0
+
+    r0
+  end
+
+  def _nt_sort_op
+    start_index = index
+    if node_cache[:sort_op].has_key?(index)
+      cached = node_cache[:sort_op][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0 = index
+    if has_terminal?("min", false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 3))
+      @index += 3
+    else
+      terminal_parse_failure("min")
+      r1 = nil
+    end
+    if r1
+      r0 = r1
+    else
+      if has_terminal?("max", false, index)
+        r2 = instantiate_node(SyntaxNode,input, index...(index + 3))
+        @index += 3
+      else
+        terminal_parse_failure("max")
+        r2 = nil
+      end
+      if r2
+        r0 = r2
+      else
+        @index = i0
+        r0 = nil
+      end
+    end
+
+    node_cache[:sort_op][start_index] = r0
 
     r0
   end
@@ -1431,7 +2095,7 @@ module ListgameQuery
       s2 << r3
       if r3
         i4 = index
-        r5 = _nt_key_op_val_arg
+        r5 = _nt_query_part
         if r5
           r4 = nil
         else

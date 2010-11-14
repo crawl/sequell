@@ -12,7 +12,11 @@ grammar ListgameQuery
   end
 
   rule query_body
-    nick_selector? query_keyword* query_part*
+    nick_selector? query_clauses
+  end
+
+  rule query_clauses
+    query_keyword* query_part*
   end
 
   rule nick_selector
@@ -20,11 +24,11 @@ grammar ListgameQuery
   end
 
   rule query_keyword
-    negation? query_keyword_body whitespace?
+    negation? query_keyword_body whitespace? !query_operator
   end
 
   rule query_keyword_body
-    [a-zA-Z0-9] [a-zA-Z0-9.]+ !(!" " .)
+    [a-zA-Z0-9] [:a-zA-Z0-9.]+ !(!" " .)
   end
 
   rule negation
@@ -40,7 +44,11 @@ grammar ListgameQuery
   end
 
   rule query_part
-    ( field_grouping / field_extract / ordering / key_op_val_arg / result_index ) whitespace?
+    ( query_flag / query_subpart / field_grouping / field_extract / ordering / min_max / key_op_val_arg / result_index ) whitespace?
+  end
+
+  rule query_subpart
+    "((" whitespace? query_clauses ( whitespace? "||" whitespace? query_clauses )* whitespace? "))"
   end
 
   rule result_index
@@ -49,6 +57,22 @@ grammar ListgameQuery
 
   rule integer
     [+-]? [0-9]+
+  end
+
+  rule query_flag
+    "-" query_flag_body !(!" " .)
+  end
+
+  rule query_flag_body
+    query_flag_name query_flag_extra?
+  end
+
+  rule query_flag_name
+    [a-zA-Z] [a-zA-Z_]+
+  end
+
+  rule query_flag_extra
+    [^\s]+
   end
 
   rule ordering
@@ -64,15 +88,23 @@ grammar ListgameQuery
   end
 
   rule field_grouping
-    "s=" query_field ( "," query_field )*
+    "s" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
   end
 
   rule field_extract
-    "x=" query_field ( "," query_field )*
+    "x" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
   end
 
   rule ordering
-    "o=" ordered_field ( "," ordered_field )*
+    "o" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
+  end
+
+  rule min_max
+    sort_op whitespace? "=" whitespace? query_field
+  end
+
+  rule sort_op
+    "min" / "max"
   end
 
   rule key_op_val_arg
@@ -85,7 +117,7 @@ grammar ListgameQuery
   end
 
   rule query_value
-    ((" " !key_op_val_arg) / [^\s])+
+    ((" " !query_part) / [^\s])+
   end
 
   rule word_part
