@@ -24,12 +24,12 @@ DGL_TTYREC_URL = DGL_MORGUE_URL
 
 DGL_ALIEN_MORGUES = \
 [
- [ %r/unn-.*/,     'http://un.nethack.nu/users/$user/dumps' ],
+ [ %r/unn-.*/,     'http://un.nethack.nu/user/$user/dumps' ],
 ]
 
 DGL_ALIEN_TTYRECS = \
 [
- [ %r/unn-.*/, 'http://un.nethack.nu/users/$user/ttyrecs' ],
+ [ %r/unn-.*/, 'http://un.nethack.nu/user/$user/ttyrecs' ],
  [ %r/spo-.*/, 'http://sporkhack.com/ttyrec' ],
  [ %r/nao-.*/, 'http://alt.org/nethack/userdata/$user/ttyrec' ],
 ]
