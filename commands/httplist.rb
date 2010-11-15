@@ -35,11 +35,13 @@ module HttpList
     listing = PCache::find(key, timewanted)
     if not listing
       now = DateTime.now
+      STDERR.puts("Fetching file listing for #{file_regex} from #{url}")
       raw_html = self.fetch_raw_html(url)
       if raw_html !~ %r{/html}is
         raise Exception.new("Could not fetch directory listing from #{url}")
       end
       listing = self.files_matching(raw_html, file_regex).sort
+      STDERR.puts("Extracted #{listing.size} entries from #{url} for #{file_regex}")
       PCache::add(key, listing.join('|'), now)
     else
       STDERR.puts("Using cached file listing for #{key}")
