@@ -37,6 +37,7 @@ module HttpList
       now = DateTime.now
       STDERR.puts("Fetching file listing for #{file_regex} from #{url}")
       raw_html = self.fetch_raw_html(url)
+      STDERR.puts("Listing:\n#{raw_html}")
       if raw_html !~ %r{/html}is
         raise Exception.new("Could not fetch directory listing from #{url}")
       end
