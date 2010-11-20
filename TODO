@@ -44,7 +44,7 @@ Parser special cases:
       SELECT pname FROM logrecord WHERE ktyp='winning' GROUP BY pname
       HAVING COUNT(*) > 3 );
 
-   !lg * [[ * win s=name :: count > 3 ]]
+   !lg * [[ * win s=name ?: count > 3 ]]
      ^^ x=field is implied if no x=<foo> is specified and there's an s=field
 
 - Games that are first wins:
@@ -78,11 +78,11 @@ explain extended
    !lg * [[!lm * Shoals s=game_id]]
 
 - Lairless wins:
-   !lg * win [[!lm * br.enter=Lair match=start,name x=count]]=0
+   !lg * win $[[!lm * br.enter=Lair match=start,name x=count]]=0
 
    OR
 
-   !lg * win [[!lm * br.enter=Lair start=q:start name=q:name x=count]]=0
+   !lg * win $[[!lm * br.enter=Lair start=q:start name=q:name x=count]]=0
 
    Prefixes:
    where qp: implies the parent query, q: the top-level query. Other queries
@@ -93,7 +93,7 @@ Different kinds of subqueries:
 - General JOIN query -- just use x=fields to join
 - Correlated subquery: use match=field1,field2 to correlate on those field
   values.
-- Correlated subquery as expression: $[[ ]]
+- Correlated subquery as expression: $[[ ]] <op> <val>
 - EXISTS subquery: exists[[ ]] (may also be correlated)
 - NOT EXISTS subquery: !exists[[ ]] (may also be correlated)
 

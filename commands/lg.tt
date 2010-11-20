@@ -80,11 +80,12 @@ grammar ListgameQuery
   end
 
   rule nick
-    [a-zA-Z0-9_+`'-]+ / "." / "*" <Nick>
+    ( [a-zA-Z0-9_+`'-]+ / "." / "*" ) <Nick>
   end
 
   rule query_part
     ( query_parenthesized / field_grouping / field_extract / field_subquery_match / ordering / result_index / key_op_val_arg / query_flag ) whitespace?
+    <QueryPart>
   end
 
   rule query_parenthesized

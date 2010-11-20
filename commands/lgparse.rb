@@ -25,24 +25,13 @@ end
 def string_tree(node, level=0)
   return "ERR" if node.nil?
 
-  em = node.extension_modules
+  base = indent(level) + node.to_s
   elements = node.elements
-  if em and not em.empty?
-    base = indent(level) + "#{node_name(node)} \"#{node.text_value.strip}\""
-    if elements and not elements.empty?
-      estr = elements.map { |e| string_tree(e, level + 1) }.find_all { |x| not_empty?(x) }.join("\n")
-      if not estr.empty?
-        return base + "\n" + estr
-      end
-    end
-    return base
+  if !node.elements.empty?
+    estr = elements.map { |e| string_tree(e, level + 1) }.join("\n")
+    return base + "\n" + estr
   end
-  if not elements or elements.empty?
-    nil
-  else
-    text = elements.map { |e| string_tree(e, level) }.find_all { |x| not_empty?(x) }.join("\n")
-    text
-  end
+  base
 end
 
 while true
@@ -55,6 +44,6 @@ while true
     STDERR.puts("Parser error at:\n#{x}\n" +
                 sprintf("%*s", parser.index - 1, "") + "^")
   else
-    puts "Parsed text: '#{x}' to:\n#{string_tree(tree)})"
+    puts "Parsed text: '#{x}' to:\n#{string_tree(QueryNode.resolve_node(tree))}"
   end
 end
