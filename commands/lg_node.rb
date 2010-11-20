@@ -89,7 +89,9 @@ module ListgameQuery
 
   MODULES = %w/ResultIndex QueryClause HavingClauseKey SloppyExpr QueryOp
                AggregateField OrderedAggregateField FieldExtract
-               SubqueryCondition Nick/
+QueryAndedTerms
+QueryExpr
+               SubqueryCondition Nick KeyOpVal/
   self.define_classes(CLASSES)
   self.define_modules(MODULES)
 end

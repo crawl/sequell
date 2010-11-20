@@ -44,7 +44,8 @@ grammar ListgameQuery
   end
 
   rule query_clauses
-    ( query_expression query_or query_clauses / query_expression ) <QueryClause>
+    query_expression query_or query_clauses <QueryExpr>
+    / query_expression <QueryAndedTerms>
   end
 
   rule query_or
@@ -85,7 +86,6 @@ grammar ListgameQuery
 
   rule query_part
     ( query_parenthesized / field_grouping / field_extract / field_subquery_match / ordering / result_index / key_op_val_arg / query_flag ) whitespace?
-    <QueryPart>
   end
 
   rule query_parenthesized
@@ -204,9 +204,9 @@ grammar ListgameQuery
   end
 
   rule key_op_val_arg
-    "-"? query_field whitespace? query_operator &(whitespace (key_op_val_arg / query_parenthesized)) /
+    ( "-"? query_field whitespace? query_operator &(whitespace (key_op_val_arg / query_parenthesized)) /
     "-"? query_field whitespace? query_operator whitespace? query_sloppy_value_expr /
-    "-"? query_field whitespace? query_operator
+    "-"? query_field whitespace? query_operator )
     <KeyOpVal>
   end
 
