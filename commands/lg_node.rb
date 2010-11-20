@@ -82,16 +82,16 @@ module ListgameQuery
                NickSelector NickDeref Negation
                QueryKeywordExpr QueryKeyword Subquery
                SubqueryJoin QueryAlias
-               QueryOrdering OrderingKey QueryField
-               OrderedField OrderedSpecialField SpecialField
+               OrderingKey QueryField
+               OrderedField OrderedSpecialField
                FieldGrouping SubqueryMatch SloppyValue
                TypedFloat TypedInteger AggregateFunc QueryPart QueryFlagName
  QueryFlagExtra/
 
   MODULES = %w/ResultIndex QueryClause HavingClauseKey SloppyExpr QueryOp
                AggregateField OrderedAggregateField FieldExtract
-QueryAndedTerms  QueryFlagBody
-QueryExpr
+QueryAndedTerms  QueryFlagBody SpecialField  SortOperator
+QueryExpr QueryOrdering
                SubqueryCondition Nick KeyOpVal/
   self.define_classes(CLASSES)
   self.define_modules(MODULES)

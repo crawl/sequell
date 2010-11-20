@@ -151,11 +151,10 @@ grammar ListgameQuery
   end
 
   rule ordering
-    ( "-"? (
+    "-"? (
     "o" whitespace? "=" whitespace? ordered_special_field ( whitespace? "," whitespace? ordered_special_field )*
     /
-    sort_op whitespace? "=" whitespace? special_field ) )
-    <QueryOrdering>
+    sort_op whitespace? "=" whitespace? special_field ) <QueryOrdering>
   end
 
   rule ordering_key
@@ -184,7 +183,7 @@ grammar ListgameQuery
   end
 
   rule special_field
-    "%" / query_field <SpecialField>
+    ( "%" / query_field ) <SpecialField>
   end
 
   rule field_grouping
@@ -200,7 +199,7 @@ grammar ListgameQuery
   end
 
   rule sort_op
-    "min" / "max" <SortOperator>
+    ( "min" / "max" ) <SortOperator>
   end
 
   rule key_op_val_arg
