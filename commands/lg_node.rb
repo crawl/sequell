@@ -85,11 +85,12 @@ module ListgameQuery
                QueryOrdering OrderingKey QueryField
                OrderedField OrderedSpecialField SpecialField
                FieldGrouping SubqueryMatch SloppyValue
-               TypedFloat TypedInteger AggregateFunc QueryPart/
+               TypedFloat TypedInteger AggregateFunc QueryPart QueryFlagName
+ QueryFlagExtra/
 
   MODULES = %w/ResultIndex QueryClause HavingClauseKey SloppyExpr QueryOp
                AggregateField OrderedAggregateField FieldExtract
-QueryAndedTerms
+QueryAndedTerms  QueryFlagBody
 QueryExpr
                SubqueryCondition Nick KeyOpVal/
   self.define_classes(CLASSES)
