@@ -1,11 +1,12 @@
 require 'rubygems'
 require 'treetop'
+require 'lg_node'
 require 'lg'
 
 parser = ListgameQueryParser.new
 
 def node_name(node)
-  node.to_s.sub(/.*:/, '')
+  node.lg_node.to_s
 end
 
 def not_empty?(x)
@@ -27,7 +28,7 @@ def string_tree(node, level=0)
   em = node.extension_modules
   elements = node.elements
   if em and not em.empty?
-    base = indent(level) + "#{node_name(em)} \"#{node.text_value.strip}\""
+    base = indent(level) + "#{node_name(node)} \"#{node.text_value.strip}\""
     if elements and not elements.empty?
       estr = elements.map { |e| string_tree(e, level + 1) }.find_all { |x| not_empty?(x) }.join("\n")
       if not estr.empty?

@@ -1,6 +1,6 @@
 grammar ListgameQuery
   rule query
-    query_mode? query_body ( whitespace? query_ratio_sep query_ratio_tail )?
+    query_mode? query_body ( whitespace? query_ratio_sep query_ratio_tail )? <QueryTree>
   end
 
   rule query_ratio_sep
@@ -8,7 +8,7 @@ grammar ListgameQuery
   end
 
   rule query_ratio_tail
-    query_body whitespace? query_having_filter?
+    query_body whitespace? query_having_filter? <QueryRatioTail>
   end
 
   rule query_having_filter
@@ -20,11 +20,11 @@ grammar ListgameQuery
   end
 
   rule having_clause
-    "-"? having_key whitespace? query_operator whitespace? having_value
+    "-"? having_key whitespace? query_operator whitespace? having_value <HavingClause>
   end
 
   rule having_key
-    "count" / "n" / "num.n" / "den.n" / "%" / query_field
+    ("count" / "n" / "num.n" / "den.n" / "%" / query_field) <HavingClauseKey>
   end
 
   rule having_value
@@ -32,7 +32,7 @@ grammar ListgameQuery
   end
 
   rule query_mode
-    ("!lm" / "!lg") whitespace?
+    ("!lm" / "!lg") whitespace? <QueryMode>
   end
 
   rule whitespace
@@ -40,15 +40,15 @@ grammar ListgameQuery
   end
 
   rule query_body
-    nick_selector? query_clauses query_having_filter?
+    nick_selector? query_clauses query_having_filter? <QueryBody>
   end
 
   rule query_clauses
-    query_expression query_or query_clauses / query_expression
+    ( query_expression query_or query_clauses / query_expression ) <QueryClause>
   end
 
   rule query_or
-    whitespace? "||" whitespace?
+    whitespace? "||" whitespace? <QueryOr>
   end
 
   rule query_expression
@@ -64,23 +64,23 @@ grammar ListgameQuery
   end
 
   rule query_keyword
-    negation? query_keyword_body whitespace? !query_operator
+    negation? query_keyword_body whitespace? !query_operator <QueryKeywordExpr>
   end
 
   rule query_keyword_body
-    [a-zA-Z0-9] [:a-zA-Z0-9.]+
+    [a-zA-Z0-9] [:a-zA-Z0-9.]+ <QueryKeyword>
   end
 
   rule negation
-    "!"
+    "!" <Negation>
   end
 
   rule nickref_symbol
-    "@"
+    "@" <NickDeref>
   end
 
   rule nick
-    ( [a-zA-Z0-9_+`'-]+ / "." / "*" )
+    [a-zA-Z0-9_+`'-]+ / "." / "*" <Nick>
   end
 
   rule query_part
@@ -99,10 +99,14 @@ grammar ListgameQuery
     query_subquery_condition / query_subquery_join
   end
 
+  rule query_expr_subquery
+    "$" query_subquery
+  end
+
   rule query_subquery_condition
-    query_subquery whitespace? query_operator &(whitespace (key_op_val_arg / query_parenthesized)) /
-    query_subquery whitespace? query_operator whitespace? query_sloppy_value_expr /
-    query_subquery whitespace? query_operator
+    ( query_expr_subquery whitespace? query_operator &(whitespace query_part) /
+    query_expr_subquery whitespace? query_operator whitespace? query_sloppy_value_expr /
+    query_expr_subquery whitespace? query_operator ) <SubqueryCondition>
   end
 
   rule query_subquery_join
@@ -110,7 +114,7 @@ grammar ListgameQuery
   end
 
   rule query_subquery
-    query_subquery_prefix whitespace? query whitespace? "]]" whitespace?
+    query_subquery_prefix whitespace? query whitespace? "]]" whitespace? <Subquery>
   end
 
   rule query_subquery_prefix
@@ -118,15 +122,15 @@ grammar ListgameQuery
   end
 
   rule subquery_alias
-    [a-zA-Z] [a-zA-Z_0-9]*
+    [a-zA-Z] [a-zA-Z_0-9]* <QueryAlias>
   end
 
   rule result_index
-    integer
+    integer <ResultIndex>
   end
 
   rule integer
-    [+-]? [0-9]+
+    [+-]? [0-9]+ <ValueInteger>
   end
 
   rule query_flag
@@ -134,81 +138,87 @@ grammar ListgameQuery
   end
 
   rule query_flag_body
-    query_flag_name query_flag_extra?
+    query_flag_name query_flag_extra? <QueryFlagBody>
   end
 
   rule query_flag_name
-    [a-zA-Z] [a-zA-Z_]+
+    [a-zA-Z] [a-zA-Z_]+ <QueryFlagName>
   end
 
   rule query_flag_extra
-    [^\s]+
+    [^\s]+ <QueryFlagExtra>
   end
 
   rule ordering
-    "-"? (
+    ( "-"? (
     "o" whitespace? "=" whitespace? ordered_special_field ( whitespace? "," whitespace? ordered_special_field )*
     /
-    sort_op whitespace? "=" whitespace? special_field )
+    sort_op whitespace? "=" whitespace? special_field ) )
+    <QueryOrdering>
+  end
+
+  rule ordering_key
+    [+-]? <OrderingKey>
   end
 
   rule ordered_aggregate_field
-    [+-]? aggregate_field
+    ordering_key? aggregate_field <OrderedAggregateField>
   end
 
   rule aggregate_field
-    aggregate_func whitespace? "(" whitespace? query_field whitespace? ")" /
-    query_field
+    ( aggregate_func whitespace? "(" whitespace? query_field whitespace? ")" /
+    query_field ) <AggregateField>
   end
 
   rule aggregate_func
-    [a-zA-Z0-9_]+
+    [a-zA-Z0-9_]+ <AggregateFunc>
   end
   
   rule ordered_field
-    [+-]? query_field
+    ordering_key? query_field <OrderedField>
   end
 
   rule ordered_special_field
-    [+-]? special_field
+    ordering_key? special_field <OrderedSpecialField>
   end
 
   rule special_field
-    "%" / query_field
+    "%" / query_field <SpecialField>
   end
 
   rule field_grouping
-    "-"? "s" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )*
+    "-"? "s" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )* <FieldGrouping>
   end
 
   rule field_subquery_match
-    "-"? "match" whitespace? "=" whitespace? query_field ( whitespace? "," whitespace? query_field )*
+    "-"? "match" whitespace? "=" whitespace? query_field ( whitespace? "," whitespace? query_field )* <SubqueryMatch>
   end
 
   rule field_extract
-    "-"? "x" whitespace? "=" whitespace? ordered_aggregate_field ( whitespace? "," whitespace? ordered_aggregate_field )*
+    "-"? "x" whitespace? "=" whitespace? ordered_aggregate_field ( whitespace? "," whitespace? ordered_aggregate_field )* <FieldExtract>
   end
 
   rule sort_op
-    "min" / "max"
+    "min" / "max" <SortOperator>
   end
 
   rule key_op_val_arg
     "-"? query_field whitespace? query_operator &(whitespace (key_op_val_arg / query_parenthesized)) /
     "-"? query_field whitespace? query_operator whitespace? query_sloppy_value_expr /
     "-"? query_field whitespace? query_operator
+    <KeyOpVal>
   end
 
   rule query_field
-    word_part ( ":" word_part )?
+    prefix:word_part suffix:( ":" word_part )? <QueryField>
   end
 
   rule query_sloppy_value_expr
-    query_field_name_expr / query_sloppy_value
+    query_field_name_expr / query_sloppy_value <SloppyExpr>
   end
 
   rule query_field_name_expr
-    "{" query_calculation "}"
+    "${" query_calculation "}"
   end
 
   rule query_calculation
@@ -216,7 +226,7 @@ grammar ListgameQuery
     / 
     query_op_terms
     /
-    query_term
+    query_term <QueryCalculation>
   end
 
   rule query_op_terms
@@ -226,18 +236,51 @@ grammar ListgameQuery
 
   rule query_term
     query_function_term / query_subquery / query_field / query_typed_value
+    <QueryTerm>
   end
 
   rule query_function_term
-    query_identifier whitespace? "(" whitespace? query_calculation whitespace? ")" whitespace?
+    query_identifier whitespace? "(" whitespace? query_calculation whitespace? ")" whitespace? <QueryFunctionTerm>
   end
 
   rule query_typed_value
-    query_typed_string  / query_typed_float / query_typed_integer / query_typed_null / query_bareword_string
+    query_typed_string  / query_typed_float / query_typed_integer / query_typed_null / query_bareword_string <TypedValue>
+  end
+
+  rule query_typed_string
+    single_quoted_string / double_quoted_string
+  end
+
+  rule single_quoted_string
+    "'" single_quote_escaped_character* "'" <SingleQuotedString>
+  end
+
+  rule double_quoted_string
+    "\"" double_quote_escaped_character* "\"" <DoubleQuotedString>
+  end
+
+  rule single_quote_escaped_characters
+    "\\'" / [^']
+  end
+
+  rule double_quote_escaped_character
+    "\\\"" / [^"]
+  end
+
+  rule query_typed_float
+    [+-]? [0-9]+ [.] [0-9]* <TypedFloat>
+  end
+
+  rule query_typed_integer
+    [+-]? [0-9]+ <TypedInteger>
+  end
+
+  rule query_bareword_string
+    [a-zA-Z_] [a-zA-Z0-9_]* <Bareword>
   end
 
   rule query_sloppy_value
-    ((" " !query_part) / ")" !")" / "]" !"]" / "|" !"|" / [^\s)\]|])+
+    ((" " !query_part) / ")" !")" / "]" !"]" / "|" !"|" / [^\s)\]|])+ <SloppyValue>
   end
 
   rule word_part
@@ -245,6 +288,6 @@ grammar ListgameQuery
   end
 
   rule query_operator
-    "<=" / "<" / ">=" / ">" / "==" / "=" / "!==" / "!=" / "=~" / "~~" / "!~" / "!~~"
+    ("<=" / "<" / ">=" / ">" / "==" / "=" / "!==" / "!=" / "=~" / "~~" / "!~" / "!~~") <QueryOp>
   end
 end

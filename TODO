@@ -1,11 +1,23 @@
 - Test setup for Henzell queries:
-  - Small logfile snapshot.
+  - MySQL dump from Sequell - old games (keep only 2009 and newer games)
   - Load into test db
+  - Build list of queries
+  - Use a script that runs queries against the various commands being tested
+    and creates a test suite of commands and expected outputs.
   - Run queries and check for expected results.
 
-!lg * cow bar=moo cow foo zap=tao
+- Allow query expressions:
+  -int!=${dex} (expressions enclosed in ${})
+  ${expr1}!=${expr2}
+  ${int+dex}<${str}
 
-Allow quo
+  ${int + $[[ * x=count ]]}
+
+  expressions may be:
+   - simple field names
+   - full SQL arithmetic, boolean expressions: x+b*c, etc using nested
+     expressions.
+   - subqueries.
 
 Extended Henzell queries (joins, yay):
 - Fork query as a separate process, keep track of PID.
@@ -81,7 +93,7 @@ Different kinds of subqueries:
 - General JOIN query -- just use x=fields to join
 - Correlated subquery: use match=field1,field2 to correlate on those field
   values.
-- Correlated subquery as expression: use subquery OP value to match.
+- Correlated subquery as expression: $[[ ]]
 - EXISTS subquery: exists[[ ]] (may also be correlated)
 - NOT EXISTS subquery: !exists[[ ]] (may also be correlated)
 

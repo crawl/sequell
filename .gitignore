@@ -3,6 +3,7 @@
 pcache.db
 remote.*
 .remote-*
+*.dump
 dat
 cao-logfile*
 milestones.txt
