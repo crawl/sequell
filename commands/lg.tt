@@ -24,7 +24,11 @@ grammar ListgameQuery
   end
 
   rule having_key
-    ("count" / "n" / "num.n" / "den.n" / "%" / query_field) <HavingClauseKey>
+    having_key_qualifier? ("count" / [nN] / "%" / query_field) <HavingClauseKey>
+  end
+
+  rule having_key_qualifier
+    ( "num" / "den" ) "." <HavingClauseQualifier>
   end
 
   rule having_value
@@ -65,7 +69,7 @@ grammar ListgameQuery
   end
 
   rule query_keyword
-    negation? query_keyword_body whitespace? !query_cmp_op <QueryKeywordExpr>
+    negation? nickref_symbol? query_keyword_body whitespace? !query_cmp_op <QueryKeywordExpr>
   end
 
   rule query_keyword_body

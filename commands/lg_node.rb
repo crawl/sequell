@@ -93,10 +93,11 @@ module ListgameQuery
                QueryIdentifier Sign SingleQuotedString DoubleQuotedString
                QueryFunctionTerm/
 
-  MODULES = %w/ResultIndex QueryClause HavingClauseKey SloppyExpr
-               QueryOp AggregateField OrderedAggregateField FieldExtract
-               QueryANDTerms  QueryFlagBody SpecialField  SortOperator
-               QueryORExpr QueryOrdering SubqueryCondition Nick KeyOpVal
+  MODULES = %w/ResultIndex QueryClause HavingClauseKey
+               HavingClauseQualifier SloppyExpr QueryOp AggregateField
+               OrderedAggregateField FieldExtract QueryANDTerms
+               QueryFlagBody SpecialField SortOperator QueryORExpr
+               QueryOrdering SubqueryCondition Nick KeyOpVal
                NickSelector QueryCalcExpr QueryTerm TypedValue/
   self.define_classes(CLASSES)
   self.define_modules(MODULES)
