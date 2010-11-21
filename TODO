@@ -77,8 +77,11 @@
 Extended Henzell queries (joins, yay):
 - Fork query as a separate process, keep track of PID.
 - When child exits, display its output (presumably dumped to a file)
-- Set alarm to kill child after 30s
-- Allow !cancelquery to cancel any running query immediately
+- Set alarm to kill child after 30s. If the alarm fires, get MySQL's
+  process list, find any currently executing query and nuke it with
+  KILL CONNECTION.
+- Allow !cancelquery to cancel any running query immediately using
+  the same process kill + connection kill.
 
 Join steps:
 1. Identify subqueries
