@@ -91,7 +91,7 @@ module ListgameQuery
                SubqueryMatch SloppyValue TypedFloat TypedInteger
                AggregateFunc QueryPart QueryFlagName QueryFlagExtra
                QueryIdentifier Sign SingleQuotedString DoubleQuotedString
-               QueryFunctionTerm/
+               QueryFunctionTerm ExistSubquery/
 
   MODULES = %w/ResultIndex QueryClause HavingClauseKey
                HavingClauseQualifier SloppyExpr QueryOp AggregateField

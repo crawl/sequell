@@ -101,13 +101,17 @@ grammar ListgameQuery
   end
 
   rule query_subquery_clause
-    query_subquery_condition / query_subquery_join
+    query_subquery_condition / query_exists_subquery / query_subquery_join
   end
 
   rule query_expr_subquery
     "$" query_subquery
   end
 
+  rule query_exists_subquery
+    negation? "$e" whitespace? query_subquery <ExistSubquery>
+  end
+  
   rule query_subquery_condition
     ( query_expr_subquery whitespace? query_cmp_op &(whitespace query_part) /
     query_expr_subquery whitespace? query_cmp_op whitespace? query_sloppy_value_expr /

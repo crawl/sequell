@@ -6,6 +6,61 @@
     and creates a test suite of commands and expected outputs.
   - Run queries and check for expected results.
 
+- New computed fields:
+  - Nth win for player.
+  - Nth streak win for player.
+  - Streak breaker flag.
+
+- Query construction:
+  - Top-level query may be:
+    - Standard game query, in which case select all game fields
+      (effectively SELECT *)
+            Eg: !lg * DEFE killer=hobgoblin
+    - s=foo,bar,baz, in which case use GROUP BY on the nominated fields and
+      SELECT foo, bar, baz, COUNT(*) AS c
+            Eg: !lg * DEFE s=ckiller,sk
+    - Non-summary query using x=aggregate(foo),...:
+      SELECT aggregate(foo)
+            Eg: !lg * Ke x=avg(hp), max(hp), min(hp)
+
+    Any of these queries for !lm may be joined to the listgame table,
+    in which case the join is by name + rstart, and all selected fields
+    are explicitly aliased to the relevant table: unqualified fields will
+    reference milestones table if present, or listgame table if not.
+    Qualified fields will reference the qualified table.
+
+  - Subquery may be:
+    - Simple JOIN subquery. The subquery is run and then joined on based
+      on the provided fields.
+         !lg * [[ !lm * uniq=Boris s=game_id ]]
+      finds the game with the most Boris kills.
+
+      If no x=field is provided, join happens on the grouped field
+      selected by s=field
+
+    - Expression subquery:
+      A subquery may be used as an expression:
+         !lg * $[[!lm * match=name,rstart]]=0
+      (Shows games with no milestones; expensive)
+
+      An expression subquery may use a single x=foo to select an
+      expression; if no x=foo is specified, x=count is assumed.
+
+    - exists/not exists subquery:
+         !lg * win !$e[[!lm * Lair match=name,rstart]]
+      (finds Lairless wins)
+
+- New grammar -- error checking needed:
+  Many errors cannot be caught by the parser. These include:
+  - Too many summarize clauses
+  - Too many order clauses
+  - Too many result indexes
+  - Ratio queries in subqueries.
+  - Type mismatches in expressions.
+
+  The query compiler must check explicitly for these conditions after
+  parsing.
+
 - Allow query expressions:
   -int!=${dex} (expressions enclosed in ${})
   ${expr1}!=${expr2}
@@ -65,8 +120,10 @@ explain extended
    Combo highscores: char, MAX(score) FROM logrecord GROUP BY char
 
    Players with combo highscores:
-   SELECT name, COUNT(*) c FROM logrecord WHERE char = ch.char AND sc = ch.sc
-   GROUP BY name ORDER BY c DESC
+   SELECT l.pname, COUNT(*) c FROM logrecord l,
+    (SELECT charabbrev, MAX(sc) sc FROM logrecord GROUP BY charabbrev) ch
+   WHERE l.charabbrev = ch.charabbrev AND l.sc = ch.sc
+   GROUP BY l.pname ORDER BY c DESC
 
    !lg * [[ * s=char x=char,max(sc) ]] s=name
 
