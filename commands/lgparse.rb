@@ -41,9 +41,10 @@ while true
   x.strip!
   tree = parser.parse(x)
   if tree.nil?
-    STDERR.puts("Parser error at:\n#{x}\n" +
-                sprintf("%*s", parser.index - 1, "") + "^")
+    STDERR.puts("Parser error (#{parser.failure_index} :: #{parser.failure_reason}) at:\n#{x}\n" +
+                sprintf("%*s", parser.failure_index, "") + "^")
   else
     puts "Parsed text: '#{x}' to:\n#{string_tree(QueryNode.resolve_node(tree))}"
+    #puts "Tree: #{tree.inspect}"
   end
 end

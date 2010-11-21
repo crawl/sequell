@@ -1,0 +1,1 @@
+!lg * ${int}>${dex+str}

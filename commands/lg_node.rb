@@ -35,15 +35,21 @@ class QueryNode
           children
         end
       end
+    if (value.is_a?(QueryNode) &&
+        value.elements.size == 1 && value.elements[0].tag == value.tag &&
+        value.elements[0].interval == value.interval) then
+      return value.elements[0]
+    end
     value
   end
 
-  attr_reader :elements
+  attr_reader :elements, :tag, :interval, :text
 
   def initialize(syntax_node)
     @tag = syntax_node.lg_node
     @elements = QueryNode.resolve_elements(syntax_node.elements)
     @text = syntax_node.text_value.strip
+    @interval = syntax_node.interval
   end
 
   def to_s
@@ -67,32 +73,31 @@ module ListgameQuery
 
   def self.define_modules(module_names)
     module_names.each do |module_name|
-      module_object = Module.new
-      self.const_set(module_name, module_object)
-      module_object.module_eval do
-        define_method(:lg_node) {
-          module_name.downcase.to_sym
-        }
+      lg_node_sym = module_name.downcase.to_sym
+      module_object = Module.new do
+        define_method(:lg_node) do
+          lg_node_sym
+        end
       end
+      self.const_set(module_name, module_object)
     end
   end
 
   CLASSES = %w/QueryTree QueryMode HavingClause UnquotedValue
-               TypedValue QueryRatioTail QueryBody QueryOr
-               NickSelector NickDeref Negation
-               QueryKeywordExpr QueryKeyword Subquery
-               SubqueryJoin QueryAlias
-               OrderingKey QueryField
-               OrderedField OrderedSpecialField
-               FieldGrouping SubqueryMatch SloppyValue
-               TypedFloat TypedInteger AggregateFunc QueryPart QueryFlagName
- QueryFlagExtra/
+               QueryRatioTail QueryBody QueryOr NickDeref
+               Negation QueryKeywordExpr QueryKeyword Subquery
+               SubqueryJoin QueryAlias OrderingSign QueryField
+               OrderedField OrderedSpecialField FieldGrouping
+               SubqueryMatch SloppyValue TypedFloat TypedInteger
+               AggregateFunc QueryPart QueryFlagName QueryFlagExtra
+               QueryIdentifier Sign SingleQuotedString DoubleQuotedString
+               QueryFunctionTerm/
 
-  MODULES = %w/ResultIndex QueryClause HavingClauseKey SloppyExpr QueryOp
-               AggregateField OrderedAggregateField FieldExtract
-QueryAndedTerms  QueryFlagBody SpecialField  SortOperator
-QueryExpr QueryOrdering
-               SubqueryCondition Nick KeyOpVal/
+  MODULES = %w/ResultIndex QueryClause HavingClauseKey SloppyExpr
+               QueryOp AggregateField OrderedAggregateField FieldExtract
+               QueryANDTerms  QueryFlagBody SpecialField  SortOperator
+               QueryORExpr QueryOrdering SubqueryCondition Nick KeyOpVal
+               NickSelector QueryCalcExpr QueryTerm TypedValue/
   self.define_classes(CLASSES)
   self.define_modules(MODULES)
 end

@@ -1,0 +1,79 @@
+# A list of listgame command lines. The lg_testgen script uses these
+# command lines to build a list of expected outputs. Implied nick when
+# nick is omitted is 'hyperbolic'
+
+!lg
+!lg .
+!lg -3
+!lg . -2
+
+!won itsmu be
+
+!lm sebi type=~rune
+
+!lg * ktyp=quitting|leaving s=name
+!lg * killer =~kyrris
+
+!lg * won race=de urune=15 s=skill
+
+!lg * race=mu|gh|ds kaux=~shining x=dam max=dam
+
+!lg * kaux=~holy max=dam x=dam
+
+!lm marvinpa drie type=zig.exit place=zig:27
+
+!lm * type=zig.exit place=zig:27 s=game_id
+
+!lm * won type=br.enter cv>=0.5 s=-game_id
+
+!lg * won cv>=0.5 s=char / end>=20101020 ?:%=1
+
+!lg * s=name / won o=% ?:den.N>2
+
+!log * xl>20 xl<24 cv>0.8 max=start
+
+!lg * won race!=OM race!=GE race!=El race!=Gn race!=HD s=crace / name=Marvinpa ?:N=0
+
+!lg . DEFE
+!lg test
+!hs * GhEn
+!hs * !win -3
+!lg * s=name
+!lg * race=Gh s=name
+!lg @78291 s=char
+!lg * race=DS god=Xom ktyp=water
+!lg * DS Xom drown
+!lg * killer=uniq s=-killer
+!lg * DS x=ckaux
+!lg * !DS
+!lg * ((xom || nemelex))
+!lg * god=Xom|Nemelex
+!lg * win min=turn
+!lg * xl>20 min=turn
+
+!lm * rune s=god
+
+!lg * s=ktyp
+!lg * s=ckiller
+!lg qwqw D:10 -log
+
+!lg @78291 Zot 1 -log
+
+!lm * orb min=turn -tv
+
+!lm * rune=golden min=xl -tv
+
+
+!lm * br.enter=Tomb -tv:<0:>20
+
+!lm * rune=obsidian lg:place=Coc
+
+# Argument with space:
+!log . char=ddbe killer=electric golem
+
+# Tourney selector:
+!hs * ddbe when=t
+
+# !log test:
+!log * won char=mdee
+
