@@ -61,7 +61,7 @@ grammar ListgameQuery
   end
 
   rule query_keyword_or_index
-    result_index / query_keyword
+    ( result_index / query_keyword ) whitespace?
   end
 
   rule query_keyword
@@ -131,7 +131,7 @@ grammar ListgameQuery
   end
 
   rule integer
-    [+-]? [0-9]+ <ValueInteger>
+    [+-]? [0-9]+
   end
 
   rule query_flag
