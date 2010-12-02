@@ -42,7 +42,7 @@ my %SERVER_MAP = (unn => 'un.nethack.nu',
 # Mapping of dnum -> dungeon name in Un; if suffixed with :, they have depths.
 my @UNBRANCHES = ('D:', 'Geh:', 'Gnome:', 'Quest:', 'Sok:',
                   'Town', 'Ludios', 'Blackmarket', 'Vlad:',
-                  'Plane:');
+                  'Plane:', 'Advent');
 
 my @SPORKBRANCHES = ('D:', 'Geh:', 'Gnome:', 'Quest:', 'Sok:',
                      'Ludios', 'Vlad:', 'Plane:');
