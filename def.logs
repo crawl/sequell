@@ -60,6 +60,9 @@ remote.cdo-logfile-0.7-sprint
 [remote:cdo:http://$cdo/allgames-spr-svn.txt]
 remote.cdo-logfile-spr
 
+[remote:cdo:http://$cdo/allgames-zd-svn.txt]
+remote.cdo-logfile-zd
+
 [remote:cdo:http://$cdo/allgames-svn.txt; alpha]
 remote.cdo-logfile-svn
 

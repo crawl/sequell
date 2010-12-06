@@ -67,6 +67,9 @@ remote.cdo-milestones-0.7-sprint
 [remote:cdo:http://$cdo/milestones-spr-svn.txt]
 remote.cdo-milestones-spr
 
+[remote:cdo:http://$cdo/milestones-zd-svn.txt]
+remote.cdo-milestones-zd
+
 [remote:cdo:http://$cdo/milestones-svn.txt; alpha]
 remote.cdo-milestones-svn
 
