@@ -376,12 +376,12 @@ sub filename_gametype($) {
 
 sub logfile_table($) {
   my $filename = shift;
-  game_type_table_name(filename_gametype($filename, $TLOGFILE))
+  game_type_table_name(filename_gametype($filename), $TLOGFILE)
 }
 
 sub milefile_table($) {
   my $filename = shift;
-  game_type_table_name(filename_gametype($filename, $TMILESTONE))
+  game_type_table_name(filename_gametype($filename), $TMILESTONE)
 }
 
 sub cat_xlog {
