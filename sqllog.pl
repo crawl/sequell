@@ -14,6 +14,9 @@ my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
   br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
   end durI turnI uruneI nruneI tmsg vmsg splat map mapdesc/;
 
+my %GAME_TYPE_NAMES = (zot => 'ZotDef',
+                       spr => 'Sprint');
+
 my %LOG2SQL = ( name => 'pname',
                 char => 'charabbrev',
                 str => 'sstr',
@@ -110,8 +113,8 @@ my $dbh;
 my $insert_st;
 my $update_st;
 my $milestone_insert_st;
-my $spr_insert_st;
-my $spr_milestone_insert_st;
+
+my %INSERT_STATEMENTS;
 
 initialize_sqllog();
 
@@ -162,9 +165,13 @@ sub load_splat {
 sub setup_db {
   $dbh = open_db();
   $insert_st = prepare_insert_st($dbh, 'logrecord');
-  $spr_insert_st = prepare_insert_st($dbh, 'spr_logrecord');
+  for my $game_type (keys %GAME_TYPE_NAMES) {
+    $INSERT_STATEMENTS{$game_type} =
+      prepare_insert_st($dbh, "${game_type}_logrecord");
+    $INSERT_STATEMENTS{$game_type . "_milestone"} =
+      prepare_milestone_insert_st($dbh, "${game_type}_milestone");
+  }
   $milestone_insert_st = prepare_milestone_insert_st($dbh, 'milestone');
-  $spr_milestone_insert_st = prepare_milestone_insert_st($dbh, 'spr_milestone');
   $update_st = prepare_update_st($dbh);
 }
 
@@ -192,9 +199,8 @@ sub check_indexes {
 
 sub cleanup_db {
   undef $insert_st;
-  undef $spr_insert_st;
+  %INSERT_STATEMENTS = ();
   undef $milestone_insert_st;
-  undef $spr_milestone_insert_st;
   undef $update_st;
   $dbh->disconnect();
 }
@@ -402,19 +408,41 @@ sub cat_xlog {
   return 1;
 }
 
+sub game_type_table_name($$) {
+  my ($game_type, $base_tablename) = @_;
+  $game_type? "${game_type}_${base_tablename}" : $base_tablename
+}
+
+sub game_table_name($$) {
+  my ($game, $base_tablename) = @_;
+  my $game_type = game_type($game);
+  game_type_table_name($game_type, $base_tablename)
+}
+
 sub cat_logfile {
   my ($lf, $offset) = @_;
-  my $table = $$lf{file} =~ /-spr/? "spr_$TLOGFILE" : $TLOGFILE;
+  my $table = game_table_name($lf, $TLOGFILE);
   cat_xlog($table, $lf, \&add_logline, $offset)
+}
+
+sub game_type($) {
+  my $g = shift;
+  my ($type) = $$g{lv} =~ /-(.*)/;
+  $type = lc(substr($type, 0, 3)) if $type;
+  $type
+}
+
+sub game_type_name($) {
+  my $type = game_type(shift);
+  $type && $GAME_TYPE_NAMES{$type}
 }
 
 sub cat_stonefile {
   my ($lf, $offset) = @_;
-  my $sprint = $$lf{file} =~ /-spr/;
-  my $table = $sprint? "spr_$TMILESTONE" : $TMILESTONE;
+  my $table = game_table_name($lf, $TMILESTONE);
   my $res = cat_xlog($table, $lf, \&add_milestone, $offset);
   print "Linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
-  fixup_milestones($lf->{server}, $sprint) if $res;
+  fixup_milestones($lf->{server}, game_type($lf)) if $res;
   print "Done linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
 }
 
@@ -426,11 +454,12 @@ table. Pretty expensive.
 =cut
 
 sub fixup_milestones {
-  my ($source, $sprint, @players) = @_;
-  my $prefix = $sprint? 'spr_' : '';
+  my ($source, $game_type, @players) = @_;
+  my $log_table = game_type_table_name($game_type, 'logrecord');
+  my $mile_table = game_type_table_name($game_type, 'milestone');
   my $query = <<QUERY;
-     UPDATE ${prefix}milestone m
-       SET m.game_id = (SELECT l.id FROM ${prefix}logrecord l
+     UPDATE $mile_table m
+       SET m.game_id = (SELECT l.id FROM $log_table l
                          WHERE l.pname = m.pname
                            AND l.src = m.src
                            AND l.rstart = m.rstart
@@ -503,13 +532,9 @@ sub fixup_logfields {
     $g->{v}  .= "-a" unless $g->{v} =~ /-a/;
   }
 
-  my $sprint = $$g{lv} =~ /spr/i;
-  if ($sprint) {
-    $$g{sprint} = 1;
-    my $oldplace = $$g{place};
-    my $place = 'Sprint';
-    $place = "$oldplace (Sprint)" unless $oldplace eq 'D' || $oldplace =~ /^D:/;
-    $$g{place} = $place;
+  my $game_type = game_type($g);
+  if ($game_type) {
+    $$g{game_type} = $game_type;
   }
 
   # Milestone may have oplace
@@ -670,6 +695,19 @@ sub record_is_alpha_version {
   return '';
 }
 
+sub milestone_insert_st($) {
+  my $m = shift;
+  my $game_type = game_type($m);
+  ($game_type? $INSERT_STATEMENTS{$game_type . "_milestone"}
+   : $milestone_insert_st)
+}
+
+sub logfile_insert_st($) {
+  my $g = shift;
+  my $game_type = game_type($g);
+  ($game_type? $INSERT_STATEMENTS{$game_type} : $insert_st)
+}
+
 sub add_milestone {
   my ($lf, $offset, $line) = @_;
   chomp $line;
@@ -684,7 +722,8 @@ sub add_milestone {
   $m->{noun} = $m->{milestone};
   $m = fixup_logfields($m);
 
-  my $st = $$m{sprint} ? $spr_milestone_insert_st : $milestone_insert_st;
+  my $game_type = $$m{game_type};
+  my $st = milestone_insert_st($m);
   my @bindvals = map(field_val($_, $m), @MILE_INSERTFIELDS_DECORATED);
   execute_st($st, @bindvals) or
     die "Can't insert record for $line: $!\n";
@@ -697,7 +736,7 @@ sub add_logline {
   $fields->{src} = $lf->{server};
   $fields->{alpha} = record_is_alpha_version($lf, $fields);
   $fields = fixup_logfields($fields);
-  my $st = $$fields{sprint} ? $spr_insert_st : $insert_st;
+  my $st = logfile_insert_st($fields);
   my @bindvalues = ($lf->{file}, $lf->{server}, $offset,
                     map(field_val($_, $fields), @LOGFIELDS_DECORATED),
                     field_val('rstart', $fields),

@@ -1,8 +1,10 @@
 DROP TABLE IF EXISTS logrecord;
 DROP TABLE IF EXISTS spr_logrecord;
+DROP TABLE IF EXISTS zot_logrecord;
 DROP TABLE IF EXISTS logfiles;
 DROP TABLE IF EXISTS milestone;
 DROP TABLE IF EXISTS spr_milestone;
+DROP TABLE IF EXISTS zot_milestone;
 DROP TABLE IF EXISTS milestone_files;
 
 CREATE TABLE logfiles (
@@ -87,6 +89,13 @@ ALTER TABLE spr_logrecord CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 CREATE INDEX spr_ind_foffset ON spr_logrecord (file, offset);
 CREATE INDEX spr_ind_milelocate ON spr_logrecord (src, pname, rstart);
 
+CREATE TABLE zot_logrecord AS
+SELECT * FROM logrecord LIMIT 1;
+TRUNCATE TABLE zot_logrecord;
+ALTER TABLE zot_logrecord ADD PRIMARY KEY (id);
+ALTER TABLE zot_logrecord CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+CREATE INDEX zot_ind_foffset ON zot_logrecord (file, offset);
+CREATE INDEX zot_ind_milelocate ON zot_logrecord (src, pname, rstart);
 
 CREATE TABLE milestone (
     id BIGINT AUTO_INCREMENT,
@@ -159,3 +168,13 @@ CREATE INDEX spr_mile_lookup_ext ON spr_milestone (verb, noun);
 CREATE INDEX spr_mile_ind_foffset ON spr_milestone (file, offset);
 CREATE INDEX spr_mile_lookup ON spr_milestone (game_id, verb);
 CREATE INDEX spr_mile_game_id ON spr_milestone (game_id);
+
+CREATE TABLE zot_milestone AS
+SELECT * FROM milestone LIMIT 1;
+TRUNCATE TABLE zot_milestone;
+ALTER TABLE zot_milestone ADD PRIMARY KEY (id);
+ALTER TABLE zot_milestone CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+CREATE INDEX zot_mile_lookup_ext ON zot_milestone (verb, noun);
+CREATE INDEX zot_mile_ind_foffset ON zot_milestone (file, offset);
+CREATE INDEX zot_mile_lookup ON zot_milestone (game_id, verb);
+CREATE INDEX zot_mile_game_id ON zot_milestone (game_id);
