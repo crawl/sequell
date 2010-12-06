@@ -8,11 +8,16 @@ exit(0) if !ENV['HENZELL_SQL_QUERIES']
 
 GAME_CRAWL = 'crawl'
 GAME_SPRINT = 'sprint'
+GAME_ZOTDEF = 'zotdef'
 GAMES = [GAME_CRAWL, GAME_SPRINT]
 
 TOURNEY_SPRINT_MAP = { 2010 => 'dungeon sprint mu' }
 
-GAME_PREFIXES = { GAME_CRAWL => '', GAME_SPRINT => 'spr_' }
+GAME_PREFIXES = {
+  GAME_CRAWL => '',
+  GAME_SPRINT => 'spr_',
+  GAME_ZOTDEF => 'zot_'
+}
 
 OPERATORS = {
   '==' => '=', '!==' => '!=',
