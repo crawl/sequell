@@ -427,7 +427,7 @@ sub cat_logfile {
 
 sub game_type($) {
   my $g = shift;
-  my ($type) = $$g{lv} =~ /-(.*)/;
+  my ($type) = ($$g{lv} || '') =~ /-(.*)/;
   $type = lc(substr($type, 0, 3)) if $type;
   $type
 }
