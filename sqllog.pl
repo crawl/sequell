@@ -367,6 +367,23 @@ sub go_to_offset {
   return 1;
 }
 
+sub filename_gametype($) {
+  my $filename = shift;
+  return 'zot' if $filename =~ /-zd/;
+  return 'spr' if $filename =~ /-spr/;
+  return undef;
+}
+
+sub logfile_table($) {
+  my $filename = shift;
+  game_type_table_name(filename_gametype($filename, $TLOGFILE))
+}
+
+sub milefile_table($) {
+  my $filename = shift;
+  game_type_table_name(filename_gametype($filename, $TMILESTONE))
+}
+
 sub cat_xlog {
   my ($table, $lf, $fadd, $offset) = @_;
 
@@ -421,8 +438,7 @@ sub game_table_name($$) {
 
 sub cat_logfile {
   my ($lf, $offset) = @_;
-  my $table = game_table_name($lf, $TLOGFILE);
-  cat_xlog($table, $lf, \&add_logline, $offset)
+  cat_xlog(logfile_table($$lf{file}), $lf, \&add_logline, $offset)
 }
 
 sub game_type($) {
@@ -437,10 +453,18 @@ sub game_type_name($) {
   $type && $GAME_TYPE_NAMES{$type}
 }
 
+sub game_is_sprint($) {
+  (game_type(shift) || '') eq 'spr'
+}
+
+sub game_is_zotdef($) {
+  (game_type(shift) || '') eq 'zot'
+}
+
 sub cat_stonefile {
   my ($lf, $offset) = @_;
-  my $table = game_table_name($lf, $TMILESTONE);
-  my $res = cat_xlog($table, $lf, \&add_milestone, $offset);
+  my $res = cat_xlog(milefile_table($$lf{file}),
+                     $lf, \&add_milestone, $offset);
   print "Linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
   fixup_milestones($lf->{server}, game_type($lf)) if $res;
   print "Done linking milestones to completed games ($lf->{server}: $lf->{file})...\n";

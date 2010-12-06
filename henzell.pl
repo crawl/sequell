@@ -181,7 +181,7 @@ sub newsworthy
 
   # Suppress all Sprint events <300 turns.
   return 0
-    if game_is_sprint($g) && ($$g{ktyp} || '') ne 'winning'
+    if game_type($g) && ($$g{ktyp} || '') ne 'winning'
       && $$g{turn} < 300;
 
   return 0
@@ -306,8 +306,8 @@ sub tail_logfile
     if ($CONFIG{sql_store}) {
       # Link up milestone entries belonging to this player to their
       # corresponding completed games.
-      my $sprint = game_is_sprint($game_ref);
-      fixup_milestones($href->{server}, $sprint, $game_ref->{name});
+      my $game_type = game_type($game_ref);
+      fixup_milestones($href->{server}, $game_type, $game_ref->{name});
     }
   }
   1
