@@ -16,18 +16,31 @@ my @coffee_basetypes =
   ("black coffee",
    "cappuccino",
    "irish coffee",
-   "café au lait"
+   "café au lait",
+   "soy latte",
+   "caffè macchiato",
+   "latte macchiato",
+   "caffè breve",
+   "café mocha"
   );
 
 my @brewers =
   (
    'Sigmund',
    'Ijyb',
+   'Xtahua',
+   'Gastronok',
    'Cerebov',
    'Crazy Yiuf',
    'Snorg',
    'the Serpent of Hell',
-   'Nikola'
+   'Mnoleg',
+   'Trog',
+   'Jiyva',
+   'Xom',
+   'Makhleb',
+   'Kikubaaqudgha',
+   'Yredelemnul'
   );
 
 my @containers =
