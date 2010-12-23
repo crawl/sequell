@@ -2,11 +2,11 @@
 The listgame manual
 ===================
 
-If you're on ##crawl on Freenode IRC, you can use *listgame* to see
+If you're on ##crawl on Freenode IRC, you can use listgame to see
 game statistics for Crawl games played on the public Crawl servers CAO
 (crawl.akrasiac.org), CDO (crawl.develz.org) and RHF (rl.heh.fi).
 
-The bot 'Sequell' responds to listgame queries on ##crawl, and on PM.
+The bot Sequell responds to listgame queries on ##crawl, and on PM.
 
 This document describes listgame: specifically, it covers the !lg and
 !lm commands, as well as the specialised listgame commands !hs, !won,
@@ -20,7 +20,7 @@ explicitly as "!lg", "!lm", etc.
 ---
 Mnemonic: lg = Last Game or List Game
 
-The !lg command queries *completed games* (i.e. games in the logfile)
+The !lg command queries completed games (i.e. games in the logfile)
 on the public servers (currently crawl.akrasiac.org, crawl.develz.org
 and rl.heh.fi).
 
@@ -63,8 +63,9 @@ Where:
 
   See the section "Listgame Keywords" for a list of keywords.
 
-- <game type> is either "sprint" or "crawl" to select Sprint or Crawl
-  games. If the game type is not specified, Crawl games are assumed.
+- <game type> is one of "sprint", "crawl", or "zotdef" to select games
+  of that game type. If the game type is not specified, standard Crawl
+  games are assumed.
 
 - <field><op><value>
 
@@ -77,7 +78,7 @@ Where:
   Values may contain embedded spaces. Underscores in values are
   converted to spaces before running listgame queries.
 
-- s=<field> or s=-<field>
+- s=<field>[%] or s=-<field>[%]
 
   Mnemonic: s = Summarise by field
 
@@ -100,6 +101,14 @@ Where:
   use s=-field instead of s=field
 
   You may use only one s=X form per query.
+
+  If the field name is suffixed with a %, the query will also show what
+  percentage of the total each group is. For instance:
+
+  !lg * win s=name%
+
+  Shows the names of all players who have won games and what
+  percentage of the total wins on the server they have.
 
 - x=<field>[,<field1>,...]
 

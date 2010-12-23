@@ -185,7 +185,7 @@ MILEFIELDS_DECORATED = %w/game_idI idI file alpha src v cv name race crace cls
 
 FAKEFIELDS_DECORATED = %w/when/
 
-LOGFIELDS_SUMMARIZABLE =
+LOGFIELDS_SUMMARISABLE =
   Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br lvl ltyp
               killer ikiller god urune nrune src str int dex kaux ckiller cv
               ckaux crace kmod splat dam hp mhp mmhp piety pen alpha ntv
@@ -263,12 +263,12 @@ LOG2SQL = {
   LOG2SQL[x.name] = x.name unless LOG2SQL[x.name]
 end
 
-MILEFIELDS_SUMMARIZABLE = \
+MILEFIELDS_SUMMARISABLE = \
   Hash[ *MILEFIELDS_DECORATED.map { |x| [ x.name, true ] }.flatten ]
 
-# But suppress attempts to summarize by bad fields.
+# But suppress attempts to summarise by bad fields.
 %w/id dur turn rtime rstart tend ttime tstart/.each do |x|
-  MILEFIELDS_SUMMARIZABLE[x] = nil
+  MILEFIELDS_SUMMARISABLE[x] = nil
 end
 
 module GameContext
@@ -289,8 +289,17 @@ module GameContext
   end
 end
 
+module LGField
+  def self.canonicalise_field(field)
+    field = field.strip.downcase
+    field = COLUMN_ALIASES[field] || field
+    raise "Unknown selector #{field} in #{extra}" unless $CTX.field?(field)
+    field
+  end
+end
+
 class QueryContext
-  attr_accessor :fields, :synthetic, :summarizable, :defsort
+  attr_accessor :fields, :synthetic, :summarisable, :defsort
   attr_accessor :noun_verb, :noun_verb_fields
   attr_accessor :fieldmap, :synthmap, :table_alias
 
@@ -300,6 +309,12 @@ class QueryContext
 
   def table
     GAME_PREFIXES[GameContext.game] + @table
+  end
+
+  def canonicalise_field(field)
+    prefix, suffix = split_field(field)
+    suffix = LGField.canonicalise_field(suffix)
+    prefix ? "#{prefix}:#{suffix}" : suffix
   end
 
   def split_field(field)
@@ -342,12 +357,12 @@ class QueryContext
 
     if prefix
       if prefix == @table_alias
-        @summarizable[suffix]
+        @summarisable[suffix]
       else
         @alt && @alt.summarise?(field)
       end
     else
-      @summarizable[suffix] || (@alt && @alt.summarise?(field))
+      @summarisable[suffix] || (@alt && @alt.summarise?(field))
     end
   end
 
@@ -366,7 +381,7 @@ class QueryContext
     if @table =~ /^logrecord/
       @fields = LOGFIELDS_DECORATED
       @synthetic = FAKEFIELDS_DECORATED
-      @summarizable = LOGFIELDS_SUMMARIZABLE
+      @summarisable = LOGFIELDS_SUMMARISABLE
       @fieldmap = LOGFIELDS
       @synthmap = FAKEFIELDS
       @defsort = 'end'
@@ -376,14 +391,14 @@ class QueryContext
 
       @synthmap = FAKEFIELDS.dup
 
-      @summarizable = MILEFIELDS_SUMMARIZABLE.dup
+      @summarisable = MILEFIELDS_SUMMARISABLE.dup
       @fieldmap = MILEFIELDS
 
       @defsort = 'time'
       nverbs = MILE_TYPES
       nverbs.each do |verb|
         @noun_verb[verb] = true
-        @summarizable[verb] = true
+        @summarisable[verb] = true
         @synthmap[verb] = true
       end
 
@@ -399,7 +414,6 @@ CTX_STONE = QueryContext.new('milestone mst', CTX_LOG)
 $CTX = CTX_LOG
 
 $DB_HANDLE = nil
-$group_field = nil
 
 def sql2logdate(v)
   if v.is_a?(DateTime)
@@ -415,16 +429,6 @@ def sql2logdate(v)
   end
 end
 
-def with_group(group)
-  old = $group_field
-  $group_field = group
-  begin
-    yield
-  ensure
-    $group_field = old
-  end
-end
-
 def with_query_context(ctx)
   old_context = $CTX
   begin
@@ -432,6 +436,31 @@ def with_query_context(ctx)
     yield
   ensure
     $CTX = old_context
+  end
+end
+
+class SummaryField
+  attr_accessor :order, :field, :percentage
+
+  def self.summary_field? (clause)
+    if clause =~ /^-?s(?:\s*=\s*([+-]?)(.*?)(%?))?$/
+      [$1, $2, $3].collect { |x| x || '' }
+    else
+      nil
+    end
+  end
+
+  def initialize(s_clause)
+    match = SummaryField.summary_field?(s_clause)
+    unless match
+      raise Exception.new("Malformed summary clause: #{s_clause}")
+    end
+    @order = match[0].empty? ? '+' : match[0]
+    @field = $CTX.canonicalise_field(match[1])
+    unless $CTX.summarise?(@field)
+      raise Exception.new("Cannot summarise by #{@field}")
+    end
+    @percentage = !match[2].empty?
   end
 end
 
@@ -658,7 +687,9 @@ class QueryFieldList
                             "count_" + QueryFieldList::unique_id(),
                             :percentage)
     end
-    field = canonicalize_field(field)
+    with_query_context(@ctx) do
+      field = LGField.canonicalise_field(field)
+    end
     return QueryField.new(field, field, field)
   end
 
@@ -668,8 +699,10 @@ class QueryFieldList
   end
 
   def aggregate_function(func, field)
-    field = canonicalize_field(field)
-    func = canonicalize_aggregate(func)
+    with_query_context(@ctx) do
+      field = LGField.canonicalise_field(field)
+    end
+    func = canonicalise_aggregate(func)
 
     # And check that the types match up.
     if not aggregate_typematch(func, field)
@@ -685,19 +718,12 @@ class QueryFieldList
     return QueryField.new(fieldexpr, field, "#{func}(#{field})", fieldalias)
   end
 
-  def canonicalize_aggregate(func)
+  def canonicalise_aggregate(func)
     func = func.strip.downcase
     if not AGGREGATE_FUNC_TYPES[func]
       raise "Unknown aggregate function #{func} in #{extra}"
     end
     func
-  end
-
-  def canonicalize_field(field)
-    field = field.strip.downcase
-    field = COLUMN_ALIASES[field] || field
-    raise "Unknown selector #{field} in #{extra}" unless @ctx.field?(field)
-    field
   end
 end
 
@@ -722,41 +748,25 @@ def sql_build_query(default_nick, args,
                     context=CTX_LOG, extra_fields=nil,
                     extract_nick_from_args=true)
   #puts "sql_build_query(#{args.inspect})"
-  summarize = args.find { |a| a =~ /^-?s(?:=.*)?$/ }
-  args.delete(summarize) if summarize
+  summarise = args.find { |a| SummaryField.summary_field? a }
+  args.delete(summarise) if summarise
 
-  sfield = nil
-  if summarize
-    if summarize =~ /^-?s=([+-]?)(.*)$/
-      sort = $1.empty? ? '+' : $1
-      sfield = COLUMN_ALIASES[$2] || $2
-      unless context.summarise?(sfield)
-        raise "Bad arg '#{summarize}' - cannot summarise by #{sfield}"
-      end
-      sfield = sort + sfield
-    else
-      sfield = '+name'
-    end
+  args = _op_back_combine(args)
+  if extract_nick_from_args
+    nick = resolve_nick(extract_nick(args), default_nick)
+  else
+    nick = default_nick
   end
+  num  = extract_num(args)
+  game = extract_game_type(args)
 
-  with_group(sfield) do
-    args = _op_back_combine(args)
-    if extract_nick_from_args
-      nick = resolve_nick(extract_nick(args), default_nick)
-    else
-      nick = default_nick
-    end
-    num  = extract_num(args)
-    game = extract_game_type(args)
-
-    GameContext.with_game(game) do
-      with_query_context(context) do
-        q = sql_define_query(nick, num, args, extra_fields, false)
-        q.summarize = sfield if summarize
-        q.extra_fields = extra_fields
-        q.ctx = context
-        q
-      end
+  GameContext.with_game(game) do
+    with_query_context(context) do
+      q = sql_define_query(nick, num, args, extra_fields, false)
+      q.summarise = SummaryField.new(summarise) if summarise
+      q.extra_fields = extra_fields
+      q.ctx = context
+      q
     end
   end
 end
@@ -884,7 +894,7 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
   # Not all split queries will have an aggregate column. For instance:
   # !lg * / win has no aggregate column, but the user presumably wants to use
   # counts. In such cases, add x=n for the user.
-  if split_args.size > 1 && !primary_query.summarize? && extra.empty?
+  if split_args.size > 1 && !primary_query.summarise? && extra.empty?
     _, extra = extra_field_clause(['x=n'], context)
     primary_query = sql_build_query(nick, cloneargs(primary_args),
                                     context, extra, false)
@@ -909,7 +919,7 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
   end
 
   # If we have multiple queries, all must be summary queries:
-  if query_list.size > 1 and !query_list.all? { |q| q.summarize? }
+  if query_list.size > 1 and !query_list.all? { |q| q.summarise? }
     raise ("Bad input: #{oargs.join(' ')}; when using /, " +
            "all query pieces must be summary queries")
   end
@@ -944,7 +954,7 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
   qgroup = sql_parse_query(default_nick, args, context)
   qgroup.with_context do
     q = qgroup.primary_query
-    if q.summarize?
+    if q.summarise?
       report_grouped_games_for_query(qgroup)
     else
       n, row = sql_exec_query(q.num, q)
@@ -1134,7 +1144,7 @@ class CrawlQuery
     @extra_fields = extra_fields
     @argstr = argstr
     @values = nil
-    @summarize = nil
+    @summarise = nil
     @summary_sort = nil
     @raw = nil
     @joins = false
@@ -1186,30 +1196,27 @@ class CrawlQuery
     @nick != '*'
   end
 
-  def summarize
-    @summarize
+  def summarise
+    @summarise
   end
 
-  def summarize?
-    @summarize || (@extra_fields && @extra_fields.aggregate?)
+  def summarise?
+    @summarise || (@extra_fields && @extra_fields.aggregate?)
   end
 
-  def summarize= (s)
-    if s =~ /^([+-]?)(.*)/
-      @summarize = $2
-      @summary_sort = $1 == '-' ? '' : 'DESC'
+  def summarise= (s)
+    @summarise = s
+    @summary_sort = @summarise.order == '-'? '' : 'DESC'
+    if $CTX.noun_verb[@summarise.field]
+      noun, verb = $CTX.noun_verb_fields
+      # Ulch, we have to modify our predicates.
+      add_predicate('AND', field_pred(@summarise.field, '=', verb))
+      @summarise.field = noun
+    end
 
-      if $CTX.noun_verb[@summarize]
-        noun, verb = $CTX.noun_verb_fields
-        # Ulch, we have to modify our predicates.
-        add_predicate('AND', field_pred(@summarize, '=', verb))
-        @summarize = noun
-      end
-
-      # If this is not a directly summarizable field, we need a join.
-      if !$CTX.summarizable[@summarize]
-        fixup_join()
-      end
+    # If this is not a directly summarisable field, we need a join.
+    if !$CTX.summarisable[@summarise.field]
+      fixup_join()
     end
     @query = nil
   end
@@ -1250,18 +1257,18 @@ class CrawlQuery
   end
 
   def summary_order
-    @summarize ? "ORDER BY fieldcount #{@summary_sort}" : ''
+    @summarise ? "ORDER BY fieldcount #{@summary_sort}" : ''
   end
 
   def summary_group
-    @summarize ? "GROUP BY #{$CTX.dbfield(@summarize)}" : ''
+    @summarise ? "GROUP BY #{$CTX.dbfield(@summarise.field)}" : ''
   end
 
   def summary_fields
     basefields = ''
     extras = ''
-    if @summarize
-      basefields = "#{$CTX.dbfield(@summarize)}, COUNT(*) AS fieldcount"
+    if @summarise
+      basefields = "#{$CTX.dbfield(@summarise.field)}, COUNT(*) AS fieldcount"
     end
     if @extra_fields && !@extra_fields.empty?
       # At this point extras must be aggregate columns.
@@ -2010,7 +2017,8 @@ end
 class SummaryRow
   attr_accessor :counts, :extra_values, :count
 
-  def initialize(key, count, extra_fields, extra_values)
+  def initialize(summary_reporter, key, count, extra_fields, extra_values)
+    @summary_reporter = summary_reporter
     @key = key
     @counts = count.nil? ? nil : [count]
     @count = @counts.nil? ? 0 : @counts[0]
@@ -2053,10 +2061,22 @@ class SummaryRow
 
   def to_s
     if @key
-      [counted_keys, extra_val_string].find_all { |x| !x.empty? }.join(" ")
+      [counted_keys, percentage_string, extra_val_string].find_all { |x|
+        !x.empty?
+      }.join(" ")
     else
       annotated_extra_val_string
     end
+  end
+
+  def percentage_string
+    if !@summary_reporter.ratio_query?
+      summarise = @summary_reporter.query.summarise
+      if summarise && summarise.percentage
+        return "(" + percentage(@counts[0], @summary_reporter.count) + ")"
+      end
+    end
+    ""
   end
 
   def counted_keys
@@ -2127,17 +2147,17 @@ class SummaryReporter
     @lq = qgroup[-1]
     @defval = defval
     @sep = separator
-    @formatter = formatter
     @extra = @q.extra_fields
     @efields = @extra ? @extra.fields : nil
-    if not @formatter
-      @formatter = case @q.summarize
-                   when 'char'
-                     Proc.new { |n, w| "#{n}x#{w}" }
-                   else
-                     Proc.new { |n, w| "#{n}x #{w}" }
-                   end
-    end
+    @sorted_row_values = nil
+  end
+
+  def query
+    @q
+  end
+
+  def ratio_query?
+    @counts &&  @counts.size == 2
   end
 
   def summary
@@ -2153,6 +2173,7 @@ class SummaryReporter
     if @count == 0
       "No #{summary_entities} for #{@q.argstr}"
     else
+      filter_count_summary_rows!
       ("#{summary_count} #{summary_entities} " +
        "for #{@q.argstr}: #{summary_details}")
     end
@@ -2160,6 +2181,10 @@ class SummaryReporter
 
   def report_summary
     puts(summary)
+  end
+
+  def count
+    @counts[0]
   end
 
   def summary_count
@@ -2176,20 +2201,19 @@ class SummaryReporter
     @count == 1 ? type : types
   end
 
-  def summary_details
-    group_by = @q.summarize
+  def filter_count_summary_rows!
+    group_by = @q.summarise
 
     @rowmap = { }
-    #puts "Query: #{@q.summary_query}"
-
     first = true
     for q in @qgroup do
       sql_each_row_for_query(q.summary_query, *q.values) do |row|
         srow = nil
         if group_by then
-          srow = SummaryRow.new(row[0], row[1], @q.extra_fields, row[2..-1])
+          srow = SummaryRow.new(self, row[0], row[1],
+                                @q.extra_fields, row[2..-1])
         else
-          srow = SummaryRow.new(nil, nil, @q.extra_fields, row)
+          srow = SummaryRow.new(self, nil, nil, @q.extra_fields, row)
         end
         filter_key = srow.key.to_s.downcase
         if first
@@ -2215,8 +2239,28 @@ class SummaryReporter
       end
     end
 
-    sorted_values = sort(raw_values)
-    sorted_values.join(", ")
+    @sorted_row_values = sort(raw_values)
+    if filters
+      @counts = count_filtered_values(@sorted_row_values)
+    end
+  end
+
+  def summary_details
+    @sorted_row_values.join(", ")
+  end
+
+  def count_filtered_values(sorted_summary_row_values)
+    counts = [0, 0]
+    for summary_row_value in sorted_summary_row_values
+      if summary_row_value.counts
+        row_count = summary_row_value.counts
+        counts[0] += row_count[0]
+        if row_count.size == 2
+          counts[1] += row_count[1]
+        end
+      end
+    end
+    return counts[1] == 0 ? [counts[0]] : counts
   end
 
   def sort(values)
@@ -2235,12 +2279,6 @@ class SummaryReporter
       values.sort
     end
   end
-
-  # Given a count and an item (for instance 200, Trog) returns a
-  # readable string: "200x Trog"
-  def format_counted_item(count, item)
-    @formatter.call(count, item)
-  end
 end
 
 def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
@@ -2249,18 +2287,14 @@ end
 
 def report_grouped_games(group_by, defval, who, args,
                          separator=', ', formatter=nil)
-  with_group(group_by) do
-    begin
-      q = sql_build_query(who, args)
-      q.summarize = group_by
-      qgroup = QueryList.new
-      qgroup << q
-      report_grouped_games_for_query(qgroup, defval, separator, formatter)
-    rescue
-      puts $!
-      raise
-    end
-  end
+  q = sql_build_query(who, args)
+  q.summarise = group_by
+  qgroup = QueryList.new
+  qgroup << q
+  report_grouped_games_for_query(qgroup, defval, separator, formatter)
+rescue
+  puts $!
+  raise
 end
 
 def logfile_names
