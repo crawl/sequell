@@ -2295,7 +2295,7 @@ end
 def report_grouped_games(group_by, defval, who, args,
                          separator=', ', formatter=nil)
   q = sql_build_query(who, args)
-  q.summarise = group_by
+  q.summarise = SummaryField.new(group_by)
   qgroup = QueryList.new
   qgroup << q
   report_grouped_games_for_query(qgroup, defval, separator, formatter)
