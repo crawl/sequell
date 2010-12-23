@@ -245,10 +245,9 @@ for calculating percentages for things such as:
                                as a percentage of Ghoul games grouped
                                by character)
 
-When using the !lg ... s=foo / ... form, you'll notice that the groups
-are sorted by the counts of the broader query, which is usually
-irrelevant. You may request sorting by the percentage (descending)
-using o=%, or o=-% for ascending sort by percentage.
+When using the !lg ... s=foo / ... form, the groups are sorted by
+descending order of percentage. You may change the sort by explicitly
+specifying o=% (descending) or o=-% (ascending).
 
 NOTE: In ratio queries you may use multiple sort conditions:
 

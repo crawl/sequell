@@ -887,6 +887,10 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
   split_args = split_query_parts(args)
   primary_args = split_args[0]
 
+  if split_args.size > 1 && sort_fields.empty?
+    sort_fields = extract_sort_fields(["o=%"], extra)[1]
+  end
+
   nick = resolve_nick(extract_nick(primary_args), default_nick)
   primary_query = sql_build_query(nick, cloneargs(primary_args),
                                   context, extra, false)
