@@ -34,9 +34,12 @@ FILTER_OPS = {
   '='   => Proc.new { |a, b| a.to_f == b },
   '!='  => Proc.new { |a, b| a.to_f != b }
 }
+
+FILTER_OPS_ORDERED = FILTER_OPS.keys.sort { |a,b| b.length <=> a.length }
+
 FILTER_PATTERN =
   Regexp.new('^((?:(?:den|num|%)[.])?\S+)(' +
-             FILTER_OPS.keys.map { |o| Regexp.quote(o) }.join('|') +
+             FILTER_OPS_ORDERED.map { |o| Regexp.quote(o) }.join('|') +
              ')(\S+)$')
 
 # List of abbreviations for branches that have depths > 1. This includes
