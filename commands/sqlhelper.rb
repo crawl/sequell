@@ -38,7 +38,7 @@ FILTER_OPS = {
 FILTER_OPS_ORDERED = FILTER_OPS.keys.sort { |a,b| b.length <=> a.length }
 
 FILTER_PATTERN =
-  Regexp.new('^((?:(?:den|num|%)[.])?\S+)(' +
+  Regexp.new('^((?:(?:den|num|%)[.])?\S+?)(' +
              FILTER_OPS_ORDERED.map { |o| Regexp.quote(o) }.join('|') +
              ')(\S+)$')
 
