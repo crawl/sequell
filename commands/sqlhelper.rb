@@ -296,7 +296,7 @@ module LGField
   def self.canonicalise_field(field)
     field = field.strip.downcase
     field = COLUMN_ALIASES[field] || field
-    raise "Unknown selector #{field} in #{extra}" unless $CTX.field?(field)
+    raise "Unknown selector #{field}" unless $CTX.field?(field)
     field
   end
 end
