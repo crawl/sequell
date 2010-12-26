@@ -2208,7 +2208,7 @@ class SummaryRow
     summarise_fields = summary_reporter.query.summarise
     @summary_field_spec = summarise_fields.fields[0] if summarise_fields
     @fields = summary_fields
-    @key = summary_fields.join('@@')
+    @key = summary_fields ? summary_fields.join('@@') : nil
     @counts = count.nil? ? nil : [count]
     @extra_fields = extra_fields
     @extra_values = extra_values.map { |e| [ e ] }
