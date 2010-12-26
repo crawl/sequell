@@ -1,3 +1,10 @@
+- Nested grouping: s=char,xl
+  15x DEFE (2x 10, 3x 5)
+
+- When using x=FOO in a group-by query, automatically order by FOO desc.
+- Allow x=-FOO as well.
+
+
 - Test setup for Henzell queries:
   - MySQL dump from Sequell - old games (keep only 2009 and newer games)
   - Load into test db

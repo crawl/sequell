@@ -468,14 +468,24 @@ class SummaryField
 end
 
 class QueryField
-  attr_accessor :expr, :field, :calias, :special, :display
-  def initialize(dbexpr, field, display, calias=nil, special=nil)
+  attr_accessor :expr, :field, :calias, :special, :display, :order
+  def initialize(field_list, dbexpr, field, display, calias=nil, special=nil)
+    @field_list = field_list
     @expr = dbexpr
     @field = field
     @display = display
     @calias = calias
     @special = special
     @type = $CTX.field_type(field)
+    @order = ''
+  end
+
+  def default_sort
+    QuerySortCondition.new(@field_list, @display, @order == '-')
+  end
+
+  def descending?
+    @order == '+'
   end
 
   def format_value(value)
@@ -641,11 +651,7 @@ class QueryFieldList
     @extra = extra
     fields = extra.gsub(' ', '').split(',').find_all { |f| !f.empty? }
     fields.each do |f|
-      if f =~ /^(\w+)\((\w+)\)/
-        @fields << aggregate_function($1, $2)
-      else
-        @fields << simple_field(f)
-      end
+      @fields << parse_extra_field(f)
     end
 
     if not consistent?
@@ -654,10 +660,29 @@ class QueryFieldList
     @aggregate = !@fields.empty?() && @fields[0].aggregate?()
   end
 
+  def parse_extra_field(f)
+    order = '+'
+    if f =~ /^([+-])/
+      order = $1
+      f = f[1 .. -1]
+    end
+    field = if f =~ /^(\w+)\((\w+)\)/
+              aggregate_function($1, $2)
+            else
+              simple_field(f)
+            end
+    field.order = order
+    field
+  end
+
   def parse_sort_expr(expr)
     reversed = expr =~ /^-/
     expr = expr.sub(/^-/, '')
     QuerySortCondition.new(self, expr, reversed)
+  end
+
+  def default_sorts
+    @fields.map { |f| f.default_sort }
   end
 
   def empty?
@@ -683,17 +708,17 @@ class QueryFieldList
   def simple_field(field)
     field = field.downcase.strip
     if field == 'n'
-      return QueryField.new('COUNT(*)', nil, 'N',
+      return QueryField.new(self, 'COUNT(*)', nil, 'N',
                             "count_" + QueryFieldList::unique_id())
     elsif field == '%'
-      return QueryField.new('COUNT(*)', nil, '%',
+      return QueryField.new(self, 'COUNT(*)', nil, '%',
                             "count_" + QueryFieldList::unique_id(),
                             :percentage)
     end
     with_query_context(@ctx) do
       field = LGField.canonicalise_field(field)
     end
-    return QueryField.new(field, field, field)
+    return QueryField.new(self, field, field, field)
   end
 
   def aggregate_typematch(func, field)
@@ -718,7 +743,8 @@ class QueryFieldList
     dbf = @ctx.dbfield(field)
     fieldexpr = "#{func}(#{dbf})"
     fieldexpr = "COUNT(DISTINCT #{dbf})" if func == 'cdist'
-    return QueryField.new(fieldexpr, field, "#{func}(#{field})", fieldalias)
+    return QueryField.new(self, fieldexpr, field,
+                          "#{func}(#{field})", fieldalias)
   end
 
   def canonicalise_aggregate(func)
@@ -785,7 +811,7 @@ end
 def extra_field_clause(args, ctx)
   combined = args.join(' ')
   extra = nil
-  reg = %r/\bx\s*=\s*(\w+(?:\(\w+\))?(?:\s*,\s*\w+(?:\(\w+\))?)*)/
+  reg = %r/\bx\s*=\s*([+-]?\w+(?:\(\w+\))?(?:\s*,\s*\w+(?:\(\w+\))?)*)/
   extra = $1 if combined =~ reg
   combined.sub!(reg, '') if extra
   restargs = split_combined_arguments(combined)
@@ -897,6 +923,10 @@ def sql_parse_query(default_nick, args, context=CTX_LOG)
   nick = resolve_nick(extract_nick(primary_args), default_nick)
   primary_query = sql_build_query(nick, cloneargs(primary_args),
                                   context, extra, false)
+
+  if primary_query.summarise? && !extra.empty? && sort_fields.empty?
+    sort_fields = extra.default_sorts
+  end
 
   # Not all split queries will have an aggregate column. For instance:
   # !lg * / win has no aggregate column, but the user presumably wants to use
