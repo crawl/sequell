@@ -1,9 +1,12 @@
 - Nested grouping: s=char,xl
   15x DEFE (2x 10, 3x 5)
 
-- When using x=FOO in a group-by query, automatically order by FOO desc.
-- Allow x=-FOO as well.
+  What we get back will look like this:
 
+  groupA - groupB - groupC - subgroup count
+
+  To fix up this mess, we need to keep subcounts for each group and skip
+  the order-by.
 
 - Test setup for Henzell queries:
   - MySQL dump from Sequell - old games (keep only 2009 and newer games)

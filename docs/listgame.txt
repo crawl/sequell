@@ -31,7 +31,8 @@ Syntax
         !lg [<target-player> [<keyword1> <keyword2> ...]
                              [<game type>; viz 'crawl' or 'sprint']
                              [<field1><op1><value1> <field2><op2><value2> ...]
-                             [s=<field> ; cannot be used with max= or min=]
+                             [s=<field1>,<field2> ;
+                                         cannot be used with max= or min=]
                              [x=<field1>[,<field2>,...]]
                              [o=<aggregate-function or % or N>]
                              [max=<field> or min=<field>; not usable with s=]]
@@ -78,7 +79,7 @@ Where:
   Values may contain embedded spaces. Underscores in values are
   converted to spaces before running listgame queries.
 
-- s=<field>[%] or s=-<field>[%]
+- s=<field1>[%],<field2>... or s=-<field>[%]
 
   Mnemonic: s = Summarise by field
 
