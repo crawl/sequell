@@ -1,6 +1,18 @@
-# A list of listgame command lines. The lg_testgen script uses these
+# A list of Henzell command lines. The lg_testgen script uses these
 # command lines to build a list of expected outputs. Implied nick when
 # nick is omitted is 'hyperbolic'
+
+# A simple command by itself tells the test runner that the command must
+# return successfully, without specifying what output is required.
+#
+# A specific substring can be required as:
+# !lg ::~ 2x OgFE
+#
+# An exact match can be required as:
+# !lg thispersondoesnotexist ::= No games for thispersondoesnotexist.
+#
+# If the command will fail, that can be specified by prefixing with 'E'
+# E !lg . malformed 
 
 !lg
 !lg .
@@ -77,3 +89,4 @@
 # !log test:
 !log * won char=mdee
 
+!gkills

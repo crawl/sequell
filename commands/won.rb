@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 require 'commands/helper.rb'
 require 'commands/sqlhelper.rb'
 

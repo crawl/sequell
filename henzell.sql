@@ -178,3 +178,8 @@ CREATE INDEX zot_mile_lookup_ext ON zot_milestone (verb, noun);
 CREATE INDEX zot_mile_ind_foffset ON zot_milestone (file, offset);
 CREATE INDEX zot_mile_lookup ON zot_milestone (game_id, verb);
 CREATE INDEX zot_mile_game_id ON zot_milestone (game_id);
+
+DROP TABLE IF EXISTS canary;
+CREATE TABLE canary (
+    last_update DATETIME
+);

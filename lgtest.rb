@@ -1,5 +1,6 @@
 #! /usr/bin/env ruby
 
+ENV['HENZELL_SQL_QUERIES'] = 'y'
 CMD = ARGV[0] || 'listgame.rb'
 while true
   print "!lg: "

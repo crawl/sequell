@@ -1,5 +1,7 @@
 .#*
 \#*
+*.sw[op]
+test.log
 pcache.db
 remote.*
 .remote-*

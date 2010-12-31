@@ -75,6 +75,7 @@ Henzell::Utils::lock(verbose => 1,
 Henzell::Utils::daemonify() if $daemon;
 
 require 'sqllog.pl';
+initialize_sqllog();
 
 my @loghandles = open_handles(@logfiles);
 my @stonehandles = open_handles(@stonefiles);
@@ -122,30 +123,6 @@ sub catchup_logfiles {
 
 sub catchup_stonefiles {
   catchup_files(\&cat_stonefile, @stonehandles);
-}
-
-sub open_handles
-{
-  my (@files) = @_;
-  my @handles;
-
-  for my $file (@files) {
-    my $path = $$file{path};
-    open my $handle, '<', $path or do {
-      warn "Unable to open $path for reading: $!";
-      next;
-    };
-
-    seek($handle, 0, SEEK_END); # EOF
-    push @handles, { file   => $$file{path},
-                     fref   => $file,
-                     handle => $handle,
-                     pos    => tell($handle),
-                     server => $$file{src},
-                     src    => $$file{src},
-                     alpha  => $$file{alpha} };
-  }
-  return @handles;
 }
 
 sub milestone_is_uniq($) {

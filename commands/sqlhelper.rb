@@ -6,6 +6,10 @@ require 'set'
 
 exit(0) if !ENV['HENZELL_SQL_QUERIES']
 
+DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
+DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
+DBPASS = ENV['HENZELL_DBPASS'] || ''
+
 # Don't use more than this much memory (bytes)
 MAX_MEMORY_USED = 768 * 1024 * 1024
 Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
@@ -1131,7 +1135,7 @@ class DBHandle
 end
 
 def connect_sql_db
-  DBHandle.new(DBI.connect('DBI:Mysql:henzell', 'henzell', ''))
+  DBHandle.new(DBI.connect('DBI:Mysql:' + DBNAME, DBUSER, DBPASS))
 end
 
 def sql_dbh

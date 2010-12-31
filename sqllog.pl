@@ -109,6 +109,10 @@ my $need_indexes = 1;
 
 my $standalone = not caller();
 
+my $DBNAME = 'henzell';
+my $DBUSER = 'henzell';
+my $DBPASS = '';
+
 my $dbh;
 my $insert_st;
 my $update_st;
@@ -116,9 +120,9 @@ my $milestone_insert_st;
 
 my %INSERT_STATEMENTS;
 
-initialize_sqllog();
-
-sub initialize_sqllog {
+sub initialize_sqllog(;$) {
+  my $dbname = shift;
+  $DBNAME = $dbname if $dbname;
   setup_db();
   load_splat_defs();
   load_splat();
@@ -142,7 +146,7 @@ sub current_splat_time {
 sub load_splat_defs {
   if (-d $SPLAT_CO) {
     push @INC, $SPLAT_CO;
-    print "Loading $SPLAT_CO/CSplat/Select.pm\n";
+    #print "Loading $SPLAT_CO/CSplat/Select.pm\n";
     $ENV{SPLAT_HOME} = $SPLAT_CO;
     do "$SPLAT_CO/CSplat/Select.pm";
   }
@@ -180,8 +184,15 @@ sub reopen_db {
   setup_db();
 }
 
-sub new_db_handle {
-  my $dbh = DBI->connect("dbi:mysql:henzell", 'henzell', '');
+sub new_db_handle(;$$$) {
+  my ($dbname, $dbuser, $dbpass) = @_;
+  $dbname ||= $DBNAME;
+  $dbuser ||= $DBUSER;
+  $dbpass ||= $DBPASS;
+  $DBNAME = $dbname;
+  $DBUSER = $dbuser;
+  $DBPASS = $dbpass;
+  my $dbh = DBI->connect("dbi:mysql:$dbname", $dbuser, $dbpass);
   $dbh->{mysql_auto_reconnect} = 1;
   $dbh
 }
@@ -264,6 +275,30 @@ sub prepare_update_st {
     WHERE id = ?
 QUERY
   return prepare_st($dbh, $text);
+}
+
+sub open_handles
+{
+  my (@files) = @_;
+  my @handles;
+
+  for my $file (@files) {
+    my $path = $$file{path};
+    open my $handle, '<', $path or do {
+      warn "Unable to open $path for reading: $!";
+      next;
+    };
+
+    seek($handle, 0, SEEK_END); # EOF
+    push @handles, { file   => $$file{path},
+                     fref   => $file,
+                     handle => $handle,
+                     pos    => tell($handle),
+                     server => $$file{src},
+                     src    => $$file{src},
+                     alpha  => $$file{alpha} };
+  }
+  return @handles;
 }
 
 sub sql_register_files {
@@ -644,7 +679,10 @@ sub fixup_logfields {
     my $src = $g->{src};
     # Fixup src for interesting_game.
     $g->{src} = "http://$SERVER_MAP{$src}/";
-    $g->{splat} = CSplat::Select::interesting_game($g) ? 'y' : '';
+    $g->{splat} = '';
+    eval {
+      $g->{splat} = CSplat::Select::interesting_game($g) ? 'y' : '';
+    };
     $g->{src} = $src;
   }
 

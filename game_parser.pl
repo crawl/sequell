@@ -132,11 +132,6 @@ sub parse_extras {
   $extra
 }
 
-sub game_is_sprint($) {
-  my $g = shift;
-  $$g{lv} =~ /spr/i;
-}
-
 sub game_place($) {
   my $g = shift;
 
