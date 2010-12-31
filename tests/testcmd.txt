@@ -89,4 +89,6 @@
 # !log test:
 !log * won char=mdee
 
+E !gkills * deathonacow
+
 !gkills
