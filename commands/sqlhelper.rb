@@ -2284,7 +2284,7 @@ class SummaryRow
   end
 
   def <=> (sr)
-    sr.count <=> @count
+    sr.count <=> count
   end
 
   def master_string
