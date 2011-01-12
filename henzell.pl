@@ -318,10 +318,15 @@ sub is_sibling_announcement {
   return undef;
 }
 
+sub nick_is_sibling($) {
+  my $nick = shift;
+  return ($nick ne $nickname) && scalar(grep($_ eq $nick, @sibling_bots));
+}
+
 sub check_sibling_announcements
 {
   my ($nick, $verbatim) = @_;
-  if (($nick ne $nickname) && grep($_ eq $nick, @sibling_bots)) {
+  if (nick_is_sibling($nick)) {
     if (is_sibling_announcement($verbatim)) {
       $sibling_logs_need_fetch = 1;
     }
@@ -412,10 +417,14 @@ sub process_message {
   my $target = $verbatim;
   $nick     =~ y/'//d;
 
-  seen_update($m, "saying '$verbatim' on $channel");
-  respond_to_any_msg($m);
+  my $sibling = nick_is_sibling($nick);
+  unless ($sibling) {
+    seen_update($m, "saying '$verbatim' on $channel");
+    respond_to_any_msg($m);
+  }
 
   check_sibling_announcements($nick, $verbatim) unless $private;
+  return if $sibling;
 
   $target =~ s/^\?[?>]/!learn query /;
   $target =~ s/^!>/!/;
