@@ -5,6 +5,7 @@ package LearnDB;
 use strict;
 use warnings;
 use File::Temp qw/tempfile/;
+use File::Path qw/make_path/;
 
 use base 'Exporter';
 
@@ -130,7 +131,7 @@ sub insert_entry {
   $term = cleanse_term($1);
   check_term_length($term);
   check_text_length($text);
-
+  make_path(term_directory($term));
   my $entrycount = num_entries($term);
   $num = $entrycount + 1 if $num > $entrycount || $num < 1;
 
