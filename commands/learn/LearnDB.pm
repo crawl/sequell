@@ -1,9 +1,36 @@
 #!/usr/bin/perl
+
+package LearnDB;
+
 use strict;
 use warnings;
 use File::Temp qw/tempfile/;
 
+use base 'Exporter';
+
+our @EXPORT = qw/cleanse_term num_entries read_entry print_to_entry
+                 entries_for del_entry replace_entry swap_entries
+                 insert_entry $RTERM $RTERM_INDEXED $RTEXT/;
+
 our $learn_dir = 'dat/learndb/';
+
+our $RTERM = qr/([\w!]+)/;
+our $RTERM_INDEXED = qr/([\w!]+)\[(\d+)\]/;
+our $RTEXT = qr/(.+)/;
+
+our $TERM_MAX_LENGTH = 30;
+our $TEXT_MAX_LENGTH = 350;
+
+sub term_directory($) {
+  my ($term) = @_;
+  "$learn_dir$term"
+}
+
+sub term_filename($;$) {
+  my ($term, $entry) = @_;
+  $entry ||= '1';
+  term_directory($term) . "/$entry"
+}
 
 sub cleanse_term
 {
@@ -21,7 +48,7 @@ sub num_entries
 {
   my $term = cleanse_term(shift);
 
-  opendir(my $dir, "$learn_dir$term") or 0;
+  opendir(my $dir, term_directory($term)) or 0;
   my @files = grep {$_ ne "." and $_ ne ".." and $_ ne "contrib"}
               readdir $dir;
   return scalar @files;
@@ -69,45 +96,49 @@ sub entries_for
   return \@entries;
 }
 
-sub add_entry
-{
-  my $term = cleanse_term(shift);
-  my $text = shift;
-  my $contrib = shift;
-  my $largest = 0;
-
-  if (not -e "$learn_dir$term")
-  {
-    mkdir("$learn_dir$term");
-    $largest = 0;
+sub check_thing_length($$$) {
+  my ($thing, $term, $length) = @_;
+  if (length($term) > $length) {
+    die "$thing exceeds the maximum length of $length\n";
   }
-  else
-  {
-    opendir(my $dir, "$learn_dir$term") or return undef;
-    foreach my $file (readdir $dir)
-    {
-      next if $file eq "." or $file eq "..";
-      next if $file eq "contrib";
-      $largest = $file if $file > $largest;
-    }
+  if ($term eq '') {
+    die "$thing is empty\n";
   }
+}
 
+sub check_term_length($) {
+  check_thing_length("Term name", shift, $TERM_MAX_LENGTH);
+}
 
-  ## Rachel is a terrible person.
-  #if ($term == "bad_ideas")
-  #{
-  #  if ($largest == 665)
-  #  {
-  #    print_to_entry($term,$largest+1,'orb of hellchokos');
-  #    return read_entry($term, $largest+1);
-  #  }
-  #}
+sub check_text_length($) {
+  check_thing_length("Entry text", shift, $TEXT_MAX_LENGTH);
+}
 
+sub renumber_entry_item($$$) {
+  my ($term, $num, $newnum) = @_;
+  my $old_filename = term_filename($term, $num);
+  my $new_filename = term_filename($term, $newnum);
+  die "Cannot find $term\[$num]\n" unless -f $old_filename;
+  die "Cannot move $term\[$num] to $term\[$newnum]: target exists\n"
+    if -f $new_filename;
+  rename($old_filename, $new_filename)
+    or die "Could not rename $term\[$num] to $term\[$newnum]: $!\n"
+}
 
+sub insert_entry {
+  my ($term, $num, $text) = @_;
+  $term = cleanse_term($1);
+  check_term_length($term);
+  check_text_length($text);
 
-  print_to_entry($term, $largest+1, $text);
+  my $entrycount = num_entries($term);
+  $num = $entrycount + 1 if $num > $entrycount || $num < 1;
 
-  return read_entry($term, $largest+1);
+  for (my $i = $entrycount; $i >= $num; --$i) {
+    renumber_entry_item($term, $i, $i + 1);
+  }
+  print_to_entry($term, $num, $text);
+  return read_entry($term, $num);
 }
 
 sub del_entry
@@ -192,3 +223,5 @@ sub swap_entries
 
   return 1;
 }
+
+1;

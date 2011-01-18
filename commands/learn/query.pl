@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-do 'commands/learn/helper.pl';
+
+use lib 'commands/learn';
+use LearnDB;
 
 my ($term, $num) = parse_query($ARGV[1]);
 exit 0 unless $term =~ /\S/;

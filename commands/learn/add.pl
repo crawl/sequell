@@ -1,27 +1,25 @@
-#!/usr/bin/perl
+#! /usr/bin/perl
+
 use strict;
 use warnings;
-do 'commands/learn/helper.pl';
 
-$ARGV[1] =~ /^([\w!]+) (.+)/ or do
-{
-  print "Syntax is: !learn add TERM TEXT";
-  exit;
+use lib 'commands/learn';
+use LearnDB;
+
+our $RTERM_INDEXED;
+our $RTERM;
+our $RTEXT;
+
+eval {
+  if ($ARGV[1] =~ /^$RTERM_INDEXED $RTEXT/) {
+    print insert_entry($1, $2, $3);
+  } elsif ($ARGV[1] =~ /^$RTERM $RTEXT/) {
+    print insert_entry($1, -1, $2);
+  } else {
+    print "Syntax is: !learn $0 TERM TEXT or !learn $0 TERM[n] TEXT\n";
+    exit 1;
+  };
 };
-
-my ($term, $text) = (cleanse_term($1), $2);
-
-if (length($term) > 30)
-{
-  print "Term name exceeds the maximum length of 30 characters, aborting.";
-  exit;
-}
-
-if (length($text) > 350)
-{
-  print "Entry text exceeds the maximum length of 350 characters, aborting.";
-  exit;
-}
-
-print add_entry($term, $text, $ARGV[0]);
-
+if ($@) {
+  print "$@";
+};

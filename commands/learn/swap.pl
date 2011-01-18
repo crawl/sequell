@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-do 'commands/learn/helper.pl';
+
+use lib 'commands/learn';
+use LearnDB;
 
 my ($term, $num, $term2, $num2) =
     $ARGV[1] =~ /^([\w! ]+)\[(\d+)\] +([\w! ]+)\[(\d+)\]/ or do

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Time::localtime;
 use File::stat;
+use Henzell::Cmd;
 
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 
@@ -35,7 +36,6 @@ my @MILEFILES = qw/remote.cdo-milestones-svn
 my @COMMAND_FILES = ('commands/commands-henzell.txt',
                      'commands/commands-sequell.txt');
 
-my %CMD;
 
 my @FAILED_TESTS;
 my @OK_TESTS;
@@ -225,7 +225,8 @@ sub parse_test($) {
   }
   die "Malformed test line\n" unless $text =~ /\S/;
   my ($cmd) = $text =~ /^(\S+)/;
-  die "Unknown command $cmd in test '$text'\n" unless $CMD{$cmd};
+  die "Unknown command $cmd in test '$text'\n"
+    unless Henzell::Cmd::command_exists($cmd);
   $test{cmd} = $cmd;
 
   if ($text =~ /::(!?)~(.*)/) {
@@ -256,34 +257,8 @@ sub read_tests() {
   @tests
 }
 
-sub load_commands_from_file($) {
-  my $file = shift;
-  open my $inf, '<', $file or die "Can't read $file: $!\n";
-  while (<$inf>) {
-    chomp;
-    if (/^\s*(\S+)\s+(\S+)\s*$/) {
-      $CMD{$1} = $2;
-    }
-  }
-}
-
-sub load_commands() {
-  for my $file (@COMMAND_FILES) {
-    load_commands_from_file($file);
-  }
-}
-
 sub execute_cmd($) {
-  my $cmdline = shift;
-  my ($cmd) = $cmdline =~ /^(\S+)/;
-  my ($target) = $cmdline =~ /^\S+ (\S+)/;
-  $target = $TESTNICK if !$target || $target !~ /^\w+$/;
-  my $script = $CMD{$cmd};
-  my $executable_command =
-    "./commands/$script \Q$target\E \Q$TESTNICK\E \Q$cmdline\E ''";
-  my $output = qx/$executable_command 2>&1/;
-  my $exitcode = ($? >> 8);
-  ($exitcode, $output, $executable_command)
+  Henzell::Cmd::execute_cmd($TESTNICK, shift)
 }
 
 sub execute_test($$) {
@@ -353,7 +328,7 @@ ENDBANNER2
 }
 
 sub run_tests() {
-  load_commands();
+  Henzell::Cmd::load_all_commands();
   my @tests = read_tests();
   announce "Running " . scalar(@tests) . " tests";
   open my $logf, '>', $TESTLOG or die "Can't write $TESTLOG: $!\n";

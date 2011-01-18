@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-do 'commands/learn/helper.pl';
+
+use lib 'commands/learn';
+use LearnDB;
 
 $ARGV[1] =~ y/ /_/;
 $ARGV[1] =~ /^([\w!]+)(?:\[(\d+)\])?/ or do

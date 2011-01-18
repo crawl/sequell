@@ -13,6 +13,7 @@ my %filenames =
   query  => "query.pl",
 
   add    => "add.pl",
+  insert => 'add.pl',
 
   delete => "delete.pl",
   del    => "delete.pl",
