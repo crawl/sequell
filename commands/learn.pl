@@ -15,6 +15,9 @@ my %filenames =
   add    => "add.pl",
   insert => 'add.pl',
 
+  mv     => 'move.pl',
+  move   => 'move.pl',
+
   delete => "delete.pl",
   del    => "delete.pl",
   rm     => "delete.pl",

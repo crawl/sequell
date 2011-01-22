@@ -24,13 +24,19 @@ our $TEXT_MAX_LENGTH = 350;
 
 sub term_directory($) {
   my ($term) = @_;
+  $term = cleanse_term($term);
   "$learn_dir$term"
 }
 
 sub term_filename($;$) {
-  my ($term, $entry) = @_;
-  $entry ||= '1';
-  term_directory($term) . "/$entry"
+  my ($term, $num) = @_;
+  $num ||= '1';
+  term_directory($term) . "/$num"
+}
+
+sub term_exists($;$) {
+  my ($term, $num) = @_;
+  -r term_filename($term, $num)
 }
 
 sub cleanse_term
@@ -128,13 +134,12 @@ sub renumber_entry_item($$$) {
 
 sub insert_entry {
   my ($term, $num, $text) = @_;
-  $term = cleanse_term($1);
+  $term = cleanse_term($term);
   check_term_length($term);
   check_text_length($text);
   mkpath(term_directory($term));
   my $entrycount = num_entries($term);
   $num = $entrycount + 1 if $num > $entrycount || $num < 1;
-
   for (my $i = $entrycount; $i >= $num; --$i) {
     renumber_entry_item($term, $i, $i + 1);
   }
@@ -223,6 +228,27 @@ sub swap_entries
   system("rm '$tempfile'");
 
   return 1;
+}
+
+sub rename_entry($$) {
+  my ($src, $dst) = @_;
+  rename(term_directory($src), term_directory($dst))
+    or die "Couldn't move $src to $dst\n";
+}
+
+sub move_entry($$$;$) {
+  my ($src, $snum, $dst, $dnum) = @_;
+  if (!$snum) {
+    die "$dst exists, cannot overwrite it.\n" if term_exists($dst);
+    rename_entry($src, $dst);
+    return "Renamed $src to $dst";
+  }
+  else {
+    die "$src\[$snum] does not exist\n" unless term_exists($src, $snum);
+    my $src_entry = read_entry($src, $snum, 'just-the-entry');
+    del_entry($src, $snum);
+    return insert_entry($dst, $dnum || -1, $src_entry);
+  }
 }
 
 1;
