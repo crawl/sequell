@@ -263,7 +263,7 @@ sub move_entry($$$;$) {
     check_entry_exists($src, $snum);
     my $src_entry = read_entry($src, $snum, 'just-the-entry');
     del_entry($src, $snum);
-    return "$src\[$snum -> " . insert_entry($dst, $dnum || -1, $src_entry);
+    return "$src\[$snum] -> " . insert_entry($dst, $dnum || -1, $src_entry);
   }
 }
 
