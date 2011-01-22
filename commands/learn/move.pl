@@ -29,5 +29,5 @@ eval {
   }
 };
 if ($@) {
-  print "$@";
+  report_error($@);
 }

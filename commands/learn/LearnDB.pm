@@ -11,6 +11,7 @@ use base 'Exporter';
 
 our @EXPORT = qw/cleanse_term num_entries read_entry print_to_entry
                  entries_for del_entry replace_entry swap_entries
+                 check_entry_exists report_error
                  insert_entry $RTERM $RTERM_INDEXED $RTEXT/;
 
 our $learn_dir = 'dat/learndb/';
@@ -59,6 +60,18 @@ sub num_entries
   my @files = grep {$_ ne "." and $_ ne ".." and $_ ne "contrib"}
               readdir $dir;
   return scalar @files;
+}
+
+sub check_entry_exists($;$) {
+  my ($term, $num) = @_;
+  if (!-r term_filename($term, $num)) {
+    if ($num) {
+      die "I don't have a page labeled $term\[$num] in my learndb.";
+    }
+    else {
+      die "I don't have a page labeled $term in my learndb.";
+    }
+  }
 }
 
 sub read_entry
@@ -114,7 +127,7 @@ sub check_thing_length($$$) {
 }
 
 sub check_term_length($) {
-  check_thing_length("Term name", shift, $TERM_MAX_LENGTH);
+  check_thing_length("Term name", cleanse_term(shift), $TERM_MAX_LENGTH);
 }
 
 sub check_text_length($) {
@@ -238,17 +251,26 @@ sub rename_entry($$) {
 
 sub move_entry($$$;$) {
   my ($src, $snum, $dst, $dnum) = @_;
+  check_term_length($src);
+  check_term_length($dst);
   if (!$snum) {
+    check_entry_exists($src, 0);
     die "$dst exists, cannot overwrite it.\n" if term_exists($dst);
     rename_entry($src, $dst);
-    return "Renamed $src to $dst";
+    return "$src -> " . read_entry($dst, 1);
   }
   else {
-    die "$src\[$snum] does not exist\n" unless term_exists($src, $snum);
+    check_entry_exists($src, $snum);
     my $src_entry = read_entry($src, $snum, 'just-the-entry');
     del_entry($src, $snum);
-    return insert_entry($dst, $dnum || -1, $src_entry);
+    return "$src\[$snum -> " . insert_entry($dst, $dnum || -1, $src_entry);
   }
+}
+
+sub report_error($) {
+  my $error = shift;
+  $error =~ s/ at \S+ line.*$//;
+  print $error
 }
 
 1;
