@@ -150,7 +150,7 @@ module TV
   end
 
   def self.launch_dirserv()
-    return unless Dir.exists?(DGL_TTYREC_DIR)
+    return unless File.exist?(DGL_TTYREC_DIR)
     return if fork()
 
     begin
