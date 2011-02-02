@@ -4,6 +4,46 @@
 module HttpList
   require 'date'
   require 'commands/pcache'
+  require 'set'
+
+  def self.urljoin(a, b)
+    if a.empty?
+      b
+    elsif a =~ %r{/$}
+      a + b
+    else
+      a + "/" + b
+    end
+  end
+
+  class HttpFile
+    attr_reader :filename, :baseurl
+
+    def initialize(filename, baseurl)
+      @filename = filename
+      @baseurl = baseurl
+    end
+
+    def <=> (other)
+      @filename <=> other.filename
+    end
+
+    def url
+      HttpList.urljoin(@baseurl, @filename)
+    end
+
+    def == (other)
+      @filename == other.filename
+    end
+
+    def hash
+      @filename.hash
+    end
+
+    def to_s
+      url
+    end
+  end
 
   def self.fetch_raw_html(url)
     %x{curl --max-time 180 #{url} 2>/dev/null}
@@ -31,6 +71,15 @@ module HttpList
   end
 
   def self.find_files(url, file_regex, timewanted=DateTime.now)
+    if url.is_a?(Array)
+      fileset = Set.new
+      for suburl in url do
+        files = self.find_files(suburl, file_regex, timewanted)
+        fileset.merge(files)
+      end
+      return fileset.to_a.sort
+    end
+
     key = "#{file_regex}:#{url}"
     listing = PCache::find(key, timewanted)
     if not listing
@@ -45,6 +94,6 @@ module HttpList
       STDERR.puts("Using cached file listing for #{key}")
       listing = listing.split('|')
     end
-    return listing
+    return listing.map { |f| HttpFile.new(f, url) }
   end
 end

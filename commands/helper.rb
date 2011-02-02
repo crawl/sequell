@@ -42,9 +42,9 @@ DGL_ALIEN_MORGUES = \
 DGL_ALIEN_TTYRECS = \
 [
  [ %r/cao-.*/, 'http://crawl.akrasiac.org/rawdata' ],
- [ %r/cdo.*$/, 'http://crawl.develz.org/ttyrecs' ],
+ [ %r/cdo.*$/, [ 'http://termcast.develz.org/ttyrecs',
+                 'http://crawl.develz.org/ttyrecs' ] ],
 
- # [ds] Temporarily disabled: rhf is down.
  [ %r/rhf.*-0.5$/, 'http://rl.heh.fi/crawl/stuff' ],
  [ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
  [ %r/rhf.*-0.7$/, 'http://rl.heh.fi/crawl-0.7/stuff' ],
@@ -493,20 +493,42 @@ def game_user_url(game, urlbase)
   urlbase + "/" + game['name'] + "/"
 end
 
-def ttyrec_list_string(game, url, ttyreclist)
+def game_user_urls(game, urlbases)
+  if urlbases.is_a?(Array)
+    urlbases.map { |u| game_user_url(game, u) }
+  else
+    game_user_url(game, urlbases)
+  end
+end
+
+def ttyrec_list_string(game, ttyreclist)
   if !ttyreclist || ttyreclist.empty?
-    nil
+    return nil
   elsif game['milestone'] && ttyreclist.length > 1
-    ttyrec_list_string(game, url, [ttyreclist[-1]])
+    return ttyrec_list_string(game, [ttyreclist[-1]])
   else
     spc = ttyreclist.length == 1 ? "" : " "
-    "#{url}#{spc}#{ttyreclist.join(" ")}"
+    if ttyreclist.length == 1 then
+      return ttyreclist[0].url
+    else
+      oldbase = nil
+      result = ''
+      for ttyrec in ttyreclist do
+        baseurl = ttyrec.baseurl
+        if oldbase != baseurl then
+          result << baseurl
+          oldbase = baseurl
+        end
+        result << " " << ttyrec.filename
+      end
+      return result
+    end
   end
 end
 
 def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
   require 'commands/httplist'
-  user_url = game_user_url(game, urlbase)
+  user_url = game_user_urls(game, urlbase)
   ttyrecs = HttpList::find_files(user_url, /[.]ttyrec/, tend) || [ ]
 
   sstart = tstart.strftime(SHORT_DATEFORMAT)
@@ -515,7 +537,7 @@ def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
   first_ttyrec_before_start = nil
   first_ttyrec_is_start = false
   found = ttyrecs.find_all do |ttyrec|
-    filetime = ttyrec_filename_datetime_string(ttyrec)
+    filetime = ttyrec_filename_datetime_string(ttyrec.filename)
     if (filetime && sstart && filetime < sstart)
       first_ttyrec_before_start = ttyrec
     end
@@ -543,7 +565,7 @@ def find_alien_ttyrecs(game)
   for pair in DGL_ALIEN_TTYRECS
     if game['file'] =~ pair[0]
       betw = resolve_alien_ttyrecs_between(pair[1], game, tty_start, tty_end)
-      return ttyrec_list_string(game, game_user_url(game, pair[1]), betw)
+      return ttyrec_list_string(game, betw)
     end
   end
   nil
