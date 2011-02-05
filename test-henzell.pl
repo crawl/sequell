@@ -222,7 +222,7 @@ sub parse_test($) {
   my %test;
   my $text = shift;
 
-  if ($text =~ /^\S\s*(.*)/) {
+  if ($text =~ /^\$\s*(.*)/) {
     $test{shell} = $1;
     return \%test;
   }
