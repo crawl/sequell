@@ -47,7 +47,7 @@ def delete_nicks(cmds)
       delete_src(cmds[0])
     else
       cmds[1 .. -1].each do |nick|
-        delete_dest(cmds[0], nick)
+        delete_dest_from(cmds[0], nick)
       end
     end
   end
@@ -82,26 +82,6 @@ def delete_dest_from(key, value)
   else
     NICK_ALIASES[key.downcase] = nil
     puts "Deleted #{mapping_desc}"
-  end
-end
-
-def delete_dest(srcnick, nick)
-  # List of nickmappings to modify:
-  todel = [ ]
-  for k, v in nick.entries do
-    todel << k if " #{v} " =~ / \Q#{nick}\E /i
-  end
-
-  delete_all = srcnick == '*'
-
-  todel.each do |n|
-    if delete_all then
-      delete_src(n)
-      break
-    else
-      delete_dest_from(n, nick)
-      break
-    end
   end
 end
 
