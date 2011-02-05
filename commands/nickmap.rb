@@ -37,15 +37,18 @@ end
 
 def add_nicks(from, *to)
   newnicks = unique_nicks((NICK_ALIASES[from] || '') + " " + to.join(" "))
-  puts "Mapping #{from} = #{newnicks}"
   NICK_ALIASES[from.downcase] = newnicks
+  puts "Mapping " + nickmap_string(from)
 end
 
 def delete_nicks(cmds)
   if not cmds.empty?
-    delete_src(cmds[0])
-    cmds[1 .. -1].each do |nick|
-      delete_dest(nick)
+    if cmds.size == 1 then
+      delete_src(cmds[0])
+    else
+      cmds[1 .. -1].each do |nick|
+        delete_dest(cmds[0], nick)
+      end
     end
   end
 end
@@ -55,18 +58,50 @@ def delete_src(nick)
 
   emap = NICK_ALIASES[nick.downcase]
   if emap && !emap.empty?
-    puts "Deleting mapping #{nick} = #{emap}"
+    puts "Deleting mapping #{nickmap_string(nick)}"
     NICK_ALIASES[nick.downcase] = nil
   end
 end
 
-def delete_dest(nick)
+def nickmap_string(key)
+  mapped_nicks = NICK_ALIASES[key]
+  if !mapped_nicks || mapped_nicks.empty?
+    return nil
+  else
+    "#{key} => #{mapped_nicks.join(' ')}"
+  end
+end
+
+def delete_dest_from(key, value)
+  emap = NICK_ALIASES[key.downcase]
+  mapping_desc = nickmap_string(key)
+  emap.remove(value)
+  if emap && !emap.empty?
+    NICK_ALIASES[key.downcase] = emap
+    puts "Deleted #{value} from #{mapping_desc}"
+  else
+    NICK_ALIASES[key.downcase] = nil
+    puts "Deleted #{mapping_desc}"
+  end
+end
+
+def delete_dest(srcnick, nick)
+  # List of nickmappings to modify:
   todel = [ ]
   for k, v in nick.entries do
     todel << k if " #{v} " =~ / \Q#{nick}\E /i
   end
+
+  delete_all = srcnick == '*'
+
   todel.each do |n|
-    delete_src(n)
+    if delete_all then
+      delete_src(n)
+      break
+    else
+      delete_dest_from(n, nick)
+      break
+    end
   end
 end
 
