@@ -8,7 +8,7 @@ if ENV['PRIVMSG'] == 'y'
   exit 1
 end
 
-help("Maps a nick to name(s) used on cao. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm . <dest>")
+help("Maps a nick to name(s) used on cao. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm <src> <dest>")
 
 def cmd_nicks(cmdline)
   rm = cmdline.find { |a| a == '-rm' }
@@ -54,9 +54,7 @@ def delete_nicks(cmds)
 end
 
 def delete_src(nick)
-  return if nick == '.'
-
-  emap = NICK_ALIASES[nick.downcase]
+  emap = get_nickmap_or_die(nick)
   if emap && !emap.empty?
     puts "Deleted #{nickmap_string(nick)}"
     NICK_ALIASES[nick.downcase] = nil
@@ -72,8 +70,14 @@ def nickmap_string(key)
   end
 end
 
+def get_nickmap_or_die(key)
+  nickmap = NICK_ALIASES[key.downcase]
+  die "No nick mapping for #{key}." unless nickmap
+  nickmap
+end
+
 def delete_dest_from(key, value)
-  emap = NICK_ALIASES[key.downcase]
+  emap = get_nickmap_or_die(key)
   mapping_desc = nickmap_string(key)
   emap = emap.split
   emap.delete(value) if emap
@@ -89,8 +93,12 @@ end
 args = ARGV[2].gsub("/", "").gsub("\\", "")
 cmdline = args.split()[1 .. -1]
 
-if not cmdline.empty?
-  load_nicks
-  cmd_nicks(cmdline)
-  save_nicks
+begin
+  if not cmdline.empty?
+    load_nicks
+    cmd_nicks(cmdline)
+    save_nicks
+  end
+rescue
+  puts $!
 end
