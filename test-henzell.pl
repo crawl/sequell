@@ -7,6 +7,7 @@ use File::stat;
 use Henzell::Cmd;
 
 $ENV{HENZELL_SQL_QUERIES} = 'y';
+$ENV{HENZELL_TEST} = 'y';
 
 require 'sqllog.pl';
 
@@ -220,6 +221,12 @@ sub trim($) {
 sub parse_test($) {
   my %test;
   my $text = shift;
+
+  if ($text =~ /^\S\s*(.*)/) {
+    $test{shell} = $1;
+    return \%test;
+  }
+
   if ($text =~ s/^E\s+(.*)/$1/) {
     $test{err} = 1;
   }
@@ -263,6 +270,17 @@ sub execute_cmd($) {
 
 sub execute_test($$) {
   my ($test, $logf) = @_;
+
+  if ($$test{shell}) {
+    my $output = qx/$$test{shell} 2>&1/;
+    print $logf <<TESTREPORT;
+SHELL EXEC: $$test{shell}
+Output:
+$output
+TESTREPORT
+    return;
+  }
+
   my ($exitcode, $output, $cmd) = execute_cmd($$test{line});
   $$test{cmdline} = $cmd;
   print $logf <<TESTREPORT;

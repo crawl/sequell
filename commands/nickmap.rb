@@ -58,7 +58,7 @@ def delete_src(nick)
 
   emap = NICK_ALIASES[nick.downcase]
   if emap && !emap.empty?
-    puts "Deleting mapping #{nickmap_string(nick)}"
+    puts "Deleted #{nickmap_string(nick)}"
     NICK_ALIASES[nick.downcase] = nil
   end
 end

@@ -12,7 +12,19 @@
 # !lg thispersondoesnotexist ::= No games for thispersondoesnotexist.
 #
 # If the command will fail, that can be specified by prefixing with 'E'
-# E !lg . malformed 
+# E !lg . malformed
+#
+# Any line starting with $ describes shell commands to run; the command will
+# be echoed to stderr; the command exit code will not be checked.
+
+$ rm nicks-test.map
+!nick src a b c ::= Mapping src => a b c
+!nick -rm src ::= Deleted src => a b c
+!nick src cow tao moo ::= Mapping src => cow tao moo
+!nick src zebra ::= Mapping src => cow tao moo zebra
+!nick -rm src tao ::= Deleted tao from src => cow tao moo zebra
+!nick -rm . moo ::= Deleted moo from src => cow moo zebra
+!nick -rm * zebra ::= Deleted src => cow moo zebra
 
 !lg
 !lg .
@@ -92,3 +104,4 @@
 E !gkills * deathonacow
 
 !gkills
+

@@ -74,7 +74,7 @@ rescue
 end
 
 NICK_ALIASES = { }
-NICKMAP_FILE = 'nicks.map'
+NICKMAP_FILE = ENV['HENZELL_TEST'] ? 'nicks-test.map' : 'nicks.map'
 $nicks_loaded = false
 
 $field_names.each do |field|
