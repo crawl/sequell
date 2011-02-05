@@ -214,7 +214,7 @@ sub build_test_db() {
 
 sub trim($) {
   my $text = shift;
-  s/^\s+//, s/\s+// for $text;
+  s/^\s+//, s/\s+$// for $text;
   $text
 }
 
@@ -282,6 +282,7 @@ TESTREPORT
   }
 
   my ($exitcode, $output, $cmd) = execute_cmd($$test{line});
+  chomp $output;
   $$test{cmdline} = $cmd;
   print $logf <<TESTREPORT;
 -----------------------------------------------------------------------
@@ -295,13 +296,13 @@ TESTREPORT
   my $err =
     $exitcode && !$$test{err}? "$cmd error:\n$output\n" :
     $$test{regex_match} && $output !~ /$$test{regex_match}/m?
-      ("Output does not contain expected match: " .
+      ("Output '$output' does not contain expected match: " .
        "$$test{regex_match}: $output") :
     $$test{regex_not_match} && $output =~ /$$test{regex_not_match}/m?
-      ("Output contains forbidden match: " .
+      ("Output '$output' contains forbidden match: " .
        "$$test{regex_not_match}: $output") :
     $$test{exact_match} && $output ne $$test{exact_match}?
-      ("Output does not exactly equal " .
+      ("Output '$output' does not exactly equal " .
        "expected '$$test{exact_match}': $output") :
     $$test{exact_not_match} && $output eq $$test{exact_not_match}?
       ("Output equals forbidden output '$$test{exact_not_match}" .
@@ -321,7 +322,7 @@ sub test_failure_report($) {
   my $test = $failure->{test};
   my $err = $failure->{failure};
   my $header = "--------------------------------------------------";
-  return ("$header\nTest: $$test{cmd}\nCommand line: $$test{cmdline}"
+  return ("$header\nTest: $$test{line}\nCommand line: $$test{cmdline}"
           . "\nError: $err\n$header\n");
 }
 
@@ -345,9 +346,20 @@ ENDBANNER
 ENDBANNER2
 }
 
+sub matches_argv_filter($) {
+  my $test = shift;
+  return scalar(grep($$test{line} =~ /^\Q$_/, @ARGV));
+}
+
+sub filter_tests(@) {
+  my @tests = @_;
+  return @tests unless @ARGV;
+  grep($$_{shell} || matches_argv_filter($_), @tests)
+}
+
 sub run_tests() {
   Henzell::Cmd::load_all_commands();
-  my @tests = read_tests();
+  my @tests = filter_tests(read_tests());
   announce "Running " . scalar(@tests) . " tests";
   open my $logf, '>', $TESTLOG or die "Can't write $TESTLOG: $!\n";
   for my $test (@tests) {

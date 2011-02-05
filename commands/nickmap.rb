@@ -68,16 +68,17 @@ def nickmap_string(key)
   if !mapped_nicks || mapped_nicks.empty?
     return nil
   else
-    "#{key} => #{mapped_nicks.join(' ')}"
+    "#{key} => #{mapped_nicks}"
   end
 end
 
 def delete_dest_from(key, value)
   emap = NICK_ALIASES[key.downcase]
   mapping_desc = nickmap_string(key)
-  emap.remove(value)
+  emap = emap.split
+  emap.delete(value) if emap
   if emap && !emap.empty?
-    NICK_ALIASES[key.downcase] = emap
+    NICK_ALIASES[key.downcase] = emap.join(' ')
     puts "Deleted #{value} from #{mapping_desc}"
   else
     NICK_ALIASES[key.downcase] = nil
