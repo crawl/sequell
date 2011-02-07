@@ -212,6 +212,7 @@ sub check_milestone_file
 
     if ($CONFIG{announce} && $ANNOUNCE_CHANNEL && $href->{server} eq $SERVER) {
       my $game_ref = demunge_xlogline($line);
+      return unless $game_ref;
       my $newsworthy = newsworthy($game_ref);
       my $devworthy = devworthy($game_ref);
 
@@ -267,6 +268,7 @@ sub tail_logfile
     add_logline($href, $startoffset, $line) if $CONFIG{sql_store};
 
     my $game_ref = demunge_xlogline($line);
+    return unless $game_ref;
     # If this is a local game, announce it.
     if ($CONFIG{announce} && $ANNOUNCE_CHANNEL
         && $href->{server} eq $CONFIG{host})

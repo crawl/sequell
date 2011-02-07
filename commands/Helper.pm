@@ -135,8 +135,7 @@ sub demunge_xlogline # {{{
 
   if (!defined(pos($line)) || pos($line) != length($line))
   {
-    my $pos = defined(pos($line)) ? "Problem started at position " . pos($line) . "." : "Regex doesn't match.";
-    die "Unable to demunge_xlogline($line).\n$pos";
+    return undef;
   }
 
   return \%game;
