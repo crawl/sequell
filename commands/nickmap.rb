@@ -38,7 +38,13 @@ end
 def add_nicks(from, *to)
   newnicks = unique_nicks((NICK_ALIASES[from] || '') + " " + to.join(" "))
   NICK_ALIASES[from.downcase] = newnicks
-  puts "Mapping " + nickmap_string(from)
+
+  mapping = nickmap_string(from)
+  if mapping
+    puts "Mapping " + nickmap_string(from)
+  else
+    puts "No nick mapping for #{from}."
+  end
 end
 
 def delete_nicks(cmds)
