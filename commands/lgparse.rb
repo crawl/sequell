@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 require 'rubygems'
 require 'treetop'
 require 'lg_node'
