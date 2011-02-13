@@ -1,3 +1,6 @@
+- New query builder:
+  - Construct query based on treetop parse tree.
+
 - Test setup for Henzell queries:
   - MySQL dump from Sequell - old games (keep only 2009 and newer games)
   - Load into test db
@@ -47,7 +50,7 @@
       expression; if no x=foo is specified, x=count is assumed.
 
     - exists/not exists subquery:
-         !lg * win !$e[[!lm * Lair match=name,rstart]]
+         !lg * win !$exists[[!lm * Lair match=name,rstart]]
       (finds Lairless wins)
 
 - New grammar -- error checking needed:
@@ -154,8 +157,8 @@ Different kinds of subqueries:
 - Correlated subquery: use match=field1,field2 to correlate on those field
   values.
 - Correlated subquery as expression: $[[ ]] <op> <val>
-- EXISTS subquery: exists[[ ]] (may also be correlated)
-- NOT EXISTS subquery: !exists[[ ]] (may also be correlated)
+- EXISTS subquery: $exists[[ ]] (may also be correlated)
+- NOT EXISTS subquery: !$exists[[ ]] (may also be correlated)
 
  Real query parser.
 

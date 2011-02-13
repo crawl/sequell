@@ -61,7 +61,7 @@ grammar ListgameQuery
   end
 
   rule nick_selector
-    negation? nickref_symbol? nick whitespace? !query_cmp_op <NickSelector>
+    negation? nick_match whitespace? !query_cmp_op <NickSelector>
   end
 
   rule query_keyword_or_index
@@ -84,8 +84,16 @@ grammar ListgameQuery
     "@" <NickDeref>
   end
 
-  rule nick
+  rule nick_match
+    nickref_symbol expansive_nick / restrictive_nick
+  end
+
+  rule expansive_nick
     ( [a-zA-Z0-9_+`'-]+ / "." / "*" ) <Nick>
+  end
+
+  rule restrictive_nick
+    ( [a-zA-Z_+`'] [a-zA-Z0-9_+`'-]* / "." / "*" ) <Nick>
   end
 
   rule query_part
@@ -109,7 +117,7 @@ grammar ListgameQuery
   end
 
   rule query_exists_subquery
-    negation? "$e" whitespace? query_subquery <ExistSubquery>
+    negation? "$exists" whitespace? query_subquery <ExistSubquery>
   end
   
   rule query_subquery_condition
