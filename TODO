@@ -1,5 +1,22 @@
 - New query builder:
-  - Construct query based on treetop parse tree.
+  - Construct query based on treetop parse tree
+  
+  - Simple query: return game:
+      !lg * defe win
+  - Simple aggregate: return aggregate
+      !lg * defe win x=avg(turn)
+  - Grouping query: return grouped results
+      !lg * defe win s=name
+  - Ratio aggregate:
+      !lg * defe / win x=avg(turn)
+  - Grouped ratio
+      !lg * defe s=name / win
+  - Simple query + -log
+      !lg * defe win -log
+  - Simple query + -tv
+      !lg * defe !win max=sc -tv
+  - Simple query + -ttyrec
+      !lg * defe !win max=sc -ttyrec
 
 - Test setup for Henzell queries:
   - MySQL dump from Sequell - old games (keep only 2009 and newer games)
@@ -14,6 +31,20 @@
   - Nth streak win for player.
   - Streak breaker flag.
 
+- Join resolution:
+  - Non-expression queries are always joins.
+  - If main query is !lg and join is !lm, default join condition is
+    start + name, and vice versa of !lm/!lg.
+  - If [[]] has s=foo, join condition is foo
+  - If [[]] has match=x,y,z join condition is all of those
+  - If [[]] has x=q:x y=q:y, join condition is on x, y
+  - A join without a join condition is an error.
+
+- Subqueries:
+  - Queries involved in expressions are always (possibly correlated) subqueries.
+  - Subqueries use the same mechanisms of join resolution -- perhaps provide
+    a way to get rid of implicit join conditions?
+  
 - Query construction:
   - Top-level query may be:
     - Standard game query, in which case select all game fields
@@ -104,6 +135,12 @@ Parser special cases:
    SELECT * FROM logrecord WHERE pname IN (
       SELECT pname FROM logrecord WHERE ktyp='winning' GROUP BY pname
       HAVING COUNT(*) > 3 );
+
+   SELECT * FROM
+     logrecord lg,
+     (SELECT pname FROM logrecord WHERE ktyp='winning' GROUP BY pname
+             HAVING count(*) > 3) lg2
+     WHERE lg.pname = lg2.pname
 
    !lg * [[ * win s=name ?: count > 3 ]]
      ^^ x=field is implied if no x=<foo> is specified and there's an s=field

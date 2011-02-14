@@ -1,8 +1,5 @@
 #!/usr/bin/ruby
-require 'rubygems'
-require 'treetop'
-require 'lg_node'
-require 'lg'
+require 'commands/sqlbuilder'
 
 parser = ListgameQueryParser.new
 
@@ -45,7 +42,8 @@ while true
     STDERR.puts("Parser error (#{parser.failure_index} :: #{parser.failure_reason}) at:\n#{x}\n" +
                 sprintf("%*s", parser.failure_index, "") + "^")
   else
-    puts "Parsed text: '#{x}' to:\n#{string_tree(QueryNode.resolve_node(tree))}"
+    query_node = SQLBuilder::QueryNode.resolve_node(tree)
+    puts "Parsed text: '#{x}' to:\n#{string_tree(query_node)}"
     #puts "Tree: #{tree.inspect}"
   end
 end
