@@ -70,12 +70,12 @@ sub pick_unwon_combo {
 }
 
 sub build_char_options { # {{{
-    open my $fh, "$source_dir/source/newgame.cc"
+    open my $fh, "$source_dir/source/ng-restr.cc"
         or error "Couldn't open newgame.cc for reading";
     my $role;
     my @found_races;
     while (<$fh>) {
-        if (/_class_allowed\(/ .. /^}/) {
+        if (/ job_allowed\(/ .. /^}/) {
             if (/case (JOB_\w+)/) {
                 $role = normalize_role $1;
             }
@@ -84,7 +84,7 @@ sub build_char_options { # {{{
                 $race = 'draconian' if $race && $race eq 'red draconian';
                 push @found_races, $race;
             }
-            elsif (/return CC_(\w+)/) {
+            elsif (/return \(CC_(\w+)\)/) {
                 my $type = lc $1;
                 if (@found_races) {
                     for my $race (@found_races) {
