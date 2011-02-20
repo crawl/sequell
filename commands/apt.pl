@@ -53,10 +53,15 @@ sub add_exp_apts { # {{{
 } # }}}
 
 sub skill_is_better($$$) {
-  my ($skill, $a, $b) = @_;
+  my ($skill, $ra, $rb) = @_;
+
+  my $a = $apts{$ra};
+  my $b = $apts{$rb};
 
   my $va = $a->{$skill};
   my $vb = $b->{$skill};
+  warn "No $skill for $ra\n" unless defined $va;
+  warn "No $skill for $rb\n" unless defined $vb;
   return ($skill eq 'experience'? $va < $vb : $va > $vb);
 }
 
@@ -65,7 +70,7 @@ sub is_best_apt { # {{{
     return 0 unless $race && $skill;
     for (@races) {
       no warnings 'uninitialized';
-      return 0 if skill_is_better($skill, $apts{$_}, $apts{$race});
+      return 0 if skill_is_better($skill, $_, $race);
     }
     return 1;
 } # }}}
@@ -74,7 +79,7 @@ sub is_worst_apt { # {{{
     return 0 unless $race && $skill;
     for (@races) {
       no warnings 'uninitialized';
-      return 0 if skill_is_better($skill, $apts{$race}, $apts{$_});
+      return 0 if skill_is_better($skill, $race, $_);
     }
     return 1;
 } # }}}
@@ -128,7 +133,8 @@ sub print_skill_apt { # {{{
     my ($skill, $sort) = @_;
     die "No skill name?" unless $skill;
     my @list = @races;
-    @list = sort @list if !defined $sort || $sort eq 'alpha';
+    @list = sort { lc(short_race($a)) cmp lc(short_race($b)) } @list
+      if !defined $sort || $sort eq 'alpha';
     my @out;
     for (@list) {
         push @out, (short_race $_) . ': ' . (apt $_, $skill);
@@ -137,7 +143,7 @@ sub print_skill_apt { # {{{
 } # }}}
 
 # get the aptitudes out of the source file
-%apts = parse_apt_file "$source_dir/source/skills2.cc";
+%apts = parse_apt_file "$source_dir/source/aptitudes.h";
 %apts = add_exp_apts \%apts, "$source_dir/source/player.cc";
 # get the request
 my @words = split ' ', strip_cmdline $ARGV[2];
