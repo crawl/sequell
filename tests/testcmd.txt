@@ -80,6 +80,8 @@ $ rm nicks-test.map
 !lg * s=ckiller
 !lg qwqw D:10 -log
 
+!lg * Vaults
+
 !lg @78291 Zot 1 -log
 
 !lm * orb min=turn -tv

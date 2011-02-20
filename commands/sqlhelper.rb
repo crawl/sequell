@@ -1,31 +1,29 @@
 #!/usr/bin/ruby
 
+exit(0) if !ENV['HENZELL_SQL_QUERIES']
+
 require 'dbi'
 require 'commands/helper'
 require 'set'
-
-exit(0) if !ENV['HENZELL_SQL_QUERIES']
+require 'yaml'
 
 DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
 DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
 DBPASS = ENV['HENZELL_DBPASS'] || ''
 
+LG_CONFIG_FILE = 'commands/lg-cfg.yml'
+
+CFG = YAML.load_file(LG_CONFIG_FILE)
+
 # Don't use more than this much memory (bytes)
 MAX_MEMORY_USED = 768 * 1024 * 1024
 Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
 
-GAME_CRAWL = 'crawl'
+GAME_TYPE_DEFAULT = CFG['default-game-type']
 GAME_SPRINT = 'sprint'
-GAME_ZOTDEF = 'zotdef'
-GAMES = [GAME_CRAWL, GAME_SPRINT, GAME_ZOTDEF]
-
-TOURNEY_SPRINT_MAP = { 2010 => 'dungeon sprint mu' }
-
-GAME_PREFIXES = {
-  GAME_CRAWL => '',
-  GAME_SPRINT => 'spr_',
-  GAME_ZOTDEF => 'zot_'
-}
+GAMES = CFG['game-type-prefixes'].keys
+GAME_PREFIXES = CFG['game-type-prefixes']
+TOURNEY_SPRINT_MAP = CFG['tournament-sprint-map']
 
 OPERATORS = {
   '==' => '=', '!==' => '!=',
@@ -52,104 +50,21 @@ FILTER_PATTERN =
 
 # List of abbreviations for branches that have depths > 1. This includes
 # fake branches such as the Ziggurat.
-DEEP_BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
-                   Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig/
+DEEP_BRANCHES = CFG['branches-with-depth']
+BRANCHES = CFG['branches']
 
-BRANCHES = %w/D Orc Elf Lair Swamp Shoal Shoals Slime Snake Hive
-              Vault Crypt Tomb Dis Geh Coc Tar Zot Ziggurat Zig
-              Lab Pan Bazaar Bzr Hell Blade Temple Abyss Sprint/
+GODABBRS = CFG['god'].keys
+GODMAP = CFG['god']
 
-GODABBRS = %w/ash zin tso kik yre xom veh oka
-              mak sif trog nem ely lug beo fed jiy che/
-GODMAP = {
-  'ash'  => 'Ashenzari',
-  'tso'  => 'The Shining One',
-  'kik'  => 'Kikubaaqudgha',
-  'yre'  => 'Yredelemnul',
-  'veh'  => 'Vehumet',
-  'oka'  => 'Okawaru',
-  'mak'  => 'Makhleb',
-  'nem'  => 'Nemelex Xobeh',
-  'ely'  => 'Elyvilon',
-  'lug'  => 'Lugonu',
-  'beo'  => 'Beogh',
-  'fed'  => 'Fedhas',
-  'jiy'  => 'Jiyva',
-  'che'  => 'Cheibriados'
-}
-
-SOURCES = %w/cao cdo rhf/
+SOURCES = CFG['sources']
 
 BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
-
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })
 
-BOOL_FIELDS =%w/splat alpha/
+CLASS_EXPANSIONS = CFG['classes']
+RACE_EXPANSIONS = CFG['species']
 
-CLASS_EXPANSIONS = {
-  "Fi" => "Fighter",
-  "Wz" => "Wizard",
-  "Pr" => "Priest",
-  "Th" => "Thief",
-  "Gl" => "Gladiator",
-  "Ne" => "Necromancer",
-  "Pa" => "Paladin",
-  "As" => "Assassin",
-  "Ar" => "Artificer",
-  "AM" => "Arcane Marksman",
-  "Be" => "Berserker",
-  "Hu" => "Hunter",
-  "Cj" => "Conjurer",
-  "En" => "Enchanter",
-  "FE" => "Fire Elementalist",
-  "IE" => "Ice Elementalist",
-  "Su" => "Summoner",
-  "AE" => "Air Elementalist",
-  "EE" => "Earth Elementalist",
-  "Cr" => "Crusader",
-  "DK" => "Death Knight",
-  "VM" => "Venom Mage",
-  "CK" => "Chaos Knight",
-  "Tm" => "Transmuter",
-  "He" => "Healer",
-  "Re" => "Reaver",
-  "St" => "Stalker",
-  "Mo" => "Monk",
-  "Wr" => "Warper",
-  "Wn" => "Wanderer"
-}
-
-RACE_EXPANSIONS = {
-  'Hu' => 'Human',
-  'El' => 'Elf',
-  'HE' => 'High Elf',
-  'GE' => 'Grey Elf',
-  'DE' => 'Deep Elf',
-  'DD' => 'Deep Dwarf',
-  'SE' => 'Sludge Elf',
-  'HD' => 'Hill Dwarf',
-  'MD' => 'Mountain Dwarf',
-  'Fe' => 'Felid',
-  'Ha' => 'Halfling',
-  'HO' => 'Hill Orc',
-  'Ko' => 'Kobold',
-  'Mu' => 'Mummy',
-  'Na' => 'Naga',
-  'Gn' => 'Gnome',
-  'Og' => 'Ogre',
-  'Tr' => 'Troll',
-  'OM' => 'Ogre-Mage',
-  'Dr' => 'Draconian',
-  'Ce' => 'Centaur',
-  'DG' => 'Demigod',
-  'Sp' => 'Spriggan',
-  'Mi' => 'Minotaur',
-  'DS' => 'Demonspawn',
-  'Gh' => 'Ghoul',
-  'Ke' => 'Kenku',
-  'Mf' => 'Merfolk',
-  'Vp' => 'Vampire'
-}
+BOOL_FIELDS = CFG['boolean-fields']
 
 [ CLASS_EXPANSIONS, RACE_EXPANSIONS ].each do |hash|
   hash.keys.each do |key|
@@ -163,45 +78,16 @@ CLOSE_PAREN = '))'
 BOOLEAN_OR = '||'
 BOOLEAN_OR_Q = Regexp.quote(BOOLEAN_OR)
 
-COLUMN_ALIASES = {
-  'role' => 'cls', 'class' => 'cls', 'species' => 'race',
-  'ktype' => 'ktyp', 'score' => 'sc', 'turns' => 'turn',
-  'skill' => 'sk',
-  'ch' => 'char', 'r' => 'race', 'c' => 'cls', 'sp' => 'race',
-  'cl' => 'xl', 'clev' => 'xl', 'type' => 'verb', 'gid' => 'game_id'
-}
+COLUMN_ALIASES = CFG['column-aliases']
 
-AGGREGATE_FUNC_TYPES = {
-  'cdist' => '*',
-  'avg' => 'I',
-  'max' => '*',
-  'min' => '*',
-  'sum' => 'I',
-  'std' => 'I',
-  'variance' => 'I'
-}
+AGGREGATE_FUNC_TYPES = CFG['aggregate-function-types']
 
-LOGFIELDS_DECORATED = %w/idI file alpha src v cv lv scI name uidI race crace cls
-  char xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux
-  place br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI
-  startD endD durI turnI uruneI nruneI tmsg vmsg splat rstart rend ntvI
-  map mapdesc/
-
-MILEFIELDS_DECORATED = %w/game_idI idI file alpha src v cv name race crace cls
-                          char xlI
-                          sk sklevI title place br lvlI ltyp
-                          hpI mhpI mmhpI strI intI dexI
-                          god durI turnI uruneI nruneI timeD rtime rstart
-                          verb noun milestone ntvI oplace/
-
-FAKEFIELDS_DECORATED = %w/when/
+LOGFIELDS_DECORATED = CFG['logfields-with-type']
+MILEFIELDS_DECORATED = CFG['milefields-with-type']
+FAKEFIELDS_DECORATED = CFG['fakefields-with-type']
 
 LOGFIELDS_SUMMARISABLE =
-  Hash[ * (%w/v name race cls char xl sk sklev title ktyp place br lvl ltyp
-              killer ikiller god urune nrune src str int dex kaux ckiller cv
-              ckaux crace kmod splat dam hp mhp mmhp piety pen alpha ntv
-              map mapdesc/.
-             map { |x| [x, true] }.flatten) ]
+  Hash[ *(CFG['logfields-summarisable'].map { |x| [x, true] }.flatten) ]
 
 # Never fetch more than 5000 rows, kthx.
 ROWFETCH_MAX = 5000
@@ -210,12 +96,11 @@ LOGFIELDS = { }
 MILEFIELDS = { }
 FAKEFIELDS = { }
 
-MILE_TYPES = %w/abyss.enter abyss.exit rune orb ghost ghost.ban
-                uniq uniq.ban br.enter br.end god.mollify god.renounce
-                god.worship shaft crash monstrous/
+MILE_TYPES = CFG['milestone-types']
 
-TOURNEY_PREFIXES = %w/t tourney tournament/
-TOURNEY_VERSIONS = { 2008 => '0.4', 2009 => '0.5', 2010 => '0.7' }
+TOURNEY_PREFIXES = CFG['tournament-prefixes']
+TOURNEY_VERSIONS = CFG['tournament-versions']
+
 TOURNEY_REGEXES = TOURNEY_PREFIXES.map { |p| %r/^(#{p})(\d*)$/i }
 
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
@@ -258,17 +143,7 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
   end
 end
 
-LOG2SQL = {
-  'name' => 'pname',
-  'char' => 'charabbrev',
-  'str' => 'sstr',
-  'dex' => 'sdex',
-  'int' => 'sint',
-  'start' => 'tstart',
-  'end' => 'tend',
-  'time' => 'ttime',
-  'map' => 'mapname'
-}
+LOG2SQL = CFG['sql-field-names']
 
 (LOGFIELDS_DECORATED + MILEFIELDS_DECORATED).each do |x|
   LOG2SQL[x.name] = x.name unless LOG2SQL[x.name]
@@ -283,7 +158,7 @@ MILEFIELDS_SUMMARISABLE = \
 end
 
 module GameContext
-  @@game = GAME_CRAWL
+  @@game = GAME_TYPE_DEFAULT
 
   def self.with_game(game)
     begin
@@ -382,7 +257,7 @@ class QueryContext
     @table = table
     @entity_name = entity_name
     @alt = alt
-    @game = GAME_CRAWL
+    @game = GAME_TYPE_DEFAULT
 
     if @table =~ / (\w+)$/
       @table_alias = $1
@@ -1979,14 +1854,24 @@ def query_field(selector, field, op, sqlop, val)
     val = CLASS_EXPANSIONS[val.downcase] || val
   end
 
-  if (selfield == 'place' and val =~ /^shoals?:(.*)/i and
-      ['=', '!=', '=~', '!~'].index(op)) then
-    val = $1
-    inclusive = op.index('=') == 0
-    clause = [inclusive ? 'OR' : 'AND']
-    clause << field_pred("Shoal:#{val}", sqlop, selector, field)
-    clause << field_pred("Shoals:#{val}", sqlop, selector, field)
-    return clause
+  if (selfield == 'place' and ['=', '!=', '=~', '!~'].index(op)) then
+    place_fixups = CFG['place-fixups']
+    for place_fixup_match in place_fixups.keys do
+      regex = %r/#{place_fixup_match}/i
+      if val =~ regex then
+        replacement = place_fixups[place_fixup_match]
+        replacement = [replacement] unless replacement.is_a?(Array)
+        values = replacement.map { |r|
+          val.sub(regex, r.sub(%r/\$(\d)/, '\\\1'))
+        }
+        inclusive = op.index('=') == 0
+        clause = [inclusive ? 'OR' : 'AND']
+        for value in values do
+          clause << field_pred(value, sqlop, selector, field)
+        end
+        return clause
+      end
+    end
   end
 
   if selfield == 'when'
@@ -2011,7 +1896,7 @@ def query_field(selector, field, op, sqlop, val)
 
       tstart = "#{year}0701"
       tend   = "#{year}0801"
-      tstart = "#{year}0715" if GameContext.game == GAME_SPRINT
+      tstart = "#{year}0715" if GameContext.game != GAME_SPRINT
 
       if $CTX == CTX_LOG
         clause << query_field('rstart', 'rstart', lop, lop, tstart)
@@ -2096,13 +1981,13 @@ end
 def game_negated_match(game, arg, found=nil)
   return [game, found] if found
   if arg =~ /^!/ && GAMES[1..-1].index(arg[1..-1])
-    return [GAME_CRAWL, true]
+    return [GAME_TYPE_DEFAULT, true]
   end
   return [game, nil]
 end
 
 def extract_game_type(args)
-  game = GAME_CRAWL
+  game = GAME_TYPE_DEFAULT
   (0 ... args.size).each do |i|
     dcarg = args[i].downcase
     game, found = game_direct_match(game, dcarg)
