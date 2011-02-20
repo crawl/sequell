@@ -1,27 +1,24 @@
 #!/usr/bin/perl
 
-# use strict;
-# use warnings;
+use strict;
+use warnings;
 
-do 'commands/helper.pl';
+use lib 'commands';
+use Helper qw/short_race short_role/;
 
-help("Abbreviates race/role abbreviations. Example usage: !ftw Troll Berserker");
+Helper::help("Abbreviates race/role abbreviations. " .
+             "Example usage: !ftw Troll Berserker");
 
 sub race_lookup {
 	my $key = lc(shift);
-	my $i;
-	for($i=0; $i<@races; $i++) {
-		return $races_abbrev[$i] if (lc($races[$i]) eq $key);
-	}
-	return '';
+        my $abbr = short_race($key) || '';
+        # Discard draconian qualifiers:
+        $abbr =~ s/\[.*?\]// if $abbr;
+        $abbr
 }
 sub role_lookup {
 	my $key = lc(shift);
-	my $i;
-	for($i=0; $i<@roles; $i++) {
-		return $roles_abbrev[$i] if (lc($roles[$i]) eq $key);
-	}
-	return '';
+        return short_role($key) || '';
 }
 
 sub ftw {

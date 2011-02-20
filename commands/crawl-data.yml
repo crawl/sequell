@@ -481,3 +481,7 @@ sql-field-names:
   end: tend
   time: ttime
   map: mapname
+
+wtf-lookup:
+  greensnark: The completely awesome variety of snark.
+  tgwi: The Good Wife (according to Wikipedia)

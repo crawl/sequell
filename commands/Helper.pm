@@ -216,7 +216,7 @@ sub normalize_race { # {{{
 sub short_race { # {{{
     my $race = shift;
     $race = normalize_race $race;
-    return $short_races{$race};
+    return $short_races{$race || ''};
 } # }}}
 sub code_race { # {{{
     my $race = shift;
@@ -267,7 +267,7 @@ sub normalize_role { # {{{
 sub short_role { # {{{
     my $role = shift;
     $role = normalize_role $role;
-    return $short_roles{$role};
+    return $short_roles{$role || ''};
 } # }}}
 sub code_role { # {{{
     my $role = shift;

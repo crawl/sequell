@@ -1,11 +1,9 @@
 #!/usr/bin/python
 import sys, string
 import re
-from helper import *
+import helper
 
-help("Expands race/role abbreviations. Example usage: !wtf TrBe")
-#ABBREV_FILE = 'abbrev.txt'
-ABBREV_FILE = ''
+helper.help("Expands race/role abbreviations. Example usage: !wtf TrBe")
 
 def expand_any(what, lookup, expanded):
     if what in lookup:
@@ -18,10 +16,10 @@ def expand_any(what, lookup, expanded):
     return None
 
 def expand_race(what):
-    return expand_any(what, races_abbrev, races)
+    return expand_any(what, helper.SPECIES_ABBR, helper.SPECIES)
 
 def expand_role(what):
-    return expand_any(what, roles_abbrev, roles)
+    return expand_any(what, helper.ROLES_ABBR, helper.ROLES)
 
 def expand(what):
     if what == '': return [ 'WTF?' ]
@@ -65,23 +63,9 @@ def add_abbrev(abbr, what, who):
 
 def do_abbrv_thing(what, who):
     what = ' '.join(what.split(' ')[1:])
-    if what == 'greensnark':
-        return [ "The completely awesome variety of snark." ]
-    if ABBREV_FILE:
-        abbr = load_abbrevs(ABBREV_FILE)
-
-        if what.lower() in abbr:
-            return [ abbr[what.lower()] ];
-
-        if '=' in what:
-            add_abbrev(abbr, what, who)
-            try:
-                save_abbrevs(ABBREV_FILE, abbr)
-            except IOError:
-                return [ "Couldn't note that." ]
-            else:
-                return [ "Okeydoke." ]
-
+    canned_abbreviations = helper.CFG['wtf-lookup']
+    if what.lower() in canned_abbreviations:
+        return [ canned_abbreviations[what.lower()] ]
     return expand(what)
 
 if __name__ == '__main__':
