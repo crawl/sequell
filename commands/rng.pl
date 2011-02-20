@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use lib 'commands';
-use Helper qw/:DEFAULT :roles :races :gods unwon_combos/;
+use Helper qw/:DEFAULT :roles :races :gods/;
 
 help("Chooses randomly between its (space-separated) arguments. Accepts \@god, \@char, \@role, and \@race special arguments. Prefixing the special argument with 'good' or 'bad' limits the choices to only unrestricted or only restricted combos, respectively. \@role=<role> or \@race=<race> chooses a random combo with the specified role/race.");
 
@@ -70,14 +70,15 @@ sub pick_unwon_combo {
 }
 
 sub build_char_options { # {{{
-    open my $fh, "$source_dir/source/ng-restr.cc"
-        or error "Couldn't open newgame.cc for reading";
+    my $char_file = "$source_dir/source/ng-restr.cc";
+    open my $fh, '<', $char_file
+        or error "Couldn't open $char_file for reading";
     my $role;
     my @found_races;
     while (<$fh>) {
         if (/ job_allowed\(/ .. /^}/) {
             if (/case (JOB_\w+)/) {
-                $role = normalize_role $1;
+                $role = normalize_role($1) || '';
             }
             elsif (/case (SP_\w+)/) {
                 my $race = normalize_race $1;
@@ -125,9 +126,9 @@ sub random_char { # {{{
     my ($race, $role);
     {
         ($race, $role) = ($args{race}, $args{role});
-        $race = lc random_race unless defined $race;
-        $role = lc random_role unless defined $role;
-        redo if $chars{$role}{$race} eq 'banned';
+        $race = lc random_race unless $race;
+        $role = lc random_role unless $role;
+        redo if !$role || !$race || $chars{$role}{$race} eq 'banned';
         if (exists $args{good}) {
             if ($args{good}) {
                 redo if $chars{$role}{$race} eq 'restricted';
@@ -142,9 +143,6 @@ sub random_char { # {{{
 sub special_choice { # {{{
     my $special = shift;
     build_char_options;
-    return pick_unwon_combo() if $special eq '@unwon';
-    return pick_unwon_combo(filter => $1)
-      if lc($special) =~ /^\@unwon;(.*)$/;
     return random_race if $special eq '@race';
     return random_role if $special eq '@role';
     return random_god  if $special eq '@god';

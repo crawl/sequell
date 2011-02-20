@@ -1,8 +1,18 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
+
 package Helper;
+
 use base 'Exporter';
+
+use YAML::Any qw/LoadFile/;
+use Data::Dumper;
+
+my $CONFIG_FILE = 'commands/lg-cfg.yml';
+
+our $CFG = LoadFile($CONFIG_FILE);
+
 our @EXPORT = qw/$source_dir error help strip_cmdline/;
 our @EXPORT_OK = qw/$logfile demunge_logline demunge_xlogline munge_game
                     games_for
@@ -22,13 +32,6 @@ our %EXPORT_TAGS = (
     gods    => [grep /god/,   @EXPORT_OK],
 );
 
-my @DEAD_RACES = qw/El HD Gn GE XX OM/;
-my @BAD_COMBOS = qw/GhPa DGBe/;
-my %DEAD_RACES = map(($_ => 1), @DEAD_RACES);
-my %BAD_COMBOS = map(($_ => 1), @BAD_COMBOS);
-
-my $UNWON_FILE = '/var/www/crawl/unwon.txt';
-#my $UNWON_FILE = 'unwon.txt';
 my $NICKMAP_FILE = 'nicks.map';
 my %NICK_ALIASES;
 my $nick_aliases_loaded;
@@ -36,86 +39,8 @@ my $nick_aliases_loaded;
 # useful variables {{{
 #our $source_dir = '/home/doy/coding/src/stone_soup-release/crawl-ref';
 our $source_dir = 'current';
-our $logfile    = '/var/www/crawl/allgames.txt';
 # }}}
 
-# logfile parsing {{{
-{
-my @field_names = qw/v lv name uid race cls xl sk sklev title place br lvl
-                     ltyp hp mhp mmhp str int dex start dur turn sc ktyp
-                     killer kaux end tmsg vmsg god piety pen char nrune urune/;
-
-my @roles_abbrev = qw/Fi Wz Pr Th Gl Ne Pa As Be Hu Cj En FE IE Su AE EE Cr DK
-                      VM CK Tm He XX Re St Mo Wr Wn Ar AM/;
-my @races_abbrev = qw/XX Hu El HE GE DE SE HD MD Ha HO Ko Mu Na Gn Og Tr OM Dr
-                      Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Dr Ce DG Sp Mi DS Gh Ke Mf DD/;
-
-my @roles = (
-  'fighter', 'wizard', 'priest', 'thief', 'gladiator', 'necromancer',
-  'paladin', 'assassin', 'berserker', 'hunter', 'conjurer', 'enchanter',
-  'fire elementalist', 'ice elementalist', 'summoner', 'air elementalist',
-  'earth elementalist', 'crusader', 'death knight', 'venom mage',
-  'chaos knight', 'transmuter', 'healer', 'quitter', 'reaver', 'stalker',
-  'monk', 'warper', 'wanderer', 'artificer'
-);
-
-my @races = (
-  'null', 'human', 'elf', 'high elf', 'grey elf', 'deep elf', 'sludge elf',
-  'hill dwarf', 'mountain dwarf', 'halfling', 'hill orc', 'kobold', 'mummy',
-  'naga', 'gnome', 'ogre', 'troll', 'ogre mage', 'red draconian',
-  'white draconian', 'green draconian', 'yellow draconian', 'grey draconian',
-  'black draconian', 'purple draconian', 'mottled draconian', 'pale draconian',
-  'unk0 draconian', 'unk1 draconian', 'base draconian', 'centaur', 'demigod',
-  'spriggan', 'minotaur', 'demonspawn', 'ghoul', 'kenku', 'merfolk', 'deep dwarf'
-);
-
-my @death_method = (
-  'killed by a monster',
-  'succumbed to poison',
-  'engulfed by something',
-  'killed by a beam',
-  'stepped on Death\'s door', #deprecated apparently
-  'took a swim in molten lava',
-  'drowned',
-  'forgot to breathe',
-  'collapsed under their own weight',
-  'slipped on a banana peel',
-  'killed by a trap',
-  'got out of the dungeon',
-  'escaped with the Orb',
-  'quit the game',
-  'was drained of all life',
-  'starved to death',
-  'froze to death',
-  'burnt to a crisp',
-  'killed by wild magic',
-  'killed for Xom\'s enjoyment',
-  'killed by a statue',
-  'rotted away',
-  'killed themself with bad targetting',
-  'killed by an exploding spore',
-  'smote by The Shining One',
-  'turned to stone',
-  '<deprecated>',
-  'died somehow',
-  'fell down a flight of stairs',
-  'splashed by acid',
-  'asphyxiated',
-  'melted into a puddle',
-  'bled to death',
-);
-
-sub demunge_logline # {{{
-{
-  my $line = shift;
-  my %game;
-
-  $line = substr($line, 1, -1); #remove leading and trailing :
-
-  @game{@field_names} = split /:/, $line;
-
-  return \%game;
-} # }}}
 sub demunge_xlogline # {{{
 {
   my $line = shift;
@@ -140,88 +65,29 @@ sub demunge_xlogline # {{{
 
   return \%game;
 } # }}}
-sub munge_game # {{{
-# DOES THIS WORK? XXX I haven't tested it, and its not in a script yet, so who
-# cares? :)
-{
-  my $game_ref = shift;
-  my %game = %{$game_ref};
-  return join ':', map {my ($k, $v) = ($_, $game{$_}); for ($k, $v) {s/:/::/g } "$k=$v"} keys %game;
-  #return ':' . join(':', map {$game_ref->{$_}} @field_names) . ':';
-} # }}}
-sub games_for # {{{
-{
-  my $nick = lc(shift);
-  my $regex = qr/:name=$nick:/i;
-  my @games;
-
-  open my $handle, '<', $logfile or warn "Unable to open $logfile: $!";
-  while (<$handle>)
-  {
-    chomp;
-    if ($_ =~ $regex)
-    {
-      my $game_ref = demunge_xlogline($_);
-      push @games, $game_ref if lc($game_ref->{name}) eq $nick;
-    }
-  }
-
-  return \@games;
-} # }}}
-}
 # }}}
 
 # race/role/skill munging {{{
 # skills {{{
 # skill list {{{
-our @skills = (
-    'fighting', 'short blades', 'long blades', 'axes', 'maces & flails',
-    'polearms', 'staves', 'slings', 'bows', 'crossbows', 'throwing',
-    'armour', 'dodging', 'stealth', 'stabbing', 'shields', 'traps & doors',
-    'unarmed combat', 'spellcasting', 'conjurations', 'enchantments',
-    'summonings', 'necromancy', 'translocations', 'transmutations',
-    'fire magic', 'ice magic', 'air magic', 'earth magic',
-    'poison magic', 'invocations', 'evocations', 'experience',
-); # }}}
+our @skills = map(lc, @{$CFG->{skills}});
+
 # skill names used by the code {{{
 my %code_skills = map {
     my $s = $_;
     $s =~ s/[ &]+/_/g;
     ($_, "SK_" . uc $s)
 } @skills;
-# }}}
-# short skills {{{
+
 my %short_skills = map { ($_, ucfirst((split(' ', $_))[0])) } @skills;
-$short_skills{'crossbows'}      = 'Xbows';
-$short_skills{'throwing'}       = 'Throw';
-$short_skills{'dodging'}        = 'Dodge';
-$short_skills{'stabbing'}       = 'Stab';
-$short_skills{'spellcasting'}   = 'Splcast';
-$short_skills{'conjurations'}   = 'Conj';
-$short_skills{'enchantments'}   = 'Ench';
-$short_skills{'summonings'}     = 'Summ';
-$short_skills{'necromancy'}     = 'Nec';
-$short_skills{'translocations'} = 'Tloc';
-$short_skills{'transmutations'} = 'Tmut';
-$short_skills{'divinations'}    = 'Div';
-$short_skills{'invocations'}    = 'Inv';
-$short_skills{'evocations'}     = 'Evo';
-$short_skills{'experience'}     = 'Exp';
-# }}}
+%short_skills = (%short_skills, %{$CFG->{'skill-abbreviations'}});
+
 # skill normalization {{{
-my %normalize_skill = (
-    (map { ($_, $_) } @skills),
-    (map { lc } (reverse %code_skills)),
-    (map { lc } (reverse %short_skills)),
-    pois     => 'poison magic',
-    flails   => 'maces & flails',
-    invo     => 'invocations',
-    necro    => 'necromancy',
-    tmut => 'transmutations',
-    doors    => 'traps & doors',
-    armor    => 'armour',
-    uc       => 'unarmed combat',
-); # }}}
+my %normalize_skill = ((map { ($_, $_) } @skills),
+                       (map { lc } (reverse %code_skills)),
+                       (map { lc } (reverse %short_skills)),
+                       %{$CFG->{'skill-expansions'}});
+
 sub normalize_skill { # {{{
     my $skill = shift;
     $skill = lc $skill;
@@ -247,30 +113,57 @@ sub display_skill { # {{{
 # }}}
 # races {{{
 # draconians {{{
-my @drac_colors = qw/red white green yellow grey black purple mottled pale/;
+my @drac_colors = @{$CFG->{'species-flavours'}{draconian}};
 # }}}
 sub is_valid_drac_color { # {{{
     my $color = shift;
     return (grep { $_ eq $color } @drac_colors) > 0;
 } # }}}
 # race list {{{
-our @races = (
-    'human', 'high elf', 'deep elf', 'sludge elf',
-    'mountain dwarf', 'halfling', 'hill orc', 'kobold', 'mummy', 'naga',
-    'ogre', 'troll',
-    (map { "$_ draconian" } @drac_colors),
-    'base draconian', 'centaur', 'demigod', 'spriggan', 'minotaur',
-    'demonspawn', 'ghoul', 'kenku', 'merfolk', 'vampire', 'deep dwarf',
-    'felid'
-);
+
+sub species_flavours($) {
+  my $species = shift;
+  my $species_flavours = $CFG->{'species-flavours'};
+  if ($$species_flavours{lc $species}) {
+    my @flavours = @{$$species_flavours{lc $species}};
+    return map("$_ $species", @flavours)
+  } else {
+    return $species;
+  }
+}
+
+our %dead_species = map((lc($CFG->{species}{$_}), 1), @{$$CFG{'dead-species'}});
+
+sub find_species_list() {
+  my @species = values %{$CFG->{species}};
+  map(species_flavours($_), grep(!$dead_species{$_}, map(lc, @species)))
+}
+
+our @races = find_species_list();
+
 # }}}
 # genuses {{{
-my %genus_map = (
-    GENPC_DRACONIAN => [map { "$_ draconian" } (@drac_colors, "base")   ],
-    GENPC_ELVEN     => [map { "$_ elf"       } qw/high grey deep sludge/],
-    GENPC_DWARVEN   => ['mountain dwarf', 'deep dwarf'],
-    GENPC_OGRE      => [qw/ogre/],
-);
+
+sub resolve_species_list($) {
+  my $species = shift;
+  if (ref $species) {
+    return [ map(species_flavours($_), @$species) ];
+  } else {
+    return [ species_flavours($species) ];
+  }
+}
+
+sub build_genus_species_map() {
+  my %genus_map;
+  my %genus_species = %{$CFG->{'genus-species'}};
+  for my $genus (keys %genus_species) {
+    $genus_map{"GENPC_\U$genus"} = resolve_species_list($genus_species{$genus});
+  }
+  %genus_map
+}
+
+my %genus_map = build_genus_species_map();
+
 # }}}
 # race names used by the code {{{
 my %code_races = map {
@@ -278,20 +171,29 @@ my %code_races = map {
     $r =~ tr/ -/__/;
     ($_, "SP_" . uc $r)
 } @races;
-$code_races{'felid'} = "SP_CAT";
+
+%code_races = (%code_races, %{$CFG->{'species-enum-map-override'}});
+
 # }}}
 # short race names {{{
-my %short_races = map {
-    my @r = split /[ -]/;
-    ($_, @r == 1 ? ucfirst (substr $_, 0, 2) :
-                   uc (substr $r[0], 0, 1) . uc (substr $r[1], 0, 1))
-} @races;
-$short_races{'demigod'}        = 'DG';
-$short_races{'demonspawn'}     = 'DS';
-$short_races{'merfolk'}        = 'Mf';
-$short_races{'vampire'}        = 'Vp';
-$short_races{'base draconian'} = 'Dr';
-$short_races{"$_ draconian"}   = "Dr[$_]" for @drac_colors;
+
+my %race_map = %{$CFG->{species}};
+delete @race_map{@{$$CFG{'dead-species'}}};
+
+my %short_races;
+@short_races{map(lc, values %race_map)} = keys %race_map;
+
+for my $race_name (keys %short_races) {
+  my $abbr = $short_races{$race_name};
+  my $flavours = $CFG->{'species-flavours'}{$race_name};
+  if ($flavours) {
+    for my $flavour (@$flavours) {
+      my $flavoured_abbr = $flavour ne 'base'? "$abbr\[$flavour]" : $abbr;
+      $short_races{"$flavour $race_name"} = $flavoured_abbr;
+    }
+  }
+}
+
 # }}}
 # race normalization {{{
 my %normalize_race = (
@@ -331,15 +233,10 @@ sub display_race { # {{{
 # }}}
 # roles {{{
 # role list {{{
-our @roles = (
-    'fighter', 'wizard', 'priest', 'gladiator', 'necromancer',
-    'assassin', 'berserker', 'hunter', 'conjurer', 'enchanter',
-    'fire elementalist', 'ice elementalist', 'summoner', 'air elementalist',
-    'earth elementalist', 'crusader', 'venom mage',
-    'chaos knight', 'transmuter', 'healer', 'stalker', 'monk',
-    'warper', 'wanderer', 'artificer', 'arcane marksman',
-    'death knight', 'abyssal knight'
-);
+our %dead_class_abbrs = map(($_, 1), @{$$CFG{'dead-classes'}});
+our %dead_classes = map((lc($$CFG{classes}{$_}), 1), keys %dead_class_abbrs);
+our @roles = grep(!$dead_classes{$_}, map(lc, values(%{$CFG->{classes}})));
+
 # }}}
 # role names used by the code {{{
 my %code_roles = map {
@@ -349,16 +246,9 @@ my %code_roles = map {
 } @roles;
 # }}}
 # short role names {{{
-my %short_roles = map {
-    my @r = split ' ';
-    ($_, @r == 1 ? ucfirst (substr $_, 0, 2) :
-                   uc (substr $r[0], 0, 1) . uc (substr $r[1], 0, 1))
-} @roles;
-$short_roles{'wizard'} = 'Wz';
-$short_roles{'conjurer'} = 'Cj';
-$short_roles{'transmuter'} = 'Tm';
-$short_roles{'warper'} = 'Wr';
-$short_roles{'wanderer'} = 'Wn';
+
+my %short_roles;
+@short_roles{@roles} = grep(!$dead_class_abbrs{$_}, keys %{$CFG->{classes}});
 # }}}
 # role normalization {{{
 my %normalize_role = (
@@ -366,11 +256,12 @@ my %normalize_role = (
     (map { lc } (reverse %code_roles)),
     (map { lc } (reverse %short_roles)),
 );
+
 # }}}
 sub normalize_role { # {{{
     my $role = shift;
     $role = lc $role;
-    $role =~ s/(?:^\s*|\s*$)//g;
+    $role =~ s/(?:^\s+|\s+$)//g;
     return $normalize_role{$role}
 } # }}}
 sub short_role { # {{{
@@ -392,9 +283,7 @@ sub display_role { # {{{
 # gods {{{
 # god list {{{
 our @gods = (
-    'no god', 'zin', 'the shining one', 'kikubaaqudgha', 'yredelemnul', 'xom',
-    'vehumet', 'okawaru', 'makhleb', 'sif muna', 'trog', 'nemelex xobeh',
-    'elyvilon', 'lugonu', 'beogh',
+    'no god', values %{$$CFG{god}}
 );
 # }}}
 # god names used by the code {{{
@@ -549,25 +438,6 @@ sub nick_alias {
   my $aliases = load_nick_aliases()->{lc $nick};
 
   $aliases && $aliases =~ /^(\S+)/ ? $1 : $nick
-}
-
-my @unwon_list;
-sub unwon_combos {
-  return @unwon_list if @unwon_list;
-  open my $inf, '<', $UNWON_FILE
-    or
-      do {
-        warn "Can't open $UNWON_FILE: $!\n";
-        return ();
-      };
-  chomp(my @combos = <$inf>);
-  # Discard heading
-  shift @combos;
-  @unwon_list = map([ m{^(\w+)\s+(\d+)} ], @combos);
-  @unwon_list = grep($$_[0] =~ /^(\w{2})/ && !$DEAD_RACES{$1}, @unwon_list);
-  @unwon_list = grep(!$BAD_COMBOS{$$_[0]}, @unwon_list);
-
-  @unwon_list
 }
 
 1;
