@@ -11,7 +11,7 @@ DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
 DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
 DBPASS = ENV['HENZELL_DBPASS'] || ''
 
-LG_CONFIG_FILE = 'commands/lg-cfg.yml'
+LG_CONFIG_FILE = 'commands/crawl-data.yml'
 
 CFG = YAML.load_file(LG_CONFIG_FILE)
 
