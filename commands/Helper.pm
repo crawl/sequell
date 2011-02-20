@@ -260,7 +260,8 @@ our @races = (
     'ogre', 'troll',
     (map { "$_ draconian" } @drac_colors),
     'base draconian', 'centaur', 'demigod', 'spriggan', 'minotaur',
-    'demonspawn', 'ghoul', 'kenku', 'merfolk', 'vampire', 'deep dwarf'
+    'demonspawn', 'ghoul', 'kenku', 'merfolk', 'vampire', 'deep dwarf',
+    'felid'
 );
 # }}}
 # genuses {{{
@@ -277,6 +278,7 @@ my %code_races = map {
     $r =~ tr/ -/__/;
     ($_, "SP_" . uc $r)
 } @races;
+$code_races{'felid'} = "SP_CAT";
 # }}}
 # short race names {{{
 my %short_races = map {
@@ -330,12 +332,13 @@ sub display_race { # {{{
 # roles {{{
 # role list {{{
 our @roles = (
-    'fighter', 'wizard', 'priest', 'thief', 'gladiator', 'necromancer',
-    'paladin', 'assassin', 'berserker', 'hunter', 'conjurer', 'enchanter',
+    'fighter', 'wizard', 'priest', 'gladiator', 'necromancer',
+    'assassin', 'berserker', 'hunter', 'conjurer', 'enchanter',
     'fire elementalist', 'ice elementalist', 'summoner', 'air elementalist',
-    'earth elementalist', 'crusader', 'death knight', 'venom mage',
-    'chaos knight', 'transmuter', 'healer', 'reaver', 'stalker', 'monk',
-    'warper', 'wanderer',
+    'earth elementalist', 'crusader', 'venom mage',
+    'chaos knight', 'transmuter', 'healer', 'stalker', 'monk',
+    'warper', 'wanderer', 'artificer', 'arcane marksman',
+    'death knight', 'abyssal knight'
 );
 # }}}
 # role names used by the code {{{
