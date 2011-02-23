@@ -24,6 +24,8 @@ $ rm nicks-test.map
 !nick src cow tao moo ::= Mapping src => cow tao moo
 !nick src zebra ::= Mapping src => cow tao moo zebra
 !nick -rm src tao ::= Deleted tao from src => cow tao moo zebra
+!nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
+!nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
 !lg
 !lg .

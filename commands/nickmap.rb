@@ -97,7 +97,7 @@ def delete_dest_from(key, value)
 end
 
 args = ARGV[2].gsub("/", "").gsub("\\", "")
-cmdline = args.split()[1 .. -1]
+cmdline = args.split()[1 .. -1].map { |x| x.downcase }
 
 begin
   if not cmdline.empty?
