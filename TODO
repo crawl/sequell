@@ -1,3 +1,29 @@
+- Make Henzell/Sequell more modular:
+  - Config should be hot-reloadable.
+  - Any modified .pm files should be reloadable.
+  - Convert all Henzell do 'foo.pl' to reloadable modules.
+  - Henzell should need restart only if the core changes.
+
+- Command modifiers for Sequell:
+  - PM modifier (already done, needs some form of testing):
+      !>won
+      ?>foo
+    Send command output in PM.
+      
+  - Pastebin modifier:
+      !.won
+    Should send output to pastebin and return the pastebin link, perhaps
+    including a brief summary of the first line of output.
+    
+  - Full-output modifier (only on PM):
+      !*won
+    Don't truncate at first line, send multiple lines of output, but only on
+    PM (ignored on channel).
+
+  - Cleanly factor out Henzell command handling -- make it use the same
+    mechanism as the tests.
+
+
 - New query builder:
   - Construct query based on treetop parse tree
   
