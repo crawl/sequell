@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 exit(0) if !ENV['HENZELL_SQL_QUERIES']
 

@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/env ruby
 
 # Fetch http directory listings from the web.
 module HttpList

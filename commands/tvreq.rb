@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/env ruby
 
 # Requests that C-SPLAT play the specified game.
 
