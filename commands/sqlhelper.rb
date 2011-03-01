@@ -1896,7 +1896,7 @@ def query_field(selector, field, op, sqlop, val)
 
       tstart = "#{year}0701"
       tend   = "#{year}0801"
-      tstart = "#{year}0715" if GameContext.game != GAME_SPRINT
+      tstart = "#{year}0715" if GameContext.game == GAME_SPRINT
 
       if $CTX == CTX_LOG
         clause << query_field('rstart', 'rstart', lop, lop, tstart)
