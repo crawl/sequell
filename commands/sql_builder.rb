@@ -5,10 +5,12 @@ require 'treetop'
 require 'commands/lg_node'
 require 'commands/lg'
 
+require 'commands/query_executors'
+
 module SQLBuilder
   def self.query(params)
     query = SQLQuery.new(params)
-    query_executor = SQLQueryExecutor.new(query)
+    query_executor = QueryExecutors.create_executor(query)
     query_executor.execute
   rescue QueryError
     puts $!
@@ -46,15 +48,41 @@ module SQLBuilder
       validate_query
     end
 
+    def to_s
+      "Query[#{readable_query}]"
+    end
+
+    def readable_query
+      @cmdline
+    end
+
+    def action_type
+      @query.action_type
+    end
+
+    def action_flag
+      @query.action_flag
+    end
+
+    def strip_command_identifier(command_line)
+      command_line.sub(/^!\w+\s+/, '')
+    end
+
     def validate_query
       # Check for common problems:
       assert(!@query.has_query_mode?) do
-        "#{@query.query_mode} not permitted in top-level query"
+        "Query mode `#{@query.query_mode}` not permitted at top-level"
       end
 
       assert(!@query.has_multiple_result_indices?) do
-        extra_indexes = @query.result_indices[1 .. -1]
+        extra_indexes = @query.result_indices[1 .. -1].map { |e| e.text }
         "Too many result indexes in query (extras: #{extra_indexes.join(', ')})"
+      end
+
+      @query.subqueries.each do |subquery|
+        assert(!subquery.action_type) do
+          "Subquery #{subquery.text} has an action flag"
+        end
       end
     end
 
@@ -68,6 +96,10 @@ module SQLBuilder
       raise QueryError.new(message)
     end
 
+    def count_matching_records
+      sql_db_handle.single_value(count_query, query_parameters)
+    end
+
     def count_query
       "SELECT COUNT(*) #{query_sql}"
     end
@@ -79,9 +111,14 @@ module SQLBuilder
     def query_sql
       query_tables = @query.my_query_tables
     end
-  end
 
-  class SQLQueryExecutor
+    def method_missing(symbol, *args, &block)
+      @query.send(symbol, *args, &block)
+    end
+
+    def respond_to?(symbol)
+      super.respond_to?(symbol) || @query.respond_to?(symbol)
+    end
   end
 
   class QueryNode
@@ -136,9 +173,40 @@ module SQLBuilder
     ##
     # Returns the given query's query_mode (!lg/!lm) without looking at
     # subqueries.
-
     def query_mode
       node_text(node_tagged(:querymode, :exclude => :subquery))
+    end
+
+    def summary_query?
+      !!my_node_tagged(:fieldgrouping)
+    end
+
+    def ratio_query?
+      !!ratio_tail
+    end
+
+    def ratio_tail
+      my_node_tagged(:queryratiotail)
+    end
+
+    def summary_grouped_fields
+      summary_node = my_node_tagged(:fieldgrouping)
+      if summary_node
+        summary_node.nodes_tagged(:orderedfield).map { |f| f.text }
+      else
+        nil
+      end
+    end
+
+    ##
+    # If the query has an action flag (such as -tv, -log, -ttyrec), returns
+    # the action string (viz. "tv", "log", or "ttyrec"), otherwise returns nil.
+    def action_type
+      node_text(node_tagged(:queryflagname))
+    end
+
+    def action_flag
+      node_text(node_tagged(:queryflagbody))
     end
 
     def has_subqueries?
@@ -169,11 +237,11 @@ module SQLBuilder
     end
 
     def result_index
-      my_node_tagged(:result_index)
+      node_text(my_node_tagged(:resultindex)) { |x| x.to_i }
     end
 
     def result_indices
-      my_nodes_tagged(:result_index)
+      my_nodes_tagged(:resultindex)
     end
 
     def has_multiple_result_indices?
@@ -182,9 +250,13 @@ module SQLBuilder
 
     ##
     # Returns a node's text, or nil if the node is nil
-
     def node_text(node)
-      node && node.text
+      text_value = node ? node.text : nil
+      if text_value && block_given?
+        yield text_value
+      else
+        text_value
+      end
     end
 
     ##
@@ -230,7 +302,8 @@ module SQLBuilder
 
     def node_included? (node, options)
       includes = options[:include]
-      !includes || node.tag == includes || includes.include?(node.tag)
+      !includes || node.tag == includes ||
+        (includes.respond_to?(:include?) && includes.include?(node.tag))
     end
 
     def node_excluded? (node, options)
@@ -244,7 +317,9 @@ module SQLBuilder
     end
 
     def node_matches_exclude? (node, excludes)
-      excludes && (node.tag == excludes || excludes.include?(node.tag))
+      excludes && (node.tag == excludes ||
+                   (excludes.respond_to?(:include?) &&
+                    excludes.include?(node.tag)))
     end
 
     def to_s

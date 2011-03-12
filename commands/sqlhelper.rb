@@ -1,15 +1,14 @@
 #!/usr/bin/env ruby
 
-exit(0) if !ENV['HENZELL_SQL_QUERIES']
+if !ENV['HENZELL_SQL_QUERIES']
+  raise Exception.new("sqlhelper: HENZELL_SQL_QUERIES is not set")
+end
 
 require 'dbi'
 require 'commands/helper'
 require 'set'
 require 'yaml'
-
-DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
-DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
-DBPASS = ENV['HENZELL_DBPASS'] || ''
+require 'commands/sql_connection'
 
 LG_CONFIG_FILE = 'commands/crawl-data.yml'
 
@@ -695,7 +694,7 @@ end
 
 def update_tv_count(g)
   table = g['milestone'] ? 'milestone' : 'logrecord'
-  sql_dbh.do("UPDATE #{table} SET ntv = ntv + 1 " +
+  sql_db_handle.do("UPDATE #{table} SET ntv = ntv + 1 " +
              "WHERE id = ?", g['id'])
 end
 
@@ -981,42 +980,6 @@ def row_to_fieldmap(row)
   map
 end
 
-class DBHandle
-  def initialize(db)
-    @db = db
-  end
-
-  def get_first_value(query, *binds)
-    @db.prepare(query) do |sth|
-      sth.execute(*binds)
-      row = sth.fetch
-      return row[0]
-    end
-    nil
-  end
-
-  def execute(query, *binds)
-    @db.prepare(query) do |sth|
-      sth.execute(*binds)
-      while row = sth.fetch
-        yield row
-      end
-    end
-  end
-
-  def do(query, *binds)
-    @db.do(query, *binds)
-  end
-end
-
-def connect_sql_db
-  DBHandle.new(DBI.connect('DBI:Mysql:' + DBNAME, DBUSER, DBPASS))
-end
-
-def sql_dbh
-  $DB_HANDLE ||= connect_sql_db
-end
-
 def index_sanity(index)
   #raise "Index too large: #{index}" if index > ROWFETCH_MAX
 end
@@ -1024,7 +987,7 @@ end
 def sql_exec_query(num, q, lastcount = nil)
   origindex = num
 
-  dbh = sql_dbh
+  dbh = sql_db_handle
 
   # -1 is the natural index 0, -2 = 1, etc.
   num = -num - 1
@@ -1056,7 +1019,7 @@ end
 
 def sql_count_rows_matching(q)
   #puts "Query: #{q.select_all} (#{q.values.join(', ')})"
-  sql_dbh.get_first_value(q.select_count, *q.values).to_i
+  sql_db_handle.get_first_value(q.select_count, *q.values).to_i
 end
 
 def sql_each_row_matching(q, limit=0)
@@ -1068,14 +1031,14 @@ def sql_each_row_matching(q, limit=0)
       query += " LIMIT #{limit}"
     end
   end
-  sql_dbh.execute(query, *q.values) do |row|
+  sql_db_handle.execute(query, *q.values) do |row|
     yield row
   end
 end
 
 def sql_each_row_for_query(query_text, *params)
   #puts "Query: #{query_text}"
-  sql_dbh.execute(query_text, *params) do |row|
+  sql_db_handle.execute(query_text, *params) do |row|
     yield row
   end
 end
@@ -1930,7 +1893,7 @@ def nick_exists?(nick)
   lnick = nick.downcase
   return DB_NICKS[lnick] if DB_NICKS.key?(lnick)
   nick_exists = false
-  sql_dbh.execute('SELECT pname FROM logrecord WHERE pname = ? LIMIT 1',
+  sql_db_handle.execute('SELECT pname FROM logrecord WHERE pname = ? LIMIT 1',
                   lnick) do |row|
     nick_exists = true
   end
@@ -2435,7 +2398,7 @@ end
 def logfile_names
   q = "SELECT file FROM logfiles;"
   logfiles = []
-  sql_dbh.execute(q) do |row|
+  sql_db_handle.execute(q) do |row|
     logfiles << row[0]
   end
   logfiles

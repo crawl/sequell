@@ -17,3 +17,4 @@
 !ttr ttr.rb
 !tv tvreq.rb
 !won won.rb
+!tlg ttlistgame.rb
