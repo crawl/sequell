@@ -1,5 +1,148 @@
 # YAML config for !listgame and friends.
 #
+
+memory-use-limit-megabytes: 768
+
+##
+# Maps query context names to table names. Thus !lg will query the `logrecord`
+# table while !lm will query the `milestone` table. Note that each table
+# name must also have an associated `name`-fields-with-type key.
+query-contexts:
+  lg:
+    table: logrecord
+  lm:
+    table: milestone
+    autojoin-context: lg
+
+##
+# Field name -> SQL name mappings; some field names have to be mapped to
+# different names to avoid SQL keyword collisions.
+sql-field-names:
+  name: pname
+  char: charabbrev
+  str: sstr
+  dex: sdex
+  int: sint
+  start: tstart
+  end: tend
+  time: ttime
+  map: mapname
+
+##
+# Fake query fields that are transformed into a real query field by code in
+# query_synthetic.rb
+fake-fields-with-type:
+  - when*
+
+##
+# Field type suffixes:
+# - I (integer)
+# - D (date+time)
+#
+# - * (not summarisable)
+logrecord-fields-with-type:
+  - idI*
+  - file*
+  - alpha
+  - src
+  - v
+  - cv
+  - lv
+  - scI*
+  - name
+  - uidI
+  - race
+  - crace
+  - cls
+  - char
+  - xlI
+  - sk
+  - sklevI
+  - title
+  - ktyp
+  - killer
+  - ckiller
+  - ikiller
+  - kpath
+  - kmod
+  - kaux
+  - ckaux
+  - place
+  - br
+  - lvlI
+  - ltyp
+  - hpI
+  - mhpI
+  - mmhpI
+  - damI
+  - strI
+  - intI
+  - dexI
+  - god
+  - pietyI
+  - penI
+  - wizI
+  - startD*
+  - endD*
+  - durI*
+  - turnI*
+  - uruneI
+  - nruneI
+  - tmsg
+  - vmsg
+  - splat
+  - rstart*
+  - rend*
+  - ntvI
+  - map
+  - mapdesc
+
+milestone-fields-with-type:
+  - game_idI
+  - idI*
+  - file*
+  - alpha
+  - src
+  - v
+  - cv
+  - name
+  - race
+  - crace
+  - cls
+  - char
+  - xlI
+  - sk
+  - sklevI
+  - title
+  - place
+  - br
+  - lvlI
+  - ltyp
+  - hpI
+  - mhpI
+  - mmhpI
+  - strI
+  - intI
+  - dexI
+  - god
+  - durI*
+  - turnI*
+  - uruneI
+  - nruneI
+  - timeD*
+  - rtime*
+  - rstart*
+  - verb
+  - noun
+  - milestone
+  - ntvI
+  - oplace
+
+
+##
+# game types recognized by !lg and friends, mapped to the table name prefix.
+# For instance, Crawl games will query `logrecord` and `milestone`, Sprint
+# games will query `spr_logrecord` and `spr_milestone` and so on.
 game-type-prefixes:
   crawl: ''
   sprint: spr_
@@ -293,149 +436,6 @@ aggregate-function-types:
   std: I
   variance: I
 
-logfields-with-type:
-  - idI
-  - file
-  - alpha
-  - src
-  - v
-  - cv
-  - lv
-  - scI
-  - name
-  - uidI
-  - race
-  - crace
-  - cls
-  - char
-  - xlI
-  - sk
-  - sklevI
-  - title
-  - ktyp
-  - killer
-  - ckiller
-  - ikiller
-  - kpath
-  - kmod
-  - kaux
-  - ckaux
-  - place
-  - br
-  - lvlI
-  - ltyp
-  - hpI
-  - mhpI
-  - mmhpI
-  - damI
-  - strI
-  - intI
-  - dexI
-  - god
-  - pietyI
-  - penI
-  - wizI
-  - startD
-  - endD
-  - durI
-  - turnI
-  - uruneI
-  - nruneI
-  - tmsg
-  - vmsg
-  - splat
-  - rstart
-  - rend
-  - ntvI
-  - map
-  - mapdesc
-
-milefields-with-type:
-  - game_idI
-  - idI
-  - file
-  - alpha
-  - src
-  - v
-  - cv
-  - name
-  - race
-  - crace
-  - cls
-  - char
-  - xlI
-  - sk
-  - sklevI
-  - title
-  - place
-  - br
-  - lvlI
-  - ltyp
-  - hpI
-  - mhpI
-  - mmhpI
-  - strI
-  - intI
-  - dexI
-  - god
-  - durI
-  - turnI
-  - uruneI
-  - nruneI
-  - timeD
-  - rtime
-  - rstart
-  - verb
-  - noun
-  - milestone
-  - ntvI
-  - oplace
-
-fakefields-with-type:
-  - when
-
-logfields-summarisable:
-  - v
-  - name
-  - race
-  - cls
-  - char
-  - xl
-  - sk
-  - sklev
-  - title
-  - ktyp
-  - place
-  - br
-  - lvl
-  - ltyp
-  - killer
-  - ikiller
-  - god
-  - urune
-  - nrune
-  - src
-  - str
-  - int
-  - dex
-  - kaux
-  - ckiller
-  - cv
-  - ckaux
-  - crace
-  - kmod
-  - splat
-  - dam
-  - hp
-  - mhp
-  - mmhp
-  - piety
-  - pen
-  - alpha
-  - ntv
-  - map
-  - mapdesc
-
 milestone-types:
   - abyss.enter
   - abyss.exit
@@ -470,17 +470,6 @@ tournament-versions:
 
 tournament-sprint-map:
   2010: dungeon sprint mu
-
-sql-field-names:
-  name: pname
-  char: charabbrev
-  str: sstr
-  dex: sdex
-  int: sint
-  start: tstart
-  end: tend
-  time: ttime
-  map: mapname
 
 wtf-lookup:
   greensnark: The completely awesome variety of snark.

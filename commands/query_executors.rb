@@ -1,4 +1,5 @@
 require 'commands/sql_connection'
+require 'commands/game_formatter'
 
 module QueryExecutors
   def self.create_executor(query)
@@ -54,7 +55,7 @@ module QueryExecutors
       if not row_record
         puts "No #{query.entity_name}s for #{q.readable_string}."
       else
-        print_game_n(query.record_index, row_record)
+        GameFormatter.pretty_print_game_n(query.record_index, row_record)
       end
     end
   end

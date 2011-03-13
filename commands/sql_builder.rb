@@ -4,10 +4,12 @@ require 'rubygems'
 require 'treetop'
 require 'commands/lg_node'
 require 'commands/lg'
-
 require 'commands/query_executors'
+require 'commands/query_config'
 
 module SQLBuilder
+  include QueryConfig
+
   def self.query(params)
     query = SQLQuery.new(params)
     query_executor = QueryExecutors.create_executor(query)
@@ -34,9 +36,19 @@ module SQLBuilder
     end
   end
 
+  # Represents a distinct SQL expression, which may be:
+  # * Operator expression: <op> <expr> <expr> ...
+  # * Atomic: <fieldname>, string, number.
+  # * function call: fn(<expr>, <expr>, ...)
+  class SQLExpr
+    def self.create(query_node)
+    end
+  end
+
   class SQLQuery
     def initialize(config)
       @config = config
+      @context = QueryConfig.context_by_name(config[:context])
       @cmdline = strip_command_identifier(config[:cmdline])
       @parser = ListgameQueryParser.new
       @query_ast = @parser.parse(@cmdline)
@@ -109,7 +121,19 @@ module SQLBuilder
     end
 
     def query_sql
-      query_tables = @query.my_query_tables
+      "#{from_clauses}#{where_clauses}#{group_by_clauses}#{having_clauses}"
+    end
+
+    def from_clauses
+      query_table_list = query_tables.join(', ')
+      " FROM " + query_table_list
+    end
+
+    def query_table_list
+      [@context.table]
+    end
+
+    def where_clauses
     end
 
     def method_missing(symbol, *args, &block)

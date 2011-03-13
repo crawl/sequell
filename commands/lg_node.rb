@@ -41,7 +41,7 @@ module ListgameQuery
 
   MODULES = %w/ResultIndex QueryClause HavingClauseKey
                HavingClauseQualifier SloppyExpr QueryOp AggregateField
-               OrderedAggregateField FieldExtract QueryANDTerms
+               OrderedAggregateField FieldExtract JoinFields QueryANDTerms
                QueryFlagBody SpecialField SortOperator QueryORExpr
                QueryOrdering SubqueryCondition Nick KeyOpVal
                NickSelector QueryCalcExpr QueryTerm TypedValue/

@@ -7,21 +7,17 @@ end
 require 'dbi'
 require 'commands/helper'
 require 'set'
-require 'yaml'
 require 'commands/sql_connection'
+require 'commands/henzell_config'
 
-LG_CONFIG_FILE = 'commands/crawl-data.yml'
-
-CFG = YAML.load_file(LG_CONFIG_FILE)
+include HenzellConfig
 
 # Don't use more than this much memory (bytes)
 MAX_MEMORY_USED = 768 * 1024 * 1024
 Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
 
-GAME_TYPE_DEFAULT = CFG['default-game-type']
 GAME_SPRINT = 'sprint'
 GAMES = CFG['game-type-prefixes'].keys
-GAME_PREFIXES = CFG['game-type-prefixes']
 TOURNEY_SPRINT_MAP = CFG['tournament-sprint-map']
 
 OPERATORS = {
@@ -81,9 +77,9 @@ COLUMN_ALIASES = CFG['column-aliases']
 
 AGGREGATE_FUNC_TYPES = CFG['aggregate-function-types']
 
-LOGFIELDS_DECORATED = CFG['logfields-with-type']
-MILEFIELDS_DECORATED = CFG['milefields-with-type']
-FAKEFIELDS_DECORATED = CFG['fakefields-with-type']
+LOGFIELDS_DECORATED = CFG['logrecord-fields-with-type']
+MILEFIELDS_DECORATED = CFG['milestone-fields-with-type']
+FAKEFIELDS_DECORATED = CFG['fake-fields-with-type']
 
 LOGFIELDS_SUMMARISABLE =
   Hash[ *(CFG['logfields-summarisable'].map { |x| [x, true] }.flatten) ]
@@ -141,8 +137,6 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
     fdict[ lf.name ] = type
   end
 end
-
-LOG2SQL = CFG['sql-field-names']
 
 (LOGFIELDS_DECORATED + MILEFIELDS_DECORATED).each do |x|
   LOG2SQL[x.name] = x.name unless LOG2SQL[x.name]
@@ -301,20 +295,6 @@ CTX_STONE = QueryContext.new('milestone mst', 'milestone', CTX_LOG)
 $CTX = CTX_LOG
 
 $DB_HANDLE = nil
-
-def sql2logdate(v)
-  if v.is_a?(DateTime)
-    v = v.strftime('%Y-%m-%d %H:%M:%S')
-  else
-    v = v.to_s
-  end
-  if v =~ /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/
-    # Note we're munging back to POSIX month (0-11) here.
-    $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
-  else
-    v
-  end
-end
 
 def with_query_context(ctx)
   old_context = $CTX
