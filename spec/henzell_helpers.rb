@@ -9,6 +9,10 @@ module HenzellHelpers
                  :cmdline => cmdline)
   end
 
+  def lg_collect_text(cmdline, each_method, context='!lg', nick='nobody')
+    recursive_collect_text(lg(cmdline, context, nick), each_method)
+  end
+
   def lg_error(cmdline, context='!lg', nick='nobody')
     lg(cmdline, context, nick)
     raise Exception.new("Expected #{cmdline} parse to fail, but it succeeded")

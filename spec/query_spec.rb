@@ -80,12 +80,13 @@ describe "SQLQuery" do
 
   context "given a query with conditions" do
     it "should visit each condition node" do
-      query = lg('!lg * 0.8 !win ((killer=rat || killer=goblin))')
-      condition_nodes = recursive_collect_text(query, :each_condition_node)
-      condition_nodes.should eql(["*", "0.8", "!win",
-                                   "killer=rat || killer=goblin",
-                                   "killer=rat",
-                                   "killer=goblin"])
+      nodes = lg_collect_text(
+                  '!lg * 0.8 717 !win s=name ((killer=rat || killer=goblin))',
+                  :each_condition_node)
+      nodes.should eql(["*", "0.8", "!win",
+                         "killer=rat || killer=goblin",
+                         "killer=rat",
+                         "killer=goblin"])
     end
   end
 end
