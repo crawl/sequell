@@ -1,6 +1,13 @@
 require 'spec_helper'
 
 describe "SQLQuery" do
+  context "given a query with an invalid query context" do
+    it "should raise a QueryError noting that the context is invalid" do
+      lg_error('!invalid * killer=goblin').should \
+          eql("No query context named `invalid`")
+    end
+  end
+
   context "given a query with a version as a keyword argument" do
     it "should parse the query successfully" do
       lg('!lg * 0.8')
@@ -122,22 +129,22 @@ describe "SQLQuery" do
       lg('!lg * orc').where_clauses_with_parameters.should \
          eql([" WHERE place LIKE ?", ['orc:%']])
       lg('!lg * Blade').where_clauses_with_parameters.should \
-         eql([" WHERE place=?", ['Blade']])
+         eql([" WHERE place = ?", ['Blade']])
       lg('!lg * oplace=elf').where_clauses_with_parameters.should \
          eql([" WHERE oplace LIKE ?", ['elf:%']])
       lg('!lg * oplace!=elf').where_clauses_with_parameters.should \
          eql([" WHERE oplace NOT LIKE ?", ['elf:%']])
       lg('!lg * place=temple').where_clauses_with_parameters.should \
-         eql([" WHERE place=?", ['temple']])
+         eql([" WHERE place = ?", ['temple']])
     end
 
     it "should apply the race fixup" do
       lg('!lg * Ha').where_clauses_with_parameters.should \
-         eql([" WHERE race=?", ["Halfling"]])
+         eql([" WHERE race = ?", ["Halfling"]])
       lg('!lg * race=HE').where_clauses_with_parameters.should \
-         eql([" WHERE race=?", ["High Elf"]])
+         eql([" WHERE race = ?", ["High Elf"]])
       lg('!lg * crace=Dr').where_clauses_with_parameters.should \
-         eql([" WHERE crace=?", ["Draconian"]])
+         eql([" WHERE crace = ?", ["Draconian"]])
       lg('!lg * race=Dr').where_clauses_with_parameters.should \
          eql([" WHERE race LIKE ?", ["%Draconian"]])
       lg('!lg * race!=Dr').where_clauses_with_parameters.should \
@@ -146,9 +153,9 @@ describe "SQLQuery" do
 
     it "should apply the class fixup" do
       lg('!lg * St').where_clauses_with_parameters.should \
-         eql([" WHERE cls=?", ['Stalker']])
+         eql([" WHERE cls = ?", ['Stalker']])
       lg('!lg * cls=Hu').where_clauses_with_parameters.should \
-         eql([" WHERE cls=?", ['Hunter']])
+         eql([" WHERE cls = ?", ['Hunter']])
     end
 
     it "should throw a parse error given an ambiguous race/class abbreviation" do

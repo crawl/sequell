@@ -44,7 +44,8 @@ module ListgameQuery
                OrderedAggregateField FieldExtract JoinFields QueryANDTerms
                QueryFlagBody SpecialField SortOperator QueryORExpr
                QueryOrdering SubqueryCondition Nick KeyOpVal
-               NickSelector QueryCalcExpr QueryTerm TypedValue/
+               NickSelector QueryCalcExpr QueryTerm TypedValue
+               GroupingField GroupingFlags/
   self.define_classes(CLASSES)
   self.define_modules(MODULES)
 end

@@ -75,6 +75,8 @@ module QueryConfig
   # physical SQL table, but it may be subclassed to support subqueries.
   #
   class LGQueryContext
+    @@current_context = nil
+
     attr_reader :table, :ctx
     def initialize(context, props)
       @ctx = context
@@ -92,8 +94,26 @@ module QueryConfig
       @field_name_map[field_name]
     end
 
+    def sql_field_name(field_name)
+      QueryConfig::LOG2SQL[field_name] || field_name
+    end
+
     def autojoin_context
       @autojoin_context ||= QueryConfig::QUERY_CONTEXTS[@autojoin_context_name]
+    end
+
+    def with
+      old_context = @@current_context
+      @@current_context = self
+      begin
+        yield
+      ensure
+        @@current_context = old_context
+      end
+    end
+
+    def self.current
+      @@current_context
     end
   end
 
@@ -107,11 +127,15 @@ module QueryConfig
 
   FAKE_TYPED_FIELDS = self.table_typed_fields("fake-typed-fields")
 
+  def self.query_context_pairs
+    QUERY_CONTEXT_RAW_MAP.map do |context, props|
+      [context, LGQueryContext.new(context, props)]
+    end
+  end
+
   ##
   # Mapping of query context names ('lg', 'lm') to LGQueryContext objects.
-  QUERY_CONTEXTS = Hash[ QUERY_CONTEXT_RAW_MAP.each { |context, props|
-                           [context, LGQueryContext.new(context, props)]
-                         }]
+  QUERY_CONTEXTS = Hash[query_context_pairs]
 
   def self.context_by_name(context_name)
     QueryConfig::QUERY_CONTEXTS[context_name]

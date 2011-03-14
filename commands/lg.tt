@@ -202,8 +202,16 @@ grammar ListgameQuery
     ( "%" / query_field ) <SpecialField>
   end
 
+  rule grouping_field
+    ordered_field grouping_flags? <GroupingField>
+  end
+
+  rule grouping_flags
+    "%" <GroupingFlags>
+  end
+
   rule field_grouping
-    "-"? "s" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )* <FieldGrouping>
+    "-"? "s" whitespace? "=" whitespace? grouping_field ( whitespace? "," whitespace? grouping_field )* <FieldGrouping>
   end
 
   rule field_subquery_match

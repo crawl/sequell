@@ -9,7 +9,10 @@ require 'commands/query_config'
 require 'set'
 
 module SQLBuilder
+  require 'commands/sql_expr'
+
   include QueryConfig
+  include SQLExpr
 
   CONDITION_NODE_TAGS = [:nickselector, :querykeywordexpr, :queryorexpr,
     :keyopval]
@@ -43,20 +46,14 @@ module SQLBuilder
     end
   end
 
-  # Represents a distinct SQL expression, which may be:
-  # * Operator expression: <op> <expr> <expr> ...
-  # * Atomic: <fieldname>, string, number.
-  # * function call: fn(<expr>, <expr>, ...)
-  class SQLExpr
-    def self.create(query_node)
-
-    end
-  end
-
   class SQLQuery
     def initialize(config)
       @config = config
-      @context = QueryConfig.context_by_name(config[:context])
+      context_name = config[:context] || command_line_context(config[:cmdline])
+      @context = QueryConfig.context_by_name(context_name)
+      unless @context
+        raise QueryError.new("No query context named `#{context_name}`")
+      end
       @cmdline = strip_command_identifier(config[:cmdline])
       @parser = ListgameQueryParser.new
       @query_ast = @parser.parse(@cmdline)
@@ -84,8 +81,12 @@ module SQLBuilder
       @query.action_flag
     end
 
+    def command_line_context(command_line)
+      command_line =~ /^\W(\w+)/ && $1
+    end
+
     def strip_command_identifier(command_line)
-      command_line.sub(/^!\w+\s+/, '')
+      command_line.sub(/^\W\w+\s+/, '')
     end
 
     def validate_query
@@ -144,9 +145,19 @@ module SQLBuilder
     def where_clauses
       node = where_node
       if node
-        " WHERE #{node.to_s}"
+        " WHERE #{node.to_sql}"
       else
         ""
+      end
+    end
+
+    def where_node
+      @context.with do
+        base_where_node = SQLExpr.operator('AND')
+        each_condition_node do |condition|
+          base_where_node << SQLExpr.create(condition)
+        end
+        base_where_node.empty? ? nil : base_where_node
       end
     end
 
@@ -258,7 +269,7 @@ module SQLBuilder
     def summary_grouped_fields
       summary_node = my_node_tagged(:fieldgrouping)
       if summary_node
-        summary_node.nodes_tagged(:orderedfield).map { |f| f.text }
+        summary_node.nodes_tagged(:groupingfield).map { |f| f.text }
       else
         nil
       end
