@@ -6,9 +6,15 @@ require 'commands/lg_node'
 require 'commands/lg'
 require 'commands/query_executors'
 require 'commands/query_config'
+require 'set'
 
 module SQLBuilder
   include QueryConfig
+
+  CONDITION_NODE_TAGS = [:nickselector, :querykeywordexpr, :queryorexpr,
+    :keyopval]
+
+  CONDITION_NODE_SET = Set.new(CONDITION_NODE_TAGS)
 
   def self.query(params)
     query = SQLQuery.new(params)
@@ -32,7 +38,8 @@ module SQLBuilder
     def initialize(cmdline, error_index)
       @cmdline = cmdline
       @error_index = error_index
-      super.initialize("Malformed query at `#{cmdline[error_index .. -1]}`")
+      string = cmdline[error_index .. -1]
+      super("Malformed query at `#{string}`")
     end
   end
 
@@ -42,6 +49,7 @@ module SQLBuilder
   # * function call: fn(<expr>, <expr>, ...)
   class SQLExpr
     def self.create(query_node)
+
     end
   end
 
@@ -134,6 +142,16 @@ module SQLBuilder
     end
 
     def where_clauses
+      @query.each_condition_node do |node|
+      end
+    end
+
+    def group_by_clauses
+      ""
+    end
+
+    def having_clauses
+      ""
     end
 
     def method_missing(symbol, *args, &block)
@@ -190,8 +208,24 @@ module SQLBuilder
       @interval = syntax_node.interval
     end
 
+    def condition_node?
+      SQLBuilder::CONDITION_NODE_SET.include?(tag)
+    end
+
     def has_query_mode?
       !!query_mode
+    end
+
+    def each_condition_node
+      @elements.each do |e|
+        if e.condition_node?
+          yield e
+        else
+          e.each_condition_node do |e_child|
+            yield e_child
+          end
+        end
+      end
     end
 
     ##

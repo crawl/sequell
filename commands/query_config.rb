@@ -14,7 +14,7 @@ module QueryConfig
       @type = nil
 
 
-      @name = if decorated_field =~ HenzellConfig::R_FIELD_TYPE
+      @name = if decorated_field =~ QueryConfig::R_FIELD_TYPE
                 @type = $1
                 decorated_field.gsub(/[*ID]+$/, '')
               else
@@ -83,8 +83,8 @@ module QueryConfig
       @autojoin_context
 
       @fields =
-           HenzellConfig.table_typed_fields("#{@table}-fields-with-type") +
-           HenzellConfig::FAKE_TYPED_FIELDS
+           QueryConfig.table_typed_fields("#{@table}-fields-with-type") +
+           QueryConfig::FAKE_TYPED_FIELDS
       @field_name_map = Hash[@fields.map { |f| [f.name, f] }]
     end
 

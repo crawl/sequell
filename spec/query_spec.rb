@@ -1,6 +1,12 @@
 require 'spec_helper'
 
 describe "SQLQuery" do
+  context "given a query with a version as a keyword argument" do
+    it "should parse the query successfully" do
+      lg('!lg * 0.8')
+    end
+  end
+
   context "given a query with an action flag" do
     it "should have the correct query action type" do
       lg('!lg * -tv:<3').action_type.should == "tv"
@@ -69,6 +75,17 @@ describe "SQLQuery" do
 
     it "should correctly find the ratio tail" do
       lg('!lg * / win').ratio_tail.text.should eql('win')
+    end
+  end
+
+  context "given a query with conditions" do
+    it "should visit each condition node" do
+      query = lg('!lg * 0.8 !win ((killer=rat || killer=goblin))')
+      condition_nodes = recursive_collect_text(query, :each_condition_node)
+      condition_nodes.should eql(["*", "0.8", "!win",
+                                   "killer=rat || killer=goblin",
+                                   "killer=rat",
+                                   "killer=goblin"])
     end
   end
 end
