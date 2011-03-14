@@ -45,8 +45,8 @@ FILTER_PATTERN =
 
 # List of abbreviations for branches that have depths > 1. This includes
 # fake branches such as the Ziggurat.
-DEEP_BRANCHES = CFG['branches-with-depth']
-BRANCHES = CFG['branches']
+DEEP_BRANCHES = CFG['branches'].find_all { |x| x =~ /:/ }.map { |x| x.sub(':', '') }
+BRANCHES = CFG['branches'].map { |x| x.sub(':', '') }
 
 GODABBRS = CFG['god'].keys
 GODMAP = CFG['god']

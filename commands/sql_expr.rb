@@ -4,7 +4,7 @@ module SQLExpr
 
     case query_node.tag
     when :nickselector
-      KeywordExpr.expr('name', '=', query_node)
+      NickSelectExpr.create(query_node)
     when :querykeywordexpr
       KeywordExpr.keyword(query_node)
     when :queryorexpr
@@ -29,6 +29,20 @@ module SQLExpr
     else
       raise Exception.new("Unknown node type: `#{query_node}`")
     end
+  end
+
+  def self.anded_exprs(*expr)
+    node = self.operator(' AND ')
+    node += expr
+    node
+  end
+
+  def self.field_op_val(field, op, val)
+    node = SQLExpr.new
+    node.op = op
+    node << FieldNameExpr.new(field)
+    node << ParameterExpr.new(val)
+    node
   end
 
   def self.operator(operator)
@@ -65,7 +79,13 @@ module SQLExpr
     end
 
     def << (expr)
-      @nodes << expr
+      @nodes << expr if expr
+    end
+
+    def + (exprs)
+      clone = self.dup
+      clone.nodes += exprs.find_all { |e| e }
+      clone
     end
 
     def to_s
@@ -156,7 +176,20 @@ module SQLExpr
     end
 
     def self.keyword(keyword_node)
+    end
+  end
 
+  class NickSelectExpr < SQLExpr
+    def self.create(query_node)
+      nick = query_node.value
+      if nick == '*'
+        if query_node.negated?
+          raise QueryError.new("Bad nick selector `#{query_node.text}`")
+        end
+        return nil
+      end
+      node = SQLExpr.field_op_val('name', '=', query_node.value)
+      query_node.negated? ? node.negate : node
     end
   end
 end

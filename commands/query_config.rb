@@ -2,6 +2,8 @@ module QueryConfig
   require 'commands/henzell_config'
   include HenzellConfig
 
+  require 'commands/query_context_fixups'
+
   LOG2SQL = CFG['sql-field-names']
   R_FIELD_TYPE = %r{([ID])$}
 

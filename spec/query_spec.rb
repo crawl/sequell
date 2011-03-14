@@ -118,6 +118,13 @@ describe "SQLQuery" do
     end
   end
 
+  context "given a nick selector as a keyword argument" do
+    it "should generate the correct WHERE clause" do
+      lg('!lg * @elliptic').where_clauses_with_parameters.should \
+          eql([" WHERE pname=?", ['elliptic']])
+    end
+  end
+
   context "given a query needing fixups" do
     it "should apply the killer fixup" do
       lg('!lg * killer=hobgoblin').where_clauses_with_parameters.should \
@@ -160,6 +167,76 @@ describe "SQLQuery" do
 
     it "should throw a parse error given an ambiguous race/class abbreviation" do
       lg_error('!lg * Hu').should eql("Ambiguous keyword: `Hu` - may be species or class")
+    end
+  end
+
+  context "#operators" do
+    it "should recognise the = operator" do
+      lg('!lg * cv=0.8').where_clauses.should eql(" WHERE cv=?")
+    end
+
+    it "should recognise the != operator" do
+      lg('!lg * cv!=0.8').where_clauses.should eql(" WHERE cv!=?")
+    end
+
+    it "should recognise the == operator" do
+      lg('!lg * cv==0.8').where_clauses.should eql(" WHERE cv=?")
+    end
+
+    it "should recognise the !== operator" do
+      lg('!lg * cv!==0.8').where_clauses.should eql(" WHERE cv!=?")
+    end
+
+    it "should recognise the < operator" do
+      lg('!lg * cv<0.8').where_clauses.should eql(' WHERE cv<?')
+    end
+
+    it "should recognise the <= operator" do
+      lg('!lg * cv<=0.8').where_clauses.should eql(' WHERE cv<=?')
+    end
+
+    it "should recognise the > operator" do
+      lg('!lg * cv>0.8').where_clauses.should eql(' WHERE cv>?')
+    end
+
+    it "should recognise the >= operator" do
+      lg('!lg * cv>=0.8').where_clauses.should eql(' WHERE cv>=?')
+    end
+
+    it "should recognise the =~ operator" do
+      lg('!lg * killer=~goblin').where_clauses_with_parameters.should \
+          eql([" WHERE killer LIKE ?", ['%goblin%']])
+      lg('!lg * killer=~*goblin').where_clauses_with_parameters.should \
+          eql([" WHERE killer LIKE ?", ['%goblin']])
+      lg('!lg * killer=~*goblin?').where_clauses_with_parameters.should \
+          eql([" WHERE killer LIKE ?", ['%goblin_']])
+      lg('!lg * killer=~goblin*').where_clauses_with_parameters.should \
+          eql([" WHERE killer LIKE ?", ['goblin%']])
+      lg('!lg * killer=~goblin?').where_clauses_with_parameters.should \
+          eql([" WHERE killer LIKE ?", ['goblin_']])
+    end
+
+    it "should recognise the !~ operator" do
+      lg('!lg * killer!~goblin').where_clauses_with_parameters.should \
+          eql([" WHERE killer NOT LIKE ?", ['%goblin%']])
+      lg('!lg * killer!~*goblin').where_clauses_with_parameters.should \
+          eql([" WHERE killer NOT LIKE ?", ['%goblin']])
+      lg('!lg * killer!~*goblin?').where_clauses_with_parameters.should \
+          eql([" WHERE killer NOT LIKE ?", ['%goblin_']])
+      lg('!lg * killer!~goblin*').where_clauses_with_parameters.should \
+          eql([" WHERE killer NOT LIKE ?", ['goblin%']])
+      lg('!lg * killer!~goblin?').where_clauses_with_parameters.should \
+          eql([" WHERE killer NOT LIKE ?", ['goblin_']])
+    end
+
+    it "should recognise the ~~ operator" do
+      lg('!lg * killer~~goblin').where_clauses.should \
+          eql(' WHERE killer REGEXP ?')
+    end
+
+    it "should recognise the !~~ operator" do
+      lg('!lg * killer!~~goblin').where_clauses.should \
+          eql(' WHERE killer NOT REGEXP ?')
     end
   end
 end
