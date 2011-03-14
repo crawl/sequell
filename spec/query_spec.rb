@@ -114,7 +114,13 @@ describe "SQLQuery" do
     it "should report the correct result index" do
       lg('!lg * 22').result_index.should eql(22)
       lg('!lg * -5').result_index.should eql(-5)
-      lg('!lg * [[ * -5 ]]').result_index.should eql(nil)
+      lg('!lg * killer=goblin -2').result_index.should eql(-2)
+      lg('!lg * [[ * -5 ]]').result_index.should be_nil
+
+      q = lg('!lg * god= -5')
+      q.result_index.should be_nil
+      q.where_clauses_with_parameters.should \
+          eql([' WHERE god=?', ['-5']])
     end
   end
 
