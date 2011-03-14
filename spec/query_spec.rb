@@ -191,6 +191,8 @@ describe "SQLQuery" do
     it "should apply the race fixup" do
       lg('!lg * Ha').where_clauses_with_parameters.should \
          eql([" WHERE crace=?", ["Halfling"]])
+      lg('!lg * HE').where_clauses_with_parameters.should \
+         eql([" WHERE crace=?", ["High Elf"]])
       lg('!lg * race=HE').where_clauses_with_parameters.should \
          eql([" WHERE race=?", ["High Elf"]])
       lg('!lg * crace=Dr').where_clauses_with_parameters.should \

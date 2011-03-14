@@ -20,14 +20,16 @@ class QueryContextFixups
       matches = []
       matcher_names = []
       @keyword_matchers.each do |keyword_matcher|
-        expr = keyword_matcher.call(keyword)
-        if expr
-          matches << expr
-          matcher_names << keyword_matcher.name
+        unless keyword_matcher.skip?(matcher_names)
+          expr = keyword_matcher.action.call(keyword)
+          if expr
+            matches << expr
+            matcher_names << keyword_matcher.name
+          end
         end
       end
-      if matcher_names.size > 1
-        matchers = matcher_names.join(' or ')
+      if Set.new(matcher_names).size > 1
+        matchers = matcher_names.map { |n| n.sub(/:.*/, '') }.join(' or ')
         raise QueryError.new("Ambiguous keyword `#{keyword}` - " +
                              "may be #{matchers} (#{matches.join(' or ')})")
       end
@@ -37,17 +39,46 @@ class QueryContextFixups
     def field_transform(field_name, op, value)
       lower_field_name = field_name.downcase
       @field_fixups.each do |fixup|
-        result = fixup.call(lower_field_name, op, value)
+        result = fixup.action.call(lower_field_name, op, value)
         return result if result
       end
       nil
     end
   end
 
+  class FixupAction
+    attr_reader :action, :name
+    def initialize(action_name, action)
+      @name = action_name
+      @exclusive_predecessors =
+        Set.new(QueryContextFixups.excluded_predecessors)
+      @action = action
+    end
+
+    def skip?(predecessors)
+      !@exclusive_predecessors.intersection(Set.new(predecessors)).empty?
+    end
+  end
+
   @@current_context_name = nil
+  @@excluded_predecessors = []
 
   @@context_fixups = Hash.new do |hash, key|
     hash[key] = QueryContextFixup.new
+  end
+
+  def self.excluded_predecessors
+    @@excluded_predecessors
+  end
+
+  def self.skip_if_predecessor(*predecessor_name)
+    old_excluded_predecessors = @@excluded_predecessors
+    begin
+      @@excluded_predecessors += predecessor_name
+      yield
+    ensure
+      @@excluded_predecessors = old_excluded_predecessors
+    end
   end
 
   def self.context(context_name)
@@ -60,24 +91,12 @@ class QueryContextFixups
     end
   end
 
-  def self.bind_action_name(action_name, action)
-    action.instance_variable_set(:@action_name, action_name)
-    class << action
-      def name
-        @action_name
-      end
-    end
-    action
-  end
-
   def self.keyword_match(action_name, &action)
-    bind_action_name(action_name, action)
-    current_fixup.keyword_matchers << action
+    current_fixup.keyword_matchers << FixupAction.new(action_name, action)
   end
 
   def self.field_match(action_name, &action)
-    bind_action_name(action_name, action)
-    current_fixup.field_fixups << action
+    current_fixup.field_fixups << FixupAction.new(action_name, action)
   end
 
   def self.equal_op_block(&block)

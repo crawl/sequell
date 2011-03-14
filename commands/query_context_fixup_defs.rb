@@ -9,14 +9,26 @@ class QueryContextFixups
   BRANCH_KEYWORD_REGEXP = %r/^(?:#{BRANCHES.join('|')})$/i
   BRANCH_DEPTH_REGEXP = %r/^(?:#{BRANCHES_WITH_DEPTHS.join('|')}):\d+$/i
 
-  SPECIES_MAP = Hash[HenzellConfig::CFG['species'].map { |key, value|
+  SPECIES_EXACT_MAP = HenzellConfig::CFG['species']
+  CLASS_EXACT_MAP = HenzellConfig::CFG['classes']
+  SPECIES_MAP = Hash[SPECIES_EXACT_MAP.map { |key, value|
                        [key.downcase, value]
                      }]
-  CLASS_MAP = Hash[HenzellConfig::CFG['classes'].map { |key, value|
+  CLASS_MAP = Hash[CLASS_EXACT_MAP.map { |key, value|
                      [key.downcase, value]
                    }]
 
   PREFIX_FIXUPS = HenzellConfig::CFG['prefix-field-fixups']
+
+  def self.keyword_field_match_map(map, action_name, field_name, exact=false)
+    keyword_match(action_name) do |keyword|
+      match_word = exact ? keyword : keyword.downcase
+      value = map[match_word]
+      if value
+        SQLExprs.field_op_val(field_name, '=', value)
+      end
+    end
+  end
 
   context :any do
     # Match simple branches or branches with depths as keywords
@@ -36,16 +48,12 @@ class QueryContextFixups
       end
     end
 
-    keyword_match('species') do |keyword|
-      if SPECIES_MAP[keyword.downcase]
-        SQLExprs.field_op_val('crace', '=', SPECIES_MAP[keyword.downcase])
-      end
-    end
+    keyword_field_match_map(SPECIES_EXACT_MAP, 'species:exact', 'crace', :exact)
+    keyword_field_match_map(CLASS_EXACT_MAP, 'class:exact', 'cls', :exact)
 
-    keyword_match('class') do |keyword|
-      if CLASS_MAP[keyword.downcase]
-        SQLExprs.field_op_val('cls', '=', CLASS_MAP[keyword.downcase])
-      end
+    skip_if_predecessor('species:exact', 'class:exact') do
+      keyword_field_match_map(SPECIES_MAP, 'species', 'crace')
+      keyword_field_match_map(CLASS_MAP, 'class', 'cls')
     end
 
     field_name_equal_match(['place', 'oplace']) do |field, op, value|
