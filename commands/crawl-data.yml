@@ -416,6 +416,9 @@ prefix-field-fixups:
     leav: leaving
     left: leaving
     quit: quitting
+    pois: pois
+    cloud: cloud
+    starv: starvation
 
 aggregate-function-types:
   cdist: '*'

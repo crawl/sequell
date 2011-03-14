@@ -144,6 +144,37 @@ class QueryContextFixups
     self.field_name_match(field_names, action_name, &op_block(ops, &block))
   end
 
+  ##
+  # given a mapping of values, and a field name,
+  def self.keyword_and_field_match_map(map, action_name, field_name,
+                                       exact=false)
+    matcher = lambda { |keyword |
+      match_word = exact ? keyword : keyword.downcase
+      value = map[match_word]
+    }
+    self.keyword_and_field_expand(field_name, action_name, &matcher)
+  end
+
+  def self.keyword_and_field_expand(field_name, action_name=nil, &expander)
+    primary_field = field_name
+    if primary_field.is_a?(Array)
+      primary_field = primary_field[0]
+    end
+    action_name ||= primary_field
+    keyword_match(action_name) do |keyword|
+      value = expander.call(keyword)
+      if value
+        SQLExprs.field_op_val(primary_field, '=', value)
+      end
+    end
+    field_name_equal_match(field_name) do |field, op, val|
+      value = expander.call(val)
+      if value && value != val
+        SQLExprs.field_op_val(field, op, value)
+      end
+    end
+  end
+
   def self.current_fixup
     unless @@current_context_name
       raise Exception.new("keyword_match must be registered within a context")

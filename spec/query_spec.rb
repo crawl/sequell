@@ -48,10 +48,25 @@ describe "SQLQuery" do
 
   context "given keyword arguments" do
     it "should recognise a character abbreviation" do
-      lg('!lg * DrFE').where_clauses_with_parameters.should
+      lg('!lg * DrFE').where_clauses_with_parameters.should \
           eql([' WHERE charabbrev=?', ['DrFE']])
-      lg('!lg * hehe').where_clauses_with_parameters.should
+      lg('!lg * hehe').where_clauses_with_parameters.should \
           eql([' WHERE charabbrev=?', ['hehe']])
+    end
+
+    it "should recognise a god abbreviation" do
+      lg('!lg * ely').where_clauses_with_parameters.should \
+          eql([' WHERE god=?', ['Elyvilon']])
+      lg('!lg * nem').where_clauses_with_parameters.should \
+          eql([' WHERE god=?', ['Nemelex Xobeh']])
+      lg('!lg * tso').where_clauses_with_parameters.should \
+          eql([' WHERE god=?', ['The Shining One']])
+      lg('!lg * !kiku').where_clauses_with_parameters.should \
+          eql([' WHERE god!=?', ['Kikubaaqudgha']])
+      lg('!lg * xom').where_clauses_with_parameters.should \
+          eql([' WHERE god=?', ['Xom']])
+      lg('!lg * god=tso').where_clauses_with_parameters.should \
+          eql([' WHERE god=?', ['The Shining One']])
     end
   end
 

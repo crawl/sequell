@@ -18,15 +18,16 @@ class QueryContextFixups
                      [key.downcase, value]
                    }]
 
+  GOD_MAP = HenzellConfig::CFG['god']
+
   PREFIX_FIXUPS = HenzellConfig::CFG['prefix-field-fixups']
 
-  def self.keyword_field_match_map(map, action_name, field_name, exact=false)
-    keyword_match(action_name) do |keyword|
-      match_word = exact ? keyword : keyword.downcase
-      value = map[match_word]
-      if value
-        SQLExprs.field_op_val(field_name, '=', value)
-      end
+
+  def self.expand_god(god_abbr)
+    if god_abbr && god_abbr.length > 0
+      god_abbr = god_abbr.downcase
+      GOD_MAP[god_abbr] ||
+        GOD_MAP[GOD_MAP.keys.find { |k| god_abbr.index(k) == 0 }]
     end
   end
 
@@ -48,12 +49,14 @@ class QueryContextFixups
       end
     end
 
-    keyword_field_match_map(SPECIES_EXACT_MAP, 'species:exact', 'crace', :exact)
-    keyword_field_match_map(CLASS_EXACT_MAP, 'class:exact', 'cls', :exact)
+    keyword_and_field_expand('god', &self.method(:expand_god))
+    keyword_and_field_match_map(SPECIES_EXACT_MAP, 'species:exact',
+                                'crace', :exact)
+    keyword_and_field_match_map(CLASS_EXACT_MAP, 'class:exact', 'cls', :exact)
 
     skip_if_predecessor('species:exact', 'class:exact') do
-      keyword_field_match_map(SPECIES_MAP, 'species', 'crace')
-      keyword_field_match_map(CLASS_MAP, 'class', 'cls')
+      keyword_and_field_match_map(SPECIES_MAP, 'species', ['crace', 'race'])
+      keyword_and_field_match_map(CLASS_MAP, 'class', 'cls')
     end
 
     field_name_equal_match(['place', 'oplace']) do |field, op, value|
@@ -87,18 +90,6 @@ class QueryContextFixups
         if value && value != field_value
           SQLExprs.field_op_val(field, op, value)
         end
-      end
-    end
-
-    field_name_equal_match('cls') do |field, operator, value|
-      if CLASS_MAP[value.downcase]
-        SQLExprs.field_op_val(field, operator, CLASS_MAP[value.downcase])
-      end
-    end
-
-    field_name_equal_match(['crace', 'race']) do |field, operator, value|
-      if SPECIES_MAP[value.downcase]
-        SQLExprs.field_op_val(field, operator, SPECIES_MAP[value.downcase])
       end
     end
 
