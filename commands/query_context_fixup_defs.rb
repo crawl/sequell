@@ -64,6 +64,14 @@ class QueryContextFixups
       end
     end
 
+    keyword_match('char') do |keyword|
+      if keyword.length == 4 &&
+          SPECIES_MAP[keyword[0..1].downcase] &&
+          CLASS_MAP[keyword[2..3].downcase]
+        SQLExprs.field_op_val('char', '=', keyword)
+      end
+    end
+
     PREFIX_FIXUPS.find do |field, prefix_map|
       keyword_match("prefix-#{field}") do |keyword|
         value = prefix_map.keys.find { |key| keyword.downcase =~ /^#{key}/ }

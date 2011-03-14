@@ -46,6 +46,15 @@ describe "SQLQuery" do
     end
   end
 
+  context "given keyword arguments" do
+    it "should recognise a character abbreviation" do
+      lg('!lg * DrFE').where_clauses_with_parameters.should
+          eql([' WHERE charabbrev=?', ['DrFE']])
+      lg('!lg * hehe').where_clauses_with_parameters.should
+          eql([' WHERE charabbrev=?', ['hehe']])
+    end
+  end
+
   context "given a query with an action flag" do
     it "should have the correct query action type" do
       lg('!lg * -tv:<3').action_type.should == "tv"
