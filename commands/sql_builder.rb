@@ -142,8 +142,16 @@ module SQLBuilder
     end
 
     def where_clauses
-      @query.each_condition_node do |node|
+      node = where_node
+      if node
+        " WHERE #{node.to_s}"
+      else
+        ""
       end
+    end
+
+    def where_clauses_with_parameters
+      [ where_clauses, where_parameters ]
     end
 
     def group_by_clauses

@@ -64,6 +64,7 @@ describe "SQLQuery" do
       lg('!lg *').summary_grouped_fields.should be_nil
       lg('!lg * s=killer').summary_grouped_fields.should eql(['killer'])
       lg('!lg * s=-killer,lg:place').summary_grouped_fields.should eql(['-killer', 'lg:place'])
+      lg('!lg * s=cv%').summary_grouped_fields.should eql(['cv%'])
     end
   end
 
@@ -87,6 +88,71 @@ describe "SQLQuery" do
                          "killer=rat || killer=goblin",
                          "killer=rat",
                          "killer=goblin"])
+    end
+  end
+
+  context "given a query with no filter conditions" do
+    it "should have no WHERE clause" do
+      lg('!lg *').where_clauses.should eql('')
+    end
+  end
+
+  context "given a query with filter conditions" do
+    it "should have a matching WHERE clause" do
+      lg('!lg * 0.8').where_clauses_with_parameters.should \
+         eql([" WHERE cv=?", ['0.8']])
+
+      lg('!lg elliptic 0.7 !win').where_clauses_with_parameters.should \
+         eql([" WHERE pname=? AND cv=? AND ktyp!=",
+              ['elliptic', '0.7', 'winning']])
+
+      lg('!lg * str<5 ktyp=win').where_clauses_with_parameters.should \
+         eql([" WHERE sstr<? AND ktyp=?", ['5', 'winning']])
+    end
+  end
+
+  context "given a query needing fixups" do
+    it "should apply the killer fixup" do
+      lg('!lg * killer=hobgoblin').where_clauses_with_parameters.should \
+         eql([" WHERE (killer=? OR killer=? OR killer=?)",
+               ['hobgoblin', 'a hobgoblin', 'an hobgoblin']])
+    end
+
+    it "should apply the place fixup" do
+      lg('!lg * orc').where_clauses_with_parameters.should \
+         eql([" WHERE place LIKE ?", ['orc:%']])
+      lg('!lg * Blade').where_clauses_with_parameters.should \
+         eql([" WHERE place=?", ['Blade']])
+      lg('!lg * oplace=elf').where_clauses_with_parameters.should \
+         eql([" WHERE oplace LIKE ?", ['elf:%']])
+      lg('!lg * oplace!=elf').where_clauses_with_parameters.should \
+         eql([" WHERE oplace NOT LIKE ?", ['elf:%']])
+      lg('!lg * place=temple').where_clauses_with_parameters.should \
+         eql([" WHERE place=?", ['temple']])
+    end
+
+    it "should apply the race fixup" do
+      lg('!lg * Ha').where_clauses_with_parameters.should \
+         eql([" WHERE race=?", ["Halfling"]])
+      lg('!lg * race=HE').where_clauses_with_parameters.should \
+         eql([" WHERE race=?", ["High Elf"]])
+      lg('!lg * crace=Dr').where_clauses_with_parameters.should \
+         eql([" WHERE crace=?", ["Draconian"]])
+      lg('!lg * race=Dr').where_clauses_with_parameters.should \
+         eql([" WHERE race LIKE ?", ["%Draconian"]])
+      lg('!lg * race!=Dr').where_clauses_with_parameters.should \
+         eql([" WHERE race NOT LIKE ?", ["%Draconian"]])
+    end
+
+    it "should apply the class fixup" do
+      lg('!lg * St').where_clauses_with_parameters.should \
+         eql([" WHERE cls=?", ['Stalker']])
+      lg('!lg * cls=Hu').where_clauses_with_parameters.should \
+         eql([" WHERE cls=?", ['Hunter']])
+    end
+
+    it "should throw a parse error given an ambiguous race/class abbreviation" do
+      lg_error('!lg * Hu').should eql("Ambiguous keyword: `Hu` - may be species or class")
     end
   end
 end
