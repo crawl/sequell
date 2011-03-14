@@ -229,13 +229,20 @@ module SQLBuilder
       value
     end
 
-    attr_reader :elements, :tag, :interval, :text
+    attr_accessor :elements, :tag, :interval, :text
 
-    def initialize(syntax_node)
-      @tag = syntax_node.lg_node
-      @elements = QueryNode.resolve_elements(syntax_node.elements)
-      @text = syntax_node.text_value.strip
-      @interval = syntax_node.interval
+    def initialize(syntax_node=nil)
+      if !syntax_node
+        @tag = :sloppyexpr
+        @elements = []
+        @text = ''
+        @interval = nil
+      else
+        @tag = syntax_node.lg_node
+        @elements = QueryNode.resolve_elements(syntax_node.elements)
+        @text = syntax_node.text_value.strip
+        @interval = syntax_node.interval
+      end
     end
 
     def condition_node?
@@ -396,21 +403,27 @@ module SQLBuilder
       found_nodes
     end
 
+    def key_op_val?
+      tag == :keyopval
+    end
+
     ##
     # Given a node with three child nodes (usually <expr> <op> <expr>) returns
     # the left node.
     def left_expr_node
-      if @elements && @elements.size == 3
-        @elements[0]
-      end
+      key_op_val? && @elements[0]
     end
 
     ##
     # Given a node with three child nodes (usually <expr> <op> <expr>) returns
     # the right node.
     def right_expr_node
-      if @elements && @elements.size == 3
-        @elements[-1]
+      if key_op_val?
+        right_node = @elements[2]
+        if !right_node
+          right_node = QueryNode.new
+        end
+        right_node
       end
     end
 
@@ -418,9 +431,7 @@ module SQLBuilder
     # Given a node with three child nodes (usually <expr> <op> <expr>) returns
     # the operator node.
     def operator_node
-      if @elements && @elements.size == 3
-        @elements[1]
-      end
+      key_op_val? && @elements[1]
     end
 
     def negated?

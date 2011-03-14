@@ -122,6 +122,7 @@ class QueryContextFixups
   context 'lg' do
     field_equal_match("killer") do |field_name, operator, field_value|
       if (['killer', 'ckiller', 'ikiller'].include?(field_name.downcase) &&
+          field_value.length > 0 &&
           field_value !~ /^an? /i && field_value !~ /^[A-Z]/)
         group_op = QueryConfig::Operators.group_op(operator)
         SQLExprs.group(group_op,

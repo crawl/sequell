@@ -40,6 +40,13 @@ describe "SQLQuery" do
     end
   end
 
+  it "should correctly parse an empty field match" do
+    lg('!lg * killer=').where_clauses_with_parameters.should \
+        eql([' WHERE killer=?', ['']])
+    lg('!lg * god= ktyp=win').where_clauses_with_parameters.should \
+        eql([' WHERE god=? AND ktyp=?', ['', 'winning']])
+  end
+
   context "given a query with a version as a keyword argument" do
     it "should parse the query successfully" do
       lg('!lg * 0.8')
