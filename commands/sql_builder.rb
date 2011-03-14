@@ -12,7 +12,7 @@ module SQLBuilder
   require 'commands/sql_expr'
 
   include QueryConfig
-  include SQLExpr
+  include SQLExprs
 
   CONDITION_NODE_TAGS = [:nickselector, :querykeywordexpr, :queryorexpr,
     :keyopval]
@@ -62,6 +62,8 @@ module SQLBuilder
       end
       @query = QueryNode.resolve_node(@query_ast)
 
+      @where_node = nil
+
       validate_query
     end
 
@@ -105,6 +107,10 @@ module SQLBuilder
           "Subquery #{subquery.text} has an action flag"
         end
       end
+
+      # Build the WHERE clause node to check if there are any errors in
+      # the query
+      where_node
     end
 
     def assert(condition)
@@ -152,13 +158,18 @@ module SQLBuilder
     end
 
     def where_node
-      @context.with do
-        base_where_node = SQLExpr.operator('AND')
+      @where_node ||= @context.with do
+        base_where_node = SQLExprs.operator('AND')
         each_condition_node do |condition|
-          base_where_node << SQLExpr.create(condition)
+          base_where_node << SQLExprs.create(condition)
         end
         base_where_node.empty? ? nil : base_where_node
       end
+      @where_node
+    end
+
+    def where_parameters
+      where_node && where_node.parameters
     end
 
     def where_clauses_with_parameters
@@ -233,6 +244,14 @@ module SQLBuilder
 
     def has_query_mode?
       !!query_mode
+    end
+
+    def simple_value?
+      tag == :sloppyexpr
+    end
+
+    def simple_field?
+      tag == :queryfield
     end
 
     def each_condition_node
@@ -375,6 +394,60 @@ module SQLBuilder
         end
       end
       found_nodes
+    end
+
+    ##
+    # Given a node with three child nodes (usually <expr> <op> <expr>) returns
+    # the left node.
+    def left_expr_node
+      if @elements && @elements.size == 3
+        @elements[0]
+      end
+    end
+
+    ##
+    # Given a node with three child nodes (usually <expr> <op> <expr>) returns
+    # the right node.
+    def right_expr_node
+      if @elements && @elements.size == 3
+        @elements[-1]
+      end
+    end
+
+    ##
+    # Given a node with three child nodes (usually <expr> <op> <expr>) returns
+    # the operator node.
+    def operator_node
+      if @elements && @elements.size == 3
+        @elements[1]
+      end
+    end
+
+    def negated?
+      @elements && !@elements.empty? && @elements[0].tag == :negation
+    end
+
+    def prefixes
+      @elements.take_while { |e| e.prefix? }
+    end
+
+    def prefix?
+      [:negation, :nickderef].include?(tag)
+    end
+
+    def nick_keyword?
+      prefixes.find { |p| p.tag == :nickderef }
+    end
+
+    ##
+    # Given a node, returns its text, skipping prefixes such as @, the negation
+    # !, etc.
+    def value
+      if !@elements || @elements.empty?
+        text
+      else
+        @elements.drop_while { |e| e.prefix? }.map { |e| e.text }.join('')
+      end
     end
 
     def node_included? (node, options)

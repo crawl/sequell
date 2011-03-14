@@ -2,10 +2,64 @@ module QueryConfig
   require 'commands/henzell_config'
   include HenzellConfig
 
+  class Operators
+    OPERATORS = {
+      '==' => ['=', '!=='],
+      '!==' => ['!=', '=='],
+      '=' => ['=', '!='],
+      '!=' => ['!=', '='],
+      '<' => ['<', '>='],
+      '>' => ['>', '<='],
+      '<=' => ['<=', '>'],
+      '>=' => ['>=', '<'],
+      '=~' => ['LIKE', '!~'],
+      '!~' => ['NOT LIKE', '=~'],
+      '~~' => ['REGEXP', '!~~'],
+      '!~~' => ['NOT REGEXP', '~~'],
+      'AND' => ['AND', 'OR'],
+      'OR' => ['OR', 'AND']
+    }
+
+    def self.op_def(query_operator)
+      opdef = Operators::OPERATORS[query_operator]
+      raise Exception.new("Unknown operator: `#{query_operator}`") unless opdef
+      opdef
+    end
+
+    def self.equal_op?(operator)
+      operator == '=' || operator == '!='
+    end
+
+    def self.group_op(operator)
+      case operator
+      when '='
+        'OR'
+      when '!='
+        'AND'
+      else
+        raise Exception.new("No natural grouping for operator `#{operator}`")
+      end
+    end
+
+    def self.sql_operator(query_operator)
+      op_def(query_operator)[0]
+    end
+
+    def self.negate(query_operator)
+      op_def(query_operator)[1]
+    end
+
+    def self.negate_cascades?(query_operator)
+      ['AND', 'OR'].include?(query_operator)
+    end
+  end
+
   require 'commands/query_context_fixups'
 
   LOG2SQL = CFG['sql-field-names']
-  R_FIELD_TYPE = %r{([ID])$}
+  R_FIELD_TYPE = %r{([ID])}
+
+  FIELD_ALIASES = CFG['column-aliases']
 
   class LGQueryField
     attr_reader :name, :type
@@ -14,7 +68,6 @@ module QueryConfig
       # Summarisable fields are *not* asterisked
       @summarisable = !decorated_field.index('*')
       @type = nil
-
 
       @name = if decorated_field =~ QueryConfig::R_FIELD_TYPE
                 @type = $1
@@ -90,10 +143,19 @@ module QueryConfig
            QueryConfig.table_typed_fields("#{@table}-fields-with-type") +
            QueryConfig::FAKE_TYPED_FIELDS
       @field_name_map = Hash[@fields.map { |f| [f.name, f] }]
+      @fixups = QueryContextFixups.context_fixups(@ctx)
     end
 
     def field(field_name)
-      @field_name_map[field_name]
+      if field_name.is_a?(LGQueryField)
+        field_name
+      else
+        @field_name_map[canonical_field_name(field_name)]
+      end
+    end
+
+    def canonical_field_name(field_name)
+      QueryConfig::FIELD_ALIASES[field_name] || field_name
     end
 
     def sql_field_name(field_name)
@@ -102,6 +164,18 @@ module QueryConfig
 
     def autojoin_context
       @autojoin_context ||= QueryConfig::QUERY_CONTEXTS[@autojoin_context_name]
+    end
+
+    def field_has_transform?(field_name)
+      field_transform(field_name, nil, nil)
+    end
+
+    def field_transform(field_name, operator, field_value)
+      @fixups.field_transform(field_name, operator, field_value)
+    end
+
+    def keyword_transform(keyword)
+      @fixups.keyword_transform(keyword)
     end
 
     def with

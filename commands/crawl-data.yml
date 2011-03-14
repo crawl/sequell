@@ -408,6 +408,15 @@ place-fixups:
   '^v\b(.*)': 'Vault$1'
   '^ice$': 'IceCv'
 
+prefix-field-fixups:
+  ktyp:
+    win: winning
+    won: winning
+    drown: water
+    leav: leaving
+    left: leaving
+    quit: quitting
+
 aggregate-function-types:
   cdist: '*'
   avg: I

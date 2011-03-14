@@ -1,4 +1,4 @@
-module SQLExpr
+module SQLExprs
   def self.create(query_node)
     context = LGQueryContext.current
 
@@ -11,20 +11,26 @@ module SQLExpr
       node = SQLExpr.new
       node.op = ' OR '
       query_node.each_condition_node do |condition_node|
-        node << SQLExpr.create(condition_node)
+        node << self.create(condition_node)
       end
+      node
+    when :queryfield
+      FieldNameExpr.new(query_node.text)
+    when :sloppyexpr
+      ParameterExpr.new(query_node.text)
     when :keyopval
       left_expr = query_node.left_expr_node
+      operator = query_node.operator_node.text
+      right_expr = query_node.right_expr_node
 
-      # The context may want to transform key = val expressions. For instance,
-      # !lm * rune=slimy => !lm * type=rune noun=slimy
-      if context.field_has_transform?(left_expr.text)
-        context.transform_field_expr(query_node)
+      if left_expr.simple_field? && right_expr.simple_value?
+        self.field_op_val(left_expr.text, operator, right_expr.text)
       else
         node = SQLExpr.new
-        node.op = query_node.operator
-        node << SQLExpr.create(query_node.left_expr_node)
-        node << SQLExpr.create(query_node.right_expr_node)
+        node.op = query_node.operator_node.text
+        node << self.create(query_node.left_expr_node)
+        node << self.create(query_node.right_expr_node)
+        node
       end
     else
       raise Exception.new("Unknown node type: `#{query_node}`")
@@ -32,17 +38,32 @@ module SQLExpr
   end
 
   def self.anded_exprs(*expr)
-    node = self.operator(' AND ')
+    self.group('AND', *expr)
+  end
+
+  def self.group(group_op, *expr)
+    node = self.operator(group_op)
     node += expr
     node
   end
 
-  def self.field_op_val(field, op, val)
-    node = SQLExpr.new
-    node.op = op
-    node << FieldNameExpr.new(field)
-    node << ParameterExpr.new(val)
-    node
+  def self.field_op_val(field, op, val, skip_further_xforms=nil)
+    context = LGQueryContext.current
+    # The context may want to transform key = val expressions. For instance,
+    # !lm * rune=slimy => !lm * type=rune noun=slimy
+    field_name_expr = FieldNameExpr.new(field)
+    field_expr =
+      !skip_further_xforms &&
+      context.field_transform(field_name_expr.canonical_name, op, val)
+    if field_expr
+      field_expr
+    else
+      node = SQLExpr.new
+      node.op = op
+      node << field_name_expr
+      node << ParameterExpr.new(val)
+      node
+    end
   end
 
   def self.operator(operator)
@@ -56,14 +77,27 @@ module SQLExpr
   # * Atomic: <fieldname>, string, number.
   # * function call: fn(<expr>, <expr>, ...)
   class SQLExpr
-    attr_accessor :op, :nodes
+    attr_accessor :op, :nodes, :parent
     attr_reader :context
 
     def initialize
+      @parent = nil
       @context = LGQueryContext.current
       @op = nil
       @nodes = []
       @parameter = nil
+    end
+
+    def negate
+      unless op
+        raise QueryError.new("Attempt to negate #{self}")
+      end
+      clone = self.dup
+      clone.op = Operators.negate(self.op)
+      if Operators.negate_cascades?(self.op)
+        clone.nodes = clone.nodes.map { |n| n.negate }
+      end
+      clone
     end
 
     def empty?
@@ -71,7 +105,7 @@ module SQLExpr
     end
 
     def parameters
-      nodes.map { |n| n.parameters }.flatten
+      nodes.nil? ? [] : nodes.map { |n| n.parameters }.flatten
     end
 
     def join_context
@@ -79,7 +113,25 @@ module SQLExpr
     end
 
     def << (expr)
-      @nodes << expr if expr
+      if expr.is_a?(Array)
+        raise Exception.new("Attempt to add array as expression node")
+      end
+      return unless expr
+
+      if @nodes.size == 1 && expr.is_a?(ParameterExpr)
+        expr = transform_parameter(expr)
+      end
+      @nodes << expr
+      expr.parent = self
+    end
+
+    def transform_parameter(parameter)
+      case op
+      when '=~', '!~'
+        LikeParameterExpr.new(parameter.value)
+      else
+        parameter
+      end
     end
 
     def + (exprs)
@@ -89,12 +141,44 @@ module SQLExpr
     end
 
     def to_s
-      node_strings = nodes.map { |n| n.to_s }.join(', ')
-      "Expr(#{@op}, #{node_strings})"
+      node_strings = nodes.map { |n| n.to_s }.join(op)
+    end
+
+    def inspect
+      to_s
+    end
+
+    def sqlop
+      sql_operator = Operators.sql_operator(@op)
+      if sql_operator =~ /^[\w ]+$/
+        " " + sql_operator + " "
+      else
+        sql_operator
+      end
+    end
+
+    def parenthesise?
+      op == 'OR' && @parent
+    end
+
+    def parenthesise(text)
+      "(" + text + ")"
     end
 
     def to_sql
-      "(" + @nodes.map { |n| n.to_sql }.join(' #{@op} ') + ")"
+      if @nodes.size == 1
+        child = @nodes[0]
+        begin
+          child.parent = @parent
+          child.to_sql
+        ensure
+          child.parent = self
+        end
+      else
+        body = @nodes.map { |n| n.to_sql }.join(sqlop)
+        body = parenthesise(body) if parenthesise?
+        body
+      end
     end
   end
 
@@ -119,11 +203,15 @@ module SQLExpr
 
   class ParameterExpr < SQLExpr
     def initialize(parameter_value)
-      @parameter_value = parameter_value
+      @parameter_value = parameter_value.gsub('_', ' ')
     end
 
     def parameters
       [ @parameter_value ]
+    end
+
+    def value
+      @parameter_value
     end
 
     def to_sql
@@ -131,7 +219,29 @@ module SQLExpr
     end
 
     def to_s
-      "Par(#{@parameter_value})"
+      @parameter_value
+    end
+  end
+
+  class LikeParameterExpr < ParameterExpr
+    def parameters
+      [ sql_parameter_value ]
+    end
+
+    def sql_parameter_value
+      if has_glob_metacharacters?(@parameter_value)
+        sql_like_value(@parameter_value)
+      else
+        sql_like_value('*' + @parameter_value + '*')
+      end
+    end
+
+    def has_glob_metacharacters?(value)
+      value.index('*') || value.index('?')
+    end
+
+    def sql_like_value(value)
+      value.gsub('*', '%').gsub('?', '_')
     end
   end
 
@@ -152,6 +262,10 @@ module SQLExpr
       unless @field_def
         raise QueryError.new("Unknown field `#{@field_name}`")
       end
+    end
+
+    def canonical_name
+      @field_def.name
     end
 
     def to_s
@@ -176,6 +290,24 @@ module SQLExpr
     end
 
     def self.keyword(keyword_node)
+      if keyword_node.nick_keyword?
+        # FIXME: Use nickmappings here.
+        nick_node = SQLExprs.field_op_val('name', '=', keyword_node.value)
+        return keyword_node.negated? ? nick_node.negate : nick_node
+      end
+
+      context = LGQueryContext.current
+      expr = context.keyword_transform(keyword_node.value)
+      unless expr
+        message =
+          if keyword_node.value == keyword_node.text
+            "Bad keyword: `#{keyword_node.text}`"
+          else
+            "Bad keyword `#{keyword_node.value}` in `#{keyword_node.text}`"
+          end
+        raise QueryError.new(message)
+      end
+      keyword_node.negated? ? expr.negate : expr
     end
   end
 
@@ -188,7 +320,7 @@ module SQLExpr
         end
         return nil
       end
-      node = SQLExpr.field_op_val('name', '=', query_node.value)
+      node = SQLExprs.field_op_val('name', '=', query_node.value)
       query_node.negated? ? node.negate : node
     end
   end

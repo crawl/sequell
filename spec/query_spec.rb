@@ -1,6 +1,38 @@
 require 'spec_helper'
 
 describe "SQLQuery" do
+  it "should recognise alternative field names" do
+    ['job', 'class', 'cls', 'role', 'c'].each do |field|
+      query = lg("!lg * #{field}=Hu")
+      query.where_clauses_with_parameters.should \
+        eql([' WHERE cls=?', ['Hunter']])
+    end
+
+    ['race', 'sp', 'species', 'r'].each do |field|
+      query = lg("!lg * #{field}=Hu")
+      query.where_clauses_with_parameters.should \
+        eql([' WHERE race=?', ['Human']])
+    end
+
+    ['char', 'ch'].each do |field|
+      query = lg("!lg * #{field}=HuHu")
+      query.where_clauses_with_parameters.should \
+        eql([' WHERE charabbrev=?', ['HuHu']])
+    end
+
+    ['score', 'sc'].each do |field|
+      query = lg("!lg * #{field}=999")
+      query.where_clauses_with_parameters.should \
+        eql([' WHERE sc=?', ['999']])
+    end
+
+    ['ktype', 'ktyp'].each do |field|
+      query = lg("!lg * #{field}=win")
+      query.where_clauses_with_parameters.should \
+        eql([' WHERE ktyp=?', ['winning']])
+    end
+  end
+
   context "given a query with an invalid query context" do
     it "should raise a QueryError noting that the context is invalid" do
       lg_error('!invalid * killer=goblin').should \
@@ -110,7 +142,7 @@ describe "SQLQuery" do
          eql([" WHERE cv=?", ['0.8']])
 
       lg('!lg elliptic 0.7 !win').where_clauses_with_parameters.should \
-         eql([" WHERE pname=? AND cv=? AND ktyp!=",
+         eql([" WHERE pname=? AND cv=? AND ktyp!=?",
               ['elliptic', '0.7', 'winning']])
 
       lg('!lg * str<5 ktyp=win').where_clauses_with_parameters.should \
@@ -128,30 +160,41 @@ describe "SQLQuery" do
   context "given a query needing fixups" do
     it "should apply the killer fixup" do
       lg('!lg * killer=hobgoblin').where_clauses_with_parameters.should \
-         eql([" WHERE (killer=? OR killer=? OR killer=?)",
+         eql([" WHERE killer=? OR killer=? OR killer=?",
                ['hobgoblin', 'a hobgoblin', 'an hobgoblin']])
+    end
+
+    it "should apply the ktyp fixup" do
+      lg('!lg * quit').where_clauses_with_parameters.should \
+         eql([' WHERE ktyp=?', ['quitting']])
+      lg('!lg * !drowning').where_clauses_with_parameters.should \
+         eql([' WHERE ktyp!=?', ['water']])
+      lg('!lg * ktyp=win').where_clauses_with_parameters.should \
+         eql([' WHERE ktyp=?', ['winning']])
+      lg('!lg * ktype=win').where_clauses_with_parameters.should \
+         eql([' WHERE ktyp=?', ['winning']])
     end
 
     it "should apply the place fixup" do
       lg('!lg * orc').where_clauses_with_parameters.should \
          eql([" WHERE place LIKE ?", ['orc:%']])
       lg('!lg * Blade').where_clauses_with_parameters.should \
-         eql([" WHERE place = ?", ['Blade']])
-      lg('!lg * oplace=elf').where_clauses_with_parameters.should \
+         eql([" WHERE place=?", ['Blade']])
+      lg('!lm * oplace=elf').where_clauses_with_parameters.should \
          eql([" WHERE oplace LIKE ?", ['elf:%']])
-      lg('!lg * oplace!=elf').where_clauses_with_parameters.should \
+      lg('!lm * oplace!=elf').where_clauses_with_parameters.should \
          eql([" WHERE oplace NOT LIKE ?", ['elf:%']])
       lg('!lg * place=temple').where_clauses_with_parameters.should \
-         eql([" WHERE place = ?", ['temple']])
+         eql([" WHERE place=?", ['temple']])
     end
 
     it "should apply the race fixup" do
       lg('!lg * Ha').where_clauses_with_parameters.should \
-         eql([" WHERE race = ?", ["Halfling"]])
+         eql([" WHERE crace=?", ["Halfling"]])
       lg('!lg * race=HE').where_clauses_with_parameters.should \
-         eql([" WHERE race = ?", ["High Elf"]])
+         eql([" WHERE race=?", ["High Elf"]])
       lg('!lg * crace=Dr').where_clauses_with_parameters.should \
-         eql([" WHERE crace = ?", ["Draconian"]])
+         eql([" WHERE crace=?", ["Draconian"]])
       lg('!lg * race=Dr').where_clauses_with_parameters.should \
          eql([" WHERE race LIKE ?", ["%Draconian"]])
       lg('!lg * race!=Dr').where_clauses_with_parameters.should \
@@ -160,13 +203,31 @@ describe "SQLQuery" do
 
     it "should apply the class fixup" do
       lg('!lg * St').where_clauses_with_parameters.should \
-         eql([" WHERE cls = ?", ['Stalker']])
+         eql([" WHERE cls=?", ['Stalker']])
       lg('!lg * cls=Hu').where_clauses_with_parameters.should \
-         eql([" WHERE cls = ?", ['Hunter']])
+         eql([" WHERE cls=?", ['Hunter']])
+    end
+
+    it "should apply the class fixup for regex matched abbreviations" do
+      lg('!lg * cls=St|Re|Hu').where_clauses_with_parameters.should(
+         eql([" WHERE cls=? OR cls=? OR cls=?",
+               ["Stalker", "Reaver", "Hunter"]]))
+
+      lg('!lg * cls~~St|Re|Hu').where_clauses_with_parameters.should(
+         eql([" WHERE cls=? OR cls=? OR cls=?",
+               ["Stalker", "Reaver", "Hunter"]]))
+
+      lg('!lg * cls!=St|Re|Hu').where_clauses_with_parameters.should(
+         eql([" WHERE cls!=? AND cls!=? AND cls!=?",
+               ["Stalker", "Reaver", "Hunter"]]))
+
+      lg('!lg * cls!~~St|Re|Hu').where_clauses_with_parameters.should(
+         eql([" WHERE cls!=? AND cls!=? AND cls!=?",
+               ["Stalker", "Reaver", "Hunter"]]))
     end
 
     it "should throw a parse error given an ambiguous race/class abbreviation" do
-      lg_error('!lg * Hu').should eql("Ambiguous keyword: `Hu` - may be species or class")
+      lg_error('!lg * Hu').should eql("Ambiguous keyword `Hu` - may be species or class (crace=Human or cls=Hunter)")
     end
   end
 
@@ -237,6 +298,16 @@ describe "SQLQuery" do
     it "should recognise the !~~ operator" do
       lg('!lg * killer!~~goblin').where_clauses.should \
           eql(' WHERE killer NOT REGEXP ?')
+    end
+
+    it "should convert = to ~~ if there are regex metacharacters" do
+      lg('!lg * killer=goblin|Xtahua').where_clauses_with_parameters.should \
+          eql([' WHERE killer REGEXP ?', ['goblin|Xtahua']])
+    end
+
+    it "should convert != to !~~ if there are regex metacharacters" do
+      lg('!lg * killer!=goblin|Xtahua').where_clauses_with_parameters.should \
+          eql([' WHERE killer NOT REGEXP ?', ['goblin|Xtahua']])
     end
   end
 end
