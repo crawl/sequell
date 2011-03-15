@@ -131,30 +131,30 @@ class QueryContextFixups
         if pieces.size > 1 &&
             (pieces.find_all { |p| p.length == 2 && p =~ /^[a-z]+$/i }.size ==
             pieces.size)
-          equal_op = op == '~~' ? '=' : '!='
-          group_op = QueryConfig::Operators.group_op(equal_op)
+          group_op = QueryConfig::Operators.group_op(op)
           piece_checks = pieces.map { |piece|
             piece_class = map[piece.downcase]
             unless piece_class
               raise QueryError.new("Unknown #{thing_name} `#{piece}` " +
                                    "in `#{value}`")
             end
-            SQLExprs.field_op_val(field, equal_op, piece_class)
+            SQLExprs.field_op_val(field, op, piece_class)
           }
           SQLExprs.group(group_op, *piece_checks)
         end
       end
     end
 
-    field_name_op_match('cls', '~~', &piece_match_block(CLASS_MAP, 'class'))
-    field_name_op_match(['crace', 'race'], '~~',
-                        &piece_match_block(SPECIES_MAP, 'species'))
+    field_name_equal_match('cls', &piece_match_block(CLASS_MAP, 'class'))
+    field_name_equal_match(['crace', 'race'],
+                           &piece_match_block(SPECIES_MAP, 'species'))
   end
 
   context 'lg' do
     field_equal_match("killer") do |field_name, operator, field_value|
       if (['killer', 'ckiller', 'ikiller'].include?(field_name.downcase) &&
           field_value.length > 0 &&
+          !looks_like_regex?(field_value) &&
           field_value !~ /^an? /i && field_value !~ /^[A-Z]/)
         group_op = QueryConfig::Operators.group_op(operator)
         SQLExprs.group(group_op,

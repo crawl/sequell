@@ -183,17 +183,23 @@ class QueryContextFixups
   end
 
   def self.context_fixups(context_name)
-    @@context_fixups[:any] + @@context_fixups[context_name]
+    @@context_fixups[context_name] + @@context_fixups[:any]
   end
 
+  def self.looks_like_regex?(value)
+    value =~ /[()|?]/
+  end
+end
+
+require 'commands/query_context_fixup_defs.rb'
+
+class QueryContextFixups
   context :any do
     field_equal_match('equal-to-regex') do |field, op, value|
-      if value =~ /[()|?]/
+      if looks_like_regex?(value)
         new_op = op == '=' ? '~~' : '!~~'
         SQLExprs.field_op_val(field, new_op, value)
       end
     end
   end
 end
-
-require 'commands/query_context_fixup_defs.rb'

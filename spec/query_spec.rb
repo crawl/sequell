@@ -284,13 +284,13 @@ describe "SQLQuery" do
             eql([" WHERE #{field}=? OR #{field}=? OR #{field}=?", matches])
 
         lg("!lg * #{field}~~#{value}").where_clauses_with_parameters.should \
-            eql([" WHERE #{field}=? OR #{field}=? OR #{field}=?", matches])
+            eql([" WHERE #{field} REGEXP ?", [value]])
 
         lg("!lg * #{field}!=#{value}").where_clauses_with_parameters.should \
             eql([" WHERE #{field}!=? AND #{field}!=? AND #{field}!=?", matches])
 
         lg("!lg * #{field}!~~#{value}").where_clauses_with_parameters.should \
-            eql([" WHERE #{field}!=? AND #{field}!=? AND #{field}!=?", matches])
+            eql([" WHERE #{field} NOT REGEXP ?", [value]])
       end
 
       lg('!lg * race=Dr|Tr|SE').where_clauses_with_parameters.should \
