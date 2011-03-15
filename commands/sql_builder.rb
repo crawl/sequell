@@ -350,7 +350,9 @@ module SQLBuilder
     end
 
     def result_index
-      node_text(my_node_tagged(:resultindex)) { |x| x.to_i }
+      node_text(my_node_tagged(:resultindex)) { |x|
+        x.sub(/^#/, '').to_i
+      }
     end
 
     def result_indices

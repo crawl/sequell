@@ -143,7 +143,7 @@ grammar ListgameQuery
   end
 
   rule result_index
-    integer !(".") <ResultIndex>
+    "#"? integer !(".") <ResultIndex>
   end
 
   rule integer
@@ -231,7 +231,7 @@ grammar ListgameQuery
   end
 
   rule key_op_val_arg
-    ( "-"? key_expr whitespace? query_cmp_op &(whitespace (key_op_val_arg / query_parenthesized)) /
+    ( "-"? key_expr whitespace? query_cmp_op &(whitespace (key_op_val_arg / query_parenthesized / result_index)) /
     "-"? key_expr whitespace? query_cmp_op whitespace? query_sloppy_value_expr /
     "-"? key_expr whitespace? query_cmp_op )
     <KeyOpVal>

@@ -140,10 +140,16 @@ describe "SQLQuery" do
       lg('!lg * killer=goblin -2').result_index.should eql(-2)
       lg('!lg * [[ * -5 ]]').result_index.should be_nil
 
-      q = lg('!lg * god= -5')
-      q.result_index.should be_nil
-      q.where_clauses_with_parameters.should \
-          eql([' WHERE god=?', ['-5']])
+      lg('!lg * god= -5').result_index.should eql(-5)
+      lg('!lg * god=-5').result_index.should eql(nil)
+      lg('!lg * god= 2').result_index.should eql(2)
+      lg('!lg * god=2').result_index.should eql(nil)
+
+      lg('!lg * god= #-5').result_index.should eql(-5)
+      lg('!lg * god= #22').result_index.should eql(22)
+      lg('!lg * god=#22').result_index.should be_nil
+      lg('!lg * god=#22').where_clauses_with_parameters.should \
+          eql([' WHERE god=?', ['#22']])
     end
   end
 
