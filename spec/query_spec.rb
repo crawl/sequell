@@ -182,6 +182,12 @@ describe "SQLQuery" do
     it "should correctly find the ratio tail" do
       lg('!lg * / win').ratio_tail.text.should eql('win')
     end
+
+    it "should parse the having clause" do
+      q = lg('!lg * won crace!=OM|GE|El|Gn|HD s=crace / name=foo ?: N = 0')
+      q.ratio_query?.should be_true
+      q.ratio_tail.having_clause_node.text.should eql('N = 0')
+    end
   end
 
   context "given a query with conditions" do

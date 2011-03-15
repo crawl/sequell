@@ -302,6 +302,10 @@ module SQLBuilder
       my_node_tagged(:queryratiotail)
     end
 
+    def having_clause_node
+      my_node_tagged(:havingclause)
+    end
+
     def summary_grouped_fields
       summary_node = my_node_tagged(:fieldgrouping)
       if summary_node
