@@ -125,23 +125,30 @@ class QueryContextFixups
       end
     end
 
-    field_name_op_match('cls', '~~') do |field, op, value|
-      pieces = value.split('|')
-      if pieces.size > 1 &&
-          (pieces.find_all { |p| p.length == 2 && p =~ /^[a-z]+$/i }.size ==
-           pieces.size)
-        equal_op = op == '~~' ? '=' : '!='
-        group_op = QueryConfig::Operators.group_op(equal_op)
-        piece_checks = pieces.map { |piece|
-          piece_class = CLASS_MAP[piece.downcase]
-          unless piece_class
-            raise QueryError.new("Unknown class `#{piece}` in `#{value}`")
-          end
-          SQLExprs.field_op_val(field, equal_op, piece_class)
-        }
-        SQLExprs.group(group_op, *piece_checks)
+    def self.piece_match_block(map, thing_name)
+      lambda do |field, op, value|
+        pieces = value.split('|')
+        if pieces.size > 1 &&
+            (pieces.find_all { |p| p.length == 2 && p =~ /^[a-z]+$/i }.size ==
+            pieces.size)
+          equal_op = op == '~~' ? '=' : '!='
+          group_op = QueryConfig::Operators.group_op(equal_op)
+          piece_checks = pieces.map { |piece|
+            piece_class = map[piece.downcase]
+            unless piece_class
+              raise QueryError.new("Unknown #{thing_name} `#{piece}` " +
+                                   "in `#{value}`")
+            end
+            SQLExprs.field_op_val(field, equal_op, piece_class)
+          }
+          SQLExprs.group(group_op, *piece_checks)
+        end
       end
     end
+
+    field_name_op_match('cls', '~~', &piece_match_block(CLASS_MAP, 'class'))
+    field_name_op_match(['crace', 'race'], '~~',
+                        &piece_match_block(SPECIES_MAP, 'species'))
   end
 
   context 'lg' do

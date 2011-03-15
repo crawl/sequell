@@ -276,22 +276,28 @@ describe "SQLQuery" do
          eql([" WHERE cls=?", ['Hunter']])
     end
 
-    it "should apply the class fixup for regex matched abbreviations" do
-      lg('!lg * cls=St|Re|Hu').where_clauses_with_parameters.should(
-         eql([" WHERE cls=? OR cls=? OR cls=?",
-               ["Stalker", "Reaver", "Hunter"]]))
+    it "should apply the race/class fixup for regex matched abbreviations" do
+      [ ['cls', 'St|Re|Hu', ['Stalker', 'Reaver', 'Hunter'] ],
+        ['crace', 'Hu|Tr|Gh', ['Human', 'Troll', 'Ghoul'] ] ].each do |field, value, matches|
 
-      lg('!lg * cls~~St|Re|Hu').where_clauses_with_parameters.should(
-         eql([" WHERE cls=? OR cls=? OR cls=?",
-               ["Stalker", "Reaver", "Hunter"]]))
+        lg("!lg * #{field}=#{value}").where_clauses_with_parameters.should \
+            eql([" WHERE #{field}=? OR #{field}=? OR #{field}=?", matches])
 
-      lg('!lg * cls!=St|Re|Hu').where_clauses_with_parameters.should(
-         eql([" WHERE cls!=? AND cls!=? AND cls!=?",
-               ["Stalker", "Reaver", "Hunter"]]))
+        lg("!lg * #{field}~~#{value}").where_clauses_with_parameters.should \
+            eql([" WHERE #{field}=? OR #{field}=? OR #{field}=?", matches])
 
-      lg('!lg * cls!~~St|Re|Hu').where_clauses_with_parameters.should(
-         eql([" WHERE cls!=? AND cls!=? AND cls!=?",
-               ["Stalker", "Reaver", "Hunter"]]))
+        lg("!lg * #{field}!=#{value}").where_clauses_with_parameters.should \
+            eql([" WHERE #{field}!=? AND #{field}!=? AND #{field}!=?", matches])
+
+        lg("!lg * #{field}!~~#{value}").where_clauses_with_parameters.should \
+            eql([" WHERE #{field}!=? AND #{field}!=? AND #{field}!=?", matches])
+      end
+
+      lg('!lg * race=Dr|Tr|SE').where_clauses_with_parameters.should \
+          eql([' WHERE race LIKE ? OR race=? OR race=?',
+                ['%Draconian', 'Troll', 'Sludge Elf']])
+      lg_error('!lg * race=Dr|Wo|SE').should \
+          eql("Unknown species `Wo` in `Dr|Wo|SE`")
     end
 
     it "should throw a parse error given an ambiguous race/class abbreviation" do
