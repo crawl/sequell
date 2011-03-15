@@ -1,6 +1,29 @@
 require 'spec_helper'
 
 describe "SQLQuery" do
+  context "given different game types in the query" do
+    it "should select the appropriate tables" do
+      lg('!lg *').query_tables[0].should eql('logrecord')
+      lg('!lm *').query_tables[0].should eql('milestone')
+      lg('!lg * crawl').query_tables[0].should eql('logrecord')
+      lg('!lm * crawl').query_tables[0].should eql('milestone')
+      lg('!lg * sprint').query_tables[0].should eql('spr_logrecord')
+      lg('!lg * game=sprint').query_tables[0].should eql('spr_logrecord')
+      lg('!lm * sprint').query_tables[0].should eql('spr_milestone')
+      lg('!lg * zotdef').query_tables[0].should eql('zot_logrecord')
+      lg('!lm * zotdef').query_tables[0].should eql('zot_milestone')
+      lg('!lm * game=zotdef').query_tables[0].should eql('zot_milestone')
+
+      lg_error('!lm * !zotdef').should \
+          eql("Bad argument `!zotdef`: `zotdef` cannot be negated")
+      lg_error('!lm * game=cow').should \
+          eql("Bad game type `cow`: known types are crawl, sprint, zotdef")
+      lg_error('!lm * game!=cow').should \
+          eql("Invalid expression `game!=cow`: " +
+              "`game` may only be used with `=`")
+    end
+  end
+
   it "should recognise alternative field names" do
     ['job', 'class', 'cls', 'role', 'c'].each do |field|
       query = lg("!lg * #{field}=Hu")

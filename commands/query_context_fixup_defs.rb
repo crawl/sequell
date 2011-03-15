@@ -32,6 +32,31 @@ class QueryContextFixups
   end
 
   context :any do
+    keyword_match('game') do |keyword|
+      prefix = HenzellConfig::GAME_PREFIXES[keyword.downcase]
+      if prefix
+        SQLExprs.node_modifier do |node|
+          node.root.game_type = keyword.downcase
+        end
+      end
+    end
+
+    field_name_match('game') do |field, op, val|
+      if op != '='
+        raise QueryError.new("Invalid expression `#{field}#{op}#{val}`: " +
+                             "`#{field}` may only be used with `=`")
+      end
+      prefixes = HenzellConfig::GAME_PREFIXES
+      prefix = prefixes[val.downcase]
+      unless prefix
+        raise QueryError.new("Bad game type `#{val}`: known types are " +
+                             prefixes.keys.sort.join(', '))
+      end
+      SQLExprs.node_modifier do |node|
+        node.root.game_type = val.downcase
+      end
+    end
+
     # Match simple branches or branches with depths as keywords
     keyword_match("place") do |keyword|
       if keyword =~ BRANCH_KEYWORD_REGEXP || keyword =~ BRANCH_DEPTH_REGEXP

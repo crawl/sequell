@@ -69,12 +69,10 @@ module QueryConfig
       @summarisable = !decorated_field.index('*')
       @type = nil
 
-      @name = if decorated_field =~ QueryConfig::R_FIELD_TYPE
-                @type = $1
-                decorated_field.gsub(/[*ID]+$/, '')
-              else
-                decorated_field
-              end
+      if decorated_field =~ QueryConfig::R_FIELD_TYPE
+        @type = $1
+      end
+      @name = decorated_field.gsub(/[*ID]+$/, '')
     end
 
     def summarisable?
@@ -105,6 +103,15 @@ module QueryConfig
         v
       end
     end
+
+    def to_s
+      name
+    end
+
+    def inspect
+      summary_qualifier = summarisable? ? '' : '*'
+      "#{name}#{type}#{summary_qualifier}"
+    end
   end
 
   ##
@@ -132,7 +139,7 @@ module QueryConfig
   class LGQueryContext
     @@current_context = nil
 
-    attr_reader :table, :ctx
+    attr_reader :ctx
     def initialize(context, props)
       @ctx = context
       @table = props['table']
@@ -144,6 +151,18 @@ module QueryConfig
            QueryConfig::FAKE_TYPED_FIELDS
       @field_name_map = Hash[@fields.map { |f| [f.name, f] }]
       @fixups = QueryContextFixups.context_fixups(@ctx)
+    end
+
+    def table(game_type=nil)
+      table_name = @table
+      if game_type
+        prefix = HenzellConfig::GAME_PREFIXES[game_type]
+        unless prefix
+          raise Exception.new("Unknown game type `#{game_type}`")
+        end
+        return prefix + table_name
+      end
+      table_name
     end
 
     def field(field_name)
@@ -201,7 +220,7 @@ module QueryConfig
     decorated_fields.map { |field| LGQueryField.new(field) }
   end
 
-  FAKE_TYPED_FIELDS = self.table_typed_fields("fake-typed-fields")
+  FAKE_TYPED_FIELDS = self.table_typed_fields("fake-fields-with-type")
 
   def self.query_context_pairs
     QUERY_CONTEXT_RAW_MAP.map do |context, props|

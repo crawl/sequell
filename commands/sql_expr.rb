@@ -24,7 +24,12 @@ module SQLExprs
       right_expr = query_node.right_expr_node
 
       if left_expr.simple_field? && right_expr.simple_value?
-        self.field_op_val(left_expr.text, operator, right_expr.text)
+        result = self.field_op_val(left_expr.text, operator, right_expr.text)
+        if result.is_a?(NodeModifier)
+          result.call(query_node)
+          return DummyExpr.new
+        end
+        result
       else
         node = SQLExpr.new
         node.op = query_node.operator_node.text
@@ -72,6 +77,20 @@ module SQLExprs
     node
   end
 
+  class NodeModifier
+    def initialize(&block)
+      @block = block
+    end
+
+    def call(node)
+      @block.call(node)
+    end
+  end
+
+  def self.node_modifier(&block)
+    NodeModifier.new(&block)
+  end
+
   # Represents a distinct SQL expression, which may be:
   # * Operator expression: <op> <expr> <expr> ...
   # * Atomic: <fieldname>, string, number.
@@ -86,6 +105,10 @@ module SQLExprs
       @op = nil
       @nodes = []
       @parameter = nil
+    end
+
+    def dummy?
+      false
     end
 
     def negate
@@ -116,7 +139,8 @@ module SQLExprs
       if expr.is_a?(Array)
         raise Exception.new("Attempt to add array as expression node")
       end
-      return unless expr
+
+      return unless expr && !expr.dummy?
 
       if @nodes.size == 1 && expr.is_a?(ParameterExpr)
         expr = transform_parameter(expr)
@@ -179,6 +203,14 @@ module SQLExprs
         body = parenthesise(body) if parenthesise?
         body
       end
+    end
+  end
+
+  ##
+  # Represents an expression that should be discarded.
+  class DummyExpr < SQLExpr
+    def dummy?
+      true
     end
   end
 
@@ -307,6 +339,16 @@ module SQLExprs
           end
         raise QueryError.new(message)
       end
+
+      if expr.is_a?(NodeModifier)
+        if keyword_node.negated?
+          raise QueryError.new("Bad argument `#{keyword_node.text}`: " +
+                               "`#{keyword_node.value}` cannot be negated")
+        end
+        expr.call(keyword_node)
+        return DummyExpr.new
+      end
+
       keyword_node.negated? ? expr.negate : expr
     end
   end

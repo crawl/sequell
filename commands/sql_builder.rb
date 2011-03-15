@@ -144,8 +144,8 @@ module SQLBuilder
       " FROM " + query_table_list
     end
 
-    def query_table_list
-      [@context.table]
+    def query_tables
+      [@context.table(@query.game_type)]
     end
 
     def where_clauses
@@ -229,7 +229,7 @@ module SQLBuilder
       value
     end
 
-    attr_accessor :elements, :tag, :interval, :text
+    attr_accessor :elements, :tag, :interval, :text, :parent, :game_type
 
     def initialize(syntax_node=nil)
       if !syntax_node
@@ -240,9 +240,11 @@ module SQLBuilder
       else
         @tag = syntax_node.lg_node
         @elements = QueryNode.resolve_elements(syntax_node.elements)
+        @elements.each { |e| e.parent = self }
         @text = syntax_node.text_value.strip
         @interval = syntax_node.interval
       end
+      @game_type = nil
     end
 
     def condition_node?
@@ -270,6 +272,14 @@ module SQLBuilder
             yield e_child
           end
         end
+      end
+    end
+
+    def root
+      if tag == :subquery || @parent.nil?
+        self
+      else
+        @parent.root
       end
     end
 

@@ -33,6 +33,7 @@ sql-field-names:
 # query_synthetic.rb
 fake-fields-with-type:
   - when*
+  - game*
 
 ##
 # Field type suffixes:
