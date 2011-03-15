@@ -46,6 +46,25 @@ module SQLBuilder
     end
   end
 
+  ##
+  # Merges the clauses of the src query into the target, possibly
+  # raising exceptions on incompatibilites.
+  class QueryMerger
+    def self.merge_into(target, src)
+      sanity_check_merge(target)
+      sanity_check_merge(src)
+    end
+
+    def self.sanity_check_merge(query)
+      if query.summary_query?
+        raise QueryError.new("Cannot merge summary query: `#{query}`")
+      end
+      if query.ratio_query?
+        raise QueryError.new("Cannot merge ratio query: `#{query}`")
+      end
+    end
+  end
+
   class SQLQuery
     def initialize(config)
       @config = config
@@ -67,8 +86,20 @@ module SQLBuilder
       validate_query
     end
 
+    def strip_command_identifier(command_line)
+      command_line.sub(/^\W\w+\s+/, '')
+    end
+
+    def merge!(query)
+      if !query.is_a?(SQLQuery)
+        query[:context] = @context.name unless query[:context]
+        query = SQLQuery.new(query)
+      end
+      QueryMerger.merge_into(self, query)
+    end
+
     def to_s
-      "Query[#{readable_query}]"
+      "!#{@context.name} #{@cmdline}"
     end
 
     def readable_query
@@ -85,10 +116,6 @@ module SQLBuilder
 
     def command_line_context(command_line)
       command_line =~ /^\W(\w+)/ && $1
-    end
-
-    def strip_command_identifier(command_line)
-      command_line.sub(/^\W\w+\s+/, '')
     end
 
     def validate_query

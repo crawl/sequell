@@ -3,17 +3,27 @@ require 'commands/sql_builder'
 module HenzellHelpers
   include SQLBuilder
 
-  def lg(cmdline, nick='nobody')
-    SQLQuery.new(:nick => nick,
-                 :cmdline => cmdline)
+  DEFAULT_NICK = 'nobody'
+
+  def lg(*cmdline)
+    cmd = cmdline[0]
+    nick = HenzellHelpers::DEFAULT_NICK
+    q = SQLQuery.new(:nick => nick,
+                     :cmdline => cmd)
+    if cmdline.size > 1
+      cmdline[1..-1].each do |cmd|
+        q.merge!(:nick => nick, :cmdline => cmd)
+      end
+    end
+    q
   end
 
-  def lg_collect_text(cmdline, each_method, nick='nobody')
-    recursive_collect_text(lg(cmdline, nick), each_method)
+  def lg_collect_text(cmdline, each_method)
+    recursive_collect_text(lg(cmdline), each_method)
   end
 
-  def lg_error(cmdline, nick='nobody')
-    lg(cmdline, nick)
+  def lg_error(cmdline)
+    lg(cmdline)
     raise Exception.new("Expected `#{cmdline}` parse to fail, but it succeeded")
   rescue SQLBuilder::QueryError
     $!.to_s

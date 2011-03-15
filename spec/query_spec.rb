@@ -1,6 +1,33 @@
 require 'spec_helper'
 
 describe "SQLQuery" do
+  it "should show the full text of a parsed query" do
+    queries = ['!lg *', '!lm *', '!lg * killer=goblin', '!lm * 0.8 xom']
+    queries.each do |q|
+      lg(q).to_s.should eql(q)
+    end
+  end
+
+  context "given a query with keywords" do
+    it "should recognise server names" do
+      ['cdo', 'cao', 'rhf'].each do |server|
+        lg("!lg * #{server}").where_clauses_with_parameters.should \
+            eql([' WHERE src=?', [server]])
+        lg("!lm * #{server}").where_clauses_with_parameters.should \
+            eql([' WHERE src=?', [server]])
+      end
+    end
+  end
+
+  it "should be able to merge multiple queries" do
+    lg('!lg *', 'cdo place=D:2').to_s.should eql('!lg * cdo place=D:2')
+    lg('!lm *', 'cdo place=D:2').to_s.should eql('!lm * cdo place=D:2')
+    lg('!lg * killer=goblin', 'cdo place=D:2').to_s.should \
+        eql('!lg * cdo killer=goblin place=D:2')
+    lg('!lm * 0.8 xom', 'cdo place=D:2').to_s.should \
+        eql('!lm * 0.8 xom cdo place=D:2')
+  end
+
   context "given different game types in the query" do
     it "should select the appropriate tables" do
       lg('!lg *').query_tables[0].should eql('logrecord')

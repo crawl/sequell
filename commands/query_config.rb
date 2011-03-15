@@ -153,6 +153,10 @@ module QueryConfig
       @fixups = QueryContextFixups.context_fixups(@ctx)
     end
 
+    def name
+      @ctx
+    end
+
     def table(game_type=nil)
       table_name = @table
       if game_type

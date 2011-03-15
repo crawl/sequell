@@ -22,6 +22,7 @@ class QueryContextFixups
 
   PREFIX_FIXUPS = HenzellConfig::CFG['prefix-field-fixups']
 
+  GAME_SOURCES = Set.new(HenzellConfig::CFG['sources'])
 
   def self.expand_god(god_abbr)
     if god_abbr && god_abbr.length > 0
@@ -54,6 +55,12 @@ class QueryContextFixups
       end
       SQLExprs.node_modifier do |node|
         node.root.game_type = val.downcase
+      end
+    end
+
+    keyword_match('src') do |keyword|
+      if GAME_SOURCES.include?(keyword.downcase)
+        SQLExprs.field_op_val('src', '=', keyword.downcase)
       end
     end
 
