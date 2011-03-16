@@ -254,15 +254,15 @@ grammar ListgameQuery
   end
 
   rule query_op_expr
-    query_and_expr
-  end
-
-  rule query_and_expr
-    query_or_expr (  whitespace? op_and whitespace? query_or_expr )* <QueryCalcExpr>
+    query_or_expr
   end
 
   rule query_or_expr
-    query_cmp_expr ( whitespace? op_or whitespace? query_cmp_expr )*  <QueryCalcExpr>
+    query_and_expr (  whitespace? op_or whitespace? query_and_expr )* <QueryCalcExpr>
+  end
+
+  rule query_and_expr
+    query_cmp_expr ( whitespace? op_and whitespace? query_cmp_expr )*  <QueryCalcExpr>
   end
 
   rule query_cmp_expr
