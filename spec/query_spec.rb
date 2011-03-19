@@ -26,6 +26,15 @@ describe "SQLQuery" do
         eql('!lg * cdo killer=goblin place=D:2')
     lg('!lm * 0.8 xom', 'cdo place=D:2').to_s.should \
         eql('!lm * 0.8 xom cdo place=D:2')
+    lg('!lm * 0.7 Temple $[[!lm * Lair x=count]]=0',
+       'xom turn>5000').to_s.should \
+        eql('!lm * 0.7 Temple xom $[[!lm * Lair x=count]]=0 turn>5000')
+    lg('!lg * 0.7 Temple $[[!lm * Lair]]=0',
+       'xom turn>5000').to_s.should \
+        eql('!lg * 0.7 Temple xom $[[!lm * Lair]]=0 turn>5000')
+    lg('!lg * 0.7 Temple $[[!lm * Lair]]=0',
+       'xom turn>5000 $[[!lm * Orc]]=0').to_s.should \
+        eql('!lg * 0.7 Temple xom $[[!lm * Lair]]=0 turn>5000 $[[!lm * Orc]]=0')
   end
 
   context "given different game types in the query" do

@@ -15,7 +15,7 @@ module SQLBuilder
   include SQLExprs
 
   CONDITION_NODE_TAGS = [:nickselector, :querykeywordexpr, :queryorexpr,
-    :keyopval]
+    :keyopval, :subquerycondition]
 
   CONDITION_NODE_SET = Set.new(CONDITION_NODE_TAGS)
 
@@ -366,6 +366,20 @@ module SQLBuilder
       end
     end
 
+    ##
+    # returns each condition node in the given query, without
+    # recursing into subqueries. A condition node is any node that looks like
+    # a filter condition and may influence a WHERE clause.
+    #
+    # Note that some nodes are not condition nodes but may still
+    # affect WHERE clauses, notably the grouping node: viz. s=rune =>
+    # type=rune s=noun, thus implicitly adding a 'type=rune' condition
+    # node. This kind of implicit conversion must be handled
+    # elsewhere: QueryNode merely deals with the AST, not the
+    # semantics.
+    #
+    # In our case, SQLQuery handles such extra semantics.
+    #
     def each_condition_node
       @elements.each do |e|
         if e.condition_node?
@@ -376,6 +390,10 @@ module SQLBuilder
           end
         end
       end
+    end
+
+    def subquery?
+      tag == :subquery
     end
 
     def root

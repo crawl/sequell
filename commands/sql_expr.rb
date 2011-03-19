@@ -3,6 +3,8 @@ module SQLExprs
     context = LGQueryContext.current
 
     case query_node.tag
+    when :subquery
+      SubqueryExpr.create(query_node)
     when :nickselector
       NickSelectExpr.create(query_node)
     when :querykeywordexpr
@@ -364,6 +366,28 @@ module SQLExprs
       end
       node = SQLExprs.field_op_val('name', '=', query_node.value)
       query_node.negated? ? node.negate : node
+    end
+  end
+
+  ##
+  # Represents a subquery that's used for a value. A subquery may specify
+  # a return value using an x=foo expression. If unspecified the subquery
+  # defaults to a COUNT(*) subquery, which may in turn be converted to an EXISTS
+  # subquery if compared with 0.
+  #
+  # FIXME: actually implement subquery to_sql.
+  #
+  class SubqueryExpr < SQLExpr
+    def self.create(node)
+      self.new(node)
+    end
+
+    def initialize(subquery_node)
+      @subquery_node = subquery_node
+    end
+
+    def to_sql
+      raise Exception.new("TODO")
     end
   end
 end
