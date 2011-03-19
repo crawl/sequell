@@ -53,6 +53,10 @@ module SQLBuilder
     def self.merge_into(target, src)
       sanity_check_merge(target)
       sanity_check_merge(src)
+
+      src.each_mergeable_node do |node|
+        target.merge_node!(node)
+      end
     end
 
     def self.sanity_check_merge(query)
@@ -90,16 +94,42 @@ module SQLBuilder
       command_line.sub(/^\W\w+\s+/, '')
     end
 
+    ##
+    # Merge another query into this query.
     def merge!(query)
       if !query.is_a?(SQLQuery)
         query[:context] = @context.name unless query[:context]
+
+        # If we're passed a string query to merge, it must start with
+        # *; if it doesn't, we supply the leading *.
+        #
+        # If the caller really wants to merge a query with a nick
+        # selector, they may use an explicit nick dereference:
+        # '@person foo=bar' etc.
+        unless query[:cmdline] =~ /^\* /
+          query[:cmdline] = '* ' + query[:cmdline]
+        end
         query = SQLQuery.new(query)
       end
       QueryMerger.merge_into(self, query)
     end
 
+    def merge_node!(condition_node)
+      query_body_node << condition_node
+    end
+
     def to_s
-      "!#{@context.name} #{@cmdline}"
+      pieces = [body_node_text, ratio_tail_text].find_all { |n| n }.join(' / ')
+      "!#{@context.name} #{pieces}"
+    end
+
+    def body_node_text
+      @query.query_body_nodes.map { |node| node.to_readable_s }.join(' ')
+    end
+
+    def ratio_tail_text
+      tail = @query.ratio_tail
+      tail && tail.to_readable_s
     end
 
     def readable_query
@@ -274,6 +304,35 @@ module SQLBuilder
       @game_type = nil
     end
 
+    ##
+    # Adds the given node as a child of this node.
+    #
+    # Keyword nodes are inserted after the last existing keyword
+    # expression; all other nodes go to the end.
+    #
+    def << (node)
+      if !query_body_node?
+        raise Exception.new("Attempt to add node to #{tag} " +
+                            "(must add to :querybody)")
+      end
+
+      text = @elements.map { |n| n.to_readable_s }.join('|')
+
+      if node.keyword?
+        first_nonkeyword_node_index = @elements.find_index { |n|
+          !n.keyword? && !n.nick_selector?
+        }
+        if first_nonkeyword_node_index
+          @elements.insert(first_nonkeyword_node_index, node)
+        else
+          @elements << node
+        end
+      else
+        @elements << node
+      end
+      self
+    end
+
     def condition_node?
       SQLBuilder::CONDITION_NODE_SET.include?(tag)
     end
@@ -288,6 +347,23 @@ module SQLBuilder
 
     def simple_field?
       tag == :queryfield
+    end
+
+    ##
+    # Returns all nodes immediately under the query body node.
+    def query_body_nodes
+      body_node = query_body_node
+      query_body_node && query_body_node.elements
+    end
+
+    ##
+    # Yields each node that can be merged into another query.
+    def each_mergeable_node
+      each_condition_node do |node|
+        unless node.nick_selector?
+          yield node
+        end
+      end
     end
 
     def each_condition_node
@@ -323,6 +399,14 @@ module SQLBuilder
 
     def ratio_query?
       !!ratio_tail
+    end
+
+    def query_body_node?
+      tag == :querybody
+    end
+
+    def query_body_node
+      my_node_tagged(:querybody)
     end
 
     def ratio_tail
@@ -369,15 +453,22 @@ module SQLBuilder
       my_nodes_tagged(:subquery)
     end
 
+    def keyword?
+      tag == :querykeywordexpr
+    end
+
     ##
     # Return all query keywords, such as DEFE, win, D:22
-
     def keywords
       my_nodes_tagged(:querykeywordexpr)
     end
 
     def nick_selector
       my_node_tagged(:nickselector)
+    end
+
+    def nick_selector?
+      tag == :nickselector
     end
 
     def result_index
@@ -528,6 +619,10 @@ module SQLBuilder
 
     def to_s
       "#{@tag} (#{@text})"
+    end
+
+    def to_readable_s
+      @text
     end
   end
 end
