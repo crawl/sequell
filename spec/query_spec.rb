@@ -26,9 +26,9 @@ describe "SQLQuery" do
         eql('!lg * cdo killer=goblin place=D:2')
     lg('!lm * 0.8 xom', 'cdo place=D:2').to_s.should \
         eql('!lm * 0.8 xom cdo place=D:2')
-    lg('!lm * 0.7 Temple $[[!lm * Lair x=count]]=0',
+    lg('!lm * 0.7 Temple $[[!lm * Lair]]=0',
        'xom turn>5000').to_s.should \
-        eql('!lm * 0.7 Temple xom $[[!lm * Lair x=count]]=0 turn>5000')
+        eql('!lm * 0.7 Temple xom $[[!lm * Lair]]=0 turn>5000')
     lg('!lg * 0.7 Temple $[[!lm * Lair]]=0',
        'xom turn>5000').to_s.should \
         eql('!lg * 0.7 Temple xom $[[!lm * Lair]]=0 turn>5000')
@@ -46,12 +46,60 @@ describe "SQLQuery" do
     # imply an EXISTS subquery.
     it "should recognise implicit EXISTS/NOT EXISTS subqueries" do
       lg('!lg * 0.7 win $[[!lm . Lair]]=0').where_clauses_with_parameters.should \
-          eql([" WHERE cv=? AND ktyp=? AND " +
-               "NOT EXISTS (SELECT * FROM milestone" +
+          eql([" WHERE cv=? AND ktyp=? AND" +
+               " NOT EXISTS (SELECT * FROM milestone" +
                            " WHERE pname=lg.pname AND rstart=lg.rstart AND" +
                            " place LIKE ?)",
                ['0.7', 'winning', 'Lair:%']])
+
+      lg('!lg * 0.7 win $[[!lm . Lair]]>0').where_clauses_with_parameters.should \
+          eql([" WHERE cv=? AND ktyp=? AND" +
+               " EXISTS (SELECT * FROM milestone" +
+                        " WHERE pname=lg.pname AND rstart=lg.rstart AND" +
+                        " place LIKE ?)",
+               ['0.7', 'winning', 'Lair:%']])
     end
+  end
+
+  it "should handle a grouped query with a having condition" do
+    # Query for winners with more than 10 wins.
+    q = lg('!lg * win s=name ?: count>10')
+    q.where_clauses_with_parameters.should \
+        eql([" WHERE ktyp=?", ['winning']])
+    q.group_by_clauses.should eql(' GROUP BY pname')
+    q.having_clauses_with_parameters.should \
+        eql(['HAVING COUNT(*)>?', ['10']])
+
+    # Query for winners with more than 3 wins averaging 4 or more
+    # runes per win. `n` is the same as `count` for having clauses.
+    q = lg('!lg * win s=name ?: n>3 avg(nrune)>=4')
+    q.where_clauses_with_parameters.should \
+        eql([" WHERE ktyp=?", ['winning']])
+    q.group_by_clauses.should eql(' GROUP BY pname')
+    q.having_clauses_with_parameters.should \
+        eql([' HAVING COUNT(*)>? AND AVG(nrune)>=?', ['10', '4']])
+  end
+
+  it "should handle a grouped joined query with a having condition" do
+    # Find the most recent game by a player with more than 3 wins.
+    q = lg('!lg * [[win s=name ?: n > 3]]')
+    q.where_clauses_with_parameters.should \
+        eql([' WHERE lg.pname=slg.pname', []])
+    q.query_tables.should eql(['logrecord lg',
+                               "(SELECT pname FROM logrecord" +
+                                " WHERE ktyp=? GROUP BY pname" +
+                                " HAVING COUNT(*)>?) slg"])
+    q.query_table_parameters.should eql(['winning', '3'])
+  end
+
+  it "should use predictable table aliases" do
+    lg('!lg *').query_table_aliases.should eql([])
+    lg('!lg * [[* win s=name ?: n > 3]]').query_table_aliases.should \
+        eql(['lg', 'slg'])
+
+    # First milestone in Lair for the most recent winning game by anyone.
+    lg('!lm * Lair 1 [[!lg * win]]').query_table_aliases.should \
+        eql(['lm', 'slg'])
   end
 
   context "given different game types in the query" do

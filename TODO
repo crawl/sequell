@@ -128,7 +128,7 @@
   ${expr1}!=${expr2}
   ${int+dex}<${str}
 
-  ${int + $[[ * x=count ]]}
+  ${int + $[[* x=count ]]}
 
   expressions may be:
    - simple field names
@@ -201,11 +201,12 @@ explain extended
    WHERE l.charabbrev = ch.charabbrev AND l.sc = ch.sc
    GROUP BY l.pname ORDER BY c DESC
 
-   !lg * [[ * s=char j=char,max(sc) ]] s=name
+   !lg * [[* s=char,max(sc)]] s=name
 
 - Game with most Boris kills:
-   !lg * [[ !lm * uniq=Boris s=game_id ]]
-   (The implicit order by COUNT(*) is used here).
+   !lg * [[ !lm * uniq=Boris s=gid ?: limit=1 ]]
+   (The implicit order by COUNT(*) is used here, limited to 1 result to join
+    the right game).
 
 - Games with most milestones in Shoals:
    !lg * [[!lm * Shoals s=game_id]]
