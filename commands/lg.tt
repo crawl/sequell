@@ -101,7 +101,7 @@ grammar ListgameQuery
   end
 
   rule query_parenthesized
-    query_subpart / query_subquery_clause
+    query_subpart / query_subquery_join
   end
 
   rule query_subpart
@@ -114,10 +114,6 @@ grammar ListgameQuery
 
   rule query_expr_subquery
     "$" query_subquery
-  end
-
-  rule query_exists_subquery
-    negation? "$exists" whitespace? query_subquery <ExistSubquery>
   end
 
   rule query_subquery_join
