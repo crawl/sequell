@@ -37,6 +37,23 @@ describe "SQLQuery" do
         eql('!lg * 0.7 Temple xom $[[!lm * Lair]]=0 turn>5000 $[[!lm * Orc]]=0')
   end
 
+  context "given subqueries" do
+    # Note !lm . in the subquery implies correlating by name and start time,
+    # i.e. correlating each game to its milestones.
+    #
+    # Also note that $[[]]=0 without an explicit value, or with an
+    # explicit x=count implies a NOT EXISTS subquery. $[[]]>0 or $[[]]!=0 would
+    # imply an EXISTS subquery.
+    it "should recognise implicit EXISTS/NOT EXISTS subqueries" do
+      lg('!lg * 0.7 win $[[!lm . Lair]]=0').where_clauses_with_parameters.should \
+          eql([" WHERE cv=? AND ktyp=? AND " +
+               "NOT EXISTS (SELECT * FROM milestone" +
+                           " WHERE pname=lg.pname AND rstart=lg.rstart AND" +
+                           " place LIKE ?)",
+               ['0.7', 'winning', 'Lair:%']])
+    end
+  end
+
   context "given different game types in the query" do
     it "should select the appropriate tables" do
       lg('!lg *').query_tables[0].should eql('logrecord')
