@@ -41,7 +41,8 @@ DGL_ALIEN_MORGUES = \
 
 DGL_ALIEN_TTYRECS = \
 [
- [ %r/cao-.*/, 'http://crawl.akrasiac.org/rawdata' ],
+ [ %r/cao-.*/, ['http://termcast.develz.org/crawl.akrasiac.org/ttyrecs',
+                'http://crawl.akrasiac.org/rawdata'] ],
  [ %r/cdo.*$/, [ 'http://termcast.develz.org/ttyrecs',
                  'http://crawl.develz.org/ttyrecs' ] ],
 
