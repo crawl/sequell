@@ -70,6 +70,18 @@ module SQLBuilder
   end
 
   class SQLQuery
+    @@current_query = nil
+
+    def self.with_query(query)
+      old_query = @@current_query
+      begin
+        @@current_query = query
+        yield
+      ensure
+        @@current_query = old_query
+      end
+    end
+
     def initialize(config)
       @config = config
       context_name = config[:context] || command_line_context(config[:cmdline])
@@ -88,6 +100,12 @@ module SQLBuilder
       @where_node = nil
 
       validate_query
+    end
+
+    def with
+      SQLQuery.with_query(self) do
+        yield
+      end
     end
 
     def strip_command_identifier(command_line)
@@ -216,11 +234,13 @@ module SQLBuilder
 
     def where_node
       @where_node ||= @context.with do
-        base_where_node = SQLExprs.operator('AND')
-        each_condition_node do |condition|
-          base_where_node << SQLExprs.create(condition)
+        self.with do
+          base_where_node = SQLExprs.operator('AND')
+          each_condition_node do |condition|
+            base_where_node << SQLExprs.create(condition)
+          end
+          base_where_node.empty? ? nil : base_where_node
         end
-        base_where_node.empty? ? nil : base_where_node
       end
       @where_node
     end
