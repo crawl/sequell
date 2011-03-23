@@ -5,35 +5,44 @@ use warnings;
 use lib 'commands';
 use Helper;
 
+use File::Glob qw/:globally :nocase/;
+
 my $nick = Helper::nick_alias(shift);
 my $baseURL = "http://crawl.akrasiac.org/rcfiles/";
-my $localPath = "/var/www/crawl/rcfiles/";
-my $rcsuffix = ".crawlrc";
+my $localPath = "/var/www/crawl/rcfiles";
 
-do 'commands/helper.pl';
-help("Gives an URL to the specified users crawl configuration file.");
+my $rcsuffix_glob = ".*rc";
 
-sub rcpath {
-  "$localPath$_[0]$rcsuffix"
-}
+help("Gives an URL to the specified user's crawl configuration file.");
 
-sub showRC {
-  -e(rcpath($_[0])) && do {
-    print "$baseURL$_[0]$rcsuffix\n";
-    1;
-  };
-}
-
-sub globRC {
-  my $nick = shift;
-  my @allrc = glob("${localPath}*$rcsuffix");
-  for my $m (@allrc) {
-    my ($name) = $m =~ /^\Q$localPath\E(.*)\Q$rcsuffix\E$/;
-    if (lc($name) eq lc($nick)) {
-      showRC($name) and exit(0);
-    }
+sub rc_match($$) {
+  my ($dir, $user) = @_;
+  foreach my $file ("$dir/$user.rc", "$dir/$user.crawlrc") {
+    return $file if -f $file;
   }
-  Helper::error("$nick doesn't even exist!\n");
+  glob("$dir/$user$rcsuffix_glob")
 }
 
-showRC($nick) || globRC($nick)
+sub find_user_rc($) {
+  my $user = shift;
+  my @subdirs = (grep(-d, glob("${localPath}/crawl-*")), $localPath);
+  # [ds] Weird behaviour of map here on perl 5.8: not using the temp
+  # $f breaks
+  my @files = map { my $f = rc_match($_, $user); $f } @subdirs;
+  @files = grep(-f, grep($_, @files));
+  @files = sort { -M($a) <=> -M($b) } @files;
+  $files[0]
+}
+
+sub show_rc_url($) {
+  my $rc = shift;
+  unless ($rc) {
+    print "Can't find rc for $nick.\n";
+    return;
+  }
+
+  my ($subpath) = $rc =~ m{^$localPath/*(.*)};
+  print "$baseURL$subpath\n";
+}
+
+show_rc_url(find_user_rc($nick));
