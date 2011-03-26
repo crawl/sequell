@@ -60,6 +60,8 @@ my @CHANNELS         = Henzell::Config::array('channels');
 my $ANNOUNCE_CHANNEL = $CONFIG{announce_channel};
 my $DEV_CHANNEL      = $CONFIG{dev_channel};
 
+my $ANNOUNCEMENTS_FILE = '/var/lib/dgamelaunch/logs/announcements.log';
+
 my @BORING_UNIQUES = qw/Jessica Ijyb Blork Terence Edmund Psyche
                         Joseph Josephine Harold Norbert Jozef
                         Maud Duane Grum Gastronok Dowan Duvessa
@@ -79,6 +81,8 @@ initialize_sqllog();
 
 my @loghandles = open_handles(@logfiles);
 my @stonehandles = open_handles(@stonefiles);
+
+open my $announce_handle, '<', $ANNOUNCEMENTS_FILE;
 
 if ($CONFIG{sql_store}) {
   if (@loghandles >= 1) {
@@ -235,6 +239,23 @@ sub check_all_logfiles
 {
   for my $logh (@loghandles) {
     1 while tail_logfile($logh);
+  }
+}
+
+sub make_announcements
+{
+  return unless $announce_handle;
+
+  my $offset = tell $announce_handle;
+  my $line = <$announce_handle>;
+  if (!$line || $line !~ /\S.*\n$/) {
+    seek($announce_handle, $offset, 0);
+    return;
+  }
+
+  chomp $line;
+  for my $channel ($ANNOUNCE_CHANNEL, $DEV_CHANNEL) {
+    raw_message_post({ channel => $channel }, $line);
   }
 }
 
@@ -610,6 +631,7 @@ sub tick {
 
   main::check_stonefiles();
   main::check_all_logfiles();
+  main::make_announcements();
   return 1;
 }
 
