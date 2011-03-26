@@ -77,14 +77,14 @@ Henzell::Utils::lock(verbose => 1,
 Henzell::Utils::daemonify() if $daemon;
 
 require 'sqllog.pl';
-initialize_sqllog();
 
 my @loghandles = open_handles(@logfiles);
 my @stonehandles = open_handles(@stonefiles);
 
-open my $announce_handle, '<', $ANNOUNCEMENTS_FILE;
+my $announce_handle = tailed_handle($ANNOUNCEMENTS_FILE);
 
 if ($CONFIG{sql_store}) {
+  initialize_sqllog();
   if (@loghandles >= 1) {
     sql_register_logfiles(map $_->{file}, @loghandles);
     catchup_logfiles();
@@ -255,7 +255,7 @@ sub make_announcements
 
   chomp $line;
   for my $channel ($ANNOUNCE_CHANNEL, $DEV_CHANNEL) {
-    raw_message_post({ channel => $channel }, $line);
+    raw_message_post({ channel => $channel }, $line) if $channel;
   }
 }
 

@@ -4,10 +4,36 @@ use base 'Exporter';
 use strict;
 use warnings;
 
-use Fcntl qw/:flock/;
+use Fcntl qw/:flock SEEK_SET SEEK_END/;
 use POSIX;
 
+our @EXPORT = qw/tailed_handle/;
 our @EXPORT_OK = qw/lock_or_die lock daemonify/;
+
+##
+# Returns a file handle pointing just after the last line of the file
+# (presumably at EOF).
+sub tailed_handle {
+  my $file = shift;
+  open my $handle, '<', $file or return;
+
+  # Go to the very end and see if we have a newline there:
+  seek($handle, -1, SEEK_END) or return $handle;
+
+  my $offset = tell($handle);
+  my $tries = 5;
+  while ($tries-- > 0) {
+    my $line = <$handle>;
+    if (!defined($line) || $line =~ /\n$/) {
+      # Excellent! We're done here.
+      return $handle;
+    }
+    # Ugh, seek back to original spot, sleep and hope something was writing
+    # to the logfile:
+    seek($handle, $offset, SEEK_SET) or return;
+    select(undef, undef, undef, 0.25);
+  }
+}
 
 sub lock_filename {
   my $basename = shift;
