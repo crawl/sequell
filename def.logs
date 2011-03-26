@@ -16,6 +16,16 @@
 [local:cao]
 /home/crawl/chroot/var/games/crawl07/saves/logfile-sprint
 
+[local:cao]
+/var/lib/dgamelaunch/crawl-master/crawl-git/saves/logfile
+
+[local:cao]
+/var/lib/dgamelaunch/crawl-master/crawl-git/saves/logfile-sprint
+
+[local:cao]
+/var/lib/dgamelaunch/crawl-master/crawl-git/saves/logfile-zotdef
+
+
 # http://$cao/allgames.txt
 [remote:cao]
 remote.cao-logfile-0.3
@@ -36,6 +46,17 @@ remote.cao-logfile-0.7
 
 [remote:cao:http://$cao/logfile07-sprint]
 remote.cao-logfile-0.7-sprint
+
+
+[remote:cao:http://$cao/logfile-git]
+remote.cao-logfile-git
+
+[remote:cao:http://$cao/logfile-git-sprint]
+remote.cao-logfile-git-sprint
+
+[remote:cao:http://$cao/logfile-git-zotdef]
+remote.cao-logfile-git-zotdef
+
 
 [remote:cdo]
 remote.cdo-logfile-0.3

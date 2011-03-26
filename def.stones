@@ -19,6 +19,16 @@
 [local:cao]
 /home/crawl/chroot/var/games/crawl07/saves/milestones-sprint
 
+[local:cao]
+/var/lib/dgamelaunch/crawl-master/crawl-git/saves/milestones
+
+[local:cao]
+/var/lib/dgamelaunch/crawl-master/crawl-git/saves/milestones-sprint
+
+[local:cao]
+/var/lib/dgamelaunch/crawl-master/crawl-git/saves/milestones-zotdef
+
+
 # http://$cao/milestones02.txt
 [remote:cao]
 remote.cao-milestones-0.2
@@ -43,6 +53,16 @@ remote.cao-milestones-0.7
 
 [remote:cao:http://$cao/milestones07-sprint]
 remote.cao-milestones-0.7-sprint
+
+[remote:cao:http://$cao/milestones-git]
+remote.cao-milestones-git
+
+[remote:cao:http://$cao/milestones-git-sprint]
+remote.cao-milestones-git-sprint
+
+[remote:cao:http://$cao/milestones-git-zotdef]
+remote.cao-milestones-git-zotdef
+
 
 [remote:cdo]
 remote.cdo-milestones-0.3
