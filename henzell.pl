@@ -255,7 +255,10 @@ sub make_announcements
 
   chomp $line;
   for my $channel ($ANNOUNCE_CHANNEL, $DEV_CHANNEL) {
-    raw_message_post({ channel => $channel }, "/notice $line") if $channel;
+    if ($channel) {
+      print "Posting notice on $channel: $line\n";
+      raw_message_post({ channel => $channel }, "/notice $line");
+    }
   }
 }
 
