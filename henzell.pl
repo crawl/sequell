@@ -255,7 +255,7 @@ sub make_announcements
 
   chomp $line;
   for my $channel ($ANNOUNCE_CHANNEL, $DEV_CHANNEL) {
-    raw_message_post({ channel => $channel }, $line) if $channel;
+    raw_message_post({ channel => $channel }, "/notice $line") if $channel;
   }
 }
 
@@ -374,11 +374,16 @@ sub raw_message_post {
   my ($m, $output) = @_;
 
   # Handle emotes (/me does foo)
-  if ($output =~ m{^/me }) {
-    $output =~ s{^/me }{};
+  if ($output =~ s{^/me }{}) {
     $HENZELL->emote(channel => $$m{channel},
                     who => $$m{who},
                     body => $output);
+    return;
+  }
+
+  if ($output =~ s{^/notice }{}) {
+    $HENZELL->notice(channel => $$m{channel},
+                     body => $output);
     return;
   }
 
