@@ -178,6 +178,8 @@ species:
   HE: High Elf
   SE: Sludge Elf
   HO: Hill Orc
+  LO: Lava Orc
+  OP: Octopode
 
 dead-species:
   - HD
