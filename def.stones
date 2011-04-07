@@ -28,6 +28,9 @@
 [local:cao]
 /var/lib/dgamelaunch/crawl-master/crawl-git/saves/milestones-zotdef
 
+[local:cao]
+/var/lib/dgamelaunch/var/games/crawl-lorcs/saves/milestones
+
 
 # http://$cao/milestones02.txt
 [remote:cao]
@@ -62,6 +65,9 @@ remote.cao-milestones-git-sprint
 
 [remote:cao:http://$cao/milestones-git-zotdef]
 remote.cao-milestones-git-zotdef
+
+[remote:cao:http://$cao/milestones-lorcs]
+remote.cao-milestones-lorcs
 
 
 [remote:cdo]

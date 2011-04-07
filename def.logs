@@ -25,6 +25,9 @@
 [local:cao]
 /var/lib/dgamelaunch/crawl-master/crawl-git/saves/logfile-zotdef
 
+[local:cao]
+/var/lib/dgamelaunch/var/games/crawl-lorcs/saves/logfile
+
 
 # http://$cao/allgames.txt
 [remote:cao]
@@ -56,6 +59,10 @@ remote.cao-logfile-git-sprint
 
 [remote:cao:http://$cao/logfile-git-zotdef]
 remote.cao-logfile-git-zotdef
+
+[remote:cao:http://$cao/logfile-lorcs]
+remote.cao-logfile-lorcs
+
 
 
 [remote:cdo]
