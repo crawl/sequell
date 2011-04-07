@@ -182,6 +182,7 @@ sub devworthy
 {
   my $g = shift;
   my $type = $$g{type} || '';
+  return 0 if $type eq 'crash' && grep($$g{race} eq $_, 'Lava Orc', 'Octopode');
   return $type eq 'crash';
 }
 
