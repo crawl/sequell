@@ -85,6 +85,15 @@ remote.cdo-logfile-0.7
 [remote:cdo:http://$cdo/allgames-spr-0.7.txt]
 remote.cdo-logfile-0.7-sprint
 
+[remote:cdo:http://$cdo/allgames-0.8.txt]
+remote.cdo-logfile-0.8
+
+[remote:cdo:http://$cdo/allgames-spr-0.8.txt]
+remote.cdo-logfile-0.8-sprint
+
+[remote:cdo:http://$cdo/allgames-zd-0.8.txt]
+remote.cdo-logfile-0.8-zd
+
 [remote:cdo:http://$cdo/allgames-spr-svn.txt]
 remote.cdo-logfile-spr
 

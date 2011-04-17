@@ -29,6 +29,7 @@ DGL_ALIEN_MORGUES = \
  [ %r/cdo.*-0.5$/, 'http://crawl.develz.org/morgues/0.5' ],
  [ %r/cdo.*-0.6$/, 'http://crawl.develz.org/morgues/0.6' ],
  [ %r/cdo.*-0.7/, 'http://crawl.develz.org/morgues/0.7' ],
+ [ %r/cdo.*-0.8/, 'http://crawl.develz.org/morgues/0.8' ],
  [ %r/cdo.*-svn$/, 'http://crawl.develz.org/morgues/trunk' ],
  [ %r/cdo.*-zd$/,  'http://crawl.develz.org/morgues/trunk' ],
  [ %r/cdo.*-spr$/, 'http://crawl.develz.org/morgues/trunk' ],
