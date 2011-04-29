@@ -17,6 +17,12 @@
 /home/crawl/chroot/var/games/crawl07/saves/logfile-sprint
 
 [local:cao]
+/home/crawl/chroot/var/games/crawl08/saves/logfile
+
+[local:cao]
+/home/crawl/chroot/var/games/crawl08/saves/logfile-sprint
+
+[local:cao]
 /var/lib/dgamelaunch/crawl-master/crawl-git/saves/logfile
 
 [local:cao]
@@ -49,6 +55,12 @@ remote.cao-logfile-0.7
 
 [remote:cao:http://$cao/logfile07-sprint]
 remote.cao-logfile-0.7-sprint
+
+[remote:cao:http://$cao/logfile08]
+remote.cao-logfile-0.8
+
+[remote:cao:http://$cao/logfile08-sprint]
+remote.cao-logfile-0.8-sprint
 
 
 [remote:cao:http://$cao/logfile-git]
