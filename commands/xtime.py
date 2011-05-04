@@ -6,7 +6,7 @@ import helper
 
 TOURNEY_BEGIN = datetime(2011, 5, 14)
 TOURNEY_END   = datetime(2011, 5, 30)
-TOURNEY_NAME = '%d tournament' % TOURNEY_BEGIN.year
+TOURNEY_NAME = '%d 0.8 tournament' % TOURNEY_BEGIN.year
 
 helper.help('Shows the UTC time on crawl.akrasiac.org.')
 
