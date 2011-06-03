@@ -2,16 +2,19 @@
 
 exit(0) if !ENV['HENZELL_SQL_QUERIES']
 
+LG_CONFIG_FILE = 'commands/crawl-data.yml'
+
 require 'dbi'
 require 'commands/helper'
+require 'commands/tourney'
 require 'set'
 require 'yaml'
+
+include Tourney
 
 DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
 DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
 DBPASS = ENV['HENZELL_DBPASS'] || ''
-
-LG_CONFIG_FILE = 'commands/crawl-data.yml'
 
 CFG = YAML.load_file(LG_CONFIG_FILE)
 
@@ -23,7 +26,6 @@ GAME_TYPE_DEFAULT = CFG['default-game-type']
 GAME_SPRINT = 'sprint'
 GAMES = CFG['game-type-prefixes'].keys
 GAME_PREFIXES = CFG['game-type-prefixes']
-TOURNEY_SPRINT_MAP = CFG['tournament-sprint-map']
 
 OPERATORS = {
   '==' => '=', '!==' => '!=',
@@ -97,11 +99,6 @@ MILEFIELDS = { }
 FAKEFIELDS = { }
 
 MILE_TYPES = CFG['milestone-types']
-
-TOURNEY_PREFIXES = CFG['tournament-prefixes']
-TOURNEY_VERSIONS = CFG['tournament-versions']
-
-TOURNEY_REGEXES = TOURNEY_PREFIXES.map { |p| %r/^(#{p})(\d*)$/i }
 
 SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
 OPMATCH = Regexp.new(SORTEDOPS.map { |o| Regexp.quote(o) }.join('|'))
@@ -1625,7 +1622,7 @@ def fixup_listgame_arg(preds, sorts, arg)
       return reproc.call('place', arg)
     end
 
-    return reproc.call('when', arg) if TOURNEY_REGEXES.find { |r| arg =~ r }
+    return reproc.call('when', arg) if tourney_keyword?(arg)
 
     for s in LISTGAME_SHORTCUTS
       res = s.call(arg, reproc)
@@ -1875,28 +1872,19 @@ def query_field(selector, field, op, sqlop, val)
   end
 
   if selfield == 'when'
-    year = 2010
-    for reg in TOURNEY_REGEXES
-      if val =~ reg && $2 && !$2.empty?
-        year = $2.to_i
-        val.sub!(reg, '\1')
-        year += 2000 if year < 100
-        break
-      end
-    end
+    tourney = tourney_info(val, GameContext.game)
 
-    if TOURNEY_PREFIXES.index(val.downcase) and [ '=', '!=' ].index(op)
-      cv = TOURNEY_VERSIONS[year]
+    if [ '=', '!=' ].index(op)
+      cv = tourney.version
 
-      tourney = op == '='
-      clause = [ tourney ? 'AND' : 'OR' ]
-      lop = tourney ? '>' : '<'
-      rop = tourney ? '<' : '>'
-      eqop = tourney ? '=' : '!='
+      in_tourney = op == '='
+      clause = [ in_tourney ? 'AND' : 'OR' ]
+      lop = in_tourney ? '>' : '<'
+      rop = in_tourney ? '<' : '>'
+      eqop = in_tourney ? '=' : '!='
 
-      tstart = "#{year}0701"
-      tend   = "#{year}0801"
-      tstart = "#{year}0715" if GameContext.game == GAME_SPRINT
+      tstart = tourney.tstart
+      tend   = tourney.tend
 
       if $CTX == CTX_LOG
         clause << query_field('rstart', 'rstart', lop, lop, tstart)
@@ -1906,9 +1894,8 @@ def query_field(selector, field, op, sqlop, val)
         clause << query_field('rtime', 'rtime', rop, rop, tend)
       end
       clause << query_field('cv', 'cv', eqop, eqop, cv)
-      if GameContext.game == GAME_SPRINT and TOURNEY_SPRINT_MAP[year]
-        clause << query_field('map', 'map', eqop, eqop,
-                              TOURNEY_SPRINT_MAP[year])
+      if tourney.tmap
+        clause << query_field('map', 'map', eqop, eqop, tourney.tmap)
       end
       return clause
     else

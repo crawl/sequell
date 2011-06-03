@@ -465,13 +465,26 @@ tournament-prefixes:
   - tourney
   - tournament
 
-tournament-versions:
-  2008: '0.4'
-  2009: '0.5'
-  2010: '0.7'
-
-tournament-sprint-map:
-  2010: dungeon sprint mu
+tournament-data:
+  default-tourney: '2011a'
+  crawl:
+    '2008':
+      version: "0.4"
+      time: [20080801, 20080901]
+    '2009':
+      version: "0.5"
+      time: [20090801, 20090901]
+    '2010':
+      version: "0.7"
+      time: [20100801, 20100901]
+    '2011a':
+      version: "0.8"
+      time: [20110514, 20110530]
+  sprint:
+    '2010':
+      version: "0.7"
+      time: [20100815, 20100901]
+      map: dungeon sprint mu
 
 sql-field-names:
   name: pname
