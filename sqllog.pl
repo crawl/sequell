@@ -736,6 +736,9 @@ sub milestone_mangle {
   elsif ($verb eq 'god.worship') {
     ($noun) = $noun =~ /^became a worshipper of (.*)[.]$/;
   }
+  elsif ($verb eq 'god.maxpiety') {
+    ($noun) = $noun =~ /^became the Champion of (.*)[.]$/;
+  }
   elsif ($verb eq 'monstrous') {
     $noun = 'demonspawn';
   }
