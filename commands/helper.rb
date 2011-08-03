@@ -378,7 +378,7 @@ def binary_search_alien_morgue(url, e)
 end
 
 def resolve_alien_morgue(url, e)
-  if Integer(/^0\.([0-9]+)/.match(e['v']))[1]) < 4
+  if Integer(/^0\.([0-9]+)/.match(e['v'])[1]) < 4
     return binary_search_alien_morgue(url, e)
   else
     return morgue_assemble_filename(url, e, morgue_time(e), '.txt')
