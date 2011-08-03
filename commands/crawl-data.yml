@@ -247,6 +247,7 @@ classes:
   DK: Death Knight
   VM: Venom Mage
   AM: Arcane Marksman
+  Sk: Skald
 
 dead-classes:
   - Th
