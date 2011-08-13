@@ -1893,7 +1893,12 @@ def query_field(selector, field, op, sqlop, val)
         clause << query_field('rstart', 'rstart', lop, lop, tstart)
         clause << query_field('rtime', 'rtime', rop, rop, tend)
       end
-      clause << query_field('cv', 'cv', eqop, eqop, cv)
+
+      version_clause = [in_tourney ? 'OR' : 'AND']
+      version_clause += cv.map { |cv_i|
+        query_field('cv', 'cv', eqop, eqop, cv_i)
+      }
+      clause << version_clause
       if tourney.tmap
         clause << query_field('map', 'map', eqop, eqop, tourney.tmap)
       end

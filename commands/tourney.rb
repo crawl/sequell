@@ -33,7 +33,9 @@ module Tourney
       end
       @tmap = nil
 
-      @version = tourney_data[@year]['version'].strip
+      @version = tourney_data[@year]['version']
+      @version = [@version] unless @version.is_a?(Array)
+      @version = @version.map(&:strip)
       resolve_time!
       resolve_map!
     end
