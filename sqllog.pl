@@ -88,7 +88,7 @@ my @UNIQUES = ("Ijyb", "Blork the orc", "Blork", "Urug", "Erolcha", "Snorg",
   "Eustachio", "Nessos", "Dowan", "Duvessa", "Grum", "Crazy Yiuf",
   "Gastronok", "Pikel", "Menkaure", "Khufu", "Aizul", "Purgy",
   "Kirke", "Maurice", "Nikola", "Mara", "Grinder", "Mennas", "Chuck",
-  "the iron giant", "Nellie");
+  "the iron giant", "Nellie", "Wiglaf", "Jory", "Terpsichore", "Ignacio");
 
 my $TLOGFILE   = 'logrecord';
 my $TMILESTONE = 'milestone';
@@ -609,18 +609,33 @@ sub fixup_logfields {
     $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
     for ($g->{ckiller}) {
       s/^an? \w+-headed (hydra.*)$/a $1/;
+      s/^the \w+-headed ((?:Lernaean )?hydra.*)$/the $1/;
       s/^.*'s? ghost$/a player ghost/;
       s/^.*'s? illusion$/a player illusion/;
       s/^an? \w+ (draconian.*)/a $1/;
+      s/^an? .* \(((?:glowing )?shapeshifter)\)$/a $1/;
+      s/^the .* shaped (.*)$/the $1/;
 
-      # If it's an actual kill, merge Pan lords.
+      # If it's an actual kill, merge Pan lords together, polyed uniques with
+      # their normal counterparts, and named orcs with their monster type.
       my $kill = $g->{killer};
       if ($kill && $kill =~ /^[A-Z]/) {
-        my ($name) = /^([^,]*)/;
-        $_ = 'a pandemonium lord'
-          if !/^(?:an?|the) / && !$UNIQUES{$name} && !/,/;
-        # Fix Blork and variants thereof.
-        $_ = 'Blork' if /^Blork/;
+        my ($name) = /^([A-Z]\w*(?: [A-Z]\w*)*)/;
+        if ($kill =~ / the /) {
+          my ($mons) = / the (.*)$/;
+          # Also takes care of Blork variants.
+          if ($UNIQUES{$name}) {
+            $_ = $name;
+          } else {
+            # Usually these will all be orcs.
+            $mons = 'a ' . $mons;
+            $mons =~ s/^a ([aeiou].*)$/an $1/;
+            $_ = $mons;
+          }
+        } else {
+          $_ = 'a pandemonium lord'
+            if !/^(?:an?|the) / && !$UNIQUES{$name};
+        }
       }
     }
 
