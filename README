@@ -4,6 +4,16 @@ Henzell
 Henzell is the announcement and stats IRC bot for ##crawl on Freenode IRC.
 
 
+Dependencies
+------------
+
+Henzell needs the Bot::BasicBot and DBI perl modules.
+
+To install these on Debian, run:
+
+sudo apt-get install libbot-basicbot-perl libclass-dbi-perl
+
+
 Configuring Henzell
 -------------------
 
