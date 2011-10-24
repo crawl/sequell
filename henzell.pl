@@ -8,6 +8,7 @@ use IPC::Open2;
 use Henzell::Config qw/%CONFIG %CMD %PUBLIC_CMD/;
 use Henzell::Utils;
 use Getopt::Long;
+require 'game_parser.pl';
 
 my $daemon = 1;
 my $irc = 1;
