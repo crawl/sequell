@@ -281,6 +281,7 @@ sources:
 boolean-fields:
   - splat
   - alpha
+  - tiles
 
 place-fixups:
   '^shoal\b(.*)': ['Shoals$1', 'Shoal$1']
@@ -352,6 +353,7 @@ logfields-with-type:
   - ntvI
   - map
   - mapdesc
+  - tiles
 
 milefields-with-type:
   - game_idI
@@ -393,6 +395,7 @@ milefields-with-type:
   - milestone
   - ntvI
   - oplace
+  - tiles
 
 fakefields-with-type:
   - when
@@ -438,6 +441,7 @@ logfields-summarisable:
   - ntv
   - map
   - mapdesc
+  - tiles
 
 milestone-types:
   - abyss.enter

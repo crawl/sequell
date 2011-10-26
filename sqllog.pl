@@ -12,7 +12,7 @@ do 'game_parser.pl';
 my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
   xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux place
   br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
-  end durI turnI uruneI nruneI tmsg vmsg splat map mapdesc/;
+  end durI turnI uruneI nruneI tmsg vmsg splat map mapdesc tiles/;
 
 my %GAME_TYPE_NAMES = (zot => 'ZotDef',
                        spr => 'Sprint');
@@ -42,7 +42,7 @@ my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
 my @MILEFIELDS_DECORATED =
     qw/alpha v cv name race crace cls char xlI sk sklevI title
        place br lvlI ltyp hpI mhpI mmhpI strI intI dexI god
-       durI turnI uruneI nruneI time verb noun milestone oplace/;
+       durI turnI uruneI nruneI time verb noun milestone oplace tiles/;
 
 my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS, 'rstart', 'rend');
 
@@ -56,7 +56,7 @@ my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
 my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
 ktyp killer ckiller ikiller kpath kmod kaux ckaux place str int dex god
-start end dur turn urune nrune splat dam rstart alpha ntv map mapdesc/;
+start end dur turn urune nrune splat dam rstart alpha ntv map mapdesc tiles/;
 
 my @MILE_INDEX_COLS = ('src',
                        grep($_ ne 'milestone', @MILEFIELDS),
@@ -589,6 +589,10 @@ sub fixup_logfields {
   if ($g->{alpha}) {
     $g->{cv} .= "-a";
     $g->{v}  .= "-a" unless $g->{v} =~ /-a/;
+  }
+
+  if ($g->{tiles}) {
+    $g->{tiles} = "y";
   }
 
   my $game_type = game_type($g);

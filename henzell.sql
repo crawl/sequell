@@ -72,6 +72,7 @@ CREATE TABLE logrecord (
     tmsg VARCHAR(255),
     vmsg VARCHAR(255),
     splat CHAR(1),
+    tiles CHAR(1),
 
     -- How many times it's been played on FooTV
     ntv INT DEFAULT 0,
@@ -102,6 +103,7 @@ CREATE TABLE milestone (
     offset BIGINT,
     file VARCHAR(150),
     alpha CHAR(1),
+    tiles CHAR(1),
     src CHAR(5),
 
     -- The actual game that this milestone is linked with.

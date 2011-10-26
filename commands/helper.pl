@@ -4,7 +4,8 @@ our $logfile = '/var/www/crawl/allgames.txt';
 
 our @field_names = qw/v lv name uid race cls xl sk sklev title place br lvl
                       ltyp hp mhp mmhp str int dex start dur turn sc ktyp
-                      killer kaux end tmsg vmsg god piety pen char nrune urune/;
+                      killer kaux end tmsg vmsg god piety pen char nrune urune
+                      tiles/;
 our @numeric_fields = qw/xl sklev lvl hp mhp mmhp str int dex start dur turn sc
                          end piety pen nrune urune/;
 our %numeric_fields = map(($_ => 1), @numeric_fields);
