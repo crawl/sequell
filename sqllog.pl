@@ -770,11 +770,17 @@ sub milestone_mangle {
 
 sub record_is_alpha_version {
   my ($lf, $g) = @_;
-  return 'y' if $$lf{alpha};
+  # For older game versions, we already know whether it is alpha by knowing
+  # which file the record is in.
+  if ($$g{v} =~ /^0\.([0-9]+)/) {
+    if ($1 < 9) {
+      return 'y' if $$lf{alpha};
+    }
+  }
 
-  # Game version that mentions -rc or -a is automatically alpha.
+  # Game version that mentions -rc, -a, or -b is automatically alpha.
   my $v = $$g{v};
-  return 'y' if $v =~ /-(?:rc|a)/i;
+  return 'y' if $v =~ /-(?:rc|a|b)/i;
 
   return '';
 }
