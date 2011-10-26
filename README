@@ -11,7 +11,12 @@ Henzell needs the Bot::BasicBot, DBI, and YAML::Any perl modules.
 
 To install these on Debian, run:
 
-sudo apt-get install libbot-basicbot-perl libclass-dbi-perl libyaml-perl
+    sudo apt-get install libbot-basicbot-perl libclass-dbi-perl libyaml-perl
+
+If you want to use Henzell with a non-DGL crawl, at least build it
+with these flags:
+
+    make EXTERNAL_DEFINES="-DDGL_MILESTONES -DDGL_WHEREIS -DDGL_EXTENDED_LOGFILES"
 
 
 Configuring Henzell
