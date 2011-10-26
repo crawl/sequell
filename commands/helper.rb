@@ -4,7 +4,7 @@ require 'set'
 require 'date'
 
 # fields end in S if they're strings, I if integral
-$field_names = %w<vS lvS nameS uidI raceS clsS xlI skS sklevI titleS placeS brS lvlI ltypS hpI mhpI mmhpI strI intI dexI startS durI turnI scI ktypS killerS kauxS endS tmsgS vmsgS godS pietyI penI charS nruneI uruneI>
+$field_names = %w<vS lvS nameS uidI raceS clsS xlI skS sklevI titleS placeS brS lvlI ltypS hpI mhpI mmhpI strI intI dexI startS durI turnI scI ktypS killerS kauxS endS tmsgS vmsgS godS pietyI penI charS nruneI uruneI tilesS>
 XKEYCHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
 
 $field_types = { }
@@ -388,7 +388,11 @@ end
 def find_alien_morgue(e)
   for pair in DGL_ALIEN_MORGUES
     if e['file'] =~ pair[0]
-      return resolve_alien_morgue(pair[1], e)
+      if e['cv'] == '0.9-a' && e['src'] == 'cdo' && e['end'] > '201107191740'
+        return resolve_alien_morgue('http://crawl.develz.org/morgues/0.9', e)
+      else
+        return resolve_alien_morgue(pair[1], e)
+      end
     end
   end
   nil

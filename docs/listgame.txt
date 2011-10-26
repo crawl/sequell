@@ -439,14 +439,16 @@ Listgame keywords may be one of:
 
 11. alpha :: selects games for alpha (unstable/development) versions.
 
-12. Tournament selector:
+12. tiles :: selects games played in webtiles.
+
+13. Tournament selector:
 
     t    :: Select games played in the most recent Crawl tournament
     t<N> :: Select games played in the tournament for year 200<N>.
             For instance t9 selects the 2009 tourney, t8 selects the 2008
             tourney
 
-13. Milestone Types:
+14. Milestone Types:
     In !lm queries ONLY (i.e. not in !lg, !hs, etc.) you may use the
     milestone type as a keyword:
 
@@ -632,6 +634,9 @@ otherwise.
 alpha:
 "y" if the game is an alpha/development version, empty otherwise.
 
+tiles:
+"y" if the game is in webtiles, empty otherwise.
+
 map:
 The name of the map/vault the player was in at end of game. Example:
 "hall of Zot". NOTE: underscores in map names will be replaced by spaces
@@ -651,7 +656,7 @@ milestone was generated, not at end of game.
 Fields in common with logfile:
 alpha, v, cv, name, race, crace, cls, char, xl, sk, sklev, title,
 place, br, lvl, ltyp, hp, mhp, mmhp, str, int, dex, god, dur, turn,
-urune, nrune, rstart
+urune, nrune, rstart, tiles
 
 These fields are unique to milestones:
 
