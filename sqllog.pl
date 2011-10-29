@@ -772,10 +772,8 @@ sub record_is_alpha_version {
   my ($lf, $g) = @_;
   # For older game versions, we already know whether it is alpha by knowing
   # which file the record is in.
-  if ($$g{v} =~ /^0\.([0-9]+)/) {
-    if ($1 < 9) {
-      return 'y' if $$lf{alpha};
-    }
+  if ($$g{v} =~ /^0\.([0-9]+)/ && $1 < 9) {
+    return 'y' if $$lf{alpha};
   }
 
   # Game version that mentions -rc, -a, or -b is automatically alpha.
