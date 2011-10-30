@@ -388,7 +388,7 @@ end
 def find_alien_morgue(e)
   for pair in DGL_ALIEN_MORGUES
     if e['file'] =~ pair[0]
-      if e['cv'] == '0.9-a' && e['src'] == 'cdo' && e['end'] > '201107191740'
+      if e['cv'] == '0.9' && e['src'] == 'cdo' && e['end'] > '201107191740'
         return resolve_alien_morgue('http://crawl.develz.org/morgues/0.9', e)
       else
         return resolve_alien_morgue(pair[1], e)
