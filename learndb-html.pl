@@ -45,7 +45,9 @@ for(split /\n/, `find dat/learndb/ -type f ! -name '*.html*'`)
         my $val = <F>;
         if ($val =~ $FULL_REDIRECT_PATTERN)
         {
-            addlink($key, $1);
+            my $dest = $1;
+            $dest =~ s/\[1\]$//;
+            addlink($key, $dest);
         }
         else
         {
@@ -111,7 +113,7 @@ for my $key (sort keys %learndb)
     next if !$has_multiple && $learndb{$key} =~ $FULL_REDIRECT_PATTERN;
 
     print "<dt>";
-    print   "<a name=\"$key\"></a>" for(sort keys %{$redir{$key}});
+    print   "<a name=\"$_\"></a>" for(sort keys %{$redir{$key}});
 
     (my $clean_key = $key) =~ tr{_}{ };
     print "$clean_key\n";
@@ -124,7 +126,7 @@ for my $key (sort keys %learndb)
     {
       my $text = $learndb{$key."[$i]"};
       my $prefix = '';
-      $prefix .= "<a name=\"$key\"></a>" for(sort keys %{$redir{$key."[$i]"}});
+      $prefix .= "<a name=\"$_\"></a>" for(sort keys %{$redir{$key."[$i]"}});
       print htmlize($text, $has_multiple, $prefix), "\n";
     }
     print "</ol>" if $has_multiple;
