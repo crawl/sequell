@@ -180,6 +180,7 @@ species:
   HO: Hill Orc
   LO: Lava Orc
   OP: Octopode
+  Te: Tengu
 
 dead-species:
   - HD
@@ -187,6 +188,8 @@ dead-species:
   - Gn
   - OM
   - GE
+  - Ke
+  - MD
 
 species-flavours:
   draconian:
