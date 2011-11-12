@@ -1,11 +1,11 @@
-DROP TABLE IF EXISTS logrecord;
-DROP TABLE IF EXISTS spr_logrecord;
-DROP TABLE IF EXISTS zot_logrecord;
-DROP TABLE IF EXISTS logfiles;
 DROP TABLE IF EXISTS milestone;
 DROP TABLE IF EXISTS spr_milestone;
 DROP TABLE IF EXISTS zot_milestone;
 DROP TABLE IF EXISTS milestone_files;
+DROP TABLE IF EXISTS logrecord;
+DROP TABLE IF EXISTS spr_logrecord;
+DROP TABLE IF EXISTS zot_logrecord;
+DROP TABLE IF EXISTS logfiles;
 
 CREATE TABLE logfiles (
     file VARCHAR(150) PRIMARY KEY
