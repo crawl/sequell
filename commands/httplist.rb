@@ -86,7 +86,7 @@ module HttpList
       now = DateTime.now
       raw_html = self.fetch_raw_html(url)
       if raw_html !~ %r{/html}is
-        raise Exception.new("Could not fetch directory listing from #{url}")
+        raise StandardError.new("Could not fetch directory listing from #{url}")
       end
       listing = self.files_matching(raw_html, file_regex).sort
       PCache::add(key, listing.join('|'), now)

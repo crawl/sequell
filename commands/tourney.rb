@@ -29,7 +29,7 @@ module Tourney
       @game_type = game_type
       @year = resolve_year(@key)
       unless tourney_data[@year]
-        raise Exception.new("Unknown tournament: #{tournament_key}")
+        raise StandardError.new("Unknown tournament: #{tournament_key}")
       end
       @tmap = nil
 
@@ -42,7 +42,7 @@ module Tourney
 
     def tourney_data
       (TOURNEY_DATA[@game_type] or
-        raise Exception.new("No tournament data for #{@game_type}"))
+        raise StandardError.new("No tournament data for #{@game_type}"))
     end
 
     def resolve_map!
@@ -52,7 +52,7 @@ module Tourney
 
     def resolve_time!
       range = tourney_data[@year]['time']
-      raise Exception.new("No tourney information for #{@year}") unless range
+      raise StandardError.new("No tourney information for #{@year}") unless range
       @tstart = raw_date(range[0])
       @tend = raw_date(range[1])
     end

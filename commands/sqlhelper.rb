@@ -355,7 +355,7 @@ class SummaryFieldList
   def initialize(s_clauses)
     field_list = SummaryFieldList.summary_field?(s_clauses)
     unless field_list
-      raise Exception.new("Malformed summary clause: #{s_clauses}")
+      raise StandardError.new("Malformed summary clause: #{s_clauses}")
     end
 
     fields = field_list.split(",").map { |field| field.strip }
@@ -364,8 +364,8 @@ class SummaryFieldList
     seen_fields = Set.new
     for field in @fields
       if seen_fields.include?(field.field)
-        raise Exception.new("Repeated field #{field.field} " +
-                            "in summary list #{s_clauses}")
+        raise StandardError.new("Repeated field #{field.field} " +
+                                "in summary list #{s_clauses}")
       end
     end
   end
@@ -376,12 +376,12 @@ class SummaryField
 
   def initialize(s_clause)
     unless s_clause =~ /^([+-]?)(\S+?)(%?)$/
-      raise Exception.new("Malformed summary clause: #{s_clause}")
+      raise StandardError.new("Malformed summary clause: #{s_clause}")
     end
     @order = $1.empty? ? '+' : $1
     @field = $CTX.canonicalise_field($2)
     unless $CTX.summarise?(@field)
-      raise Exception.new("Cannot summarise by #{@field}")
+      raise StandardError.new("Cannot summarise by #{@field}")
     end
     @percentage = !$3.empty?
   end
