@@ -8,6 +8,7 @@ use IPC::Open2;
 use Henzell::Config qw/%CONFIG %CMD %PUBLIC_CMD/;
 use Henzell::Utils;
 use Getopt::Long;
+require 'game_parser.pl';
 
 my $daemon = 1;
 my $irc = 1;
@@ -215,7 +216,7 @@ sub check_milestone_file
     # Add milestone to DB.
     add_milestone($href, $startoffset, $line) if $CONFIG{sql_store};
 
-    if ($CONFIG{announce} && $ANNOUNCE_CHANNEL && $href->{server} eq $SERVER) {
+    if ($CONFIG{announce} && $ANNOUNCE_CHANNEL && $href->{server} eq $CONFIG{host}) {
       my $game_ref = demunge_xlogline($line);
       return unless $game_ref;
       my $newsworthy = newsworthy($game_ref);
