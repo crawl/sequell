@@ -109,7 +109,7 @@ my $need_indexes = 1;
 
 my $standalone = not caller();
 
-my $DBNAME = 'henzell';
+my $DBNAME = $ENV{HENZELL_DBNAME} || 'henzell';
 my $DBUSER = 'henzell';
 my $DBPASS = '';
 
