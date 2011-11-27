@@ -126,14 +126,14 @@ remote.cdo-logfile-svn
 [remote:rhf]
 remote.rhf-logfile-0.5
 
-[remote:rhf:http://$rhf/crawl-0.6/logfile]
+[remote:rhf]
 remote.rhf-logfile-0.6
 
-[remote:rhf:http://$rhf/crawl-0.7/logfile]
+[remote:rhf]
 remote.rhf-logfile-0.7
 
 [remote:rhf; alpha]
 remote.rhf-logfile-trunk
 
-[remote:rhf:http://$rhf/sprint/logfile-sprint]
+[remote:rhf]
 remote.rhf-logfile-spr
