@@ -2204,7 +2204,11 @@ class SummaryRow
   end
 
   def counted_keys
-    "#{count_string}x #{@key}"
+    if count_string == '1'
+      key
+    else
+      "#{count_string}x #{@key}"
+    end
   end
 
   def count_string
