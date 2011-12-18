@@ -162,8 +162,10 @@ sub db_load_schema() {
     my $sql_ddl = do { local (@ARGV, $/) = $SCHEMAFILE; <> };
     my @ddl_statements = split(/;/, $sql_ddl);
     for my $statement (@ddl_statements) {
-      $dbh->do($statement)
-        or die "Failed to load schema: error $! on $statement\n";
+      if ($statement =~ /\S/) {
+        $dbh->do($statement)
+          or die "Failed to load schema: error $! on $statement\n";
+      }
     }
   };
 }

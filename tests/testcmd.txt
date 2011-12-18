@@ -27,6 +27,8 @@ $ rm nicks-test.map
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg * s=name,xl
+
 !lg
 !lg .
 !lg -3
