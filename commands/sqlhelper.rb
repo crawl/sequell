@@ -2187,7 +2187,7 @@ class SummaryRow
       master_group_to_s
     elsif @key
       [counted_keys, percentage_string, extra_val_string].find_all { |x|
-        !x.empty?
+        !x.to_s.empty?
       }.join(" ")
     else
       annotated_extra_val_string
