@@ -724,18 +724,21 @@ sub milestone_mangle {
   if ($verb eq 'uniq') {
     my ($action, $unique) = $noun =~ /^(\w+) (.*?)\.?$/;
     $verb = 'uniq.ban' if $action eq 'banished';
+    $verb = 'uniq.pac' if $action eq 'pacified';
+    $verb = 'uniq.ens' if $action eq 'enslaved';
     $noun = $unique;
   }
   elsif ($verb eq 'ghost') {
     my ($action, $ghost) = $noun =~ /(\w+) the ghost of (\S+)/;
     $verb = 'ghost.ban' if $action eq 'banished';
+    $verb = 'ghost.pac' if $action eq 'pacified';
     $noun = $ghost;
   }
   elsif ($verb eq 'abyss.enter') {
     my ($cause) = $noun =~ /.*\((.*?)\)$/;
     $noun = $cause ? $cause : '?';
   }
-  elsif ($verb eq 'br.enter' || $verb eq 'br.end') {
+  elsif ($verb eq 'br.enter' || $verb eq 'br.end' || $verb eq 'br.mid') {
     $noun = $g->{place};
     $noun =~ s/:.*//;
   }
