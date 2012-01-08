@@ -738,7 +738,7 @@ sub milestone_mangle {
     my ($cause) = $noun =~ /.*\((.*?)\)$/;
     $noun = $cause ? $cause : '?';
   }
-  elsif ($verb eq 'br.enter' || $verb eq 'br.end') {
+  elsif ($verb eq 'br.enter' || $verb eq 'br.end' || $verb eq 'br.mid') {
     $noun = $g->{place};
     $noun =~ s/:.*//;
   }

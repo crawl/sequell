@@ -461,6 +461,7 @@ milestone-types:
   - uniq.ens
   - br.enter
   - br.end
+  - br.mid
   - god.mollify
   - god.renounce
   - god.worship
