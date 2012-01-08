@@ -454,8 +454,11 @@ milestone-types:
   - orb.destroy
   - ghost
   - ghost.ban
+  - ghost.pac
   - uniq
   - uniq.ban
+  - uniq.pac
+  - uniq.ens
   - br.enter
   - br.end
   - god.mollify
