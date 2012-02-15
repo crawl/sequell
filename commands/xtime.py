@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 import time
 import helper
 
-TOURNEY_BEGIN = datetime(2011, 8, 13)
-TOURNEY_END   = datetime(2011, 8, 29)
-TOURNEY_NAME = '%d tournament' % TOURNEY_BEGIN.year
+TOURNEY_BEGIN = datetime(2012, 2, 25)
+TOURNEY_END   = datetime(2012, 3, 12)
+TOURNEY_NAME = '%d 0.10 tournament' % TOURNEY_BEGIN.year
 
 helper.help('Shows the UTC time on crawl.akrasiac.org.')
 
