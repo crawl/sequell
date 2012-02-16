@@ -3,6 +3,7 @@ import string, re, os, sys
 import os.path
 from glob import glob
 import yaml
+from datetime import datetime
 
 CFGFILE = 'commands/crawl-data.yml'
 CFG = yaml.load(open(CFGFILE).read())
@@ -30,6 +31,40 @@ WHERE_DIRS = None
 NICK_ALIASES = { }
 NICKMAP_FILE = 'nicks.map'
 nick_aliases_loaded = False
+
+class Tournament (object):
+    def __init__(self, data):
+        self.data = data
+
+    def start_date(self):
+        return self.date_from_string(self.raw_start_date())
+
+    def end_date(self):
+        return self.date_from_string(self.raw_end_date())
+
+    def game_version(self):
+        return self.data['version']
+
+    def date_from_string(self, date_string):
+        return datetime.strptime(str(date_string), '%Y%m%d')
+
+    def raw_start_date(self):
+        return self.raw_time_range()[0]
+
+    def raw_end_date(self):
+        return self.raw_time_range()[1]
+
+    def raw_time_range(self):
+        return self.data['time']
+
+def tourney_data():
+    return CFG['tournament-data'] or { }
+
+def default_tourney_name():
+    return tourney_data()['default-tourney']
+
+def default_tourney(game_type='crawl'):
+    return Tournament(tourney_data()[game_type][default_tourney_name()])
 
 def game_skill_title(game):
     title = game['title']
