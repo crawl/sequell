@@ -4,6 +4,7 @@ import os.path
 from glob import glob
 import yaml
 from datetime import datetime
+import time
 
 CFGFILE = 'commands/crawl-data.yml'
 CFG = yaml.load(open(CFGFILE).read())
@@ -46,7 +47,7 @@ class Tournament (object):
         return self.data['version']
 
     def date_from_string(self, date_string):
-        return datetime.strptime(str(date_string), '%Y%m%d')
+        return datetime(*(time.strptime(str(date_string), '%Y%m%d')[0:6]))
 
     def raw_start_date(self):
         return self.raw_time_range()[0]
