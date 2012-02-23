@@ -150,8 +150,8 @@ god:
 
 species:
   Ce: Centaur
-  DG: Demigod
-  DS: Demonspawn
+  Dg: Demigod
+  Ds: Demonspawn
   Dr: Draconian
   El: Elf
   Fe: Felid
@@ -179,7 +179,7 @@ species:
   SE: Sludge Elf
   HO: Hill Orc
   LO: Lava Orc
-  OP: Octopode
+  Op: Octopode
   Te: Tengu
 
 dead-species:
