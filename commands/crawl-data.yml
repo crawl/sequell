@@ -150,8 +150,8 @@ god:
 
 species:
   Ce: Centaur
-  DG: Demigod
-  DS: Demonspawn
+  Dg: Demigod
+  Ds: Demonspawn
   Dr: Draconian
   El: Elf
   Fe: Felid
@@ -179,7 +179,7 @@ species:
   SE: Sludge Elf
   HO: Hill Orc
   LO: Lava Orc
-  OP: Octopode
+  Op: Octopode
   Te: Tengu
 
 dead-species:
@@ -188,6 +188,7 @@ dead-species:
   - Gn
   - OM
   - GE
+  - LO
   - Ke
   - MD
 
@@ -215,8 +216,7 @@ genus-species:
     - deep dwarf
   ogre: ogre
 
-species-enum-map-override:
-  felid: SP_CAT
+species-enum-map-override: {}
 
 classes:
   Ar: Artificer
@@ -256,6 +256,7 @@ dead-classes:
   - Th
   - Re
   - Pa
+  - Cr
 
 column-aliases:
   role: cls

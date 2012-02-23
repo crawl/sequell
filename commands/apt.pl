@@ -33,7 +33,7 @@ sub add_exp_apts { # {{{
     open(my $fh, '<', $aptfile) or error "Couldn't open $aptfile for reading";
     my (@races, $genus);
     while (<$fh>) {
-        if (/int _species_exp_mod\(/ .. /^}/) {
+        if (/int species_exp_modifier\(/ .. /^}/) {
             if (/(GENPC_\w+)/) {
                 @races = genus_to_races($1);
             }
@@ -144,7 +144,7 @@ sub print_skill_apt { # {{{
 
 # get the aptitudes out of the source file
 %apts = parse_apt_file "$source_dir/source/aptitudes.h";
-%apts = add_exp_apts \%apts, "$source_dir/source/player.cc";
+%apts = add_exp_apts \%apts, "$source_dir/source/species.cc";
 # get the request
 my @words = split ' ', strip_cmdline $ARGV[2];
 my @rest;

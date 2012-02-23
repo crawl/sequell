@@ -306,7 +306,7 @@ $short_gods{'elyvilon'} = 'Ely';
 # }}}
 # god normalization {{{
 my %normalize_god = (
-    (map { ($_, $_) } @gods),
+    (map { (lc $_, $_) } @gods),
     (map { lc } (reverse %code_gods)),
     (map { lc } (reverse %short_gods)),
     nemelex => 'nemelex xobeh',
