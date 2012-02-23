@@ -130,6 +130,17 @@ remote.cdo-milestones-0.8-sprint
 [remote:cdo:http://$cdo/milestones-zd-0.8.txt]
 remote.cdo-milestones-0.8-zd
 
+
+[remote:cdo:http://$cdo/milestones-0.10.txt]
+remote.cdo-milestones-0.10
+
+[remote:cdo:http://$cdo/milestones-spr-0.10.txt]
+remote.cdo-milestones-0.10-sprint
+
+[remote:cdo:http://$cdo/milestones-zd-0.10.txt]
+remote.cdo-milestones-0.10-zd
+
+
 [remote:cdo:http://$cdo/milestones-spr-svn.txt]
 remote.cdo-milestones-spr
 
