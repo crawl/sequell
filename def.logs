@@ -77,6 +77,9 @@ remote.cao-logfile-0.8-sprint
 [remote:cao:http://$cao/logfile09]
 remote.cao-logfile-0.9
 
+[remote:cao:http://$cao/logfile10]
+remote.cao-logfile-0.10
+
 [remote:cao:http://$cao/logfile-git]
 remote.cao-logfile-git
 

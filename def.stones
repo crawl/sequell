@@ -85,6 +85,9 @@ remote.cao-milestones-0.8-sprint
 [remote:cao:http://$cao/milestones09]
 remote.cao-milestones-0.9
 
+[remote:cao:http://$cao/milestones10]
+remote.cao-milestones-0.10
+
 [remote:cao:http://$cao/milestones-git]
 remote.cao-milestones-git
 
