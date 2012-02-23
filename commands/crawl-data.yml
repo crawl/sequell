@@ -216,8 +216,7 @@ genus-species:
     - deep dwarf
   ogre: ogre
 
-species-enum-map-override:
-  felid: SP_CAT
+species-enum-map-override: {}
 
 classes:
   Ar: Artificer
