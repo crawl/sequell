@@ -32,6 +32,13 @@
 /home/crawl/chroot/var/games/crawl09/saves/milestones-sprint
 
 [local:cao]
+/home/crawl/chroot/var/games/crawl10/saves/milestones
+
+[local:cao]
+/home/crawl/chroot/var/games/crawl10/saves/milestones-sprint
+
+
+[local:cao]
 /var/lib/dgamelaunch/crawl-master/crawl-git/saves/milestones
 
 [local:cao]

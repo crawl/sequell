@@ -29,6 +29,12 @@
 /home/crawl/chroot/var/games/crawl09/saves/logfile-sprint
 
 [local:cao]
+/home/crawl/chroot/var/games/crawl10/saves/logfile
+
+[local:cao]
+/home/crawl/chroot/var/games/crawl10/saves/logfile-sprint
+
+[local:cao]
 /var/lib/dgamelaunch/crawl-master/crawl-git/saves/logfile
 
 [local:cao]
