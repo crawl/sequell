@@ -256,6 +256,7 @@ dead-classes:
   - Th
   - Re
   - Pa
+  - Cr
 
 column-aliases:
   role: cls
