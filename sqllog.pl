@@ -12,7 +12,8 @@ do 'game_parser.pl';
 my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
   xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux place
   br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
-  endD durI turnI uruneI nruneI tmsg vmsg splat map mapdesc tiles/;
+  endD durI turnI uruneI nruneI tmsg vmsg splat map mapdesc tiles
+  game_key/;
 
 my %GAME_TYPE_NAMES = (zot => 'ZotDef',
                        spr => 'Sprint');
@@ -43,7 +44,8 @@ my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
 my @MILEFIELDS_DECORATED =
     qw/alpha v cv name race crace cls char xlI sk sklevI title
        place br lvlI ltyp hpI mhpI mmhpI strI intI dexI god
-       durI turnI uruneI nruneI timeD verb noun milestone oplace tiles/;
+       durI turnI uruneI nruneI timeD verb noun milestone oplace tiles
+       game_key/;
 
 my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS_DECORATED,
                     'rstart', 'rend');
@@ -725,6 +727,7 @@ sub fixup_logfields {
     };
     $g->{src} = $src;
   }
+  $g->{game_key} = "$$g{name}:$$g{src}:$$g{rstart}";
 
   $g
 }
