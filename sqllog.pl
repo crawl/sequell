@@ -12,7 +12,7 @@ do 'game_parser.pl';
 my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
   xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux place
   br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
-  endD durI turnI uruneI nruneI tmsg vmsg map mapdesc tiles/;
+  endD durI turnI uruneI nruneI tmsg vmsg splat map mapdesc tiles/;
 
 my %GAME_TYPE_NAMES = (zot => 'ZotDef',
                        spr => 'Sprint');
@@ -98,7 +98,11 @@ my $TMILESTONE = 'milestone';
 my %UNIQUES = map(($_ => 1), @UNIQUES);
 
 my $LOGFILE = "allgames.txt";
-my $COMMIT_INTERVAL = 3000;
+my $COMMIT_INTERVAL = 15000;
+
+my $SPLAT_TS = 'splat.timestamp';
+my $SPLAT_REPO = '../c-splat.git';
+my $SPLAT_CO = '../csplatco';
 
 # Dump indexes if we need to add more than around 9000 lines of data.
 my $INDEX_DISCARD_THRESHOLD = 300 * 9000;
@@ -122,6 +126,45 @@ sub initialize_sqllog(;$) {
   my $dbname = shift;
   $DBNAME = $dbname if $dbname;
   setup_db();
+  load_splat_defs();
+  load_splat();
+}
+
+sub last_splat_time {
+  open my $inf, '<', $SPLAT_TS or return;
+  chomp(my $ts = <$inf>);
+  close $inf;
+  $ts
+}
+
+sub current_splat_time {
+  if (!-d $SPLAT_CO) {
+    system("git clone $SPLAT_REPO $SPLAT_CO")
+      and die "Couldn't clone $SPLAT_CO from $SPLAT_REPO\n";
+  }
+  (stat "$SPLAT_CO/CSplat/Select.pm")[9]
+}
+
+sub load_splat_defs {
+  if (-d $SPLAT_CO) {
+    push @INC, $SPLAT_CO;
+    #print "Loading $SPLAT_CO/CSplat/Select.pm\n";
+    $ENV{SPLAT_HOME} = $SPLAT_CO;
+    do "$SPLAT_CO/CSplat/Select.pm";
+  }
+}
+
+sub load_splat {
+  my $splat_time = last_splat_time();
+  my $now_splat_time = current_splat_time();
+  # Disabled for the nonce
+  if ($standalone && (!$splat_time || $splat_time < $now_splat_time)) {
+    load_splat_defs();
+
+    open my $outf, '>', $SPLAT_TS or die "Can't write $SPLAT_TS: $!\n";
+    print $outf "$now_splat_time\n";
+    close $outf;
+  }
 }
 
 sub setup_db {
@@ -676,6 +719,10 @@ sub fixup_logfields {
     my $src = $g->{src};
     # Fixup src for interesting_game.
     $g->{src} = "http://$SERVER_MAP{$src}/";
+    $g->{splat} = '';
+    eval {
+      $g->{splat} = CSplat::Select::interesting_game($g) ? 'y' : '';
+    };
     $g->{src} = $src;
   }
 

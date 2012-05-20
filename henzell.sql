@@ -76,6 +76,7 @@ CREATE TABLE logrecord (
     nrune INT,
     tmsg VARCHAR(255),
     vmsg VARCHAR(255),
+    splat VARCHAR(1),
     tiles VARCHAR(1),
 
     -- How many times it's been played on FooTV
