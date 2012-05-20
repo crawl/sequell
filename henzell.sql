@@ -32,7 +32,7 @@ CREATE TABLE logrecord (
     lv CITEXT,
     sc BIGINT,
     pname CITEXT,
-    game_key CITEXT,
+    game_key VARCHAR(50),
     uid INT,
     race CITEXT,
     crace CITEXT,
@@ -114,13 +114,10 @@ CREATE TABLE milestone (
     tiles CITEXT,
     src CITEXT,
 
-    -- The actual game that this milestone is linked with.
-    game_id BIGINT,
-
     v CITEXT,
     cv CITEXT,
     pname CITEXT,
-    game_key CITEXT,
+    game_key VARCHAR(50),
     race CITEXT,
     crace CITEXT,
     cls CITEXT,
@@ -161,14 +158,12 @@ CREATE TABLE milestone (
     -- How many times it's been played on FooTV
     ntv INT DEFAULT 0,
 
-    PRIMARY KEY(id),
-    FOREIGN KEY (game_id) REFERENCES logrecord (id)
-    ON DELETE SET NULL
+    PRIMARY KEY(id)
 );
 CREATE INDEX mile_lookup_ext ON milestone (verb, noun);
 CREATE INDEX mile_ind_foffset ON milestone (file, file_offset);
-CREATE INDEX mile_lookup ON milestone (game_id, verb);
-CREATE INDEX mile_game_id ON milestone (game_id);
+CREATE INDEX mile_lookup ON milestone (game_key, verb);
+CREATE INDEX mile_game_key ON milestone (game_key);
 
 CREATE TABLE spr_milestone AS
 SELECT * FROM milestone LIMIT 1;
@@ -178,8 +173,8 @@ ALTER TABLE spr_milestone ALTER COLUMN id SET DEFAULT NEXTVAL('spr_milestone_seq
 ALTER TABLE spr_milestone ADD PRIMARY KEY (id);
 CREATE INDEX spr_mile_lookup_ext ON spr_milestone (verb, noun);
 CREATE INDEX spr_mile_ind_foffset ON spr_milestone (file, file_offset);
-CREATE INDEX spr_mile_lookup ON spr_milestone (game_id, verb);
-CREATE INDEX spr_mile_game_id ON spr_milestone (game_id);
+CREATE INDEX spr_mile_lookup ON spr_milestone (game_key, verb);
+CREATE INDEX spr_mile_game_key ON spr_milestone (game_key);
 
 CREATE TABLE zot_milestone AS
 SELECT * FROM milestone LIMIT 1;
@@ -189,8 +184,8 @@ ALTER TABLE zot_milestone ALTER COLUMN id SET DEFAULT NEXTVAL('zot_milestone_seq
 ALTER TABLE zot_milestone ADD PRIMARY KEY (id);
 CREATE INDEX zot_mile_lookup_ext ON zot_milestone (verb, noun);
 CREATE INDEX zot_mile_ind_foffset ON zot_milestone (file, file_offset);
-CREATE INDEX zot_mile_lookup ON zot_milestone (game_id, verb);
-CREATE INDEX zot_mile_game_id ON zot_milestone (game_id);
+CREATE INDEX zot_mile_lookup ON zot_milestone (game_key, verb);
+CREATE INDEX zot_mile_game_key ON zot_milestone (game_key);
 
 DROP TABLE IF EXISTS canary;
 CREATE TABLE canary (

@@ -1153,7 +1153,7 @@ class CrawlQuery
     stone_alias = CTX_STONE.table_alias
     log_alias = CTX_LOG.table_alias
     add_predicate('AND',
-                  const_pred("#{stone_alias}.game_id = #{log_alias}.id"))
+                  const_pred("#{stone_alias}.game_key = #{log_alias}.game_key"))
   end
 
   def sort_joins?
@@ -1816,11 +1816,6 @@ def query_field(selector, field, op, sqlop, val)
       end
       return clause
     end
-  end
-
-  # Convert game_id="" into game_id IS NULL.
-  if selfield == 'game_id' && op == '=' && val == ''
-    return field_pred(nil, 'IS', selector, field)
   end
 
   if $CTX.noun_verb[selfield]

@@ -524,49 +524,7 @@ sub cat_stonefile {
   my ($lf, $offset) = @_;
   my $res = cat_xlog(milefile_table($$lf{file}),
                      $lf, \&add_milestone, $offset);
-  print "Linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
-  fixup_milestones($lf->{server}, game_type($lf)) if $res;
-  print "Done linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
-}
-
-=head2 fixup_milestones()
-
-Attempts to link unlinked milestones with completed games in the logrecord
-table. Pretty expensive.
-
-=cut
-
-sub fixup_milestones {
-  my ($source, $game_type, @players) = @_;
-  my $log_table = game_type_table_name($game_type, 'logrecord');
-  my $mile_table = game_type_table_name($game_type, 'milestone');
-  my $query = <<QUERY;
-     UPDATE $mile_table
-       SET game_id = (SELECT l.id FROM $log_table AS l
-                         WHERE l.pname = $mile_table.pname
-                           AND l.src = $mile_table.src
-                           AND l.rstart = $mile_table.rstart
-                         LIMIT 1)
-     WHERE game_id IS NULL
-       AND src = ?
-QUERY
-
-  if (@players) {
-    if (@players == 1) {
-      $query .= " AND m.pname = ?";
-      exec_query_st($query, $source, $players[0]);
-    }
-    else {
-      @players = map($dbh->quote($_), @players);
-      $query .= " AND m.pname IN (";
-      $query .= join(", ", @players);
-      $query .= ")";
-      exec_query_st($query, $source);
-    }
-  }
-  else {
-    exec_query_st($query, $source);
-  }
+  $res
 }
 
 sub logfield_hash {

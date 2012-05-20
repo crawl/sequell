@@ -274,7 +274,8 @@ column-aliases:
   cl: xl
   clev: xl
   type: verb
-  gid: game_id
+  gid: game_key
+  game_id: game_key
 
 # Public server abbreviations
 sources:
@@ -360,7 +361,7 @@ logfields-with-type:
   - tiles
 
 milefields-with-type:
-  - game_idI
+  - game_key
   - idI
   - file
   - alpha
