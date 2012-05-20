@@ -1062,7 +1062,7 @@ def sql_each_row_matching(q, limit=0)
   query = q.select_all
   if limit > 0
     if limit > 1
-      query += " LIMIT #{limit - 1}, 1"
+      query += " LIMIT 1 OFFSET #{limit - 1}"
     else
       query += " LIMIT #{limit}"
     end
@@ -1532,11 +1532,11 @@ def is_charabbrev? (arg)
 end
 
 def is_race? (arg)
-  RACE_EXPANSIONS[arg]
+  RACE_EXPANSIONS[arg.downcase]
 end
 
 def is_class? (arg)
-  CLASS_EXPANSIONS[arg]
+  CLASS_EXPANSIONS[arg.downcase]
 end
 
 LISTGAME_SHORTCUTS =
@@ -1599,6 +1599,9 @@ def fixup_listgame_arg(preds, sorts, arg)
     elsif arg =~ /^[a-z]{2}$/i then
       cls = is_class?(arg)
       sp = is_race?(arg)
+      if arg == 'DS' && !sp
+        STDERR.puts("Aiee: DS is not race in #{RACE_EXPANSIONS.inspect}")
+      end
       return reproc.call('cls', arg) if cls && !sp
       return reproc.call('race', arg) if sp && !cls
       if cls && sp
