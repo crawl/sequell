@@ -16,7 +16,7 @@ include Tourney
 
 DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
 DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
-DBPASS = ENV['HENZELL_DBPASS'] || ''
+DBPASS = ENV['HENZELL_DBPASS'] || 'henzell'
 
 CFG = YAML.load_file(LG_CONFIG_FILE)
 

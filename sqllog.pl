@@ -113,7 +113,7 @@ my $standalone = not caller();
 
 my $DBNAME = $ENV{HENZELL_DBNAME} || 'henzell';
 my $DBUSER = 'henzell';
-my $DBPASS = '';
+my $DBPASS = 'henzell';
 
 my $dbh;
 my $insert_st;
