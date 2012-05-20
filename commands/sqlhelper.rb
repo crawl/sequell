@@ -1007,7 +1007,7 @@ class DBHandle
 end
 
 def connect_sql_db
-  DBHandle.new(DBI.connect('DBI:Mysql:' + DBNAME, DBUSER, DBPASS))
+  DBHandle.new(DBI.connect('DBI:Pg:' + DBNAME, DBUSER, DBPASS))
 end
 
 def sql_dbh

@@ -283,7 +283,6 @@ sources:
   - rhf
 
 boolean-fields:
-  - splat
   - alpha
   - tiles
 
@@ -351,7 +350,6 @@ logfields-with-type:
   - nruneI
   - tmsg
   - vmsg
-  - splat
   - rstart
   - rend
   - ntvI
@@ -434,7 +432,6 @@ logfields-summarisable:
   - ckaux
   - crace
   - kmod
-  - splat
   - dam
   - hp
   - mhp

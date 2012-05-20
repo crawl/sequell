@@ -2,9 +2,9 @@
 The listgame manual
 ===================
 
-If you're on ##crawl on Freenode IRC, you can use listgame to see
-game statistics for Crawl games played on the public Crawl servers CAO
-(crawl.akrasiac.org), CDO (crawl.develz.org) and RHF (rl.heh.fi).
+If you're on ##crawl on Freenode IRC, you can use listgame to see game
+statistics for Crawl games played on the public Crawl servers CAO
+(crawl.akrasiac.org) and CDO (crawl.develz.org).
 
 The bot Sequell responds to listgame queries on ##crawl, and on PM.
 
@@ -435,20 +435,18 @@ Listgame keywords may be one of:
    @nick  :: selects games by that player or nick alias. See the section
              on nick aliases below.
 
-10. splat :: selects games that are considered interesting by C-SPLAT.
+10. alpha :: selects games for alpha (unstable/development) versions.
 
-11. alpha :: selects games for alpha (unstable/development) versions.
+11. tiles :: selects games played in webtiles.
 
-12. tiles :: selects games played in webtiles.
-
-13. Tournament selector:
+12. Tournament selector:
 
     t    :: Select games played in the most recent Crawl tournament
     t<N> :: Select games played in the tournament for year 200<N>.
             For instance t9 selects the 2009 tourney, t8 selects the 2008
             tourney
 
-14. Milestone Types:
+13. Milestone Types:
     In !lm queries ONLY (i.e. not in !lg, !hs, etc.) you may use the
     milestone type as a keyword:
 
@@ -626,10 +624,6 @@ Terse game end message.
 
 vmsg:
 Verbose game end message. Usually identical to tmsg.
-
-splat:
-"y" if the game is considered an interesting death by C-SPLAT, empty
-otherwise.
 
 alpha:
 "y" if the game is an alpha/development version, empty otherwise.
@@ -841,8 +835,8 @@ or
 FooTV
 -----
 
-FooTV is a channel on termcast.org (telnet termcast.org to watch) that
-plays games requested using the -tv option.
+FooTV is a channel on termcast.develz.org (telnet termcast.develz.org
+to watch) that plays games requested using the -tv option.
 
 TV options
 ==========
