@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'commands/sqlhelper'
-require 'commands/helper'
-require 'commands/libtv'
+$:.push('commands')
+require 'sqlhelper'
+require 'helper'
+require 'libtv'
 
 help("Lists games matching specified conditions. By default it lists the most recent game played by the invoker. Usage: !listgame (<player>) (<gamenumber>) (options) where options are in the form field=value, or (max|min)=field. See ??listgame or http://is.gd/sequell_lg for more info.")
 

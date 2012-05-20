@@ -1,8 +1,9 @@
 #! /usr/bin/env ruby
 
-require 'commands/sqlhelper'
-require 'commands/helper'
-require 'commands/libtv'
+$:.push('commands')
+require 'helper'
+require 'sqlhelper'
+require 'libtv'
 
 help("Lists milestones for the specified player. Usage: !lm (<player>) (<number>) (options) where options are in the form field=value, or (max|min)=field. See ??milestone for more info.")
 

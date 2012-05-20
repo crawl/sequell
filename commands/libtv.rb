@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 
 require 'gserver'
-require 'commands/helper'
+require 'helper'
 
 module TV
   @@tv_args = nil

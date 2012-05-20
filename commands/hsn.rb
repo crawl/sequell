@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'commands/sqlhelper'
-require 'commands/helper'
-require 'commands/libtv'
+$:.push('commands')
+require 'helper'
+require 'sqlhelper'
+require 'libtv'
 
 help "Lists the highest-scoring game for a player."
 

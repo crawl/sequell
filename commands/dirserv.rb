@@ -1,5 +1,6 @@
 #! /usr/bin/env ruby
 
-require 'commands/libtv'
+$:.push('commands')
+require 'libtv'
 
 TV.launch_dirserv

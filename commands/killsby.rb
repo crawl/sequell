@@ -1,7 +1,8 @@
 #! /usr/bin/env ruby
 
-require 'commands/helper.rb'
-require 'commands/sqlhelper.rb'
+$:.push('commands')
+require 'helper'
+require 'sqlhelper'
 
 help("Lists the most frequent victims for a given monster. " +
      "Use -i to show indirect kills (e.g. rat summoned by vampire).")

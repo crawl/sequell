@@ -5,10 +5,12 @@ exit(0) if !ENV['HENZELL_SQL_QUERIES']
 LG_CONFIG_FILE = 'commands/crawl-data.yml'
 
 require 'dbi'
-require 'commands/helper'
-require 'commands/tourney'
 require 'set'
 require 'yaml'
+
+require 'helper'
+require 'tourney'
+require 'sql/field_predicate'
 
 include Tourney
 
@@ -1052,7 +1054,7 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
-  #puts "Query: #{q.select_all} (#{q.values.join(', ')})"
+  puts "Query: #{q.select_all} (#{q.values.join(', ')})"
   sql_dbh.get_first_value(q.select_count, *q.values).to_i
 end
 
@@ -1457,14 +1459,9 @@ def const_pred(pred)
   [ :const, pred ]
 end
 
+
 def field_pred(v, op, fname, fexpr=nil)
-  fexpr = fexpr || fname
-  fexpr = $CTX.dbfield(fexpr)
-  if fexpr =~ /^(\w+\.)/
-    fname = $1 + fname
-  end
-  v = proc_val(v, op)
-  [ :field, "#{fexpr or fname} #{op} ?", v, fname.downcase ]
+  Sql::FieldPredicate.predicate(v, op, fname, fexpr)
 end
 
 # Examines args for | operators at the top level and returns the
@@ -1909,13 +1906,6 @@ def query_field(selector, field, op, sqlop, val)
   end
 
   field_pred(val, sqlop, selector, field)
-end
-
-def proc_val(val, sqlop)
-  if sqlop =~ /LIKE/
-    val = val.index('*') || val.index('?') ? val.tr('*?', '%_') : "%#{val}%"
-  end
-  val
 end
 
 def nick_exists?(nick)

@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 
-require 'commands/helper'
-require 'commands/sqlhelper'
+$:.push('commands')
+require 'helper'
+require 'sqlhelper'
 
 help("Gives a URL to the user's last morgue file. Accepts !listgame " +
      "style selectors.")

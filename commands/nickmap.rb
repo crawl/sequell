@@ -1,6 +1,8 @@
 #! /usr/bin/env ruby
 
-require 'commands/helper'
+$:.push('commands')
+require 'helper'
+
 require 'set'
 
 if ENV['PRIVMSG'] == 'y'

@@ -1,7 +1,8 @@
 #! /usr/bin/env ruby
 
-require 'commands/helper'
-require 'commands/sqlhelper'
+$:.push('commands')
+require 'helper'
+require 'sqlhelper'
 
 help("Supplies URLs to the user's last ttyrecs. Accepts !listgame " +
      "style selectors.")

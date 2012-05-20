@@ -1,7 +1,8 @@
 #! /usr/bin/env ruby
 
-require 'commands/helper.rb'
-require 'commands/sqlhelper.rb'
+$:.push('commands')
+require 'helper'
+require 'sqlhelper'
 
 help("Lists the top kills for a player's ghost.")
 

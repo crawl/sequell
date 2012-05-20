@@ -1,7 +1,8 @@
 #! /usr/bin/env ruby
 
-require 'commands/helper'
-require 'commands/sqlhelper'
+$:.push('commands')
+require 'helper'
+require 'sqlhelper'
 
 default_nick = ARGV[1]
 args = (ARGV[2].split)[1 .. -1]
@@ -102,7 +103,7 @@ begin
 
   if $wins == 1
     if $streak_games > 0
-      puts "#$name has one win (#{cstreak}) " + 
+      puts "#$name has one win (#{cstreak}) " +
         "in #$games games, and can keep going!"
     else
       puts "#$name has one win (#{best_streaks}) in #{p($games, "game")}, and has played #{p($between_wins, "game")} since."

@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
-require 'commands/helper.rb'
-require 'commands/sqlhelper.rb'
+
+$:.push('commands')
+require 'helper'
+require 'sqlhelper'
 
 help("Shows the number of games won. Usage:" +
      " !won <nick> [<number of wins to skip>]")

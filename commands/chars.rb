@@ -1,7 +1,8 @@
 #! /usr/bin/env ruby
 
-require 'commands/sqlhelper'
-require 'commands/helper'
+$:.push('commands')
+require 'sqlhelper'
+require 'helper'
 
 help("Lists the frequency of all character types a player started.")
 
@@ -18,5 +19,5 @@ if ARGV[2] =~ /^[!@](\S+)/
   end
 end
 
-report_grouped_games(group_by, defval, ARGV[1], (ARGV[2].split)[1 .. -1], 
+report_grouped_games(group_by, defval, ARGV[1], (ARGV[2].split)[1 .. -1],
                      separator, formatter)

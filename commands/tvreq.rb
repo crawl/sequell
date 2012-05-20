@@ -2,9 +2,10 @@
 
 # Requests that C-SPLAT play the specified game.
 
-require 'commands/helper'
-require 'commands/sqlhelper'
-require 'commands/libtv'
+$:.push('commands')
+require 'helper'
+require 'sqlhelper'
+require 'libtv'
 
 help("Usage: !tv <game>. Plays the game on FooTV.")
 
