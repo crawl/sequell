@@ -58,13 +58,16 @@ my @MILE_INSERTFIELDS = @MILE_INSERTFIELDS_DECORATED;
 
 my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
-my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
-ktyp killer ckiller ikiller kpath kmod kaux ckaux place str int dex god
-start end dur turn urune nrune dam rstart alpha ntv map mapdesc tiles/;
+my @INDEX_COLS = qw/src file game_key v cv sc name race crace cls char xl
+ktyp killer ckiller ikiller kpath kmod kaux ckaux place god
+start end dur turn urune nrune dam rstart map/;
+
+my %MILE_EXCLUDED_INDEXES = map($_ => 1,
+                                qw/alpha str int dex tiles milestone lvl
+                                   hp mhp mmhp dur/);
 
 my @MILE_INDEX_COLS = ('src',
-                       grep($_ ne 'milestone', @MILEFIELDS),
-                      'ntv');
+                       grep(!$MILE_EXCLUDED_INDEXES{$_}, @MILEFIELDS));
 
 my %MILESTONE_VERB =
 (
