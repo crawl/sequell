@@ -304,6 +304,7 @@ aggregate-function-types:
 
 logfields-with-type:
   - idI
+  - game_key
   - file
   - alpha
   - src
