@@ -304,13 +304,6 @@ sub tail_logfile
         }
       }
     }
-
-    if ($CONFIG{sql_store}) {
-      # Link up milestone entries belonging to this player to their
-      # corresponding completed games.
-      my $game_type = game_type($game_ref);
-      fixup_milestones($href->{server}, $game_type, $game_ref->{name});
-    }
   }
   1
 }
