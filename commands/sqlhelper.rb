@@ -1054,7 +1054,7 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
-  puts "Query: #{q.select_all} (#{q.values.join(', ')})"
+  #puts "Query: #{q.select_all} (#{q.values.join(', ')})"
   sql_dbh.get_first_value(q.select_count, *q.values).to_i
 end
 
