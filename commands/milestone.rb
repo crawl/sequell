@@ -17,8 +17,8 @@ TV.with_tv_opts(ARGV[2].split()[1 .. -1]) do |args, tvopt|
       puts("#{n}. #{short_game_summary(g)}: " +
            (find_milestone_crash_dump(g) || "Can't find crash dump."))
     elsif (opts[:game] || opts[:log])
-      id = g['game_id']
-      game = id != nil ? sql_game_by_id(id) : nil
+      key = g['game_key']
+      game = key != nil ? sql_game_by_key(key) : nil
       if not game
         puts "#{short_game_summary(g)} has no matching game."
       elsif opts[:log]
@@ -26,9 +26,9 @@ TV.with_tv_opts(ARGV[2].split()[1 .. -1]) do |args, tvopt|
       elsif opts[:ttyrec]
         report_game_ttyrecs(nil, game)
       elsif tv
-        TV.request_game_verbosely(id, game, ARGV[1])
+        TV.request_game_verbosely(key, game, ARGV[1])
       else
-        print_game_n(g['game_id'], add_extra_fields_to_xlog_record(extra, game))
+        print_game_n(key, add_extra_fields_to_xlog_record(extra, game))
       end
     elsif opts[:ttyrec]
       # ttyrec for the milestone

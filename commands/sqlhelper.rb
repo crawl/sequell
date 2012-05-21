@@ -1079,11 +1079,11 @@ def sql_each_row_for_query(query_text, *params)
   end
 end
 
-def sql_game_by_id(id)
+def sql_game_by_key(key)
   with_query_context(CTX_LOG) do
     q = \
-      CrawlQuery.new([ 'AND', field_pred(id, '=', 'id') ],
-                     [ ], nil, '*', 1, "id=#{id}")
+      CrawlQuery.new([ 'AND', field_pred(key, '=', 'game_key') ],
+                     [ ], nil, '*', 1, "gid=#{key}")
     #puts "Query: #{q.select_all}"
     r = nil
     sql_each_row_matching(q) do |row|
