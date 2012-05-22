@@ -481,6 +481,17 @@ Game score (integer)
 name:
 Player name
 
+game_key/game_id/gid:
+
+The id (a string key) that is shared by the milestone and its
+corresponding logfile entry, based on the player name, the server they
+were playing on, and the start time of their game.
+
+All milestones for the same game will share the same game_key.
+
+game_keys should be unique to their games, barring bugs.
+
+
 race/sp/species/r:
 Character race (for instance: "Deep Dwarf")
 
@@ -659,13 +670,13 @@ A unique numeric id (integer) associated with the *milestone*. Note
 that the id field for milestones is quite different from the id field
 for logfile records.
 
-game_id/gid:
-The id (integer) for the *game* associated with this milestone. A
-milestone's game_id is set to the value of the corresponding game's id
-field. All milestones for the same game will share the same game_id.
-NOTE: milestones for unfinished games will have no game_id set; a
-milestone gets a game_id only when the corresponding game ends and
-gets a logfile entry.
+game_key/game_id/gid:
+
+The id (a string key) that is shared by the milestone and its
+corresponding logfile entry, based on the player name, the server they
+were playing on, and the start time of their game.
+
+All milestones for the same game will share the same game_key.
 
 time:
 The exact time the milestone was generated (date)
