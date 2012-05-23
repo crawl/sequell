@@ -1054,7 +1054,7 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
-  #puts "Query: #{q.select_all} (#{q.values.join(', ')})"
+  #STDERR.puts "Query: #{q.select_all} (#{q.values.join(', ')})"
   sql_dbh.get_first_value(q.select_count, *q.values).to_i
 end
 
@@ -1680,12 +1680,12 @@ def process_param(preds, sorts, rawarg)
   key, op, val = fixup_listgame_selector(key, op, val)
 
   key.downcase!
-  val.downcase!
+  val.downcase
   val.tr! '_', ' '
 
   sort = (key == 'max' || key == 'min')
 
-  selector = sort ? val : key
+  selector = sort ? val.downcase : key
   selector = COLUMN_ALIASES[selector] || selector
   raise "Unknown selector: #{selector}" unless $CTX.field?(selector)
 

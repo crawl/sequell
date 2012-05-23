@@ -110,3 +110,4 @@ E !gkills * deathonacow
 
 !gkills
 
+!lm * gid=WasJordan:cdo:20101130144401S s=char ::~ 10x NaCK
