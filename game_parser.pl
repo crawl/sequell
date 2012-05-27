@@ -86,7 +86,7 @@ sub handle_output
 
   if ($output =~ s/^\n//)
   {
-    $output =~ s/^([^:]*)://;
+    $output =~ s/^([^ ]* )://;
     my $pre = defined($1) ? $1 : '';
     $output =~ s/:([^:]*)$//;
     my $post = defined($1) ? $1 : '';
