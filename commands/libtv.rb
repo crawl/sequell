@@ -217,8 +217,9 @@ module TV
 
   def self.parse_seek_num(seek, num, allow_end=false)
     seekname = seek == '<' ? 'seek-back' : 'seek-after'
-    expected = allow_end ? 'number or "$"' : 'number'
-    if num !~ /^[-+]?\d+(?:\.\d+)?$/ && (!allow_end || num != '$')
+    expected = allow_end ? 'T<turncount>, number or "$"' : 'T<turncount> or number'
+    if (num !~ /^t[+-]?\d+$/i && num !~ /^[-+]?\d+(?:\.\d+)?$/ &&
+        (!allow_end || num != '$'))
       raise "Bad seek argument for #{seekname}: #{num} (#{expected} expected)"
     end
     num
@@ -234,6 +235,8 @@ module TV
         hash['seekbefore'] = parse_seek_num(prefix, rest)
       elsif prefix == '>'
         hash['seekafter'] = parse_seek_num(prefix, rest, true)
+      elsif prefix.downcase == 't'
+        hash['seekafter'] = parse_seek_num('<', prefix + rest)
       else
         raise "Unrecognised TV option: #{key}"
       end
