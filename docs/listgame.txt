@@ -851,18 +851,30 @@ to watch) that plays games requested using the -tv option.
 
 TV options
 ==========
--tv              starts playback of the selected game on FooTV
--tv:cancel       cancels playback of the selected game on FooTV
--tv:nuke         cancels playback of *all* previous games selected for FooTV
--tv:<N           starts playback N times farther from the end. -tv normally
-                 starts playback a little way before the end of game, or
-                 a little way before the milestone (when used with !lm).
-                 If you'd like to start twice as far back, you can use -tv:<2
-                 or -tv:<N in general. N can be <1 (-tv:<0 or -tv:<0.5 are
-                 both valid).
--tv:>N           ends playback at Nx the normal time after the milestone.
-                 This is only relevant when used with !lm
--tv:>$           continues playback to the end of the ttyrec.
+-tv               starts playback of the selected game on FooTV
+-tv:cancel        cancels playback of the selected game on FooTV
+-tv:nuke          cancels playback of *all* previous games selected for FooTV
+-tv:<N            starts playback N times farther from the end. -tv normally
+                  starts playback a little way before the end of game, or
+                  a little way before the milestone (when used with !lm).
+                  If you'd like to start twice as far back, you can use -tv:<2
+                  or -tv:<N in general. N can be <1 (-tv:<0 or -tv:<0.5 are
+                  both valid).
+-tv:>N            ends playback at Nx the normal time after the milestone.
+                  This is only relevant when used with !lm
+-tv:>$            continues playback to the end of the ttyrec (note: not end
+                  of game)
+
+-tv:T[turncount]  Start playback before the given turncount (if not divisible
+                  by 100, rounds up to the next highest turn. For milestones,
+                  this is the same as >T[turncount], i.e. this is the end of
+                  playback
+-tv:>T[turncount] End playback near the given turncount (rounded up to
+                  nearest 100)
+-tv:<T[turncount] Start playback near the given turncount (rounded down to
+                  nearest 100)
+-tv:T[+-][delta]  Playback to the turn count of the milestone (or end
+                  of game)
 
 TV seek options may be combined:
 
@@ -870,6 +882,19 @@ TV seek options may be combined:
 
 (Watch the last character who reached Zot:5 from the moment they enter
 Zot:5, continuing till the end of that game session).
+
+Play from turn 100 - 5000 (approximately) of the most recent winning game:
+
+!lg * win -tv:<T100:>T5000
+
+Play most recent golden-rune milestone, but continue 3000 turns past
+the milestone:
+
+!lm * rune=golden -tv:T+3000
+
+Note: turn-based playback will work only for relatively recent Crawl
+games. Games from very old versions lack the timestamp files that
+FooTV needs to match turn counts to UTC times.
 
 
 Examples
