@@ -121,12 +121,20 @@ branches:
   - Lab
   - Pan
   - Bazaar
+  - Spider
   - Bzr
   - Hell
   - Blade
   - Temple
   - Abyss
   - Sprint
+  - WizLab
+  - Sewer
+  - Bailey
+  - Minitom
+  - Ossuary
+  - IceCv
+  - Volcano
 
 god:
   ash: Ashenzari
@@ -289,9 +297,9 @@ boolean-fields:
   - tiles
 
 place-fixups:
-  '^shoal\b(.*)': ['Shoals$1', 'Shoal$1']
-  '^vaults\b(.*)': 'Vault$1'
-  '^v\b(.*)': 'Vault$1'
+  '^shoals?\b(.*)': 'Shoals$1'
+  '^vaults?\b(.*)': 'Vaults$1'
+  '^v\b(.*)': 'Vaults$1'
 
 aggregate-function-types:
   cdist: '*'

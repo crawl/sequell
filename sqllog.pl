@@ -6,6 +6,7 @@ use Fcntl qw/SEEK_SET SEEK_CUR SEEK_END/;
 use IO::Handle;
 
 use DBI;
+use Henzell::Crawl;
 
 do 'game_parser.pl';
 
@@ -583,6 +584,9 @@ sub fixup_logfields {
   if ($game_type) {
     $$g{game_type} = $game_type;
   }
+
+  $g->{place} = Henzell::Crawl::canonical_place_name($g->{place});
+  $g->{oplace} = Henzell::Crawl::canonical_place_name($g->{oplace});
 
   # Milestone may have oplace
   if ($milestone) {
