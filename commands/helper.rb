@@ -373,7 +373,7 @@ def binary_search_alien_morgue(url, e)
   found = (morgues.find { |m| m == full_name } ||
            morgues.find { |m| m == short_name } ||
            binary_search(morgues, full_name))
-  return user_url + found if found
+  return found.url if found
 
   return nil
 end

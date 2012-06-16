@@ -34,7 +34,8 @@ module HttpList
     end
 
     def == (other)
-      @filename == other.filename
+      other_file = other.respond_to?(:filename) ? other.filename : other
+      @filename == other_file
     end
 
     def hash
