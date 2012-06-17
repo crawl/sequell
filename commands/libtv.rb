@@ -5,12 +5,30 @@ require 'helper'
 
 module TV
   @@tv_args = nil
+  @channel_server = !!ENV['TV_CHANNEL_SERVER']
 
   TV_QUEUE_FILE = 'tv.queue'
   TV_LOCK_FILE = 'tv.queue.lock'
   DIRSERV_LOCK_FILE = 'dirserv.queue.lock'
   TV_LOG_FILE = 'tv.queue.log'
   DIRSERV_LOG_FILE = 'dirserv.queue.log'
+
+  def self.channel_server?
+    @channel_server
+  end
+
+  def self.as_channel_server
+    old_channel_server = @channel_server
+    old_env = ENV['TV_CHANNEL_SERVER']
+    begin
+      @channel_server = true
+      ENV['TV_CHANNEL_SERVER'] = 'y'
+      yield
+    ensure
+      @channel_server = old_channel_server
+      ENV['TV_CHANNEL_SERVER'] = old_env
+    end
+  end
 
   # Serves ttyrec directory listings to whoever asks.
   class TtyrecDirectoryServ < GServer
@@ -261,6 +279,11 @@ module TV
   end
 
   def self.request_game(g)
+    if TV.channel_server?
+      puts munge_game(g)
+      return
+    end
+
     # Launch a daemon that keeps a server socket open for interested
     # parties (i.e. C-SPLAT) to listen in.
     launch_daemon()
@@ -276,20 +299,20 @@ module TV
   end
 
   def self.request_game_verbosely(n, g, who)
-    #raise "Cannot request games for TV on PM." if ENV['PRIVMSG'] == 'y'
-
     summary = short_game_summary(g)
     tv = 'FooTV'
 
-    if @@tv_args && @@tv_args['nuke']
-      puts "FooTV playlist clear requested by #{who}."
-    else
-      suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
-      puts "#{n}. #{summary}#{suffix} requested for #{tv}."
-    end
+    unless TV.channel_server?
+      if @@tv_args && @@tv_args['nuke']
+        puts "FooTV playlist clear requested by #{who}."
+      else
+        suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
+        puts "#{n}. #{summary}#{suffix} requested for #{tv}."
+      end
 
-    update_tv_count(g)
-    g['req'] = ARGV[1]
+      update_tv_count(g)
+      g['req'] = ARGV[1]
+    end
 
     if @@tv_args
       for k in @@tv_args.keys

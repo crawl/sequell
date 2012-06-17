@@ -9,6 +9,10 @@ use Henzell::Config qw/%CONFIG %CMD %PUBLIC_CMD/;
 use Henzell::Utils;
 use Getopt::Long;
 
+END {
+  kill 0;
+}
+
 my $daemon = 1;
 my $irc = 1;
 my $config_file = 'henzell.rc';
@@ -73,6 +77,11 @@ binmode STDOUT, ':utf8';
 Henzell::Utils::lock(verbose => 1,
                      lock_name => $CONFIG{lock_name});
 
+if ($irc && $CONFIG{http_services}) {
+  Henzell::Utils::spawn_service("http_service",
+                                "ruby -rubygems services/http_service.rb");
+}
+
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
 Henzell::Utils::daemonify() if $daemon;
 
@@ -101,6 +110,11 @@ if ($CONFIG{sql_store}) {
 }
 
 my $HENZELL;
+my $NICK_AUTHENTICATOR = 'NickServ';
+my $AUTH_EXPIRY_SECONDS = 60 * 60;
+my %AUTHENTICATED_USERS;
+my %PENDING_AUTH;
+
 if ($irc) {
   $HENZELL = Henzell->new(nick     => $nickname,
                           server   => $ircserver,
@@ -389,6 +403,7 @@ sub raw_message_post {
 
 sub respond_with_message {
   my ($m, $output) = @_;
+  return unless $output;
 
   my $private = $$m{channel} eq 'msg';
 
@@ -429,9 +444,66 @@ sub force_private {
   return $CONFIG{use_pm} && ($command =~ /^!\w/ || $command =~ /^[?]{2}/);
 }
 
+sub nick_is_authenticator {
+  my $nick = shift;
+  lc($nick) eq lc($NICK_AUTHENTICATOR)
+}
+
+sub authenticate_user {
+  my ($user, $msg) = @_;
+
+  print "User $user needs authentication for $$msg{body}\n";
+  if ($PENDING_AUTH{$user}) {
+    print "Skipping auth for $user: pending auth already\n";
+    return;
+  }
+
+  $PENDING_AUTH{$user} = $msg;
+  $HENZELL->say(channel => 'msg',
+                who => $NICK_AUTHENTICATOR,
+                body => "ACC $user");
+}
+
+sub nick_identified {
+  my ($nick, $accept_any_known_auth) = @_;
+  my $auth = $AUTHENTICATED_USERS{$nick};
+  $auth && ($accept_any_known_auth || $$auth{acc} == 3) &&
+    (time() - $$auth{when} < $AUTH_EXPIRY_SECONDS)
+}
+
+sub nick_unidentify {
+  my $nick = shift;
+  delete $AUTHENTICATED_USERS{$nick};
+}
+
+sub process_authentication {
+  my ($m) = @_;
+  print "Processing auth response from $$m{who}: $$m{body}\n";
+  my $body = $$m{body};
+  return unless $body =~ /^(\S+) ACC (\d+)/;
+  my ($nick, $auth) = ($1, $2);
+  $AUTHENTICATED_USERS{$nick} = { when => time(), acc => $auth };
+
+  if ($PENDING_AUTH{$nick}) {
+    my $msg = $PENDING_AUTH{$nick};
+    if (nick_identified($nick)) {
+      delete $PENDING_AUTH{$nick};
+      $$msg{reproc} = 1;
+      process_message($msg);
+    }
+    else {
+      raw_message_post($msg,
+                       "Could not authenticate $nick with services for $$msg{body}");
+    }
+  }
+  else {
+  }
+}
+
 sub process_message {
   my ($m) = @_;
 
+  my $reprocessed_command = $$m{reproc};
   my $nick = $$m{who};
   my $channel = $$m{channel};
   my $private = $channel eq 'msg';
@@ -441,12 +513,14 @@ sub process_message {
   $nick     =~ y/'//d;
 
   my $sibling = nick_is_sibling($nick);
-  unless ($sibling) {
+  unless ($sibling || $reprocessed_command) {
     seen_update($m, "saying '$verbatim' on $channel");
     respond_to_any_msg($m);
   }
 
-  check_sibling_announcements($nick, $verbatim) unless $private;
+  unless ($private || $reprocessed_command) {
+    check_sibling_announcements($nick, $verbatim);
+  }
   return if $sibling;
 
   $target =~ s/^\?[?>]/!learn query /;
@@ -477,15 +551,25 @@ sub process_message {
     # Log all commands to Henzell.
     print "CMD($private): $nick: $verbatim\n";
     $ENV{PRIVMSG} = $private ? 'y' : '';
+    $ENV{IRC_NICK_AUTHENTICATED} = nick_identified($nick) ? 'y' : '';
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
       $CMD{$command}->(pack_args($target, $nick, $verbatim, '', ''));
+
+    if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
+      if ($reprocessed_command || nick_identified($nick, 'any_auth')) {
+        respond_with_message($m,
+              "Cannot authenticate $nick with services, ignoring $verbatim");
+      } else {
+        authenticate_user($1, $m);
+      }
+      return;
+    }
+
     respond_with_message($m, $output);
   }
-
-  undef;
+  undef
 }
-
 
 sub process_config() {
   @logfiles = @Henzell::Config::LOGS unless @logfiles;
@@ -496,8 +580,8 @@ sub command_proc
 {
   my ($command_dir, $file) = @_;
   return sub {
-      my ($args, @args) = @_;
-      handle_output(run_command($command_dir, $file, $args, @args));
+    my ($args, @args) = @_;
+    handle_output(run_command($command_dir, $file, $args, @args));
   };
 }
 
@@ -600,6 +684,7 @@ sub chanjoin {
 sub userquit {
   my ($self, $q) = @_;
 
+  main::nick_unidentify($$q{who});
   my $msg = $$q{body};
   my $verb = $$q{verb} || 'quitting';
   main::seen_update($q,
@@ -617,7 +702,13 @@ sub chanpart {
 
 sub said {
   my ($self, $m) = @_;
-  main::process_message($m);
+
+  if (main::nick_is_authenticator($$m{who})) {
+    main::process_authentication($m);
+  }
+  else {
+    main::process_message($m);
+  }
   return undef;
 }
 

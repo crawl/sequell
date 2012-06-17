@@ -2,6 +2,7 @@
 
 require 'set'
 require 'date'
+require 'command_context'
 
 # fields end in S if they're strings, I if integral
 $field_names = %w<vS lvS nameS uidI raceS clsS xlI skS sklevI titleS placeS brS lvlI ltypS hpI mhpI mmhpI strI intI dexI startS durI turnI scI ktypS killerS kauxS endS tmsgS vmsgS godS pietyI penI charS nruneI uruneI tilesS>
@@ -654,11 +655,14 @@ rescue
   raise
 end
 
-def help(helpstring)
-  if ARGV[3] == '1'
+def help(helpstring, force=false)
+  if force || ARGV[3] == '1'
+    cmd = ARGV[2].split()[0]
     if helpstring =~ /%CMD%/
-      cmd = ARGV[2].split()[0]
       helpstring = helpstring.gsub('%CMD%', cmd)
+    end
+    if force && helpstring !~ /^#{Regexp.quote(cmd)}/
+      helpstring = "#{cmd}: " + helpstring
     end
     puts helpstring
     exit

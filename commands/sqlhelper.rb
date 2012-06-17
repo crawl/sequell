@@ -713,6 +713,10 @@ def sql_build_query(default_nick, args,
                     context=CTX_LOG, extra_fields=nil,
                     extract_nick_from_args=true)
   #puts "sql_build_query(#{args.inspect})"
+
+  random_game = args.find { |a| a.downcase == '-random' }
+  args.delete(random_game) if random_game
+
   summarise = args.find { |a| SummaryFieldList.summary_field? a }
   args.delete(summarise) if summarise
 
@@ -729,6 +733,7 @@ def sql_build_query(default_nick, args,
     with_query_context(context) do
       q = sql_define_query(nick, num, args, extra_fields, false)
       q.summarise = SummaryFieldList.new(summarise) if summarise
+      q.random_game = random_game
       q.extra_fields = extra_fields
       q.ctx = context
       q
@@ -1033,6 +1038,11 @@ def sql_exec_query(num, q, lastcount = nil)
   count = lastcount || sql_count_rows_matching(q)
   return nil if count == 0
 
+  if q.random_game?
+    num = rand(count)
+    q.random_game = false
+  end
+
   if num < 0
     num = count + num
     raise "Index out of range: #{origindex}" if num < 0
@@ -1121,6 +1131,7 @@ class CrawlQuery
     @argstr = argstr
     @values = nil
     @summarise = nil
+    @random_game = nil
     @summary_sort = nil
     @raw = nil
     @joins = false
@@ -1178,6 +1189,14 @@ class CrawlQuery
 
   def summarise?
     @summarise || (@extra_fields && @extra_fields.aggregate?)
+  end
+
+  def random_game?
+    @random_game
+  end
+
+  def random_game=(random_game)
+    @random_game = random_game
   end
 
   def summarise= (s)
@@ -1599,9 +1618,6 @@ def fixup_listgame_arg(preds, sorts, arg)
     elsif arg =~ /^[a-z]{2}$/i then
       cls = is_class?(arg)
       sp = is_race?(arg)
-      if arg == 'DS' && !sp
-        STDERR.puts("Aiee: DS is not race in #{RACE_EXPANSIONS.inspect}")
-      end
       return reproc.call('cls', arg) if cls && !sp
       return reproc.call('race', arg) if sp && !cls
       if cls && sp

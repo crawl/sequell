@@ -84,6 +84,8 @@ sub handle_output
   my $output = shift;
   my $full_output = shift;
 
+  return unless $output;
+
   if ($output =~ s/^\n//)
   {
     $output =~ s/^([^ ]* )://;

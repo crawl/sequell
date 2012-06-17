@@ -16,4 +16,5 @@
 !ttyrec ttr.rb
 !ttr ttr.rb
 !tv tvreq.rb
+!tvdef tvdef.rb
 !won won.rb

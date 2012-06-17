@@ -30,3 +30,4 @@ nicks-test.map
 henzell.rc
 utils/*.sql
 password.txt
+Gemfile.lock
