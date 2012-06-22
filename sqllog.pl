@@ -83,25 +83,8 @@ for (@LOGFIELDS, @INDEX_COLS, @SELECTFIELDS) {
 
 my @INDEX_CASES = ( '' );
 
-my @UNIQUES = ("Ijyb", "Blork the orc", "Blork", "Urug", "Erolcha", "Snorg",
-  "Polyphemus", "Adolf", "Antaeus", "Xtahua", "Tiamat", "Boris",
-  "Murray", "Terence", "Jessica", "Sigmund", "Edmund", "Psyche",
-  "Donald", "Michael", "Joseph", "Erica", "Josephine", "Harold",
-  "Norbert", "Jozef", "Agnes", "Maud", "Louise", "Francis", "Frances",
-  "Rupert", "Wayne", "Duane", "Norris", "Frederick", "Margery",
-  "Mnoleg", "Lom Lobon", "Cerebov", "Gloorx Vloq", "Geryon",
-  "Dispater", "Asmodeus", "Ereshkigal", "the royal jelly",
-  "the Lernaean hydra", "Dissolution", "Azrael", "Prince Ribbit",
-  "Sonja", "Ilsuiw", "Nergalle", "Saint Roka", "Roxanne",
-  "Eustachio", "Nessos", "Dowan", "Duvessa", "Grum", "Crazy Yiuf",
-  "Gastronok", "Pikel", "Menkaure", "Khufu", "Aizul", "Purgy",
-  "Kirke", "Maurice", "Nikola", "Mara", "Grinder", "Mennas", "Chuck",
-  "the iron giant", "Nellie", "Wiglaf", "Jory", "Terpsichore", "Ignacio");
-
 my $TLOGFILE   = 'logrecord';
 my $TMILESTONE = 'milestone';
-
-my %UNIQUES = map(($_ => 1), @UNIQUES);
 
 my $LOGFILE = "allgames.txt";
 my $COMMIT_INTERVAL = 15000;
@@ -612,11 +595,11 @@ sub fixup_logfields {
       # their normal counterparts, and named orcs with their monster type.
       my $kill = $g->{killer};
       if ($kill && $kill =~ /^[A-Z]/) {
-        my ($name) = /^([A-Z]\w*(?: [A-Z]\w*)*)/;
+        my ($name) = /^([A-Z][\w']*(?: [A-Z][\w']*)*)/;
         if ($kill =~ / the /) {
           my ($mons) = / the (.*)$/;
           # Also takes care of Blork variants.
-          if ($UNIQUES{$name}) {
+          if (Henzell::Crawl::crawl_unique($name)) {
             $_ = $name;
           } else {
             # Usually these will all be orcs.
@@ -625,8 +608,7 @@ sub fixup_logfields {
             $_ = $mons;
           }
         } else {
-          $_ = 'a pandemonium lord'
-            if !/^(?:an?|the) / && !$UNIQUES{$name};
+          $_ = 'a pandemonium lord' if Henzell::Crawl::possible_pan_lord($name);
         }
       }
     }

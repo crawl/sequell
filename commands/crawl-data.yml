@@ -7,6 +7,102 @@ game-type-prefixes:
 
 default-game-type: crawl
 
+orcs:
+  - Hawl
+  - Rocco
+  - Jorge
+  - Bogdan
+  - Garbold
+  - Morun
+  - Murdo
+  - Boldo
+  - Arkwar
+
+uniques:
+  - Ijyb
+  - Blork the orc
+  - Blork
+  - Urug
+  - Erolcha
+  - Snorg
+  - Polyphemus
+  - Adolf
+  - Antaeus
+  - Xtahua
+  - Tiamat
+  - Boris
+  - Murray
+  - Terence
+  - Jessica
+  - Sigmund
+  - Edmund
+  - Psyche
+  - Donald
+  - Michael
+  - Joseph
+  - Erica
+  - Josephine
+  - Harold
+  - Norbert
+  - Jozef
+  - Agnes
+  - Maud
+  - Louise
+  - Francis
+  - Frances
+  - Rupert
+  - Wayne
+  - Duane
+  - Norris
+  - Frederick
+  - Margery
+  - Mnoleg
+  - Lom Lobon
+  - Cerebov
+  - Gloorx Vloq
+  - Geryon
+  - Dispater
+  - Asmodeus
+  - Ereshkigal
+  - the royal jelly
+  - the Lernaean hydra
+  - Dissolution
+  - Azrael
+  - Prince Ribbit
+  - Sonja
+  - Ilsuiw
+  - Nergalle
+  - Saint Roka
+  - Roxanne
+  - Eustachio
+  - Nessos
+  - Dowan
+  - Duvessa
+  - Grum
+  - Crazy Yiuf
+  - Gastronok
+  - Pikel
+  - Menkaure
+  - Khufu
+  - Aizul
+  - Purgy
+  - Kirke
+  - Maurice
+  - Nikola
+  - Mara
+  - Grinder
+  - Mennas
+  - Chuck
+  - the iron giant
+  - Nellie
+  - Wiglaf
+  - Jory
+  - Terpsichore
+  - Ignacio
+  - Fannar
+  - Arachne
+  - "Cigotuvi's Monster"
+
 # Only used by !apt at the moment.
 skills:
   - Fighting
