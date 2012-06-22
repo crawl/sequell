@@ -27,6 +27,10 @@ class IrcAuth
   end
 
   def self.authorize!(auth_context)
+    if ENV['PRIVMSG'] == 'y'
+      puts "This command may not be used on PM."
+      exit
+    end
     auths = self.authorizations[auth_context.to_s]
     unless auths.include?(self.acting_nick)
       puts "Ignoring #{auth_context} request from #{acting_nick}: not authorized. Authorized users: #{display_auths(auths)}."
