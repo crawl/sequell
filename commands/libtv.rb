@@ -243,18 +243,29 @@ module TV
     num
   end
 
+  def self.read_playback_speed(speed_string)
+    speed = speed_string.to_f
+    if speed < 0.1 || speed > 10
+      raise "Playback speed must be between 0.1 and 10"
+    end
+    speed
+  end
+
   def self.parse_tv_arg(hash, key)
     if key == 'cancel' or key == 'nuke'
       hash[key] = 'y'
     else
-      prefix = key[0..0]
+      prefix = key[0..0].downcase
       rest = key[1 .. -1].strip
-      if prefix == '<'
+      case prefix
+      when '<'
         hash['seekbefore'] = parse_seek_num(prefix, rest)
-      elsif prefix == '>'
+      when '>'
         hash['seekafter'] = parse_seek_num(prefix, rest, true)
-      elsif prefix.downcase == 't'
+      when 't'
         hash['seekafter'] = parse_seek_num('<', prefix + rest)
+      when 'x'
+        hash['playback_speed'] = read_playback_speed(rest)
       else
         raise "Unrecognised TV option: #{key}"
       end

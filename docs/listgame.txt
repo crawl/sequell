@@ -875,6 +875,8 @@ TV options
                   nearest 100)
 -tv:T[+-][delta]  Playback to the turn count of the milestone (or end
                   of game)
+-tv:x[N]          Change playback speed. For instance, -tv:x5 plays back the
+                  game at 5x normal speed.
 
 TV seek options may be combined:
 
