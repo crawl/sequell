@@ -485,9 +485,9 @@ sub process_authentication {
   $AUTHENTICATED_USERS{$nick} = { when => time(), acc => $auth };
 
   if ($PENDING_AUTH{$nick}) {
+    delete $PENDING_AUTH{$nick};
     my $msg = $PENDING_AUTH{$nick};
     if (nick_identified($nick)) {
-      delete $PENDING_AUTH{$nick};
       $$msg{reproc} = 1;
       process_message($msg);
     }
@@ -495,8 +495,6 @@ sub process_authentication {
       raw_message_post($msg,
                        "Could not authenticate $nick with services for $$msg{body}");
     }
-  }
-  else {
   }
 }
 
