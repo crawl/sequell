@@ -485,8 +485,8 @@ sub process_authentication {
   $AUTHENTICATED_USERS{$nick} = { when => time(), acc => $auth };
 
   if ($PENDING_AUTH{$nick}) {
-    delete $PENDING_AUTH{$nick};
     my $msg = $PENDING_AUTH{$nick};
+    delete $PENDING_AUTH{$nick};
     if (nick_identified($nick)) {
       $$msg{reproc} = 1;
       process_message($msg);
