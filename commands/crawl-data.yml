@@ -8,15 +8,70 @@ game-type-prefixes:
 default-game-type: crawl
 
 orcs:
-  - Hawl
-  - Rocco
-  - Jorge
+  - Agrik
+  - Alork
+  - Arbolt
+  - Argrim
+  - Arkwar
+  - Berold
+  - Bladwarg
+  - Blodwig
+  - Boderik
   - Bogdan
+  - Boldo
+  - Bolgrim
+  - Borgk
+  - Borgoth
+  - Borgun
+  - Boruk
+  - Brandogh
+  - Brunolf
+  - Dorog
   - Garbold
+  - Gorbash
+  - Gorg
+  - Gorm
+  - Grimold
+  - Harm
+  - Hawl
+  - Herok
+  - Hilgar
+  - Jorge
+  - Judas
+  - Koronagh
+  - Learuk
+  - Marbork
+  - Margrim
+  - Milork
+  - Morguth
   - Morun
   - Murdo
-  - Boldo
-  - Arkwar
+  - Norbak
+  - Nordag
+  - Ognian
+  - Ogrik
+  - Okrist
+  - Olfik
+  - Olfrun
+  - Oreg
+  - Orgrim
+  - Orik
+  - Orkrul
+  - Orkwin
+  - Ortolf
+  - Oruk
+  - Rocco
+  - Syrus
+  - Thorok
+  - Ugbert
+  - Ugrim
+  - Wardok
+  - Wargath
+  - Wargrak
+  - Warrok
+  - Worak
+  - Wulfoc
+  - Zorug
 
 uniques:
   - Ijyb
