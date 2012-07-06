@@ -749,12 +749,12 @@ def split_combined_arguments(argument_string)
   argument_string.split().find_all { |x| !x.strip.empty? }
 end
 
-def extra_field_clause(args, ctx)
+def extra_field_clause(args, ctx, remove_clause=true)
   combined = args.join(' ')
   extra = nil
   reg = %r/\bx\s*=\s*([+-]?\w+(?:\(\w+\))?(?:\s*,\s*\w+(?:\(\w+\))?)*)/
   extra = $1 if combined =~ reg
-  combined.sub!(reg, '') if extra
+  combined.sub!(reg, '') if remove_clause && extra
   restargs = split_combined_arguments(combined)
 
   [ restargs, clean_extra_fields(extra, ctx) ]
@@ -1716,7 +1716,7 @@ def process_param(preds, sorts, rawarg)
     field = selector.downcase
     if $CTX.field_type(selector) == 'I'
       if ['=~','!~','~~', '!~~'].index(op)
-        raise "Can't use #{op} on numeric field #{selector}"
+        raise "Can't use #{op} on numeric field #{selector} in #{rawarg}"
       end
       val = val.to_i
     end

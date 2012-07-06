@@ -13,7 +13,8 @@ TV.with_tv_opts(ctx.arguments) do |args, tvopt|
   ctx.arguments = args
   ctx.extract_options!('game', 'log', 'ttyrec')
   sargs, extra = extra_field_clause(ctx.arguments,
-                                    ctx[:game] ? CTX_LOG : CTX_STONE)
+                                    ctx[:game] ? CTX_LOG : CTX_STONE,
+                                    false)
 
   tv = tvopt[:tv]
   sql_show_game(ctx.default_nick, sargs, CTX_STONE) do |n, g|
@@ -40,7 +41,7 @@ TV.with_tv_opts(ctx.arguments) do |args, tvopt|
     elsif tv
       TV.request_game_verbosely(n, g, ARGV[1])
     else
-      print_game_n(n, add_extra_fields_to_xlog_record(extra, g))
+      print_game_n(n, g)
     end
   end
 end

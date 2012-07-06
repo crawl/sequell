@@ -17,6 +17,7 @@
 # Any line starting with $ describes shell commands to run; the command will
 # be echoed to stderr; the command exit code will not be checked.
 
+
 $ rm nicks-test.map
 !nick cow ::= No nick mapping for cow.
 !nick src a b c ::= Mapping src => a b c
@@ -26,6 +27,8 @@ $ rm nicks-test.map
 !nick -rm src tao ::= Deleted tao from src => cow tao moo zebra
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
+
+!lm * urune=3 type=rune x=avg(turn) ::~ avg\(turn\)=\d+
 
 !lg * s=name,xl
 
