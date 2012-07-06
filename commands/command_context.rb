@@ -10,6 +10,10 @@ class CommandContext
     @opts = { }
   end
 
+  def argument_string
+    self.arguments.join(' ')
+  end
+
   def default_nick
     ARGV[1]
   end
