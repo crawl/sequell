@@ -31,3 +31,4 @@ henzell.rc
 utils/*.sql
 password.txt
 Gemfile.lock
+*.el

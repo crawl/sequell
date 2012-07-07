@@ -25,6 +25,6 @@ get '/search' do
   require 'cmd/executor'
   require 'libtv'
   TV.as_channel_server {
-    Cmd::Executor.execute(query, :permitted_commands => ['!lg', '!lm'])
+    Cmd::Executor.execute(query, :permitted_commands => ['!lg', '!lm', '??'])
   }
 end

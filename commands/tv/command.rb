@@ -1,32 +1,9 @@
 require 'sqlhelper'
 require 'set'
 require 'learndb'
+require 'cmd/command'
 
 module TV
-  class QueryCommand
-    attr_accessor :arguments, :command
-    def initialize(command_string)
-      @command_string = canonicalize_commandline(command_string)
-      @arguments = command_string.split(' ')
-      @command = @arguments.shift.downcase
-    end
-
-    def argument_string
-      @arguments.join(' ')
-    end
-
-    def to_s
-      ([@command] + @arguments).join(' ')
-    end
-
-    private
-    def canonicalize_commandline(command_string)
-      command_string.sub(/^(\?\?)(\S)/) { |match|
-        match[1] + ' ' + match[2]
-      }
-    end
-  end
-
   class ChannelQuery
     def self.run(channel_name, ctx)
       TV::ChannelManager.query_channel(channel_name)
@@ -51,7 +28,7 @@ module TV
       @channel_name = channel_name
       @ctx = ctx
       @queries = ctx.argument_string.split(';;').map(&:strip).map { |query|
-        QueryCommand.new(query)
+        Cmd::Command.new(query)
       }
     end
 

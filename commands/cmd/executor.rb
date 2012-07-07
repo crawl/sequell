@@ -1,29 +1,7 @@
 require 'henzell/config'
+require 'cmd/command'
 
 module Cmd
-  class Command
-    attr_reader :command_name
-
-    def initialize(config, command_line)
-      @config = config
-      @command_line = command_line
-      @command_name = nil
-      @command_name = $1.downcase if command_line =~ /^(\S+)/
-    end
-
-    def execute(default_nick)
-      @config.commands.execute(@command_line, default_nick)
-    end
-
-    def valid?
-      @config.commands.include?(@command_name)
-    end
-
-    def to_s
-      @command_line
-    end
-  end
-
   class Options
     def initialize(options)
       @options = options
@@ -49,22 +27,23 @@ module Cmd
   class Executor
     def self.execute(command_line, options={})
       config = Henzell::Config.read
-      command = Command.new(config, command_line)
+      command = Command.new(command_line)
       options = Options.new(options)
-      unless command.valid? && options.permitted?(command)
+      unless command.valid?(config) && options.permitted?(command)
         raise StandardError, "Not a valid command: #{command}"
       end
 
-      self.new(command, options).execute
+      self.new(command, options, config).execute
     end
 
-    def initialize(command, options)
+    def initialize(command, options, config)
       @command = command
       @options = options
+      @config  = config
     end
 
     def execute
-      @command.execute(@options.default_nick || '???')[1] || 'ERROR'
+      @command.execute(@config, @options.default_nick || '???')[1] || 'ERROR'
     end
   end
 end
