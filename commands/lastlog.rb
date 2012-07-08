@@ -8,14 +8,14 @@ help("Gives a URL to the user's last morgue file. Accepts !listgame " +
      "style selectors.")
 
 begin
-  n, game, selectors = sql_find_game(ARGV[1], (ARGV[2].split)[1..-1])
+  result = sql_find_game(ARGV[1], (ARGV[2].split)[1..-1])
 rescue
   puts $!
   raise
 end
 
-unless game
-  puts "No games for #{selectors}."
+if result.none?
+  puts "No games for #{result.query_arguments}."
 else
-  report_game_log(n, game)
+  report_game_log(result.index, result.game)
 end

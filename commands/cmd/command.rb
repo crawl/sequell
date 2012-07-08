@@ -1,6 +1,7 @@
 module Cmd
   class Command
     attr_reader :command_name
+    attr_accessor :arguments
 
     def self.canonicalize_command_line(command_line)
       command_line.sub(/^(\?\?)(\S)/) { |match|
@@ -9,7 +10,6 @@ module Cmd
     end
 
     def initialize(command_line)
-      STDERR.puts("command_line: #{command_line}")
       command_line = self.class.canonicalize_command_line(command_line)
       @command_line = command_line
       @command_arguments = command_line.split(' ')

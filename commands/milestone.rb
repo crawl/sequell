@@ -17,15 +17,15 @@ TV.with_tv_opts(ctx.arguments) do |args, tvopt|
                                     false)
 
   tv = tvopt[:tv]
-  sql_show_game(ctx.default_nick, sargs, CTX_STONE) do |n, g|
-    if ctx[:log] && g['verb'] == 'crash'
-      puts("#{n}. #{short_game_summary(g)}: " +
-           (find_milestone_crash_dump(g) || "Can't find crash dump."))
+  sql_show_game(ctx.default_nick, sargs, CTX_STONE) do |res|
+    if ctx[:log] && res.game['verb'] == 'crash'
+      puts("#{res.n}. #{short_game_summary(res.game)}: " +
+           (find_milestone_crash_dump(res.game) || "Can't find crash dump."))
     elsif (ctx[:game] || ctx[:log])
-      key = g['game_key']
+      key = res.game['game_key']
       game = key != nil ? sql_game_by_key(key) : nil
       if not game
-        puts "#{short_game_summary(g)} has no matching game."
+        puts "#{short_game_summary(res.game)} has no matching game."
       elsif ctx[:log]
         report_game_log(nil, game)
       elsif ctx[:ttyrec]
@@ -37,11 +37,11 @@ TV.with_tv_opts(ctx.arguments) do |args, tvopt|
       end
     elsif ctx[:ttyrec]
       # ttyrec for the milestone
-      report_game_ttyrecs(n, g)
+      report_game_ttyrecs(res.n, res.game)
     elsif tv
-      TV.request_game_verbosely(n, g, ARGV[1])
+      TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1])
     else
-      print_game_n(n, g)
+      print_game_result(res)
     end
   end
 end

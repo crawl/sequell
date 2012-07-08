@@ -726,6 +726,10 @@ def print_game_n(n, game)
   print "\n#{n}. :#{munge_game(game)}:"
 end
 
+def print_game_result(res)
+  print_game_n(res.qualified_index, res.game)
+end
+
 def pretty_duration(durseconds)
   minutes = durseconds / 60
   seconds = durseconds % 60

@@ -98,8 +98,8 @@ module TV
       query = parse_query(q)
       query.with_context {
         q = query.primary_query
-        n, row = sql_exec_query(q.num, q)
-        return n
+        result = sql_exec_query(q.num, q)
+        return result.count
       }
     end
 

@@ -290,11 +290,6 @@ module TV
   end
 
   def self.request_game(g)
-    if TV.channel_server?
-      puts munge_game(g)
-      return
-    end
-
     # Launch a daemon that keeps a server socket open for interested
     # parties (i.e. C-SPLAT) to listen in.
     launch_daemon()
@@ -331,6 +326,11 @@ module TV
       end
     end
 
-    request_game(g)
+    if TV.channel_server?
+      puts "#{n}. :#{munge_game(g)}:"
+      return
+    else
+      request_game(g)
+    end
   end
 end

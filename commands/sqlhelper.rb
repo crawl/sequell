@@ -11,6 +11,7 @@ require 'yaml'
 require 'helper'
 require 'tourney'
 require 'sql/field_predicate'
+require 'sql/query_result'
 
 include Tourney
 
@@ -921,12 +922,7 @@ def sql_find_game(default_nick, args, context=CTX_LOG)
   query_group = sql_parse_query(default_nick, args, context)
   query_group.with_context do
     q = query_group.primary_query
-    n, row = sql_exec_query(q.num, q)
-    [ n,
-      (row ?
-       add_extra_fields_to_xlog_record(q.extra_fields, row_to_fieldmap(row)) :
-       nil),
-      q.argstr ]
+    sql_exec_query(q.num, q)
   end
 end
 
@@ -937,17 +933,15 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
     if q.summarise?
       report_grouped_games_for_query(query_group)
     else
-      n, row = sql_exec_query(q.num, q)
+      result = sql_exec_query(q.num, q)
       type = context.entity_name + 's'
-      unless row
+      if result.empty?
         puts "No #{type} for #{q.argstr}."
       else
-        game = add_extra_fields_to_xlog_record(q.extra_fields,
-                                               row_to_fieldmap(row))
         if block_given?
-          yield [ n, game ]
+          yield result
         else
-          print_game_n(n, game)
+          print_game_result(result)
         end
       end
     end
@@ -962,15 +956,15 @@ end
 def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
   TV.with_tv_opts(other_args_string.split()[1 .. -1]) do |args, opts|
     args, logopts = extract_options(args, 'log', 'ttyrec')
-    sql_show_game(ARGV[1], args + extra_args) do | n, g |
+    sql_show_game(ARGV[1], args + extra_args) do |res|
       if opts[:tv]
-        TV.request_game_verbosely(n, g, ARGV[1])
+        TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1])
       elsif logopts[:log]
-        report_game_log(n, g)
+        report_game_log(res.n, res.game)
       elsif logopts[:ttyrec]
-        report_game_ttyrecs(n, g)
+        report_game_ttyrecs(res.n, res.game)
       else
-        print_game_n(n, g)
+        print_game_result(res)
       end
     end
   end
@@ -1036,7 +1030,7 @@ def sql_exec_query(num, q, lastcount = nil)
   # If it looks like we have to fetch several rows, see if we can reduce
   # our work by reversing the sort order.
   count = lastcount || sql_count_rows_matching(q)
-  return nil if count == 0
+  return Sql::QueryResult.none(q) if count == 0
 
   if q.random_game?
     num = rand(count)
@@ -1058,9 +1052,11 @@ def sql_exec_query(num, q, lastcount = nil)
 
   n = num
   sql_each_row_matching(q, n + 1) do |row|
-    return [ lastcount ? n + 1 : count - n, row ]
+    index = lastcount ? n + 1 : count - n
+    return Sql::QueryResult.new(index, count, row, q)
   end
-  nil
+
+  Sql::QueryResult.none(q)
 end
 
 def sql_count_rows_matching(q)
