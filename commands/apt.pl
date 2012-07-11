@@ -26,7 +26,7 @@ sub parse_apt_file { # {{{
     close $fh;
     return %apts;
 } # }}}
-sub add_exp_apts { # {{{
+sub add_extra_apts { # {{{
     my $aptref = shift;
     my %apts = %{ $aptref };
     my $aptfile = shift;
@@ -43,6 +43,36 @@ sub add_exp_apts { # {{{
             elsif (/return (\d+);/) {
                 for my $race (@races) {
                     $apts{$race}{experience} = $1 * 10;
+                    $apts{$race}{hp} = 0;
+                    $apts{$race}{mp} = 0;
+                }
+                @races = ();
+            }
+        }
+        if (/int species_hp_modifier\(/ .. /^}/) {
+            if (/(GENPC_\w+)/) {
+                @races = genus_to_races($1);
+            }
+            if (/(SP_\w+)/) {
+                push @races, normalize_race($1);
+            }
+            elsif (/return (-?\d+);/) {
+                for my $race (@races) {
+                    $apts{$race}{hp} = $1;
+                }
+                @races = ();
+            }
+        }
+        if (/int species_mp_modifier\(/ .. /^}/) {
+            if (/(GENPC_\w+)/) {
+                @races = genus_to_races($1);
+            }
+            if (/(SP_\w+)/) {
+                push @races, normalize_race($1);
+            }
+            elsif (/return (-?\d+);/) {
+                for my $race (@races) {
+                    $apts{$race}{mp} = $1;
                 }
                 @races = ();
             }
@@ -144,7 +174,7 @@ sub print_skill_apt { # {{{
 
 # get the aptitudes out of the source file
 %apts = parse_apt_file "$source_dir/source/aptitudes.h";
-%apts = add_exp_apts \%apts, "$source_dir/source/species.cc";
+%apts = add_extra_apts \%apts, "$source_dir/source/species.cc";
 # get the request
 my @words = split ' ', strip_cmdline $ARGV[2];
 my @rest;

@@ -194,6 +194,8 @@ skills:
   - Invocations
   - Evocations
   - Experience
+  - HP
+  - MP
 
 skill-abbreviations:
   crossbows: Xbows
@@ -211,6 +213,8 @@ skill-abbreviations:
   invocations: Inv
   evocations: Evo
   experience: Exp
+  hp: HP
+  mp: MP
 
 skill-expansions:
   pois: poison magic
