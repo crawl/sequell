@@ -1073,6 +1073,7 @@ def sql_each_row_matching(q, limit=0)
       query += " LIMIT #{limit}"
     end
   end
+  #STDERR.puts "Query: #{query}"
   sql_dbh.execute(query, *q.values) do |row|
     yield row
   end
@@ -1303,6 +1304,7 @@ class CrawlQuery
     unless @sort.empty? or !with_sorts
       @query << " " unless @query.empty?
       @query << @sort[0]
+      @query << ", #{$CTX.dbfield('id')}"
     end
     @query
   end
