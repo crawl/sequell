@@ -27,3 +27,8 @@ unwon.txt
 lg.rb
 nicks-test.map
 *.rbc
+henzell.rc
+utils/*.sql
+password.txt
+Gemfile.lock
+*.el

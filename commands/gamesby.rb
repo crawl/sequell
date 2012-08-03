@@ -1,7 +1,8 @@
 #! /usr/bin/env ruby
 
-require 'commands/helper.rb'
-require 'commands/sqlhelper.rb'
+$:.push('commands')
+require 'helper.rb'
+require 'sqlhelper.rb'
 
 help("Summarizes a player's crawl.akrasiac.org career.")
 

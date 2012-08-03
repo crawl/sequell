@@ -2,6 +2,7 @@
 
 require 'set'
 require 'date'
+require 'command_context'
 
 # fields end in S if they're strings, I if integral
 $field_names = %w<vS lvS nameS uidI raceS clsS xlI skS sklevI titleS placeS brS lvlI ltypS hpI mhpI mmhpI strI intI dexI startS durI turnI scI ktypS killerS kauxS endS tmsgS vmsgS godS pietyI penI charS nruneI uruneI tilesS>
@@ -376,7 +377,7 @@ def binary_search_alien_morgue(url, e)
   found = (morgues.find { |m| m == full_name } ||
            morgues.find { |m| m == short_name } ||
            binary_search(morgues, full_name))
-  return user_url + found if found
+  return found.url if found
 
   return nil
 end
@@ -657,11 +658,14 @@ rescue
   raise
 end
 
-def help(helpstring)
-  if ARGV[3] == '1'
+def help(helpstring, force=false)
+  if force || ARGV[3] == '1'
+    cmd = ARGV[2].split()[0]
     if helpstring =~ /%CMD%/
-      cmd = ARGV[2].split()[0]
       helpstring = helpstring.gsub('%CMD%', cmd)
+    end
+    if force && helpstring !~ /^#{Regexp.quote(cmd)}/
+      helpstring = "#{cmd}: " + helpstring
     end
     puts helpstring
     exit
@@ -723,6 +727,10 @@ end
 
 def print_game_n(n, game)
   print "\n#{n}. :#{munge_game(game)}:"
+end
+
+def print_game_result(res)
+  print_game_n(res.qualified_index, res.game)
 end
 
 def pretty_duration(durseconds)

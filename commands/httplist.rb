@@ -3,8 +3,9 @@
 # Fetch http directory listings from the web.
 module HttpList
   require 'date'
-  require 'commands/pcache'
   require 'set'
+
+  require 'pcache'
 
   def self.urljoin(a, b)
     if a.empty?
@@ -33,7 +34,8 @@ module HttpList
     end
 
     def == (other)
-      @filename == other.filename
+      other_file = other.respond_to?(:filename) ? other.filename : other
+      @filename == other_file
     end
 
     def hash

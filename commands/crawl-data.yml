@@ -7,6 +7,157 @@ game-type-prefixes:
 
 default-game-type: crawl
 
+orcs:
+  - Agrik
+  - Alork
+  - Arbolt
+  - Argrim
+  - Arkwar
+  - Berold
+  - Bladwarg
+  - Blodwig
+  - Boderik
+  - Bogdan
+  - Boldo
+  - Bolgrim
+  - Borgk
+  - Borgoth
+  - Borgun
+  - Boruk
+  - Brandogh
+  - Brunolf
+  - Dorog
+  - Garbold
+  - Gorbash
+  - Gorg
+  - Gorm
+  - Grimold
+  - Harm
+  - Hawl
+  - Herok
+  - Hilgar
+  - Jorge
+  - Judas
+  - Koronagh
+  - Learuk
+  - Marbork
+  - Margrim
+  - Milork
+  - Morguth
+  - Morun
+  - Murdo
+  - Norbak
+  - Nordag
+  - Ognian
+  - Ogrik
+  - Okrist
+  - Olfik
+  - Olfrun
+  - Oreg
+  - Orgrim
+  - Orik
+  - Orkrul
+  - Orkwin
+  - Ortolf
+  - Oruk
+  - Rocco
+  - Syrus
+  - Thorok
+  - Ugbert
+  - Ugrim
+  - Wardok
+  - Wargath
+  - Wargrak
+  - Warrok
+  - Worak
+  - Wulfoc
+  - Zorug
+
+uniques:
+  - Ijyb
+  - Blork the orc
+  - Blork
+  - Urug
+  - Erolcha
+  - Snorg
+  - Polyphemus
+  - Adolf
+  - Antaeus
+  - Xtahua
+  - Tiamat
+  - Boris
+  - Murray
+  - Terence
+  - Jessica
+  - Sigmund
+  - Edmund
+  - Psyche
+  - Donald
+  - Michael
+  - Joseph
+  - Erica
+  - Josephine
+  - Harold
+  - Norbert
+  - Jozef
+  - Agnes
+  - Maud
+  - Louise
+  - Francis
+  - Frances
+  - Rupert
+  - Wayne
+  - Duane
+  - Norris
+  - Frederick
+  - Margery
+  - Mnoleg
+  - Lom Lobon
+  - Cerebov
+  - Gloorx Vloq
+  - Geryon
+  - Dispater
+  - Asmodeus
+  - Ereshkigal
+  - the royal jelly
+  - the Lernaean hydra
+  - Dissolution
+  - Azrael
+  - Prince Ribbit
+  - Sonja
+  - Ilsuiw
+  - Nergalle
+  - Saint Roka
+  - Roxanne
+  - Eustachio
+  - Nessos
+  - Dowan
+  - Duvessa
+  - Grum
+  - Crazy Yiuf
+  - Gastronok
+  - Pikel
+  - Menkaure
+  - Khufu
+  - Aizul
+  - Purgy
+  - Kirke
+  - Maurice
+  - Nikola
+  - Mara
+  - Grinder
+  - Mennas
+  - Chuck
+  - the iron giant
+  - Nellie
+  - Wiglaf
+  - Jory
+  - Terpsichore
+  - Ignacio
+  - Fannar
+  - Arachne
+  - "Cigotuvi's Monster"
+
 # Only used by !apt at the moment.
 skills:
   - Fighting
@@ -43,6 +194,8 @@ skills:
   - Invocations
   - Evocations
   - Experience
+  - HP
+  - MP
 
 skill-abbreviations:
   crossbows: Xbows
@@ -60,6 +213,8 @@ skill-abbreviations:
   invocations: Inv
   evocations: Evo
   experience: Exp
+  hp: HP
+  mp: MP
 
 skill-expansions:
   pois: poison magic
@@ -121,12 +276,20 @@ branches:
   - Lab
   - Pan
   - Bazaar
+  - Spider
   - Bzr
   - Hell
   - Blade
   - Temple
   - Abyss
   - Sprint
+  - WizLab
+  - Sewer
+  - Bailey
+  - Minitom
+  - Ossuary
+  - IceCv
+  - Volcano
 
 god:
   ash: Ashenzari
@@ -274,7 +437,8 @@ column-aliases:
   cl: xl
   clev: xl
   type: verb
-  gid: game_id
+  gid: game_key
+  game_id: game_key
 
 # Public server abbreviations
 sources:
@@ -289,9 +453,9 @@ boolean-fields:
   - tiles
 
 place-fixups:
-  '^shoal\b(.*)': ['Shoals$1', 'Shoal$1']
-  '^vaults\b(.*)': 'Vault$1'
-  '^v\b(.*)': 'Vault$1'
+  '^shoals?\b(.*)': 'Shoals$1'
+  '^vaults?\b(.*)': 'Vaults$1'
+  '^v\b(.*)': 'Vaults$1'
 
 aggregate-function-types:
   cdist: '*'
@@ -304,6 +468,7 @@ aggregate-function-types:
 
 logfields-with-type:
   - idI
+  - game_key
   - file
   - alpha
   - src
@@ -361,7 +526,7 @@ logfields-with-type:
   - tiles
 
 milefields-with-type:
-  - game_idI
+  - game_key
   - idI
   - file
   - alpha

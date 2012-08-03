@@ -2,8 +2,8 @@
 
 require 'rubygems'
 require 'treetop'
-require 'commands/lg_node'
-require 'commands/lg'
+require 'lg_node'
+require 'lg'
 
 module SQLBuilder
   def self.query(params)

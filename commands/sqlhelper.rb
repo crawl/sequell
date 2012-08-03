@@ -5,16 +5,19 @@ exit(0) if !ENV['HENZELL_SQL_QUERIES']
 LG_CONFIG_FILE = 'commands/crawl-data.yml'
 
 require 'dbi'
-require 'commands/helper'
-require 'commands/tourney'
 require 'set'
 require 'yaml'
+
+require 'helper'
+require 'tourney'
+require 'sql/field_predicate'
+require 'sql/query_result'
 
 include Tourney
 
 DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
 DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
-DBPASS = ENV['HENZELL_DBPASS'] || ''
+DBPASS = ENV['HENZELL_DBPASS'] || 'henzell'
 
 CFG = YAML.load_file(LG_CONFIG_FILE)
 
@@ -30,8 +33,8 @@ GAME_PREFIXES = CFG['game-type-prefixes']
 OPERATORS = {
   '==' => '=', '!==' => '!=',
   '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
-  '<=' => '<=', '>=' => '>=', '=~' => 'LIKE', '!~' => 'NOT LIKE',
-  '~~' => 'REGEXP', '!~~' => 'NOT REGEXP'
+  '<=' => '<=', '>=' => '>=', '=~' => 'ILIKE', '!~' => 'NOT ILIKE',
+  '~~' => '~*', '!~~' => '!~*'
 }
 
 FILTER_OPS = {
@@ -711,6 +714,10 @@ def sql_build_query(default_nick, args,
                     context=CTX_LOG, extra_fields=nil,
                     extract_nick_from_args=true)
   #puts "sql_build_query(#{args.inspect})"
+
+  random_game = args.find { |a| a.downcase == '-random' }
+  args.delete(random_game) if random_game
+
   summarise = args.find { |a| SummaryFieldList.summary_field? a }
   args.delete(summarise) if summarise
 
@@ -727,6 +734,7 @@ def sql_build_query(default_nick, args,
     with_query_context(context) do
       q = sql_define_query(nick, num, args, extra_fields, false)
       q.summarise = SummaryFieldList.new(summarise) if summarise
+      q.random_game = random_game
       q.extra_fields = extra_fields
       q.ctx = context
       q
@@ -742,12 +750,12 @@ def split_combined_arguments(argument_string)
   argument_string.split().find_all { |x| !x.strip.empty? }
 end
 
-def extra_field_clause(args, ctx)
+def extra_field_clause(args, ctx, remove_clause=true)
   combined = args.join(' ')
   extra = nil
   reg = %r/\bx\s*=\s*([+-]?\w+(?:\(\w+\))?(?:\s*,\s*\w+(?:\(\w+\))?)*)/
   extra = $1 if combined =~ reg
-  combined.sub!(reg, '') if extra
+  combined.sub!(reg, '') if remove_clause && extra
   restargs = split_combined_arguments(combined)
 
   [ restargs, clean_extra_fields(extra, ctx) ]
@@ -914,12 +922,7 @@ def sql_find_game(default_nick, args, context=CTX_LOG)
   query_group = sql_parse_query(default_nick, args, context)
   query_group.with_context do
     q = query_group.primary_query
-    n, row = sql_exec_query(q.num, q)
-    [ n,
-      (row ?
-       add_extra_fields_to_xlog_record(q.extra_fields, row_to_fieldmap(row)) :
-       nil),
-      q.argstr ]
+    sql_exec_query(q.num, q)
   end
 end
 
@@ -930,17 +933,15 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
     if q.summarise?
       report_grouped_games_for_query(query_group)
     else
-      n, row = sql_exec_query(q.num, q)
+      result = sql_exec_query(q.num, q)
       type = context.entity_name + 's'
-      unless row
+      if result.empty?
         puts "No #{type} for #{q.argstr}."
       else
-        game = add_extra_fields_to_xlog_record(q.extra_fields,
-                                               row_to_fieldmap(row))
         if block_given?
-          yield [ n, game ]
+          yield result
         else
-          print_game_n(n, game)
+          print_game_result(result)
         end
       end
     end
@@ -955,15 +956,15 @@ end
 def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
   TV.with_tv_opts(other_args_string.split()[1 .. -1]) do |args, opts|
     args, logopts = extract_options(args, 'log', 'ttyrec')
-    sql_show_game(ARGV[1], args + extra_args) do | n, g |
+    sql_show_game(ARGV[1], args + extra_args) do |res|
       if opts[:tv]
-        TV.request_game_verbosely(n, g, ARGV[1])
+        TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1])
       elsif logopts[:log]
-        report_game_log(n, g)
+        report_game_log(res.n, res.game)
       elsif logopts[:ttyrec]
-        report_game_ttyrecs(n, g)
+        report_game_ttyrecs(res.n, res.game)
       else
-        print_game_n(n, g)
+        print_game_result(res)
       end
     end
   end
@@ -1007,7 +1008,7 @@ class DBHandle
 end
 
 def connect_sql_db
-  DBHandle.new(DBI.connect('DBI:Mysql:' + DBNAME, DBUSER, DBPASS))
+  DBHandle.new(DBI.connect('DBI:Pg:' + DBNAME, DBUSER, DBPASS))
 end
 
 def sql_dbh
@@ -1029,7 +1030,12 @@ def sql_exec_query(num, q, lastcount = nil)
   # If it looks like we have to fetch several rows, see if we can reduce
   # our work by reversing the sort order.
   count = lastcount || sql_count_rows_matching(q)
-  return nil if count == 0
+  return Sql::QueryResult.none(q) if count == 0
+
+  if q.random_game?
+    num = rand(count)
+    q.random_game = false
+  end
 
   if num < 0
     num = count + num
@@ -1046,13 +1052,15 @@ def sql_exec_query(num, q, lastcount = nil)
 
   n = num
   sql_each_row_matching(q, n + 1) do |row|
-    return [ lastcount ? n + 1 : count - n, row ]
+    index = lastcount ? n + 1 : count - n
+    return Sql::QueryResult.new(index, count, row, q)
   end
-  nil
+
+  Sql::QueryResult.none(q)
 end
 
 def sql_count_rows_matching(q)
-  #puts "Query: #{q.select_all} (#{q.values.join(', ')})"
+  #STDERR.puts "Query: #{q.select_all} (#{q.values.join(', ')})"
   sql_dbh.get_first_value(q.select_count, *q.values).to_i
 end
 
@@ -1060,11 +1068,12 @@ def sql_each_row_matching(q, limit=0)
   query = q.select_all
   if limit > 0
     if limit > 1
-      query += " LIMIT #{limit - 1}, 1"
+      query += " LIMIT 1 OFFSET #{limit - 1}"
     else
       query += " LIMIT #{limit}"
     end
   end
+  #STDERR.puts "Query: #{query}"
   sql_dbh.execute(query, *q.values) do |row|
     yield row
   end
@@ -1077,11 +1086,11 @@ def sql_each_row_for_query(query_text, *params)
   end
 end
 
-def sql_game_by_id(id)
+def sql_game_by_key(key)
   with_query_context(CTX_LOG) do
     q = \
-      CrawlQuery.new([ 'AND', field_pred(id, '=', 'id') ],
-                     [ ], nil, '*', 1, "id=#{id}")
+      CrawlQuery.new([ 'AND', field_pred(key, '=', 'game_key') ],
+                     [ ], nil, '*', 1, "gid=#{key}")
     #puts "Query: #{q.select_all}"
     r = nil
     sql_each_row_matching(q) do |row|
@@ -1119,6 +1128,7 @@ class CrawlQuery
     @argstr = argstr
     @values = nil
     @summarise = nil
+    @random_game = nil
     @summary_sort = nil
     @raw = nil
     @joins = false
@@ -1151,7 +1161,7 @@ class CrawlQuery
     stone_alias = CTX_STONE.table_alias
     log_alias = CTX_LOG.table_alias
     add_predicate('AND',
-                  const_pred("#{stone_alias}.game_id = #{log_alias}.id"))
+                  const_pred("#{stone_alias}.game_key = #{log_alias}.game_key"))
   end
 
   def sort_joins?
@@ -1176,6 +1186,14 @@ class CrawlQuery
 
   def summarise?
     @summarise || (@extra_fields && @extra_fields.aggregate?)
+  end
+
+  def random_game?
+    @random_game
+  end
+
+  def random_game=(random_game)
+    @random_game = random_game
   end
 
   def summarise= (s)
@@ -1286,6 +1304,7 @@ class CrawlQuery
     unless @sort.empty? or !with_sorts
       @query << " " unless @query.empty?
       @query << @sort[0]
+      @query << ", #{$CTX.dbfield('id')}"
     end
     @query
   end
@@ -1457,14 +1476,9 @@ def const_pred(pred)
   [ :const, pred ]
 end
 
+
 def field_pred(v, op, fname, fexpr=nil)
-  fexpr = fexpr || fname
-  fexpr = $CTX.dbfield(fexpr)
-  if fexpr =~ /^(\w+\.)/
-    fname = $1 + fname
-  end
-  v = proc_val(v, op)
-  [ :field, "#{fexpr or fname} #{op} ?", v, fname.downcase ]
+  Sql::FieldPredicate.predicate(v, op, fname, fexpr)
 end
 
 # Examines args for | operators at the top level and returns the
@@ -1535,11 +1549,11 @@ def is_charabbrev? (arg)
 end
 
 def is_race? (arg)
-  RACE_EXPANSIONS[arg]
+  RACE_EXPANSIONS[arg.downcase]
 end
 
 def is_class? (arg)
-  CLASS_EXPANSIONS[arg]
+  CLASS_EXPANSIONS[arg.downcase]
 end
 
 LISTGAME_SHORTCUTS =
@@ -1680,12 +1694,12 @@ def process_param(preds, sorts, rawarg)
   key, op, val = fixup_listgame_selector(key, op, val)
 
   key.downcase!
-  val.downcase!
+  val.downcase
   val.tr! '_', ' '
 
   sort = (key == 'max' || key == 'min')
 
-  selector = sort ? val : key
+  selector = sort ? val.downcase : key
   selector = COLUMN_ALIASES[selector] || selector
   raise "Unknown selector: #{selector}" unless $CTX.field?(selector)
 
@@ -1700,7 +1714,7 @@ def process_param(preds, sorts, rawarg)
     field = selector.downcase
     if $CTX.field_type(selector) == 'I'
       if ['=~','!~','~~', '!~~'].index(op)
-        raise "Can't use #{op} on numeric field #{selector}"
+        raise "Can't use #{op} on numeric field #{selector} in #{rawarg}"
       end
       val = val.to_i
     end
@@ -1818,11 +1832,6 @@ def query_field(selector, field, op, sqlop, val)
     end
   end
 
-  # Convert game_id="" into game_id IS NULL.
-  if selfield == 'game_id' && op == '=' && val == ''
-    return field_pred(nil, 'IS', selector, field)
-  end
-
   if $CTX.noun_verb[selfield]
     clause = [ 'AND' ]
     key = $CTX.noun_verb[selector]
@@ -1834,7 +1843,7 @@ def query_field(selector, field, op, sqlop, val)
 
   if ((selfield == 'place' || selfield == 'oplace') and !val.index(':') and
       [ '=', '!=' ].index(op) and DEEP_BRANCH_SET.include?(val)) then
-    val = val + ':%'
+    val = val + ':*'
     op = op == '=' ? '=~' : '!~'
     sqlop = OPERATORS[op]
   end
@@ -1909,13 +1918,6 @@ def query_field(selector, field, op, sqlop, val)
   end
 
   field_pred(val, sqlop, selector, field)
-end
-
-def proc_val(val, sqlop)
-  if sqlop =~ /LIKE/
-    val = val.index('*') || val.index('?') ? val.tr('*?', '%_') : "%#{val}%"
-  end
-  val
 end
 
 def nick_exists?(nick)

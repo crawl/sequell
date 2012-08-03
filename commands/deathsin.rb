@@ -1,7 +1,8 @@
 #! /usr/bin/env ruby
 
-require 'commands/sqlhelper'
-require 'commands/helper'
+$:.push('commands')
+require 'sqlhelper'
+require 'helper'
 
 help("Lists the players who've died most frequently in a certain place.")
 

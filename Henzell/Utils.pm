@@ -10,6 +10,23 @@ use POSIX;
 our @EXPORT = qw/tailed_handle/;
 our @EXPORT_OK = qw/lock_or_die lock daemonify/;
 
+sub spawn_service {
+  my ($service_name, $commandline) = @_;
+  my $pid = fork;
+  return if $pid;
+
+  print "Spawning service $service_name: $commandline\n";
+  my $log_file = "$service_name.log";
+  open my $logf, '>', $log_file or die "Can't write $log_file: $!\n";
+  $logf->autoflush;
+  open STDOUT, '>&', $logf or die "Couldn't redirect stdout\n";
+  open STDERR, '>&', $logf or die "Couldn't redirect stderr\n";
+  STDOUT->autoflush;
+  STDERR->autoflush;
+  exec($commandline);
+  exit 1
+}
+
 ##
 # Returns a file handle pointing just after the last line of the file
 # (presumably at EOF).

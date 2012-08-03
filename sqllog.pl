@@ -6,13 +6,15 @@ use Fcntl qw/SEEK_SET SEEK_CUR SEEK_END/;
 use IO::Handle;
 
 use DBI;
+use Henzell::Crawl;
 
 do 'game_parser.pl';
 
 my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
   xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux place
-  br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI start
-  end durI turnI uruneI nruneI tmsg vmsg splat map mapdesc tiles/;
+  br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
+  endD durI turnI uruneI nruneI tmsg vmsg splat map mapdesc tiles
+  game_key/;
 
 my %GAME_TYPE_NAMES = (zot => 'ZotDef',
                        spr => 'Sprint');
@@ -25,7 +27,8 @@ my %LOG2SQL = ( name => 'pname',
                 map => 'mapname',
                 start => 'tstart',
                 end => 'tend',
-                time => 'ttime');
+                time => 'ttime',
+                offset => 'file_offset');
 
 my %SERVER_MAP = (cao => 'crawl.akrasiac.org',
                   cdo => 'crawl.develz.org',
@@ -43,25 +46,30 @@ my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
 my @MILEFIELDS_DECORATED =
     qw/alpha v cv name race crace cls char xlI sk sklevI title
        place br lvlI ltyp hpI mhpI mmhpI strI intI dexI god
-       durI turnI uruneI nruneI time verb noun milestone oplace tiles/;
+       durI turnI uruneI nruneI timeD verb noun milestone oplace tiles
+       game_key/;
 
-my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS, 'rstart', 'rend');
+my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS_DECORATED,
+                    'rstart', 'rend');
 
 my @MILE_INSERTFIELDS_DECORATED =
   (qw/file src offsetI/, @MILEFIELDS_DECORATED, qw/rstart rtime/);
 
 my @MILEFIELDS = map(strip_suffix($_), @MILEFIELDS_DECORATED);
-my @MILE_INSERTFIELDS = map(strip_suffix($_), @MILE_INSERTFIELDS_DECORATED);
+my @MILE_INSERTFIELDS = @MILE_INSERTFIELDS_DECORATED;
 
 my @SELECTFIELDS = ('id', @INSERTFIELDS);
 
-my @INDEX_COLS = qw/src file v cv sc name race crace cls char xl
-ktyp killer ckiller ikiller kpath kmod kaux ckaux place str int dex god
-start end dur turn urune nrune splat dam rstart alpha ntv map mapdesc tiles/;
+my @INDEX_COLS = qw/src file game_key v cv sc name race crace cls char xl
+ktyp killer ckiller ikiller kpath kmod kaux ckaux place god
+start end dur turn urune nrune dam rstart map/;
+
+my %MILE_EXCLUDED_INDEXES = map($_ => 1,
+                                qw/alpha str int dex tiles milestone lvl
+                                   hp mhp mmhp dur/);
 
 my @MILE_INDEX_COLS = ('src',
-                       grep($_ ne 'milestone', @MILEFIELDS),
-                      'ntv');
+                       grep(!$MILE_EXCLUDED_INDEXES{$_}, @MILEFIELDS));
 
 my %MILESTONE_VERB =
 (
@@ -76,32 +84,11 @@ for (@LOGFIELDS, @INDEX_COLS, @SELECTFIELDS) {
 
 my @INDEX_CASES = ( '' );
 
-my @UNIQUES = ("Ijyb", "Blork the orc", "Blork", "Urug", "Erolcha", "Snorg",
-  "Polyphemus", "Adolf", "Antaeus", "Xtahua", "Tiamat", "Boris",
-  "Murray", "Terence", "Jessica", "Sigmund", "Edmund", "Psyche",
-  "Donald", "Michael", "Joseph", "Erica", "Josephine", "Harold",
-  "Norbert", "Jozef", "Agnes", "Maud", "Louise", "Francis", "Frances",
-  "Rupert", "Wayne", "Duane", "Norris", "Frederick", "Margery",
-  "Mnoleg", "Lom Lobon", "Cerebov", "Gloorx Vloq", "Geryon",
-  "Dispater", "Asmodeus", "Ereshkigal", "the royal jelly",
-  "the Lernaean hydra", "Dissolution", "Azrael", "Prince Ribbit",
-  "Sonja", "Ilsuiw", "Nergalle", "Saint Roka", "Roxanne",
-  "Eustachio", "Nessos", "Dowan", "Duvessa", "Grum", "Crazy Yiuf",
-  "Gastronok", "Pikel", "Menkaure", "Khufu", "Aizul", "Purgy",
-  "Kirke", "Maurice", "Nikola", "Mara", "Grinder", "Mennas", "Chuck",
-  "the iron giant", "Nellie", "Wiglaf", "Jory", "Terpsichore", "Ignacio");
-
 my $TLOGFILE   = 'logrecord';
 my $TMILESTONE = 'milestone';
 
-my %UNIQUES = map(($_ => 1), @UNIQUES);
-
 my $LOGFILE = "allgames.txt";
-my $COMMIT_INTERVAL = 3000;
-
-my $SPLAT_TS = 'splat.timestamp';
-my $SPLAT_REPO = '../c-splat.git';
-my $SPLAT_CO = '../csplatco';
+my $COMMIT_INTERVAL = 15000;
 
 # Dump indexes if we need to add more than around 9000 lines of data.
 my $INDEX_DISCARD_THRESHOLD = 300 * 9000;
@@ -112,7 +99,7 @@ my $standalone = not caller();
 
 my $DBNAME = $ENV{HENZELL_DBNAME} || 'henzell';
 my $DBUSER = 'henzell';
-my $DBPASS = '';
+my $DBPASS = 'henzell';
 
 my $dbh;
 my $insert_st;
@@ -125,46 +112,6 @@ sub initialize_sqllog(;$) {
   my $dbname = shift;
   $DBNAME = $dbname if $dbname;
   setup_db();
-  load_splat_defs();
-  load_splat();
-}
-
-sub last_splat_time {
-  open my $inf, '<', $SPLAT_TS or return;
-  chomp(my $ts = <$inf>);
-  close $inf;
-  $ts
-}
-
-sub current_splat_time {
-  if (!-d $SPLAT_CO) {
-    system("git clone $SPLAT_REPO $SPLAT_CO")
-      and die "Couldn't clone $SPLAT_CO from $SPLAT_REPO\n";
-  }
-  (stat "$SPLAT_CO/CSplat/Select.pm")[9]
-}
-
-sub load_splat_defs {
-  if (-d $SPLAT_CO) {
-    push @INC, $SPLAT_CO;
-    #print "Loading $SPLAT_CO/CSplat/Select.pm\n";
-    $ENV{SPLAT_HOME} = $SPLAT_CO;
-    do "$SPLAT_CO/CSplat/Select.pm";
-  }
-}
-
-sub load_splat {
-  my $splat_time = last_splat_time();
-  my $now_splat_time = current_splat_time();
-  # Disabled for the nonce
-  if ($standalone && (!$splat_time || $splat_time < $now_splat_time)) {
-    load_splat_defs();
-    update_log_rows();
-
-    open my $outf, '>', $SPLAT_TS or die "Can't write $SPLAT_TS: $!\n";
-    print $outf "$now_splat_time\n";
-    close $outf;
-  }
 }
 
 sub setup_db {
@@ -185,6 +132,11 @@ sub reopen_db {
   setup_db();
 }
 
+sub db_url {
+  my $dbname = shift;
+  "dbi:Pg:dbname=$dbname"
+}
+
 sub new_db_handle(;$$$) {
   my ($dbname, $dbuser, $dbpass) = @_;
   $dbname ||= $DBNAME;
@@ -193,7 +145,9 @@ sub new_db_handle(;$$$) {
   $DBNAME = $dbname;
   $DBUSER = $dbuser;
   $DBPASS = $dbpass;
-  my $dbh = DBI->connect("dbi:mysql:$dbname", $dbuser, $dbpass);
+  my $url = db_url($dbname);
+  print "Connecting to $url as $dbuser\n";
+  my $dbh = DBI->connect($url, $dbuser, $dbpass);
   $dbh->{mysql_auto_reconnect} = 1;
   $dbh
 }
@@ -246,24 +200,37 @@ sub query_all {
   $st->fetchall_arrayref
 }
 
+sub insert_field_name {
+  my $fieldname = strip_suffix(shift());
+  '"' . ($LOG2SQL{$fieldname} || $fieldname) . '"'
+}
+
+sub insert_field_placeholder {
+  my $field = shift();
+  if ($field =~ /D$/) {
+    return "TO_TIMESTAMP(?, 'YYYYMMDDHH24MISS')";
+  }
+  '?'
+}
+
 sub prepare_insert_st {
   my ($dbh, $table) = @_;
   my @allfields = @INSERTFIELDS;
   my $text = "INSERT INTO $table ("
-    . join(', ', map($LOG2SQL{$_} || $_, @allfields))
+    . join(', ', map(insert_field_name($_), @allfields))
     . ") VALUES ("
-    . join(', ', map("?", @allfields))
+    . join(', ', map(insert_field_placeholder($_), @allfields))
     . ")";
   return prepare_st($dbh, $text);
 }
 
 sub prepare_milestone_insert_st {
   my ($dbh, $table) = @_;
-  my @fields = map($LOG2SQL{$_} || $_, @MILE_INSERTFIELDS);
+  my @fields = @MILE_INSERTFIELDS;
   my $text = "INSERT INTO $table ("
-    . join(', ', @fields)
+    . join(', ', map(insert_field_name($_), @fields))
     . ") VALUES ("
-    . join(', ', map("?", @fields))
+    . join(', ', map(insert_field_placeholder($_), @fields))
     . ")";
   return prepare_st($dbh, $text);
 }
@@ -272,7 +239,7 @@ sub prepare_update_st {
   my $dbh = shift;
   my $text = <<QUERY;
     UPDATE logrecord
-    SET @{ [ join(",", map("$LOG2SQL{$_} = ?", @LOGFIELDS)) ] }
+    SET @{ [ join(",", map("\"$LOG2SQL{$_}\" = ?", @LOGFIELDS)) ] }
     WHERE id = ?
 QUERY
   return prepare_st($dbh, $text);
@@ -369,7 +336,8 @@ sub fixup_db {
 
 sub find_start_offset_in {
   my ($table, $file) = @_;
-  my $query = "SELECT MAX(offset) FROM $table WHERE file = ?";
+  my $query = "SELECT MAX(file_offset) FROM $table WHERE file = ?";
+  #print "Getting offset for $table with $file: $query\n";
   my $res = query_one($query, $file);
   defined($res)? $res : -1
 }
@@ -405,7 +373,7 @@ sub go_to_offset {
 
 sub filename_gametype($) {
   my $filename = shift;
-  return 'zot' if $filename =~ /-zd/;
+  return 'zot' if $filename =~ /-zd/ || $filename =~ /-zotdef/;
   return 'spr' if $filename =~ /-spr/;
   return undef;
 }
@@ -501,49 +469,7 @@ sub cat_stonefile {
   my ($lf, $offset) = @_;
   my $res = cat_xlog(milefile_table($$lf{file}),
                      $lf, \&add_milestone, $offset);
-  print "Linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
-  fixup_milestones($lf->{server}, game_type($lf)) if $res;
-  print "Done linking milestones to completed games ($lf->{server}: $lf->{file})...\n";
-}
-
-=head2 fixup_milestones()
-
-Attempts to link unlinked milestones with completed games in the logrecord
-table. Pretty expensive.
-
-=cut
-
-sub fixup_milestones {
-  my ($source, $game_type, @players) = @_;
-  my $log_table = game_type_table_name($game_type, 'logrecord');
-  my $mile_table = game_type_table_name($game_type, 'milestone');
-  my $query = <<QUERY;
-     UPDATE $mile_table m
-       SET m.game_id = (SELECT l.id FROM $log_table l
-                         WHERE l.pname = m.pname
-                           AND l.src = m.src
-                           AND l.rstart = m.rstart
-                         LIMIT 1)
-     WHERE m.game_id IS NULL
-       AND m.src = ?
-QUERY
-
-  if (@players) {
-    if (@players == 1) {
-      $query .= " AND m.pname = ?";
-      exec_query_st($query, $source, $players[0]);
-    }
-    else {
-      @players = map($dbh->quote($_), @players);
-      $query .= " AND m.pname IN (";
-      $query .= join(", ", @players);
-      $query .= ")";
-      exec_query_st($query, $source);
-    }
-  }
-  else {
-    exec_query_st($query, $source);
-  }
+  $res
 }
 
 sub logfield_hash {
@@ -589,7 +515,6 @@ sub fixup_logfields {
 
   if ($g->{alpha}) {
     $g->{cv} .= "-a";
-    $g->{v}  .= "-a" unless $g->{v} =~ /-a/;
   }
 
   if ($g->{tiles}) {
@@ -600,6 +525,9 @@ sub fixup_logfields {
   if ($game_type) {
     $$g{game_type} = $game_type;
   }
+
+  $g->{place} = Henzell::Crawl::canonical_place_name($g->{place});
+  $g->{oplace} = Henzell::Crawl::canonical_place_name($g->{oplace});
 
   # Milestone may have oplace
   if ($milestone) {
@@ -625,11 +553,11 @@ sub fixup_logfields {
       # their normal counterparts, and named orcs with their monster type.
       my $kill = $g->{killer};
       if ($kill && $kill =~ /^[A-Z]/) {
-        my ($name) = /^([A-Z]\w*(?: [A-Z]\w*)*)/;
+        my ($name) = /^([A-Z][\w']*(?: [A-Z][\w']*)*)/;
         if ($kill =~ / the /) {
           my ($mons) = / the (.*)$/;
           # Also takes care of Blork variants.
-          if ($UNIQUES{$name}) {
+          if (Henzell::Crawl::crawl_unique($name)) {
             $_ = $name;
           } else {
             # Usually these will all be orcs.
@@ -638,8 +566,7 @@ sub fixup_logfields {
             $_ = $mons;
           }
         } else {
-          $_ = 'a pandemonium lord'
-            if !/^(?:an?|the) / && !$UNIQUES{$name};
+          $_ = 'a pandemonium lord' if Henzell::Crawl::possible_pan_lord($name);
         }
       }
     }
@@ -700,20 +627,37 @@ sub fixup_logfields {
     # Fixup src for interesting_game.
     $g->{src} = "http://$SERVER_MAP{$src}/";
     $g->{splat} = '';
-    eval {
-      $g->{splat} = CSplat::Select::interesting_game($g) ? 'y' : '';
-    };
     $g->{src} = $src;
   }
+  $g->{game_key} = "$$g{name}:$$g{src}:$$g{rstart}";
 
   $g
 }
 
+sub field_integer_val {
+  my ($val) = @_;
+  $val || 0
+}
+
+sub field_date_val {
+  my $val = shift;
+  $val =~ s/^(?<=\d{4})(\d{2})/$1 + 1/e;
+  $val
+}
+
+my %FIELD_VALUE_PARSERS = ('I' => \&field_integer_val,
+                           'D' => \&field_date_val);
+
 sub field_val {
   my ($key, $g) = @_;
-  my $integer = $key =~ /I$/;
-  $key =~ s/I$//;
-  my $val = $g->{$key} || ($integer? 0 : '');
+  my ($type) = $key =~ /([A-Z])$/;
+  $key =~ s/[A-Z]$//;
+
+  my $val = $g->{$key} || '';
+  if ($type) {
+    my $value_parser = $FIELD_VALUE_PARSERS{$type};
+    $val = $value_parser->($val, $key, $type, $g) if $value_parser;
+  }
   $val
 }
 
@@ -800,11 +744,17 @@ sub logfile_insert_st($) {
   ($game_type? $INSERT_STATEMENTS{$game_type} : $insert_st)
 }
 
+sub broken_record {
+  my $r = shift;
+  !$r->{v} || !$r->{start}
+}
+
 sub add_milestone {
   my ($lf, $offset, $line) = @_;
   chomp $line;
   my $m = logfield_hash($line);
 
+  return if broken_record($m);
   $m->{file} = $lf->{file};
   $m->{offset} = $offset;
   $m->{src} = $lf->{server};
@@ -826,6 +776,7 @@ sub add_logline {
   my ($lf, $offset, $line) = @_;
   chomp $line;
   my $fields = logfield_hash($line);
+  return if broken_record($fields);
   $fields->{src} = $lf->{server};
   $fields->{alpha} = record_is_alpha_version($lf, $fields);
   $fields = fixup_logfields($fields);
@@ -834,6 +785,9 @@ sub add_logline {
                     map(field_val($_, $fields), @LOGFIELDS_DECORATED),
                     field_val('rstart', $fields),
                     field_val('rend', $fields));
+
+  #my @binds = map("$INSERTFIELDS[$_]=$bindvalues[$_]", 0..$#bindvalues);
+  #print "Bindvalues are ", join(",", @binds), "\n";
   execute_st($st, @bindvalues) or
     die "Can't insert record for $line: $!\n";
 }
@@ -871,27 +825,6 @@ sub games_differ {
   scalar(
          grep(($a->{$_} || '') ne ($b->{$_} || ''),
               @LOGFIELDS) )
-}
-
-sub update_log_rows {
-  print "Updating all rows in db to match new fixup\n";
-  my $selfields = join(", ", map($LOG2SQL{$_}, @SELECTFIELDS));
-
-  my $ndb = new_db_handle();
-  die "Unable to connect to db\n" unless $ndb;
-  my $sth = $ndb->prepare("SELECT $selfields FROM logrecord")
-    or die "Can't fetch rows\n";
-  $sth->execute();
-  while (my $row = $sth->fetchrow_arrayref) {
-    my $g = game_from_row($row);
-    # Copy the game.
-    my %cg = %$g;
-    my $fixed = fixup_logfields(\%cg);
-    if (games_differ($g, $fixed)) {
-      update_game($fixed);
-    }
-  }
-  $ndb->disconnect();
 }
 
 1;

@@ -1,16 +1,34 @@
 #! /usr/bin/env ruby
 
 require 'gserver'
-require 'commands/helper'
+require 'helper'
 
 module TV
   @@tv_args = nil
+  @channel_server = !!ENV['TV_CHANNEL_SERVER']
 
   TV_QUEUE_FILE = 'tv.queue'
   TV_LOCK_FILE = 'tv.queue.lock'
   DIRSERV_LOCK_FILE = 'dirserv.queue.lock'
   TV_LOG_FILE = 'tv.queue.log'
   DIRSERV_LOG_FILE = 'dirserv.queue.log'
+
+  def self.channel_server?
+    @channel_server
+  end
+
+  def self.as_channel_server
+    old_channel_server = @channel_server
+    old_env = ENV['TV_CHANNEL_SERVER']
+    begin
+      @channel_server = true
+      ENV['TV_CHANNEL_SERVER'] = 'y'
+      yield
+    ensure
+      @channel_server = old_channel_server
+      ENV['TV_CHANNEL_SERVER'] = old_env
+    end
+  end
 
   # Serves ttyrec directory listings to whoever asks.
   class TtyrecDirectoryServ < GServer
@@ -217,23 +235,37 @@ module TV
 
   def self.parse_seek_num(seek, num, allow_end=false)
     seekname = seek == '<' ? 'seek-back' : 'seek-after'
-    expected = allow_end ? 'number or "$"' : 'number'
-    if num !~ /^[-+]?\d+(?:\.\d+)?$/ && (!allow_end || num != '$')
+    expected = allow_end ? 'T<turncount>, number or "$"' : 'T<turncount> or number'
+    if (num !~ /^t[+-]?\d+$/i && num !~ /^[-+]?\d+(?:\.\d+)?$/ &&
+        (!allow_end || num != '$'))
       raise "Bad seek argument for #{seekname}: #{num} (#{expected} expected)"
     end
     num
+  end
+
+  def self.read_playback_speed(speed_string)
+    speed = speed_string.to_f
+    if speed < 0.1 || speed > 10
+      raise "Playback speed must be between 0.1 and 10"
+    end
+    speed
   end
 
   def self.parse_tv_arg(hash, key)
     if key == 'cancel' or key == 'nuke'
       hash[key] = 'y'
     else
-      prefix = key[0..0]
+      prefix = key[0..0].downcase
       rest = key[1 .. -1].strip
-      if prefix == '<'
+      case prefix
+      when '<'
         hash['seekbefore'] = parse_seek_num(prefix, rest)
-      elsif prefix == '>'
+      when '>'
         hash['seekafter'] = parse_seek_num(prefix, rest, true)
+      when 't'
+        hash['seekafter'] = parse_seek_num('<', prefix + rest)
+      when 'x'
+        hash['playback_speed'] = read_playback_speed(rest)
       else
         raise "Unrecognised TV option: #{key}"
       end
@@ -273,20 +305,20 @@ module TV
   end
 
   def self.request_game_verbosely(n, g, who)
-    #raise "Cannot request games for TV on PM." if ENV['PRIVMSG'] == 'y'
-
     summary = short_game_summary(g)
     tv = 'FooTV'
 
-    if @@tv_args && @@tv_args['nuke']
-      puts "FooTV playlist clear requested by #{who}."
-    else
-      suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
-      puts "#{n}. #{summary}#{suffix} requested for #{tv}."
-    end
+    unless TV.channel_server?
+      if @@tv_args && @@tv_args['nuke']
+        puts "FooTV playlist clear requested by #{who}."
+      else
+        suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
+        puts "#{n}. #{summary}#{suffix} requested for #{tv}."
+      end
 
-    update_tv_count(g)
-    g['req'] = ARGV[1]
+      update_tv_count(g)
+      g['req'] = ARGV[1]
+    end
 
     if @@tv_args
       for k in @@tv_args.keys
@@ -294,6 +326,11 @@ module TV
       end
     end
 
-    request_game(g)
+    if TV.channel_server?
+      puts "#{n}. :#{munge_game(g)}:"
+      return
+    else
+      request_game(g)
+    end
   end
 end

@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 
-require 'commands/helper'
+$:.push('commands')
+require 'helper'
 
 help("%CMD% <player> <monsters>: Will send <monsters> to <player>'s game (this is a campaign promise).")
 
