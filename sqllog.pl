@@ -29,7 +29,8 @@ my %LOG2SQL = ( name => 'pname',
 
 my %SERVER_MAP = (cao => 'crawl.akrasiac.org',
                   cdo => 'crawl.develz.org',
-                  rhf => 'rl.heh.fi');
+                  rhf => 'rl.heh.fi',
+                  csn => 'crawlus.somatika.net');
 
 sub strip_suffix {
   my $val = shift;

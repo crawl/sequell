@@ -39,6 +39,9 @@ DGL_ALIEN_MORGUES = \
  [ %r/rhf.*-0.7$/, 'http://rl.heh.fi/crawl-0.7/stuff' ],
  [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
  [ %r/rhf.*-spr$/, 'http://rl.heh.fi/sprint/stuff' ],
+ [ %r/csn.*-svn$/, 'http://crawlus.somatika.net/dumps' ],
+ [ %r/csn.*-zd$/,  'http://crawlus.somatika.net/dumps' ],
+ [ %r/csn.*-spr$/, 'http://crawlus.somatika.net/dumps' ],
 ]
 
 DGL_ALIEN_TTYRECS = \
