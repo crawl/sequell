@@ -445,6 +445,7 @@ sources:
   - cao
   - cdo
   - rhf
+  - csn
 
 boolean-fields:
   - splat

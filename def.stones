@@ -164,3 +164,12 @@ remote.rhf-milestones-spr
 
 [remote:rhf]
 remote.rhf-milestones-trunk
+
+[remote:csn:http://$csn/scoring/crawl-trunk/milestones]
+remote.csn-milestones-svn
+
+[remote:csn:http://$csn/scoring/crawl-trunk/milestones-sprint]
+remote.csn-milestones-spr
+
+[remote:csn:http://$csn/scoring/crawl-trunk/milestones-zotdef]
+remote.csn-milestones-zd

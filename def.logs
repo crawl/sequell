@@ -156,3 +156,12 @@ remote.rhf-logfile-trunk
 
 [remote:rhf]
 remote.rhf-logfile-spr
+
+[remote:csn:http://$csn/scoring/crawl-trunk/logfile]
+remote.csn-logfile-svn
+
+[remote:csn:http://$csn/scoring/crawl-trunk/logfile-sprint]
+remote.csn-logfile-spr
+
+[remote:csn:http://$csn/scoring/crawl-trunk/logfile-zotdef]
+remote.csn-logfile-zd

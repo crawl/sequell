@@ -42,7 +42,8 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       # Map hostname abbreviations to full hostnames.
                       'abbr.cao' => 'crawl.akrasiac.org',
                       'abbr.cdo' => 'crawl.develz.org',
-                      'abbr.rhf' => 'rl.heh.fi'
+                      'abbr.rhf' => 'rl.heh.fi',
+                      'abbr.csn' => 'crawlus.somatika.net'
                       );
 
 our %CONFIG = %DEFAULT_CONFIG;
