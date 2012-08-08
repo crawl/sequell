@@ -440,13 +440,6 @@ column-aliases:
   gid: game_key
   game_id: game_key
 
-# Public server abbreviations
-sources:
-  - cao
-  - cdo
-  - rhf
-  - csn
-
 boolean-fields:
   - splat
   - alpha

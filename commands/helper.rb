@@ -3,15 +3,10 @@
 require 'set'
 require 'date'
 require 'command_context'
+require 'yaml'
 
-# fields end in S if they're strings, I if integral
-$field_names = %w<vS lvS nameS uidI raceS clsS xlI skS sklevI titleS placeS brS lvlI ltypS hpI mhpI mmhpI strI intI dexI startS durI turnI scI ktypS killerS kauxS endS tmsgS vmsgS godS pietyI penI charS nruneI uruneI tilesS>
-XKEYCHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
-
-$field_types = { }
-
-FIELD_SUBST = { 'species' => 'race', 'role' => 'cls', 'class' => 'cls' }
-MAX_GREP_LINES = 3000
+SERVERS_FILE = 'servers.yml'
+SERVER_CFG = YAML.load_file(SERVERS_FILE)
 
 # Directory containing player directories that contain morgues.
 DGL_MORGUE_DIR = '/var/www/crawl/rawdata'
@@ -23,48 +18,16 @@ DGL_TTYREC_DIR = DGL_MORGUE_DIR
 
 DGL_TTYREC_URL = DGL_MORGUE_URL
 
-DGL_ALIEN_MORGUES = \
-[
- [ %r/cao-.*/,     'http://crawl.akrasiac.org/rawdata' ],
- [ %r/cdo.*-0.4$/, 'http://crawl.develz.org/morgues/0.4' ],
- [ %r/cdo.*-0.5$/, 'http://crawl.develz.org/morgues/0.5' ],
- [ %r/cdo.*-0.6$/, 'http://crawl.develz.org/morgues/0.6' ],
- [ %r/cdo.*-0.7/, 'http://crawl.develz.org/morgues/0.7' ],
- [ %r/cdo.*-0.8/, 'http://crawl.develz.org/morgues/0.8' ],
- [ %r/cdo.*-0.10/, 'http://crawl.develz.org/morgues/0.10' ],
- [ %r/cdo.*-svn$/, 'http://crawl.develz.org/morgues/trunk' ],
- [ %r/cdo.*-zd$/,  'http://crawl.develz.org/morgues/trunk' ],
- [ %r/cdo.*-spr$/, 'http://crawl.develz.org/morgues/trunk' ],
- [ %r/rhf.*-0.5$/, 'http://rl.heh.fi/crawl/stuff' ],
- [ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
- [ %r/rhf.*-0.7$/, 'http://rl.heh.fi/crawl-0.7/stuff' ],
- [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
- [ %r/rhf.*-spr$/, 'http://rl.heh.fi/sprint/stuff' ],
- [ %r/csn.*-svn$/, 'http://crawlus.somatika.net/dumps' ],
- [ %r/csn.*-zd$/,  'http://crawlus.somatika.net/dumps' ],
- [ %r/csn.*-spr$/, 'http://crawlus.somatika.net/dumps' ],
-]
+def regex_paths(regex_path_mappings)
+  regex_path_mappings.map { |regex_string, path|
+    [Regexp.new(regex_string), path]
+  }
+end
 
-DGL_ALIEN_TTYRECS = \
-[
- [ %r/cao-.*/, ['http://termcast.develz.org/cao/ttyrecs',
-                'http://crawl.akrasiac.org/rawdata'] ],
- [ %r/cdo.*$/, [ 'http://termcast.develz.org/ttyrecs',
-                 'http://crawl.develz.org/ttyrecs' ] ],
+DGL_ALIEN_MORGUES = regex_paths(SERVER_CFG['morgue-paths'])
+DGL_ALIEN_TTYRECS = regex_paths(SERVER_CFG['ttyrec-paths'])
 
- [ %r/rhf.*-0.5$/, 'http://rl.heh.fi/crawl/stuff' ],
- [ %r/rhf.*-0.6$/, 'http://rl.heh.fi/crawl-0.6/stuff' ],
- [ %r/rhf.*-0.7$/, 'http://rl.heh.fi/crawl-0.7/stuff' ],
- [ %r/rhf.*-trunk$/, 'http://rl.heh.fi/trunk/stuff' ],
- [ %r/rhf.*-spr$/, 'http://rl.heh.fi/sprint/stuff' ],
-]
-
-SERVER_TIMEZONE = {
-  'caoD' => '-0400', # EDT
-  'caoS' => '-0500', # EST
-  'cdoD' => '+0200', # CEST
-  'cdoS' => '+0100', # CET
-}
+SERVER_TIMEZONE = SERVER_CFG['server-timezones']
 
 MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S'
 SHORT_DATEFORMAT = '%Y%m%d%H%M%S'
@@ -83,12 +46,6 @@ end
 NICK_ALIASES = { }
 NICKMAP_FILE = ENV['HENZELL_TEST'] ? 'nicks-test.map' : 'nicks.map'
 $nicks_loaded = false
-
-$field_names.each do |field|
-  if field =~ /(\w+)(\w)/
-    $field_types[$1] = $2
-  end
-end
 
 def munge_game(game)
   game.to_a.map { |x,y| "#{x}=#{y.to_s.gsub(':', '::')}" }.join(':')
@@ -189,103 +146,6 @@ def do_grep(logfile, nick, hsel)
     end
   end
   lines
-end
-
-def select_games(nick, hsel)
-  # No more direct grepping.
-  ####games = %x{grep -i ':name=#{nick}:' /var/www/crawl/allgames.txt} .
-  do_grep('/var/www/crawl/allgames.txt', nick, hsel).
-          map       {|line| demunge_xlogline(line) }
-end
-
-def games_for(nick, selectors)
-  # this is partly to cleanse for safe inclusion in a shell command
-  # but also partly to find nicks easier
-  # the removal of numbers at the end is because Crawl nicks can't end with #s
-  nick = nick.downcase.gsub(/[^a-z0-9]/, '') #.sub(/\d+$/, '')
-
-  hsel, nsel = split_selector_predicates(selectors)
-  games = select_games(nick, hsel)
-  nsel.empty? ? games : games.delete_if { |g| nsel.find { |p| not p[g] } }
-end
-
-def split_selectors(selectors, regex=/^-(\w+)(<=?|>=?|[!=]~|!==?|==?)(.*)/)
-  sels = [ ]
-  selectors.split(' ').each do |keyval|
-    if keyval =~ regex
-      key, op, val = $1, $2, $3.tr('_', ' ')
-      key = FIELD_SUBST[key] if FIELD_SUBST.has_key?(key)
-      sels << [key, op, val]
-    else
-      raise "Bad selector #{keyval} - must be of the form -key=val"
-    end
-  end
-  sels
-end
-
-def parse_game_select_args(args)
-  words = args[1].split(' ')[ 1..-1 ]
-  return [ args[0], -1, '' ] if !words || words.empty?
-
-  if words[0] =~ /^[a-zA-Z]\w+$/ or words[0] == '*' or words[0] == '.'
-    nick  = words.slice!(0)
-    nick = '*' if nick == '.'
-  end
-
-  if not words.empty? and words[0] =~ /^[+\-]?\d+$/
-    num = words.slice!(0).to_i
-  end
-
-  rest = words.join(' ') unless words.empty?
-
-  nick ||= args[0]
-  num  ||= -1
-  rest ||= ''
-  [ nick, num, rest ]
-end
-
-def get_game_select_sorts(preds)
-  sorts = []
-  preds.each do |key, op, val|
-    if key == 'max' then
-      raise "No field named #{val}" unless $field_types[val]
-      # Sort high values to end
-      sorts << Proc.new { |a,b| a[val] <=> b[val] }
-    elsif key == 'min' then
-      raise "No field named #{val}" unless $field_types[val]
-      sorts << Proc.new { |a,b| b[val] <=> a[val] }
-    end
-  end
-  preds.delete_if { |k,o,v| k == 'max' or k == 'min' }
-  sorts
-end
-
-def sort_games(a, b, sorts)
-  sorts.each do |p|
-    val = p[a, b]
-    return val unless val == 0
-  end
-  0
-end
-
-def get_named_game(args)
-  nick, num, selectors = parse_game_select_args(args)
-  preds = split_selectors(selectors)
-  sorts = get_game_select_sorts(preds)
-  games = games_for(nick, preds)
-  games.sort! { |a,b| sort_games(a, b, sorts) }
-
-  if games.empty?
-    raise(
-          sprintf("No games for #{nick}%s.",
-                  selectors.empty? ? "" : " (#{selectors})"))
-  end
-
-  num = -1 if num == 0
-  index = num < 0 ? games.size + num : num - 1
-  raise "Index out of range: #{num}" if index < 0 or index >= games.size
-
-  [ index + 1, games[index] ]
 end
 
 def morgue_assemble_filename(dir, e, time, ext)

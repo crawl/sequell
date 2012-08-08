@@ -3,6 +3,7 @@
 exit(0) if !ENV['HENZELL_SQL_QUERIES']
 
 LG_CONFIG_FILE = 'commands/crawl-data.yml'
+LG_SERVERS_FILE = 'servers.yml'
 
 require 'dbi'
 require 'set'
@@ -20,6 +21,7 @@ DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
 DBPASS = ENV['HENZELL_DBPASS'] || 'henzell'
 
 CFG = YAML.load_file(LG_CONFIG_FILE)
+LG_SERVER_CFG = YAML.load_file(LG_SERVERS_FILE)
 
 # Don't use more than this much memory (bytes)
 MAX_MEMORY_USED = 768 * 1024 * 1024
@@ -61,7 +63,7 @@ BRANCHES = CFG['branches']
 GODABBRS = CFG['god'].keys
 GODMAP = CFG['god']
 
-SOURCES = CFG['sources']
+SOURCES = LG_SERVER_CFG['sources'].keys.sort
 
 BRANCH_SET = Set.new(BRANCHES.map { |br| br.downcase })
 DEEP_BRANCH_SET = Set.new(DEEP_BRANCHES.map { |br| br.downcase })

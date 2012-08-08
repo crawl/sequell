@@ -1,0 +1,41 @@
+# Public server abbreviations
+sources:
+  cao: crawl.akrasiac.org
+  cdo: crawl.develz.org
+  rhf: rl.heh.fi
+  csn: crawl.somatika.net
+
+morgue-paths:
+  - [ 'cao-.*',     'http://crawl.akrasiac.org/rawdata' ]
+  - [ 'cdo.*-0.4$', 'http://crawl.develz.org/morgues/0.4' ]
+  - [ 'cdo.*-0.5$', 'http://crawl.develz.org/morgues/0.5' ]
+  - [ 'cdo.*-0.6$', 'http://crawl.develz.org/morgues/0.6' ]
+  - [ 'cdo.*-0.7', 'http://crawl.develz.org/morgues/0.7' ]
+  - [ 'cdo.*-0.8', 'http://crawl.develz.org/morgues/0.8' ]
+  - [ 'cdo.*-0.10', 'http://crawl.develz.org/morgues/0.10' ]
+  - [ 'cdo.*-svn$', 'http://crawl.develz.org/morgues/trunk' ]
+  - [ 'cdo.*-zd$',  'http://crawl.develz.org/morgues/trunk' ]
+  - [ 'cdo.*-spr$', 'http://crawl.develz.org/morgues/trunk' ]
+  - [ 'rhf.*-0.5$', 'http://rl.heh.fi/crawl/stuff' ]
+  - [ 'rhf.*-0.6$', 'http://rl.heh.fi/crawl-0.6/stuff' ]
+  - [ 'rhf.*-0.7$', 'http://rl.heh.fi/crawl-0.7/stuff' ]
+  - [ 'rhf.*-trunk$', 'http://rl.heh.fi/trunk/stuff' ]
+  - [ 'rhf.*-spr$', 'http://rl.heh.fi/sprint/stuff' ]
+  - [ 'csn.*', 'http://crawlus.somatika.net/dumps' ]
+
+ttyrec-paths:
+  - [ 'cao-.*', ['http://termcast.develz.org/cao/ttyrecs',
+                  'http://crawl.akrasiac.org/rawdata'] ]
+  - [ 'cdo.*$', [ 'http://termcast.develz.org/ttyrecs',
+                  'http://crawl.develz.org/ttyrecs' ] ]
+  - [ 'rhf.*-0.5$', 'http://rl.heh.fi/crawl/stuff' ]
+  - [ 'rhf.*-0.6$', 'http://rl.heh.fi/crawl-0.6/stuff' ]
+  - [ 'rhf.*-0.7$', 'http://rl.heh.fi/crawl-0.7/stuff' ]
+  - [ 'rhf.*-trunk$', 'http://rl.heh.fi/trunk/stuff' ]
+  - [ 'rhf.*-spr$', 'http://rl.heh.fi/sprint/stuff' ]
+
+server-timezones:
+  caoD: '-0400'
+  caoS: '-0500'
+  cdoD: '+0200'
+  cdoS: '+0100'

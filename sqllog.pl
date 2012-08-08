@@ -7,6 +7,7 @@ use IO::Handle;
 
 use DBI;
 use Henzell::Crawl;
+use Henzell::ServerConfig;
 
 do 'game_parser.pl';
 
@@ -29,11 +30,6 @@ my %LOG2SQL = ( name => 'pname',
                 end => 'tend',
                 time => 'ttime',
                 offset => 'file_offset');
-
-my %SERVER_MAP = (cao => 'crawl.akrasiac.org',
-                  cdo => 'crawl.develz.org',
-                  rhf => 'rl.heh.fi',
-                  csn => 'crawlus.somatika.net');
 
 sub strip_suffix {
   my $val = shift;
@@ -625,7 +621,7 @@ sub fixup_logfields {
   else {
     my $src = $g->{src};
     # Fixup src for interesting_game.
-    $g->{src} = "http://$SERVER_MAP{$src}/";
+    $g->{src} = "http://" . Henzell::ServerConfig::source_hostname($src) . "/";
     $g->{splat} = '';
     $g->{src} = $src;
   }
