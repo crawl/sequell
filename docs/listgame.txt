@@ -3,9 +3,9 @@ The listgame manual
 ===================
 
 If you're on ##crawl on Freenode IRC, you can use listgame to see
-game statistics for Crawl games played on the public Crawl servers CAO
-(crawl.akrasiac.org), CDO (crawl.develz.org), and CSN
-(crawlus.somatika.net).
+game statistics for Crawl games played on the public Crawl servers
+CAO (crawl.akrasiac.org), CDO (crawl.develz.org),
+CSN (crawlus.somatika.net), and CSZO (crawl.s-z.org).
 
 The bot Sequell responds to listgame queries on ##crawl, and on PM.
 
@@ -430,8 +430,8 @@ Listgame keywords may be one of:
    - X.Y.Z finds games matching that version number exactly.
 
 8. Public server abbreviation:
-   cao / cdo / rhf / csn :: selects games from the corresponding public
-                            server.
+   cao / cdo / rhf / csn / cszo :: selects games from the corresponding
+                                   public server.
 
 9. Player nick or nick alias:
    @nick  :: selects games by that player or nick alias. See the section
