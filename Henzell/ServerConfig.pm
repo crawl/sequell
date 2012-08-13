@@ -14,4 +14,8 @@ sub source_hostname {
   $$SERVERCFG{sources}{$source}
 }
 
+sub server_abbreviations {
+  %{$$SERVERCFG{sources}}
+}
+
 1

@@ -5,6 +5,8 @@ use warnings;
 
 use base 'Exporter';
 
+use Henzell::ServerConfig;
+
 our @EXPORT_OK = qw/read get %CONFIG %CMD %CMDPATH %PUBLIC_CMD
                     @LOGS @MILESTONES/;
 
@@ -37,14 +39,7 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       dev_channel => '##crawl-dev',
 
                       commands_file => 'commands/commands-henzell.txt',
-                      public_commands_file => 'commands/public-commands.txt',
-
-                      # Map hostname abbreviations to full hostnames.
-                      'abbr.cao' => 'crawl.akrasiac.org',
-                      'abbr.cdo' => 'crawl.develz.org',
-                      'abbr.rhf' => 'rl.heh.fi',
-                      'abbr.csn' => 'crawlus.somatika.net',
-                      'abbr.cszo' => 'dobrazupa.org'
+                      public_commands_file => 'commands/public-commands.txt'
                       );
 
 our %CONFIG = %DEFAULT_CONFIG;
@@ -64,6 +59,7 @@ sub get() {
 }
 
 sub abbrev_load() {
+  %ABBRMAP = Henzell::ServerConfig::server_abbreviations();
   for my $key (keys %CONFIG) {
     if ($key =~ /^abbr\.(\w+)$/) {
       $ABBRMAP{$1} = $CONFIG{$key};
