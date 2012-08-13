@@ -43,7 +43,8 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       'abbr.cao' => 'crawl.akrasiac.org',
                       'abbr.cdo' => 'crawl.develz.org',
                       'abbr.rhf' => 'rl.heh.fi',
-                      'abbr.csn' => 'crawlus.somatika.net'
+                      'abbr.csn' => 'crawlus.somatika.net',
+                      'abbr.cszo' => 'dobrazupa.org'
                       );
 
 our %CONFIG = %DEFAULT_CONFIG;

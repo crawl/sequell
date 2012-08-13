@@ -4,6 +4,7 @@ sources:
   cdo: crawl.develz.org
   rhf: rl.heh.fi
   csn: crawl.somatika.net
+  cszo: dobrazupa.org
 
 morgue-paths:
   - [ 'cao-.*',     'http://crawl.akrasiac.org/rawdata' ]
@@ -22,6 +23,7 @@ morgue-paths:
   - [ 'rhf.*-trunk$', 'http://rl.heh.fi/trunk/stuff' ]
   - [ 'rhf.*-spr$', 'http://rl.heh.fi/sprint/stuff' ]
   - [ 'csn.*', 'http://crawlus.somatika.net/dumps' ]
+  - [ 'cszo.*', 'http://dobrazupa.org/morgue' ]
 
 ttyrec-paths:
   - [ 'cao-.*', ['http://termcast.develz.org/cao/ttyrecs',
@@ -33,9 +35,12 @@ ttyrec-paths:
   - [ 'rhf.*-0.7$', 'http://rl.heh.fi/crawl-0.7/stuff' ]
   - [ 'rhf.*-trunk$', 'http://rl.heh.fi/trunk/stuff' ]
   - [ 'rhf.*-spr$', 'http://rl.heh.fi/sprint/stuff' ]
+  - [ 'cszo.*', 'http://dobrazupa.org/ttyrec' ]
 
 server-timezones:
   caoD: '-0400'
   caoS: '-0500'
   cdoD: '+0200'
   cdoS: '+0100'
+  cszoD: '-0400'
+  cszoS: '-0500'
