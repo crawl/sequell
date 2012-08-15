@@ -22,7 +22,7 @@ class QueryContextFixups
 
   PREFIX_FIXUPS = HenzellConfig::CFG['prefix-field-fixups']
 
-  GAME_SOURCES = Set.new(HenzellConfig::CFG['sources'])
+  GAME_SOURCES = Set.new(HenzellConfig::SERVER_CFG['sources'].keys)
 
   def self.expand_god(god_abbr)
     if god_abbr && god_abbr.length > 0
