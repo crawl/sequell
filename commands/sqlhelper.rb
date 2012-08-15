@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
-exit(0) if !ENV['HENZELL_SQL_QUERIES']
+if !ENV['HENZELL_SQL_QUERIES']
+  raise Exception.new("sqlhelper: HENZELL_SQL_QUERIES is not set")
+end
 
 LG_CONFIG_FILE = 'commands/crawl-data.yml'
 LG_SERVERS_FILE = 'servers.yml'
@@ -11,10 +13,13 @@ require 'yaml'
 
 require 'helper'
 require 'tourney'
+require 'commands/sql_connection'
+require 'commands/henzell_config'
 require 'sql/field_predicate'
 require 'sql/query_result'
 
 include Tourney
+include HenzellConfig
 
 DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
 DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
@@ -27,7 +32,6 @@ LG_SERVER_CFG = YAML.load_file(LG_SERVERS_FILE)
 MAX_MEMORY_USED = 768 * 1024 * 1024
 Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
 
-GAME_TYPE_DEFAULT = CFG['default-game-type']
 GAME_SPRINT = 'sprint'
 GAMES = CFG['game-type-prefixes'].keys
 GAME_PREFIXES = CFG['game-type-prefixes']
@@ -57,8 +61,8 @@ FILTER_PATTERN =
 
 # List of abbreviations for branches that have depths > 1. This includes
 # fake branches such as the Ziggurat.
-DEEP_BRANCHES = CFG['branches-with-depth']
-BRANCHES = CFG['branches']
+DEEP_BRANCHES = CFG['branches'].find_all { |x| x =~ /:/ }.map { |x| x.sub(':', '') }
+BRANCHES = CFG['branches'].map { |x| x.sub(':', '') }
 
 GODABBRS = CFG['god'].keys
 GODMAP = CFG['god']
@@ -89,9 +93,9 @@ COLUMN_ALIASES = CFG['column-aliases']
 
 AGGREGATE_FUNC_TYPES = CFG['aggregate-function-types']
 
-LOGFIELDS_DECORATED = CFG['logfields-with-type']
-MILEFIELDS_DECORATED = CFG['milefields-with-type']
-FAKEFIELDS_DECORATED = CFG['fakefields-with-type']
+LOGFIELDS_DECORATED = CFG['logrecord-fields-with-type']
+MILEFIELDS_DECORATED = CFG['milestone-fields-with-type']
+FAKEFIELDS_DECORATED = CFG['fake-fields-with-type']
 
 LOGFIELDS_SUMMARISABLE =
   Hash[ *(CFG['logfields-summarisable'].map { |x| [x, true] }.flatten) ]
@@ -144,8 +148,6 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
     fdict[ lf.name ] = type
   end
 end
-
-LOG2SQL = CFG['sql-field-names']
 
 (LOGFIELDS_DECORATED + MILEFIELDS_DECORATED).each do |x|
   LOG2SQL[x.name] = x.name unless LOG2SQL[x.name]
@@ -304,20 +306,6 @@ CTX_STONE = QueryContext.new('milestone mst', 'milestone', CTX_LOG)
 $CTX = CTX_LOG
 
 $DB_HANDLE = nil
-
-def sql2logdate(v)
-  if v.is_a?(DateTime)
-    v = v.strftime('%Y-%m-%d %H:%M:%S')
-  else
-    v = v.to_s
-  end
-  if v =~ /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/
-    # Note we're munging back to POSIX month (0-11) here.
-    $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
-  else
-    v
-  end
-end
 
 def with_query_context(ctx)
   old_context = $CTX
@@ -697,7 +685,7 @@ end
 
 def update_tv_count(g)
   table = g['milestone'] ? 'milestone' : 'logrecord'
-  sql_dbh.do("UPDATE #{table} SET ntv = ntv + 1 " +
+  sql_db_handle.do("UPDATE #{table} SET ntv = ntv + 1 " +
              "WHERE id = ?", g['id'])
 end
 
@@ -981,42 +969,6 @@ def row_to_fieldmap(row)
   map
 end
 
-class DBHandle
-  def initialize(db)
-    @db = db
-  end
-
-  def get_first_value(query, *binds)
-    @db.prepare(query) do |sth|
-      sth.execute(*binds)
-      row = sth.fetch
-      return row[0]
-    end
-    nil
-  end
-
-  def execute(query, *binds)
-    @db.prepare(query) do |sth|
-      sth.execute(*binds)
-      while row = sth.fetch
-        yield row
-      end
-    end
-  end
-
-  def do(query, *binds)
-    @db.do(query, *binds)
-  end
-end
-
-def connect_sql_db
-  DBHandle.new(DBI.connect('DBI:Pg:' + DBNAME, DBUSER, DBPASS))
-end
-
-def sql_dbh
-  $DB_HANDLE ||= connect_sql_db
-end
-
 def index_sanity(index)
   #raise "Index too large: #{index}" if index > ROWFETCH_MAX
 end
@@ -1024,7 +976,7 @@ end
 def sql_exec_query(num, q, lastcount = nil)
   origindex = num
 
-  dbh = sql_dbh
+  dbh = sql_db_handle
 
   # -1 is the natural index 0, -2 = 1, etc.
   num = -num - 1
@@ -1063,7 +1015,7 @@ end
 
 def sql_count_rows_matching(q)
   #STDERR.puts "Query: #{q.select_all} (#{q.values.join(', ')})"
-  sql_dbh.get_first_value(q.select_count, *q.values).to_i
+  sql_db_handle.get_first_value(q.select_count, *q.values).to_i
 end
 
 def sql_each_row_matching(q, limit=0)
@@ -1075,15 +1027,14 @@ def sql_each_row_matching(q, limit=0)
       query += " LIMIT #{limit}"
     end
   end
-  #STDERR.puts "Query: #{query}"
-  sql_dbh.execute(query, *q.values) do |row|
+  sql_db_handle.execute(query, *q.values) do |row|
     yield row
   end
 end
 
 def sql_each_row_for_query(query_text, *params)
   #puts "Query: #{query_text}"
-  sql_dbh.execute(query_text, *params) do |row|
+  sql_db_handle.execute(query_text, *params) do |row|
     yield row
   end
 end
@@ -1926,7 +1877,7 @@ def nick_exists?(nick)
   lnick = nick.downcase
   return DB_NICKS[lnick] if DB_NICKS.key?(lnick)
   nick_exists = false
-  sql_dbh.execute('SELECT pname FROM logrecord WHERE pname = ? LIMIT 1',
+  sql_db_handle.execute('SELECT pname FROM logrecord WHERE pname = ? LIMIT 1',
                   lnick) do |row|
     nick_exists = true
   end
@@ -2435,7 +2386,7 @@ end
 def logfile_names
   q = "SELECT file FROM logfiles;"
   logfiles = []
-  sql_dbh.execute(q) do |row|
+  sql_db_handle.execute(q) do |row|
     logfiles << row[0]
   end
   logfiles

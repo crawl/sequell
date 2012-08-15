@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require 'commands/sqlbuilder'
+require 'commands/sql_builder'
 
 parser = ListgameQueryParser.new
 

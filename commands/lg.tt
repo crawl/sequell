@@ -97,11 +97,11 @@ grammar ListgameQuery
   end
 
   rule query_part
-    ( query_parenthesized / field_grouping / field_extract / field_subquery_match / ordering / result_index / key_op_val_arg / query_flag ) whitespace?
+    ( query_parenthesized / field_grouping / field_extract / join_fields / field_subquery_match / ordering / result_index / key_op_val_arg / query_flag ) whitespace?
   end
 
   rule query_parenthesized
-    query_subpart / query_subquery_clause
+    query_subpart / query_subquery_join
   end
 
   rule query_subpart
@@ -109,21 +109,11 @@ grammar ListgameQuery
   end
 
   rule query_subquery_clause
-    query_subquery_condition / query_exists_subquery / query_subquery_join
+    query_exists_subquery / query_subquery_join
   end
 
   rule query_expr_subquery
     "$" query_subquery
-  end
-
-  rule query_exists_subquery
-    negation? "$exists" whitespace? query_subquery <ExistSubquery>
-  end
-  
-  rule query_subquery_condition
-    ( query_expr_subquery whitespace? query_cmp_op &(whitespace query_part) /
-    query_expr_subquery whitespace? query_cmp_op whitespace? query_sloppy_value_expr /
-    query_expr_subquery whitespace? query_cmp_op ) <SubqueryCondition>
   end
 
   rule query_subquery_join
@@ -143,7 +133,7 @@ grammar ListgameQuery
   end
 
   rule result_index
-    integer <ResultIndex>
+    "#"? integer !(".") <ResultIndex>
   end
 
   rule integer
@@ -202,8 +192,16 @@ grammar ListgameQuery
     ( "%" / query_field ) <SpecialField>
   end
 
+  rule grouping_field
+    ordered_field grouping_flags? <GroupingField>
+  end
+
+  rule grouping_flags
+    "%" <GroupingFlags>
+  end
+
   rule field_grouping
-    "-"? "s" whitespace? "=" whitespace? ordered_field ( whitespace? "," whitespace? ordered_field )* <FieldGrouping>
+    "-"? "s" whitespace? "=" whitespace? grouping_field ( whitespace? "," whitespace? grouping_field )* <FieldGrouping>
   end
 
   rule field_subquery_match
@@ -214,12 +212,16 @@ grammar ListgameQuery
     "-"? "x" whitespace? "=" whitespace? ordered_aggregate_field ( whitespace? "," whitespace? ordered_aggregate_field )* <FieldExtract>
   end
 
+  rule join_fields
+    "-"? "j" whitespace? "=" whitespace? ordered_aggregate_field ( whitespace? "," whitespace? ordered_aggregate_field )* <JoinFields>
+  end
+
   rule sort_op
     ( "min" / "max" ) <SortOperator>
   end
 
   rule key_op_val_arg
-    ( "-"? key_expr whitespace? query_cmp_op &(whitespace (key_op_val_arg / query_parenthesized)) /
+    ( "-"? key_expr whitespace? query_cmp_op &(whitespace (key_op_val_arg / query_parenthesized / result_index)) /
     "-"? key_expr whitespace? query_cmp_op whitespace? query_sloppy_value_expr /
     "-"? key_expr whitespace? query_cmp_op )
     <KeyOpVal>
@@ -242,15 +244,15 @@ grammar ListgameQuery
   end
 
   rule query_op_expr
-    query_and_expr
-  end
-
-  rule query_and_expr
-    query_or_expr (  whitespace? op_and whitespace? query_or_expr )* <QueryCalcExpr>
+    query_or_expr
   end
 
   rule query_or_expr
-    query_cmp_expr ( whitespace? op_or whitespace? query_cmp_expr )*  <QueryCalcExpr>
+    query_and_expr (  whitespace? op_or whitespace? query_and_expr )* <QueryCalcExpr>
+  end
+
+  rule query_and_expr
+    query_cmp_expr ( whitespace? op_and whitespace? query_cmp_expr )*  <QueryCalcExpr>
   end
 
   rule query_cmp_expr
@@ -373,7 +375,7 @@ grammar ListgameQuery
   end
 
   rule word_part
-    [a-zA-Z_] [a-zA-Z.0-9_]+
+    [a-zA-Z_] [a-zA-Z.0-9_]*
   end
 
   rule query_cmp_op

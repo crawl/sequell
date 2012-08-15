@@ -26,6 +26,8 @@
 
 - New query builder:
   - Construct query based on treetop parse tree
+
+  - x=foo should permit arbitrary expressions, appropriately bracketed.
   
   - Simple query: return game:
       !lg * defe win
@@ -62,7 +64,7 @@
   - If main query is !lg and join is !lm, default join condition is
     start + name, and vice versa of !lm/!lg.
   - If [[]] has s=foo, join condition is foo
-  - If [[]] has match=x,y,z join condition is all of those
+  - If [[]] has j=x,y,z join condition is all of those
   - If [[]] has x=q:x y=q:y, join condition is on x, y
   - A join without a join condition is an error.
 
@@ -100,14 +102,14 @@
 
     - Expression subquery:
       A subquery may be used as an expression:
-         !lg * $[[!lm * match=name,rstart]]=0
+         !lg * $[[!lm * j=name,rstart]]=0
       (Shows games with no milestones; expensive)
 
       An expression subquery may use a single x=foo to select an
       expression; if no x=foo is specified, x=count is assumed.
 
     - exists/not exists subquery:
-         !lg * win !$exists[[!lm * Lair match=name,rstart]]
+         !lg * win !$exists[[!lm * Lair j=name,rstart]]
       (finds Lairless wins)
 
 - New grammar -- error checking needed:
@@ -126,7 +128,7 @@
   ${expr1}!=${expr2}
   ${int+dex}<${str}
 
-  ${int + $[[ * x=count ]]}
+  ${int + $[[* x=count ]]}
 
   expressions may be:
    - simple field names
@@ -143,6 +145,11 @@ Extended Henzell queries (joins, yay):
 - Allow !cancelquery to cancel any running query immediately using
   the same process kill + connection kill.
 
+Join clause:
+  Examples: j=a,b (join on a and b, simple fields or expressions.)
+            j=a,fn(b) (group by a, then join by a and fn(b), where fn
+                       is an aggregate function)
+  
 Join steps:
 1. Identify subqueries
 2. Identify join parameters. Subquery must have x=<field> to specify joins,
@@ -180,9 +187,9 @@ explain extended
    group by charabbrev
    order by c DESC;
 
-   !lg * [[ * win s=name x=name,min(start) ]] s=char
+   !lg * [[ * win s=name j=name,min(start) ]] s=char
 
-   Use: x= in subqueries to select join fields.
+   Use: j= in subqueries to select join fields.
 
 - Player who has the most combo highscores:
 
@@ -194,17 +201,18 @@ explain extended
    WHERE l.charabbrev = ch.charabbrev AND l.sc = ch.sc
    GROUP BY l.pname ORDER BY c DESC
 
-   !lg * [[ * s=char x=char,max(sc) ]] s=name
+   !lg * [[* s=char,max(sc)]] s=name
 
 - Game with most Boris kills:
-   !lg * [[ !lm * uniq=Boris s=game_id ]]
-   (The implicit order by COUNT(*) is used here).
+   !lg * [[ !lm * uniq=Boris s=gid ?: limit=1 ]]
+   (The implicit order by COUNT(*) is used here, limited to 1 result to join
+    the right game).
 
 - Games with most milestones in Shoals:
    !lg * [[!lm * Shoals s=game_id]]
 
 - Lairless wins:
-   !lg * win $[[!lm * br.enter=Lair match=start,name x=count]]=0
+   !lg * win $[[!lm * br.enter=Lair j=start,name x=count]]=0
 
    OR
 
@@ -217,7 +225,7 @@ explain extended
 
 Different kinds of subqueries:
 - General JOIN query -- just use x=fields to join
-- Correlated subquery: use match=field1,field2 to correlate on those field
+- Correlated subquery: use j=field1,field2 to correlate (join) on those field
   values.
 - Correlated subquery as expression: $[[ ]] <op> <val>
 - EXISTS subquery: $exists[[ ]] (may also be correlated)

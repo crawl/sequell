@@ -18,3 +18,4 @@
 !tv tvreq.rb
 !tvdef tvdef.rb
 !won won.rb
+!tlg ttlistgame.rb
