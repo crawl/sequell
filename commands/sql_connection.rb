@@ -40,7 +40,7 @@ class SQLConnection
   end
 
   def self.connect
-    DBHandle.new(DBI.connect('DBI:Mysql:' + DBNAME, DBUSER, DBPASS))
+    DBHandle.new(DBI.connect('DBI:Pg:' + DBNAME, DBUSER, DBPASS))
   end
 end
 

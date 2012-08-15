@@ -21,10 +21,6 @@ require 'sql/query_result'
 include Tourney
 include HenzellConfig
 
-DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
-DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
-DBPASS = ENV['HENZELL_DBPASS'] || 'henzell'
-
 CFG = YAML.load_file(LG_CONFIG_FILE)
 LG_SERVER_CFG = YAML.load_file(LG_SERVERS_FILE)
 
@@ -32,6 +28,7 @@ LG_SERVER_CFG = YAML.load_file(LG_SERVERS_FILE)
 MAX_MEMORY_USED = 768 * 1024 * 1024
 Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
 
+GAME_TYPE_DEFAULT = CFG['default-game-type']
 GAME_SPRINT = 'sprint'
 GAMES = CFG['game-type-prefixes'].keys
 GAME_PREFIXES = CFG['game-type-prefixes']
@@ -97,9 +94,6 @@ LOGFIELDS_DECORATED = CFG['logrecord-fields-with-type']
 MILEFIELDS_DECORATED = CFG['milestone-fields-with-type']
 FAKEFIELDS_DECORATED = CFG['fake-fields-with-type']
 
-LOGFIELDS_SUMMARISABLE =
-  Hash[ *(CFG['logfields-summarisable'].map { |x| [x, true] }.flatten) ]
-
 # Never fetch more than 5000 rows, kthx.
 ROWFETCH_MAX = 5000
 DBFILE = "#{ENV['HOME']}/logfile.db"
@@ -127,20 +121,24 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
   fdec.each do |lf|
     class << lf
       def name
-        self.sub(/[ID]$/, '')
+        self.sub(/[ID*]+$/, '')
       end
 
       def fix_date(v)
         sql2logdate(v)
       end
 
+      def summarisable?
+        self !~ /\*/
+      end
+
       def value(v)
-        (self =~ /I$/) ? v.to_i :
-        (self =~ /D$/) ? fix_date(v) : v
+        (self =~ /I/) ? v.to_i :
+        (self =~ /D/) ? fix_date(v) : v
       end
     end
 
-    if lf =~ /([ID])$/
+    if lf =~ /([ID])\*?$/
       type = $1
     else
       type = 'S'
@@ -149,17 +147,20 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
   end
 end
 
+LOG2SQL = CFG['sql-field-names']
 (LOGFIELDS_DECORATED + MILEFIELDS_DECORATED).each do |x|
   LOG2SQL[x.name] = x.name unless LOG2SQL[x.name]
 end
 
-MILEFIELDS_SUMMARISABLE = \
-  Hash[ *MILEFIELDS_DECORATED.map { |x| [ x.name, true ] }.flatten ]
+LOGFIELDS_SUMMARISABLE =
+  Hash[ *(LOGFIELDS_DECORATED.find_all { |x| x.summarisable? }.map { |x|
+    [x.name, true]
+  }.flatten) ]
 
-# But suppress attempts to summarise by bad fields.
-%w/id dur turn rtime rstart tend ttime tstart/.each do |x|
-  MILEFIELDS_SUMMARISABLE[x] = nil
-end
+MILEFIELDS_SUMMARISABLE =
+  Hash[ *(MILEFIELDS_DECORATED.find_all { |x| x.summarisable? }.map { |x|
+    [x.name, true]
+  }.flatten) ]
 
 module GameContext
   @@game = GAME_TYPE_DEFAULT
@@ -232,7 +233,7 @@ class QueryContext
   end
 
   def dbfield(field)
-    raise "Bad field #{field}" unless field?(field)
+    raise "Bad field '#{field}'" unless field?(field)
     prefix, suffix = split_field(field)
 
     if @table =~ /^logrecord/ || ((!prefix || prefix == @table_alias) \
@@ -306,6 +307,20 @@ CTX_STONE = QueryContext.new('milestone mst', 'milestone', CTX_LOG)
 $CTX = CTX_LOG
 
 $DB_HANDLE = nil
+
+def sql2logdate(v)
+  if v.is_a?(DateTime)
+    v = v.strftime('%Y-%m-%d %H:%M:%S')
+  else
+    v = v.to_s
+  end
+  if v =~ /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/
+    # Note we're munging back to POSIX month (0-11) here.
+    $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
+  else
+    v
+  end
+end
 
 def with_query_context(ctx)
   old_context = $CTX

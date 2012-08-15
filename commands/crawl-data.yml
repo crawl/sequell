@@ -29,118 +29,6 @@ sql-field-names:
   map: mapname
 
 ##
-# Fake query fields that are transformed into a real query field by code in
-# query_synthetic.rb
-fake-fields-with-type:
-  - when*
-  - game*
-
-##
-# Field type suffixes:
-# - I (integer)
-# - D (date+time)
-#
-# - * (not summarisable)
-logrecord-fields-with-type:
-  - idI*
-  - file*
-  - alpha
-  - src
-  - v
-  - cv
-  - lv
-  - scI*
-  - name
-  - uidI
-  - race
-  - crace
-  - cls
-  - char
-  - xlI
-  - sk
-  - sklevI
-  - title
-  - ktyp
-  - killer
-  - ckiller
-  - ikiller
-  - kpath
-  - kmod
-  - kaux
-  - ckaux
-  - place
-  - br
-  - lvlI
-  - ltyp
-  - hpI
-  - mhpI
-  - mmhpI
-  - damI
-  - strI
-  - intI
-  - dexI
-  - god
-  - pietyI
-  - penI
-  - wizI
-  - startD*
-  - endD*
-  - durI*
-  - turnI*
-  - uruneI
-  - nruneI
-  - tmsg
-  - vmsg
-  - splat
-  - rstart*
-  - rend*
-  - ntvI
-  - map
-  - mapdesc
-
-milestone-fields-with-type:
-  - game_idI
-  - idI*
-  - file*
-  - alpha
-  - src
-  - v
-  - cv
-  - name
-  - race
-  - crace
-  - cls
-  - char
-  - xlI
-  - sk
-  - sklevI
-  - title
-  - place
-  - br
-  - lvlI
-  - ltyp
-  - hpI
-  - mhpI
-  - mmhpI
-  - strI
-  - intI
-  - dexI
-  - god
-  - durI*
-  - turnI*
-  - uruneI
-  - nruneI
-  - timeD*
-  - rtime*
-  - rstart*
-  - verb
-  - noun
-  - milestone
-  - ntvI
-  - oplace
-
-
-##
 # game types recognized by !lg and friends, mapped to the table name prefix.
 # For instance, Crawl games will query `logrecord` and `milestone`, Sprint
 # games will query `spr_logrecord` and `spr_milestone` and so on.
@@ -404,7 +292,6 @@ branches:
   - Blade
   - Temple
   - Abyss
-  - Sprint
   - WizLab
   - Sewer
   - Bailey
@@ -595,8 +482,14 @@ aggregate-function-types:
   std: I
   variance: I
 
-logfields-with-type:
-  - idI
+##
+# Field type suffixes:
+# - I (integer)
+# - D (date+time)
+#
+# - * (not summarisable)
+logrecord-fields-with-type:
+  - idI*
   - game_key
   - file
   - alpha
@@ -604,7 +497,7 @@ logfields-with-type:
   - v
   - cv
   - lv
-  - scI
+  - scI*
   - name
   - uidI
   - race
@@ -638,10 +531,10 @@ logfields-with-type:
   - pietyI
   - penI
   - wizI
-  - startD
-  - endD
-  - durI
-  - turnI
+  - startD*
+  - endD*
+  - durI*
+  - turnI*
   - uruneI
   - nruneI
   - tmsg
@@ -654,7 +547,7 @@ logfields-with-type:
   - mapdesc
   - tiles
 
-milefields-with-type:
+milestone-fields-with-type:
   - game_key
   - idI
   - file
@@ -682,13 +575,13 @@ milefields-with-type:
   - intI
   - dexI
   - god
-  - durI
-  - turnI
+  - durI*
+  - turnI*
   - uruneI
   - nruneI
-  - timeD
-  - rtime
-  - rstart
+  - timeD*
+  - rtime*
+  - rstart*
   - verb
   - noun
   - milestone
@@ -696,51 +589,12 @@ milefields-with-type:
   - oplace
   - tiles
 
-fakefields-with-type:
-  - when
-
-logfields-summarisable:
-  - v
-  - name
-  - race
-  - cls
-  - char
-  - xl
-  - sk
-  - sklev
-  - title
-  - ktyp
-  - place
-  - br
-  - lvl
-  - ltyp
-  - killer
-  - ikiller
-  - god
-  - urune
-  - nrune
-  - src
-  - str
-  - int
-  - dex
-  - kaux
-  - ckiller
-  - cv
-  - ckaux
-  - crace
-  - kmod
-  - splat
-  - dam
-  - hp
-  - mhp
-  - mmhp
-  - piety
-  - pen
-  - alpha
-  - ntv
-  - map
-  - mapdesc
-  - tiles
+##
+# Fake query fields that are transformed into a real query field by code in
+# query_synthetic.rb
+fake-fields-with-type:
+  - when*
+  - game*
 
 milestone-types:
   - abyss.enter
