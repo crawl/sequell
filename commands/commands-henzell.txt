@@ -1,3 +1,4 @@
+!abyss abyss.py
 !echo echo.pl
 !copysave copysave.pl
 !coffee coffee.pl
