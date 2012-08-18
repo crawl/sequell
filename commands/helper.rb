@@ -2,6 +2,7 @@
 
 require 'set'
 require 'date'
+require 'command_context'
 require 'yaml'
 
 SERVERS_FILE = 'servers.yml'
