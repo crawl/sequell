@@ -683,6 +683,10 @@ sub milestone_mangle {
     $noun = $g->{place};
     $noun =~ s/:.*//;
   }
+  elsif ($verb eq 'br.exit') {
+    $noun = $g->{oplace};
+    $noun =~ s/:.*//;
+  }
   elsif ($verb eq 'rune') {
     my ($rune) = $noun =~ /found an? (\S+)/;
     $noun = $rune if $rune;

@@ -612,6 +612,7 @@ milestone-types:
   - br.enter
   - br.end
   - br.mid
+  - br.exit
   - god.mollify
   - god.renounce
   - god.worship
