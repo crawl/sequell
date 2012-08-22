@@ -2,7 +2,7 @@ require 'dbi'
 
 DBNAME = ENV['HENZELL_DBNAME'] || 'henzell'
 DBUSER = ENV['HENZELL_DBUSER'] || 'henzell'
-DBPASS = ENV['HENZELL_DBPASS'] || ''
+DBPASS = ENV['HENZELL_DBPASS'] || 'henzell'
 
 class DBHandle
   def initialize(db)
