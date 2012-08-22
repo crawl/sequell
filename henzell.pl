@@ -159,7 +159,7 @@ sub newsworthy
   my $br_enter = $type eq 'enter' || $type eq 'br.enter';
   my $place_branch = game_place_branch($g);
 
-  return 0 if grep($type eq $_, 'monstrous', 'death', 'br.mid');
+  return 0 if grep($type eq $_, 'monstrous', 'death', 'br.mid', 'br.exit');
 
   return 0
     if $br_enter
