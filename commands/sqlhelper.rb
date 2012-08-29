@@ -2005,6 +2005,10 @@ class SummaryRowGroup
     unify_groups(summary_field_list, 0, field_count, summary_rows)
   end
 
+  def canonical_bucket_key(key)
+    key.is_a?(String) ? key.downcase : key
+  end
+
   def unify_groups(summary_field_list, which_group, total_groups, rows)
     current_field_spec = summary_field_list.fields[which_group]
     if which_group == total_groups - 1
@@ -2022,7 +2026,7 @@ class SummaryRowGroup
     end
 
     for row in rows
-      group_buckets[row.fields[which_group]] << row
+      group_buckets[canonical_bucket_key(row.fields[which_group])] << row
     end
 
     # Each bucket corresponds to a new SummaryRow that contains all its
@@ -2031,7 +2035,7 @@ class SummaryRowGroup
                   bucket_subrows = group_buckets[bucket_key]
                   row = SummaryRow.subrow_from_fullrow(
                                        bucket_subrows[0],
-                                       bucket_key,
+                                       bucket_subrows[0].fields[which_group],
                                        unify_groups(summary_field_list,
                                                     which_group + 1,
                                                     total_groups,
