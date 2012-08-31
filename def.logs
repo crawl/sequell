@@ -132,6 +132,14 @@ remote.cdo-logfile-0.10-sprint
 [remote:cdo:http://$cdo/allgames-zd-0.10.txt]
 remote.cdo-logfile-0.10-zd
 
+[remote:cdo:http://$cdo/allgames-0.11.txt]
+remote.cdo-logfile-0.11
+
+[remote:cdo:http://$cdo/allgames-spr-0.11.txt]
+remote.cdo-logfile-0.11-sprint
+
+[remote:cdo:http://$cdo/allgames-zd-0.11.txt]
+remote.cdo-logfile-0.11-zd
 
 [remote:cdo:http://$cdo/allgames-spr-svn.txt]
 remote.cdo-logfile-spr
