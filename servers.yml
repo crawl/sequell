@@ -14,6 +14,7 @@ morgue-paths:
   - [ 'cdo.*-0.7', 'http://crawl.develz.org/morgues/0.7' ]
   - [ 'cdo.*-0.8', 'http://crawl.develz.org/morgues/0.8' ]
   - [ 'cdo.*-0.10', 'http://crawl.develz.org/morgues/0.10' ]
+  - [ 'cdo.*-0.11', 'http://crawl.develz.org/morgues/0.11' ]
   - [ 'cdo.*-svn$', 'http://crawl.develz.org/morgues/trunk' ]
   - [ 'cdo.*-zd$',  'http://crawl.develz.org/morgues/trunk' ]
   - [ 'cdo.*-spr$', 'http://crawl.develz.org/morgues/trunk' ]
