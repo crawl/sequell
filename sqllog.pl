@@ -7,74 +7,36 @@ use IO::Handle;
 
 use DBI;
 use Henzell::Crawl;
+use Henzell::DB;
 use Henzell::ServerConfig;
 
 do 'game_parser.pl';
 
-my @LOGFIELDS_DECORATED = qw/alpha v cv lv scI name uidI race crace cls char
-  xlI sk sklevI title ktyp killer ckiller ikiller kpath kmod kaux ckaux place
-  br lvlI ltyp hpI mhpI mmhpI damI strI intI dexI god pietyI penI wizI startD
-  endD durI turnI uruneI nruneI tmsg vmsg splat map mapdesc tiles
-  game_key/;
+my @LOGFIELDS_DECORATED = Henzell::Crawl::logfields_decorated();
+my %GAME_TYPE_PREFIXES = Henzell::Crawl::game_type_prefixes();
 
-my %GAME_TYPE_NAMES = (zot => 'ZotDef',
-                       spr => 'Sprint');
-
-my %LOG2SQL = ( name => 'pname',
-                char => 'charabbrev',
-                str => 'sstr',
-                dex => 'sdex',
-                int => 'sint',
-                map => 'mapname',
-                start => 'tstart',
-                end => 'tend',
-                time => 'ttime',
-                offset => 'file_offset');
+my %LOG2SQL = Henzell::Crawl::config_hash('sql-field-names');
 
 sub strip_suffix {
   my $val = shift;
-  $val =~ s/[ID]$//;
+  $val =~ s/[ID]?[*?]*$//;
   $val
 }
 
 my @LOGFIELDS = map(strip_suffix($_), @LOGFIELDS_DECORATED);
-
-my @MILEFIELDS_DECORATED =
-    qw/alpha v cv name race crace cls char xlI sk sklevI title
-       place br lvlI ltyp hpI mhpI mmhpI strI intI dexI god
-       durI turnI uruneI nruneI timeD verb noun milestone oplace tiles
-       game_key/;
-
-my @INSERTFIELDS = ('file', 'src', 'offset', @LOGFIELDS_DECORATED,
-                    'rstart', 'rend');
-
-my @MILE_INSERTFIELDS_DECORATED =
-  (qw/file src offsetI/, @MILEFIELDS_DECORATED, qw/rstart rtime/);
+my @LOG_INSERTFIELDS = grep($_ ne 'idI', @LOGFIELDS_DECORATED);
+my @MILEFIELDS_DECORATED = Henzell::Crawl::milefields_decorated();
+my @MILE_INSERTFIELDS = grep($_ ne 'idI', @MILEFIELDS_DECORATED);
 
 my @MILEFIELDS = map(strip_suffix($_), @MILEFIELDS_DECORATED);
-my @MILE_INSERTFIELDS = @MILE_INSERTFIELDS_DECORATED;
 
-my @SELECTFIELDS = ('id', @INSERTFIELDS);
+my @INDEX_COLS = Henzell::Crawl::indexed_fields('logrecord-fields-with-type');
+my @MILE_INDEX_COLS =
+  Henzell::Crawl::indexed_fields('milestone-fields-with-type');
 
-my @INDEX_COLS = qw/src file game_key v cv sc name race crace cls char xl
-ktyp killer ckiller ikiller kpath kmod kaux ckaux place god
-start end dur turn urune nrune dam rstart map/;
+my %MILESTONE_VERB = Henzell::Crawl::config_hash('milestone-verb-mappings');
 
-my %MILE_EXCLUDED_INDEXES = map($_ => 1,
-                                qw/alpha str int dex tiles milestone lvl
-                                   hp mhp mmhp dur/);
-
-my @MILE_INDEX_COLS = ('src',
-                       grep(!$MILE_EXCLUDED_INDEXES{$_}, @MILEFIELDS));
-
-my %MILESTONE_VERB =
-(
- unique => 'uniq',
- enter => 'br.enter',
- 'branch-finale' => 'br.end'
-);
-
-for (@LOGFIELDS, @INDEX_COLS, @SELECTFIELDS) {
+for (@LOGFIELDS, @INDEX_COLS) {
   $LOG2SQL{$_} = $_ unless exists $LOG2SQL{$_};
 }
 
@@ -113,11 +75,12 @@ sub initialize_sqllog(;$) {
 sub setup_db {
   $dbh = open_db();
   $insert_st = prepare_insert_st($dbh, 'logrecord');
-  for my $game_type (keys %GAME_TYPE_NAMES) {
+  for my $game_type (keys %GAME_TYPE_PREFIXES) {
+    my $prefix = $GAME_TYPE_PREFIXES{$game_type};
     $INSERT_STATEMENTS{$game_type} =
-      prepare_insert_st($dbh, "${game_type}_logrecord");
+      prepare_insert_st($dbh, "${prefix}logrecord");
     $INSERT_STATEMENTS{$game_type . "_milestone"} =
-      prepare_milestone_insert_st($dbh, "${game_type}_milestone");
+      prepare_milestone_insert_st($dbh, "${prefix}milestone");
   }
   $milestone_insert_st = prepare_milestone_insert_st($dbh, 'milestone');
   $update_st = prepare_update_st($dbh);
@@ -211,7 +174,7 @@ sub insert_field_placeholder {
 
 sub prepare_insert_st {
   my ($dbh, $table) = @_;
-  my @allfields = @INSERTFIELDS;
+  my @allfields = @LOG_INSERTFIELDS;
   my $text = "INSERT INTO $table ("
     . join(', ', map(insert_field_name($_), @allfields))
     . ") VALUES ("
@@ -327,6 +290,7 @@ sub create_indexes {
 }
 
 sub fixup_db {
+  Henzell::DB::compute_version_numbers($dbh);
   create_indexes() if $need_indexes;
 }
 
@@ -443,22 +407,20 @@ sub cat_logfile {
 
 sub game_type($) {
   my $g = shift;
-  my ($type) = ($$g{lv} || '') =~ /-(.*)/;
-  $type = lc(substr($type, 0, 3)) if $type;
-  $type
+  my ($type) = ($$g{lv} || '') =~ /-(\w+)/;
+  $type || 'crawl'
 }
 
 sub game_type_name($) {
-  my $type = game_type(shift);
-  $type && $GAME_TYPE_NAMES{$type}
+  game_type(shift);
 }
 
 sub game_is_sprint($) {
-  (game_type(shift) || '') eq 'spr'
+  game_type(shift) eq 'sprint'
 }
 
 sub game_is_zotdef($) {
-  (game_type(shift) || '') eq 'zot'
+  game_type(shift) eq 'zotdef'
 }
 
 sub cat_stonefile {
@@ -512,6 +474,9 @@ sub fixup_logfields {
   if ($g->{alpha}) {
     $g->{cv} .= "-a";
   }
+
+  $g->{vnum} = Henzell::Crawl::version_numberize($g->{v});
+  $g->{cvnum} = Henzell::Crawl::version_numberize($g->{cv});
 
   if ($g->{tiles}) {
     $g->{tiles} = "y";
@@ -646,8 +611,8 @@ my %FIELD_VALUE_PARSERS = ('I' => \&field_integer_val,
 
 sub field_val {
   my ($key, $g) = @_;
-  my ($type) = $key =~ /([A-Z])$/;
-  $key =~ s/[A-Z]$//;
+  my ($type) = $key =~ /([A-Z])[*?]*$/;
+  $key =~ s/[A-Z][*?]*$//;
 
   my $val = $g->{$key} || '';
   if ($type) {
@@ -734,14 +699,13 @@ sub record_is_alpha_version {
 sub milestone_insert_st($) {
   my $m = shift;
   my $game_type = game_type($m);
-  ($game_type? $INSERT_STATEMENTS{$game_type . "_milestone"}
-   : $milestone_insert_st)
+  $INSERT_STATEMENTS{$game_type . "_milestone"}
 }
 
 sub logfile_insert_st($) {
   my $g = shift;
   my $game_type = game_type($g);
-  ($game_type? $INSERT_STATEMENTS{$game_type} : $insert_st)
+  $INSERT_STATEMENTS{$game_type}
 }
 
 sub broken_record {
@@ -767,7 +731,7 @@ sub add_milestone {
 
   my $game_type = $$m{game_type};
   my $st = milestone_insert_st($m);
-  my @bindvals = map(field_val($_, $m), @MILE_INSERTFIELDS_DECORATED);
+  my @bindvals = map(field_val($_, $m), @MILE_INSERTFIELDS);
   execute_st($st, @bindvals) or
     die "Can't insert record for $line: $!\n";
 }
@@ -779,12 +743,11 @@ sub add_logline {
   return if broken_record($fields);
   $fields->{src} = $lf->{server};
   $fields->{alpha} = record_is_alpha_version($lf, $fields);
+  $fields->{file} = $lf->{file};
+  $fields->{offset} = $offset;
   $fields = fixup_logfields($fields);
   my $st = logfile_insert_st($fields);
-  my @bindvalues = ($lf->{file}, $lf->{server}, $offset,
-                    map(field_val($_, $fields), @LOGFIELDS_DECORATED),
-                    field_val('rstart', $fields),
-                    field_val('rend', $fields));
+  my @bindvalues = map(field_val($_, $fields), @LOG_INSERTFIELDS);
 
   #my @binds = map("$INSERTFIELDS[$_]=$bindvalues[$_]", 0..$#bindvalues);
   #print "Bindvalues are ", join(",", @binds), "\n";
@@ -814,8 +777,8 @@ sub update_game {
 sub game_from_row {
   my $row = shift;
   my %g;
-  for my $i (0 .. $#SELECTFIELDS) {
-    $g{$SELECTFIELDS[$i]} = $row->[$i];
+  for my $i (0 .. $#LOGFIELDS) {
+    $g{$LOGFIELDS[$i]} = $row->[$i];
   }
   \%g
 }

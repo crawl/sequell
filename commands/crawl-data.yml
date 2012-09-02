@@ -27,6 +27,7 @@ sql-field-names:
   end: tend
   time: ttime
   map: mapname
+  offset: file_offset
 
 ##
 # game types recognized by !lg and friends, mapped to the table name prefix.
@@ -488,36 +489,40 @@ aggregate-function-types:
 # - I (integer)
 # - D (date+time)
 #
+# - ? (indexed)
 # - * (not summarisable)
 logrecord-fields-with-type:
   - idI*
-  - game_key
-  - file
+  - offsetI*?
+  - game_key?
+  - file?
   - alpha
-  - src
-  - v
-  - cv
+  - src?
+  - v?
+  - vnumI?
+  - cv?
+  - cvnumI?
   - lv
-  - scI*
-  - name
+  - scI*?
+  - name?
   - uidI
-  - race
-  - crace
-  - cls
-  - char
-  - xlI
-  - sk
-  - sklevI
-  - title
-  - ktyp
-  - killer
-  - ckiller
-  - ikiller
+  - race?
+  - crace?
+  - cls?
+  - char?
+  - xlI?
+  - sk?
+  - sklevI?
+  - title?
+  - ktyp?
+  - killer?
+  - ckiller?
+  - ikiller?
   - kpath
   - kmod
   - kaux
   - ckaux
-  - place
+  - place?
   - br
   - lvlI
   - ltyp
@@ -528,44 +533,47 @@ logrecord-fields-with-type:
   - strI
   - intI
   - dexI
-  - god
+  - god?
   - pietyI
   - penI
   - wizI
-  - startD*
-  - endD*
-  - durI*
-  - turnI*
-  - uruneI
-  - nruneI
+  - startD*?
+  - endD*?
+  - durI*?
+  - turnI*?
+  - uruneI?
+  - nruneI?
   - tmsg
   - vmsg
   - splat
-  - rstart
-  - rend
-  - ntvI
-  - map
+  - rstart*?
+  - rend*?
+  - ntvI?
+  - map?
   - mapdesc
   - tiles
 
 milestone-fields-with-type:
-  - game_key
+  - game_key?
   - idI
-  - file
+  - offsetI*?
+  - file?
   - alpha
-  - src
-  - v
-  - cv
-  - name
-  - race
-  - crace
-  - cls
-  - char
-  - xlI
-  - sk
-  - sklevI
-  - title
-  - place
+  - src?
+  - v?
+  - vnumI?
+  - cv?
+  - cvnumI?
+  - name?
+  - race?
+  - crace?
+  - cls?
+  - char?
+  - xlI?
+  - sk?
+  - sklevI?
+  - title?
+  - place?
   - br
   - lvlI
   - ltyp
@@ -575,20 +583,25 @@ milestone-fields-with-type:
   - strI
   - intI
   - dexI
-  - god
+  - god?
   - durI*
-  - turnI*
-  - uruneI
-  - nruneI
-  - timeD*
-  - rtime*
-  - rstart*
-  - verb
-  - noun
+  - turnI*?
+  - uruneI?
+  - nruneI?
+  - timeD*?
+  - rtime*?
+  - rstart*?
+  - verb?
+  - noun?
   - milestone
-  - ntvI
+  - ntvI?
   - oplace
   - tiles
+
+milestone-verb-mappings:
+  unique: uniq
+  enter: br.enter
+  branch-finale: br.end
 
 ##
 # Fake query fields that are transformed into a real query field by code in

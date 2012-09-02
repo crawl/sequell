@@ -17,6 +17,7 @@ require 'commands/sql_connection'
 require 'commands/henzell_config'
 require 'sql/field_predicate'
 require 'sql/query_result'
+require 'sql/version_number'
 
 include Tourney
 include HenzellConfig
@@ -121,11 +122,15 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
   fdec.each do |lf|
     class << lf
       def name
-        self.sub(/[ID*]+$/, '')
+        self.sub(/[ID*?]+$/, '')
       end
 
       def fix_date(v)
         sql2logdate(v)
+      end
+
+      def indexed?
+        self =~ /\?/
       end
 
       def summarisable?
@@ -138,7 +143,7 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
       end
     end
 
-    if lf =~ /([ID])\*?$/
+    if lf =~ /([ID])[*?]?$/
       type = $1
     else
       type = 'S'
@@ -1029,7 +1034,7 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
-  #STDERR.puts "Query: #{q.select_all} (#{q.values.join(', ')})"
+  STDERR.puts "Query: #{q.select_all} (#{q.values.join(', ')})"
   sql_db_handle.get_first_value(q.select_count, *q.values).to_i
 end
 
@@ -1774,6 +1779,15 @@ def query_field(selector, field, op, sqlop, val)
     clauses = []
     _add_nick_preds(val[1 .. -1], clauses, op == '!=')
     return clauses[0]
+  end
+
+  if ['v', 'cv'].index(selfield)
+    if (['<', '<=', '>', '>='].index(op) &&
+        val =~ /^\d+\.\d+(?:\.\d+)*(?:-[a-z]+[0-9]*)?$/)
+      return field_pred(Sql::VersionNumber.version_numberize(val), op,
+                        selector.sub(/v$/i, 'vnum'),
+                        field.sub(/v$/i, 'vnum'))
+    end
   end
 
   if ['killer', 'ckiller', 'ikiller'].index(selfield)

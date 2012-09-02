@@ -52,6 +52,7 @@ my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
 
 local $SIG{PIPE} = 'IGNORE';
 local $SIG{CHLD} = 'IGNORE';
+local $| = 1;
 
 load_config($config_file);
 
