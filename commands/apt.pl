@@ -40,9 +40,9 @@ sub add_extra_apts { # {{{
             elsif (/(SP_\w+)/) {
                 push @races, normalize_race($1);
             }
-            elsif (/return (\d+);/) {
+            elsif (/return (-?\d+);/) {
                 for my $race (@races) {
-                    $apts{$race}{experience} = $1 * 10;
+                    $apts{$race}{experience} = $1;
                     $apts{$race}{hp} = 0;
                     $apts{$race}{mp} = 0;
                 }
@@ -92,7 +92,7 @@ sub skill_is_better($$$) {
   my $vb = $b->{$skill};
   warn "No $skill for $ra\n" unless defined $va;
   warn "No $skill for $rb\n" unless defined $vb;
-  return ($skill eq 'experience'? $va < $vb : $va > $vb);
+  return $va > $vb;
 }
 
 sub is_best_apt { # {{{
