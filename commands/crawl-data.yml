@@ -247,6 +247,7 @@ skill-abbreviations:
   experience: Exp
   hp: HP
   mp: MP
+  'unarmed combat': UC
 
 skill-expansions:
   pois: poison magic
