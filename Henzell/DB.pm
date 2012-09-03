@@ -42,6 +42,8 @@ sub compute_version_numbers {
 
 sub compute_version_numbers_in_table {
   my ($dbh, $table) = @_;
+
+  print "Filling in missing game version numbers in $table\n";
   my $query = <<QUERY;
 SELECT id, v, cv FROM $table WHERE vnum IS NULL OR cvnum IS NULL
 QUERY
@@ -65,7 +67,7 @@ UPDATE
       print "\rUpdated version numbers in $updates rows of $table...";
     }
   }
-  print "\rUpdated $updates rows of $table.\n";
+  print "\rUpdated version numbers in $updates rows of $table.\n";
   $dbh->commit;
 }
 
