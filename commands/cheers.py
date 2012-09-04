@@ -5,7 +5,7 @@ import helper
 import sys
 import random
 
-helper.help('Toast your joys and drown your sorrows.')
+helper.help('Celebrate!')
 
 beverage = [
     ('whiskey', 2),

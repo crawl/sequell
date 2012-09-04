@@ -1,5 +1,5 @@
 !abyss abyss.py
-!beer beer.py
+!cheers cheers.py
 !echo echo.pl
 !copysave copysave.pl
 !coffee coffee.pl
