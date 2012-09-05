@@ -143,7 +143,7 @@ SERVER = ENV['CRAWL_SERVER'] || 'cao'
       end
     end
 
-    if lf =~ /([ID])[*?]?$/
+    if lf =~ /([ID])[*?]*$/
       type = $1
     else
       type = 'S'
