@@ -290,7 +290,7 @@ sub create_indexes {
 }
 
 sub fixup_db {
-  Henzell::DB::compute_version_numbers($dbh);
+  #Henzell::DB::compute_version_numbers($dbh);
   create_indexes() if $need_indexes;
 }
 
