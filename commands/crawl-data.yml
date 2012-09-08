@@ -478,6 +478,7 @@ prefix-field-fixups:
 aggregate-function-types:
   cdist: '*'
   avg: I
+  median: I
   max: '*'
   min: '*'
   sum: I

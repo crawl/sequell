@@ -785,14 +785,16 @@ Aggregate Functions
 The available aggregate functions [usable as x=aggregate(field)]:
 
 1. avg (average)
-2. max (maximum value)
-3. min (minimum value)
-4. sum
-5. std (standard deviation)
-6. variance
-7. cdist (count distinct)
+2. median
+3. max (maximum value)
+4. min (minimum value)
+5. sum
+6. std (standard deviation)
+7. variance
+8. cdist (count distinct)
 
-You may use avg, sum, std and variance only for numeric fields.
+You may use avg, median, sum, std and variance only for numeric
+fields.
 
 max, min, cdist may also be used on text (character) fields.
 
