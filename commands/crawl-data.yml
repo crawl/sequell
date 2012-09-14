@@ -273,6 +273,7 @@ branches:
   - 'Shoals:'
   - 'Slime:'
   - 'Snake:'
+  - 'Spider:'
   - 'Hive:'
   - 'Vault:'
   - 'Vaults:'
@@ -288,7 +289,6 @@ branches:
   - Lab
   - Pan
   - Bazaar
-  - Spider
   - Bzr
   - Hell
   - Blade
