@@ -151,7 +151,6 @@ sub game_place($) {
   }
 
   my $prep = $place =~ /:/? 'on' : 'in';
-  $prep = "in" if $g->{ltyp} ne 'D';
   $place = "the $place" if grep($_ eq $place, qw/Temple Abyss/);
   $place = "a Labyrinth" if $place eq 'Lab';
   $place = "a Bazaar" if $place eq 'Bzr';
