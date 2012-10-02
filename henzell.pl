@@ -403,11 +403,26 @@ sub raw_message_post {
                 body => $output);
 }
 
+sub any_ontoclasm {
+  my ($m, $default) = @_;
+  my $channel = $$m{channel};
+  my @nicks = grep(/ontocl/i, keys %{$HENZELL->channel_data($channel)});
+  @nicks ? $nicks[rand(@nicks)] : $default
+}
+
+sub ontoclasmize {
+  my ($m, $msg) = @_;
+  $msg =~ s/ by ((?:an? )?\w+)/' by ' . any_ontoclasm($m, $1)/e;
+  $msg
+}
+
 sub respond_with_message {
   my ($m, $output) = @_;
   return unless $output;
 
   my $private = $$m{channel} eq 'msg';
+
+  $output = ontoclasmize($m, $output) unless $private;
 
   $output = substr($output, 0, $MAX_PAGINATE_LENGTH) . "..."
     if length($output) > $MAX_PAGINATE_LENGTH;

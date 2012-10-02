@@ -73,9 +73,17 @@ sub milefields_decorated {
   decorated_fields('milestone-fields-with-type')
 }
 
-sub config_hash {
+sub config_item {
   my $config_name = shift;
-  %{$$CRAWLDATA{$config_name}}
+  $$CRAWLDATA{$config_name} or die "Can't find config_item: $config_name\n"
+}
+
+sub config_hash {
+  %{config_item(@_)}
+}
+
+sub config_list {
+  @{config_item(@_)}
 }
 
 sub game_type_prefixes {

@@ -323,49 +323,40 @@ god:
   tso: The Shining One
   nem: Nemelex Xobeh
 
+# * - dead species
 species:
   Ce: Centaur
   Dg: Demigod
   Ds: Demonspawn
   Dr: Draconian
-  El: Elf
+  El: Elf*
   Fe: Felid
   Gh: Ghoul
-  Gn: Gnome
+  Gn: Gnome*
   Ha: Halfling
   Hu: Human
-  Ke: Kenku
+  Ke: Kenku*
   Ko: Kobold
   Mf: Merfolk
   Mi: Minotaur
   Mu: Mummy
   Na: Naga
-  OM: Ogre-Mage
+  OM: Ogre-Mage*
   Og: Ogre
   Sp: Spriggan
   Tr: Troll
   Vp: Vampire
   DD: Deep Dwarf
-  HD: Hill Dwarf
-  MD: Mountain Dwarf
+  HD: Hill Dwarf*
+  MD: Mountain Dwarf*
   DE: Deep Elf
-  GE: Grey Elf
+  GE: Grey Elf*
   HE: High Elf
   SE: Sludge Elf
   HO: Hill Orc
-  LO: Lava Orc
+  LO: Lava Orc*
   Op: Octopode
   Te: Tengu
-
-dead-species:
-  - HD
-  - El
-  - Gn
-  - OM
-  - GE
-  - LO
-  - Ke
-  - MD
 
 species-flavours:
   draconian:
@@ -393,12 +384,13 @@ genus-species:
 
 species-enum-map-override: {}
 
+# * - dead class
 classes:
   Ar: Artificer
   As: Assassin
   Be: Berserker
   Cj: Conjurer
-  Cr: Crusader
+  Cr: Crusader*
   En: Enchanter
   Fi: Fighter
   Gl: Gladiator
@@ -406,12 +398,12 @@ classes:
   Hu: Hunter
   Mo: Monk
   Ne: Necromancer
-  Pa: Paladin
+  Pa: Paladin*
   Pr: Priest
-  Re: Reaver
+  Re: Reaver*
   St: Stalker
   Su: Summoner
-  Th: Thief
+  Th: Thief*
   Tm: Transmuter
   Wn: Wanderer
   Wr: Warper
@@ -426,12 +418,6 @@ classes:
   VM: Venom Mage
   AM: Arcane Marksman
   Sk: Skald
-
-dead-classes:
-  - Th
-  - Re
-  - Pa
-  - Cr
 
 column-aliases:
   role: cls
@@ -451,11 +437,6 @@ column-aliases:
   type: verb
   gid: game_key
   game_id: game_key
-
-boolean-fields:
-  - splat
-  - alpha
-  - tiles
 
 place-fixups:
   '^shoals?\b(.*)': 'Shoals$1'
@@ -485,6 +466,32 @@ aggregate-function-types:
   std: I
   variance: I
 
+query-tables:
+  - logrecord
+  - milestone
+
+# Multi-column indexes (single column indexes are annotated in the
+# field name list)
+logrecord-indexes:
+  - [file, offset]
+
+milestone-indexes:
+  - [file, offset]
+  - [verb, noun]
+
+# Explicit lookup tables for fields that can reasonably share a lookup
+# table.
+#
+# Note: lookup tables are shared across game types and across
+# logrecord/milestone. Any field annotated ^ that does not have an
+# explicit lookup table gets an implicit lookup table with the same
+# name as the field.
+lookup-tables:
+  version: [v, cv]
+  killer: [killer, ckiller, ikiller]
+  kaux: [kaux, ckaux]
+  msg: [tmsg, vmsg]
+
 ##
 # Field type suffixes:
 # - I (integer)
@@ -492,41 +499,41 @@ aggregate-function-types:
 #
 # - ? (indexed)
 # - * (not summarisable)
+# - % (autoincrementing primary key)
+# - ^ (foreign key into a table)
+# - ! (negatable, aka boolean)
 logrecord-fields-with-type:
-  - idI*
+  - idIB%*
   - offsetI*?
-  - game_key?
-  - file?
-  - alpha
-  - src?
-  - v?
-  - vnumI?
-  - cv?
-  - cvnumI?
-  - lv
-  - scI*?
-  - name?
-  - uidI
-  - race?
-  - crace?
-  - cls?
-  - char?
+  - game_key?^
+  - file?^
+  - alpha!
+  - src?^
+  - v?^
+  - cv?^
+  - lv^
+  - scIB*?
+  - name?^
+  - race?^
+  - crace?^
+  - cls?^
+  - char?^
   - xlI?
-  - sk?
+  - sk?^
   - sklevI?
-  - title?
-  - ktyp?
-  - killer?
-  - ckiller?
-  - ikiller?
-  - kpath
-  - kmod
-  - kaux
-  - ckaux
-  - place?
-  - br
+  - title?^
+  - ktyp?^
+  - killer?^
+  - ckiller?^
+  - ikiller?^
+  - kpath^
+  - kmod^
+  - kaux?^
+  - ckaux?^
+  - place?^
+  - br^
   - lvlI
-  - ltyp
+  - ltyp^
   - hpI
   - mhpI
   - mmhpI
@@ -534,7 +541,7 @@ logrecord-fields-with-type:
   - strI
   - intI
   - dexI
-  - god?
+  - god?^
   - pietyI
   - penI
   - wizI
@@ -544,47 +551,45 @@ logrecord-fields-with-type:
   - turnI*?
   - uruneI?
   - nruneI?
-  - tmsg
-  - vmsg
-  - splat
+  - tmsg^
+  - vmsg^
+  - splat!
   - rstart*?
   - rend*?
   - ntvI?
-  - map?
-  - mapdesc
-  - tiles
+  - map?^
+  - mapdesc^
+  - tiles!
 
 milestone-fields-with-type:
-  - game_key?
-  - idI
+  - idI%
+  - game_key?^
   - offsetI*?
-  - file?
-  - alpha
-  - src?
-  - v?
-  - vnumI?
-  - cv?
-  - cvnumI?
-  - name?
-  - race?
-  - crace?
-  - cls?
-  - char?
+  - file?^
+  - alpha!
+  - src?^
+  - v?^
+  - cv?^
+  - name?^
+  - race?^
+  - crace?^
+  - cls?^
+  - char?^
   - xlI?
-  - sk?
+  - sk?^
   - sklevI?
-  - title?
-  - place?
-  - br
+  - title?^
+  - place?^
+  - br^
   - lvlI
-  - ltyp
+  - ltyp^
   - hpI
   - mhpI
   - mmhpI
   - strI
   - intI
   - dexI
-  - god?
+  - god?^
   - durI*
   - turnI*?
   - uruneI?
@@ -592,12 +597,16 @@ milestone-fields-with-type:
   - timeD*?
   - rtime*?
   - rstart*?
-  - verb?
-  - noun?
-  - milestone
+  - verb?^
+  - noun?^
+  - milestone^
   - ntvI?
-  - oplace
-  - tiles
+  - oplace^
+  - tiles!
+
+derived-fields:
+  v: vnum
+  cv: cvnum
 
 milestone-verb-mappings:
   unique: uniq

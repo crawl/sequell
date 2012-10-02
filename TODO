@@ -1,3 +1,7 @@
+?< notice
+?> respond in PM
+?. pastebin
+
 - Make Henzell/Sequell more modular:
   - Config should be hot-reloadable.
   - Any modified .pm files should be reloadable.

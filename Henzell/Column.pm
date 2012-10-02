@@ -1,0 +1,166 @@
+package Henzell::Column;
+
+use strict;
+use warnings;
+
+use Henzell::Crawl;
+use Henzell::LookupTable;
+
+my %SQL_NAME_MAP = Henzell::Crawl::config_hash('sql-field-names');
+
+my %TYPEMAP = ('' => 'CITEXT',
+               'PK' => 'SERIAL',
+               'I' => 'INT',
+               'REF' => 'INT',
+               'IB' => 'BIGINT',
+               'D' => 'TIMESTAMP',
+               '!' => 'BOOLEAN');
+
+my %COLS;
+sub decorated_column_by_name {
+  my $name = shift;
+  if (!%COLS) {
+    for my $table (Henzell::Crawl::config_list('query-tables')) {
+      for my $field (Henzell::Crawl::config_list("$table-fields-with-type")) {
+        (my $name = $field) =~ s/[IBD]*\W*$//;
+        $COLS{$name} = $field;
+      }
+    }
+  }
+  $COLS{$name}
+}
+
+
+my %cached_lookup_tables;
+sub lookup_table_for_column {
+  my ($column) = @_;
+  $cached_lookup_tables{$column->name()} ||=
+    _create_lookup_table_for_column($column)
+}
+
+sub _create_lookup_table_for_column {
+  my ($column) = @_;
+  return undef unless $column->foreign_key();
+
+  my %lookups = Henzell::Crawl::config_hash('lookup-tables');
+  my $column_name = $column->name();
+  for my $lookup_table (keys %lookups) {
+    my $fields = $lookups{$lookup_table};
+    if (grep($_ eq $column_name, @$fields)) {
+      my $columns = [map(Henzell::Column->by_name($_), @$fields)];
+      return Henzell::LookupTable->new(name => $lookup_table,
+                                       fields => $columns);
+    }
+  }
+
+  Henzell::LookupTable->new(name => $column->name(),
+                            fields => [$column])
+}
+
+
+sub by_name {
+  my ($cls, $column) = @_;
+  $cls->new(decorated_column_by_name($column))
+}
+
+sub new {
+  my ($cls, $column) = @_;
+  bless { _column => $column }, $cls
+}
+
+sub name {
+  my $self = shift;
+  if (!$self->{_name}) {
+    ($self->{_name} = $self->{_column}) =~ s/[IBD]*\W*$//;
+  }
+  $self->{_name}
+}
+
+sub sql_ref_name {
+  my $self = shift;
+  my $sql_name = $self->sql_name();
+  $self->foreign_key() ? $sql_name . "_id" : $sql_name
+}
+
+sub sql_ref_type {
+  my $self = shift;
+  $self->foreign_key() ? $TYPEMAP{REF} : $self->sql_type()
+}
+
+sub lookup_table {
+  my $self = shift;
+  $self->{_lookup_table} ||= lookup_table_for_column($self)
+}
+
+sub lookup_table_name {
+  my $self = shift;
+  if ($self->foreign_key()) {
+    return $self->lookup_table()->name();
+  }
+  return undef;
+}
+
+sub primary_key_constraint {
+  my $self = shift;
+  "PRIMARY KEY (" . $self->sql_name() . ")"
+}
+
+sub foreign_key_constraint {
+  my $self = shift;
+  "FOREIGN KEY (" . $self->sql_ref_name() . ") REFERENCES " .
+    $self->lookup_table_name() . " (id)"
+}
+
+sub sql_name {
+  my $self = shift;
+  my $name = $self->name();
+  $SQL_NAME_MAP{$name} || $name
+}
+
+sub type {
+  my $self = shift;
+  if (!defined($self->{_type})) {
+    my ($type) = $self->{_column} =~ /([IDB]+)/;
+    $type = '!' if $self->boolean();
+    $self->{_type} = $type || '';
+  }
+  $self->{_type}
+}
+
+sub sql_type {
+  my $self = shift;
+  return $TYPEMAP{PK} if $self->primary_key();
+  $TYPEMAP{$self->type()}
+}
+
+sub has_qualifier {
+  my ($self, $qual) = @_;
+  $self->{_column} =~ /\Q$qual/
+}
+
+sub indexed {
+  my $self = shift;
+  $self->has_qualifier('?')
+}
+
+sub non_summarisable {
+  my $self = shift;
+  $self->has_qualifier('*')
+}
+
+sub primary_key {
+  my $self = shift;
+  $self->has_qualifier('%')
+}
+
+sub foreign_key {
+  my $self = shift;
+  $self->has_qualifier('^')
+}
+
+sub boolean {
+  my $self = shift;
+  $self->has_qualifier('!')
+}
+
+1

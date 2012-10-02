@@ -117,12 +117,18 @@ sub log_header_hash($) {
   \%hash
 }
 
+sub resolve_log_path($) {
+  my $path = shift;
+  return $path if $path =~ m{/};
+  "server-xlogs/$path"
+}
+
 sub log_path($$) {
   my ($header, $path) = @_;
 
   my $log = log_header_hash($header);
   return undef unless $log;
-  $$log{path} = $path;
+  $$log{path} = resolve_log_path($path);
   $log
 }
 
