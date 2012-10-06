@@ -488,9 +488,13 @@ milestone-indexes:
 # name as the field.
 lookup-tables:
   version:
-    fields: [v, cv]
+    fields: [v]
     generated-fields:
-      - vnumI?
+      - vnumIH?
+  cversion:
+    fields: [cv]
+    generated-fields:
+      - vnumIH?
   killer: [killer, ckiller, ikiller]
   kaux: [kaux, ckaux]
   msg: [tmsg, vmsg]
@@ -498,6 +502,8 @@ lookup-tables:
 ##
 # Field type suffixes:
 # - I (integer)
+# - IB (big integer)
+# - IH (huge - 18 digits)
 # - D (date+time)
 #
 # - ? (indexed)
@@ -507,7 +513,7 @@ lookup-tables:
 # - ! (negatable, aka boolean)
 logrecord-fields-with-type:
   - idIB%*
-  - offsetI*?
+  - offsetIB*?
   - game_key?^
   - file?^
   - alpha!

@@ -13,6 +13,7 @@ my %TYPEMAP = ('' => 'CITEXT',
                'I' => 'INT',
                'REF' => 'INT',
                'IB' => 'BIGINT',
+               'IH' => 'NUMERIC(18)',
                'D' => 'TIMESTAMP',
                '!' => 'BOOLEAN');
 
@@ -22,7 +23,7 @@ sub decorated_column_by_name {
   if (!%COLS) {
     for my $table (Henzell::Crawl::config_list('query-tables')) {
       for my $field (Henzell::Crawl::config_list("$table-fields-with-type")) {
-        (my $name = $field) =~ s/[IBD]*\W*$//;
+        (my $name = $field) =~ s/[A-Z]*\W*$//;
         $COLS{$name} = $field;
       }
     }
@@ -78,13 +79,14 @@ sub new {
 sub name {
   my $self = shift;
   if (!$self->{_name}) {
-    ($self->{_name} = $self->{_column}) =~ s/[IBD]*\W*$//;
+    ($self->{_name} = $self->{_column}) =~ s/[A-Z]*\W*$//;
   }
   $self->{_name}
 }
 
 sub sql_value {
   my ($self, $value) = @_;
+  $value
 }
 
 sub sql_ref_placeholder {
@@ -136,7 +138,7 @@ sub sql_name {
 sub type {
   my $self = shift;
   if (!defined($self->{_type})) {
-    my ($type) = $self->{_column} =~ /([IDB]+)/;
+    my ($type) = $self->{_column} =~ /([A-Z]+)/;
     $type = '!' if $self->boolean();
     $self->{_type} = $type || '';
   }

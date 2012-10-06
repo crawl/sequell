@@ -268,7 +268,11 @@ sub fixup_db {
 
 sub find_start_offset_in {
   my ($table, $file) = @_;
-  my $query = "SELECT MAX(file_offset) FROM $table WHERE file = ?";
+  my $query = <<OFFSET;
+SELECT MAX(t.file_offset)
+  FROM $table AS t INNER JOIN l_file AS lf ON lf.id = t.file_id
+ WHERE lf.file = ?
+OFFSET
   #print "Getting offset for $table with $file: $query\n";
   my $res = query_one($query, $file);
   defined($res)? $res : -1

@@ -50,7 +50,7 @@ sub insert_lookup_record {
 # for stringy values.
 sub resolve_foreign_key {
   my ($self, $fk, $g) = @_;
-  my $value = $g->{$fk->name()};
+  my $value = $g->{$fk->name()} || '';
   my $ref_key = $fk->name() . ":" . $value;
   my $ref_value = $fk_cache{$ref_key};
   if (!$ref_value) {
@@ -74,7 +74,8 @@ sub bind_values {
 }
 
 sub insert {
-  my ($self, %xlog_hash) = @_;
+  my ($self, $xlog_ref) = @_;
+  my %xlog_hash = %$xlog_ref;
   $self->resolve_foreign_keys(\%xlog_hash);
   my $st = $self->insert_statement();
   my @bind_values = $self->bind_values(\%xlog_hash);

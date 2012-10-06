@@ -75,6 +75,7 @@ sub lookup_value_id {
 sub query_value_id {
   my ($self, $db, $value) = @_;
   my $st = $self->query_statement($db);
+  print STDERR "[QUERY] Lookup in " . $self->name() . " " . $self->lookup_column()->sql_name() . " = $value\n";
   $st->execute($value);
   my $row = $st->fetchrow_arrayref;
   $row && $row->[0]
@@ -92,23 +93,33 @@ sub insert_value_id {
     push @insert_values, $self->compute_field($computed_field, $value);
   }
   my $st = $self->insert_statement($db);
+
+  my $describe_insert = sub {
+    "insert " . join(", ", @insert_values) . " into " . $self->name()
+  };
+
+  print STDERR "[INSERT] " . $describe_insert->() . "\n";
   $st->execute(@insert_values) or
-    die("Could not insert " . join(", ", @insert_values) . " into " .
-        $self->name() . ": $!\n");
-  $db->last_insert_id()
+    die("Could not " . $describe_insert->() . ": $!\n");
+  $db->last_insert_id(undef, undef, $self->name(), undef)
+    or die("Could not determine last insert id for " .
+           $describe_insert->() . "\n")
+}
+
+sub insert_statement_sql {
+  my $self= shift;
+  my $table_name = $self->name();
+  my @columns = map($_->sql_name(), $self->table_fields());
+  my $column_list = join(", ", @columns);
+  my $placeholder_list = join(", ", ("?") x @columns);
+  my $sql = <<INSERT;
+INSERT INTO $table_name ($column_list) VALUES ($placeholder_list)
+INSERT
 }
 
 sub insert_statement {
   my ($self, $db) = @_;
-  if (!$self->{_insert_st}) {
-    my $table_name = $self->name();
-    my @columns = map($_->sql_name(), $self->table_fields());
-    my $column_list = join(", ", @columns);
-    my $placeholder_list = join(", ", ("?") x @columns);
-    my $sql = <<INSERT;
-INSERT INTO $table_name ($column_list) VALUES ($placeholder_list)
-INSERT
-  }
+  $self->{_insert_st} ||= $db->prepare($self->insert_statement_sql())
 }
 
 sub query_statement {
