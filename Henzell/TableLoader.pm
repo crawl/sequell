@@ -53,7 +53,7 @@ sub resolve_foreign_key {
   my $value = $g->{$fk->name()} || '';
   my $ref_key = $fk->name() . ":" . lc($value);
   my $ref_value = $fk_cache{$ref_key};
-  if (!$ref_value || $ref_value->{value} ne $value) {
+  if (!$ref_value) {
     $ref_value = $self->insert_lookup_record($fk, $value);
     $fk_cache{$ref_key} = $ref_value;
   }

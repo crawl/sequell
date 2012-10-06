@@ -68,9 +68,9 @@ sub lookup_value_id {
 
   # Does the value already exist in the db?
   my $value_id = $self->query_value_id($db, $value);
-  if ($value_id && $value_id->{value} ne $value) {
-    return $self->update_value_id($db, $value, $value_id);
-  }
+  # if ($value_id && $value_id->{value} ne $value) {
+  #   return $self->update_value_id($db, $value, $value_id);
+  # }
   return $value_id if $value_id;
   $self->insert_value_id($db, $value)
 }

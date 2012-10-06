@@ -59,8 +59,8 @@
 # [remote:cao]
 # remote.cao-logfile-0.5
 
-# [remote:cao:http://$cao/logfile06]
-# remote.cao-logfile-0.6
+[remote:cao:http://$cao/logfile06]
+remote.cao-logfile-0.6
 
 # [remote:cao:http://$cao/logfile07]
 # remote.cao-logfile-0.7
