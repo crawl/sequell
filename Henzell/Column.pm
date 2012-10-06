@@ -73,7 +73,10 @@ sub by_name {
 
 sub new {
   my ($cls, $column) = @_;
-  bless { _column => $column }, $cls
+  my $self = bless { _column => $column }, $cls;
+  $self->{date} = $self->type() eq 'D';
+  $self->{boolean} = $self->boolean();
+  $self
 }
 
 sub name {
@@ -84,8 +87,15 @@ sub name {
   $self->{_name}
 }
 
+sub sql_boolean_value {
+  my ($self, $value) = @_;
+  no warnings qw/uninitialized/;
+  $value eq 'y' ? 't' : 'f'
+}
+
 sub sql_value {
   my ($self, $value) = @_;
+  return $self->sql_boolean_value($value) if $self->{boolean};
   $value
 }
 

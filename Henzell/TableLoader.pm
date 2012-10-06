@@ -51,14 +51,14 @@ sub insert_lookup_record {
 sub resolve_foreign_key {
   my ($self, $fk, $g) = @_;
   my $value = $g->{$fk->name()} || '';
-  my $ref_key = $fk->name() . ":" . $value;
+  my $ref_key = $fk->name() . ":" . lc($value);
   my $ref_value = $fk_cache{$ref_key};
-  if (!$ref_value) {
+  if (!$ref_value || $ref_value->{value} ne $value) {
     $ref_value = $self->insert_lookup_record($fk, $value);
     $fk_cache{$ref_key} = $ref_value;
   }
-  print STDERR "Resolved " . $fk->name() . ": $value to $ref_value\n";
-  $ref_value
+  #print STDERR "Resolved " . $fk->name() . ": $value to $ref_value\n";
+  $ref_value->{id}
 }
 
 sub resolve_foreign_keys {

@@ -68,6 +68,9 @@ sub lookup_value_id {
 
   # Does the value already exist in the db?
   my $value_id = $self->query_value_id($db, $value);
+  if ($value_id && $value_id->{value} ne $value) {
+    return $self->update_value_id($db, $value, $value_id);
+  }
   return $value_id if $value_id;
   $self->insert_value_id($db, $value)
 }
@@ -75,15 +78,27 @@ sub lookup_value_id {
 sub query_value_id {
   my ($self, $db, $value) = @_;
   my $st = $self->query_statement($db);
-  print STDERR "[QUERY] Lookup in " . $self->name() . " " . $self->lookup_column()->sql_name() . " = $value\n";
-  $st->execute($value);
+  #print STDERR "[QUERY] Lookup in " . $self->name() . " " . $self->lookup_column()->sql_name() . " = $value\n";
+  $st->execute($value) or
+    die("Could not query: " . $self->name() . " for $value: $!");
   my $row = $st->fetchrow_arrayref;
-  $row && $row->[0]
+  $row && { id => $row->[0], value => $row->[1] }
 }
 
 sub compute_field {
   my ($self, $computed_field, $value) = @_;
   $COMPUTED_FIELDS{$computed_field->name()}($value)
+}
+
+sub update_value_id {
+  my ($self, $db, $value, $value_id) = @_;
+  print STDERR "Updating value for $$value_id{id} in " . $self->name() .
+               " from $$value_id{value} -> $value\n";
+  my $st = $self->update_statement($db);
+  $st->execute($value, $value_id->{id})
+    or die("Could not update " . $self->name() . " ID: $$value_id{id} " .
+           "from $$value_id{value} -> $value\n");
+  { id => $value_id->{id}, value => $value }
 }
 
 sub insert_value_id {
@@ -98,12 +113,13 @@ sub insert_value_id {
     "insert " . join(", ", @insert_values) . " into " . $self->name()
   };
 
-  print STDERR "[INSERT] " . $describe_insert->() . "\n";
+  #print STDERR "[INSERT] " . $describe_insert->() . "\n";
   $st->execute(@insert_values) or
     die("Could not " . $describe_insert->() . ": $!\n");
-  $db->last_insert_id(undef, undef, $self->name(), undef)
+  my $id = $db->last_insert_id(undef, undef, $self->name(), undef)
     or die("Could not determine last insert id for " .
-           $describe_insert->() . "\n")
+           $describe_insert->() . "\n");
+  { id => $id, value => $value }
 }
 
 sub insert_statement_sql {
@@ -122,6 +138,20 @@ sub insert_statement {
   $self->{_insert_st} ||= $db->prepare($self->insert_statement_sql())
 }
 
+sub update_statement_sql {
+  my $self = shift;
+  my $table_name = $self->name();
+  my $column_name = $self->lookup_column()->sql_name();
+  <<SQL
+UPDATE $table_name SET $column_name = ? WHERE id = ?
+SQL
+}
+
+sub update_statement {
+  my ($self, $db) = @_;
+  $self->{_update_st} ||= $db->prepare($self->update_statement_sql())
+}
+
 sub query_statement {
   my ($self, $db) = @_;
 
@@ -130,7 +160,7 @@ sub query_statement {
     my $column_name = $self->lookup_column()->sql_name();
 
     my $sql = <<QUERY;
-SELECT id FROM $table_name WHERE $column_name = ?
+SELECT id, $column_name FROM $table_name WHERE $column_name = ?
 QUERY
     $self->{_query_st} = $db->prepare($sql) or die "Could not prepare: $sql\n";
   }
