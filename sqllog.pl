@@ -9,6 +9,7 @@ use DBI;
 use Henzell::Crawl;
 use Henzell::DB;
 use Henzell::ServerConfig;
+use Henzell::TableLoader;
 
 do 'game_parser.pl';
 
@@ -16,6 +17,7 @@ my @LOGFIELDS_DECORATED = Henzell::Crawl::logfields_decorated();
 my %GAME_TYPE_PREFIXES = Henzell::Crawl::game_type_prefixes();
 
 my %LOG2SQL = Henzell::Crawl::config_hash('sql-field-names');
+my %TABLE_LOADERS;
 
 sub strip_suffix {
   my $val = shift;
@@ -74,15 +76,6 @@ sub initialize_sqllog(;$) {
 
 sub setup_db {
   $dbh = open_db();
-  $insert_st = prepare_insert_st($dbh, 'logrecord');
-  for my $game_type (keys %GAME_TYPE_PREFIXES) {
-    my $prefix = $GAME_TYPE_PREFIXES{$game_type};
-    $INSERT_STATEMENTS{$game_type} =
-      prepare_insert_st($dbh, "${prefix}logrecord");
-    $INSERT_STATEMENTS{$game_type . "_milestone"} =
-      prepare_milestone_insert_st($dbh, "${prefix}milestone");
-  }
-  $milestone_insert_st = prepare_milestone_insert_st($dbh, 'milestone');
   $update_st = prepare_update_st($dbh);
 }
 
@@ -106,8 +99,8 @@ sub new_db_handle(;$$$) {
   $DBPASS = $dbpass;
   my $url = db_url($dbname);
   print "Connecting to $url as $dbuser\n";
-  my $dbh = DBI->connect($url, $dbuser, $dbpass);
-  $dbh->{mysql_auto_reconnect} = 1;
+  my $dbh = DBI->connect($url, $dbuser, $dbpass)
+    or die "Could not connect to $url as $dbuser: $!\n";
   $dbh
 }
 
@@ -226,27 +219,6 @@ sub open_handles
                      alpha  => $$file{alpha} };
   }
   return @handles;
-}
-
-sub sql_register_files {
-  my ($table, @files) = @_;
-  $dbh->begin_work;
-  $dbh->do("DELETE FROM $table;") or die "Couldn't delete $table records: $!\n";
-  my $insert = "INSERT INTO $table VALUES (?);";
-  my $st = $dbh->prepare($insert) or die "Can't prepare $insert: $!\n";
-  for my $file (@files) {
-    execute_st($st, $file) or
-      die "Couldn't insert record into $table for $file with $insert: $!\n";
-  }
-  $dbh->commit;
-}
-
-sub sql_register_logfiles {
-  sql_register_files("logfiles", @_)
-}
-
-sub sql_register_milestones {
-  sql_register_files("milestone_files", @_)
 }
 
 sub index_cols {
@@ -391,7 +363,8 @@ sub cat_xlog {
 
 sub game_type_table_name($$) {
   my ($game_type, $base_tablename) = @_;
-  $game_type? "${game_type}_${base_tablename}" : $base_tablename
+  $game_type && $game_type ne 'crawl'? "${game_type}_${base_tablename}" :
+    $base_tablename
 }
 
 sub game_table_name($$) {
@@ -708,9 +681,28 @@ sub logfile_insert_st($) {
   $INSERT_STATEMENTS{$game_type}
 }
 
+sub logfile_loader($) {
+  my $g = shift;
+  my $base_table = $$g{milestone} ? 'milestone' : 'logrecord';
+  my $table = game_type_table_name(game_type($g), $base_table);
+  $TABLE_LOADERS{$table} ||=
+    Henzell::TableLoader->new(db => $dbh,
+                              table => $table,
+                              base => $base_table)
+}
+
 sub broken_record {
   my $r = shift;
   !$r->{v} || !$r->{start}
+}
+
+sub insert_record {
+  my ($g, $line) = @_;
+  my $loader = logfile_loader($g);
+  eval {
+    $loader->insert($g);
+  };
+  die "Couldn't insert record for line: $line\nError: $@\n" if $@;
 }
 
 sub add_milestone {
@@ -729,11 +721,7 @@ sub add_milestone {
   $m->{noun} = $m->{milestone};
   $m = fixup_logfields($m);
 
-  my $game_type = $$m{game_type};
-  my $st = milestone_insert_st($m);
-  my @bindvals = map(field_val($_, $m), @MILE_INSERTFIELDS);
-  execute_st($st, @bindvals) or
-    die "Can't insert record for $line: $!\n";
+  insert_record($m, $line);
 }
 
 sub add_logline {
@@ -746,13 +734,8 @@ sub add_logline {
   $fields->{file} = $lf->{file};
   $fields->{offset} = $offset;
   $fields = fixup_logfields($fields);
-  my $st = logfile_insert_st($fields);
-  my @bindvalues = map(field_val($_, $fields), @LOG_INSERTFIELDS);
 
-  #my @binds = map("$INSERTFIELDS[$_]=$bindvalues[$_]", 0..$#bindvalues);
-  #print "Bindvalues are ", join(",", @binds), "\n";
-  execute_st($st, @bindvalues) or
-    die "Can't insert record for $line: $!\n";
+  insert_record($fields, $line);
 }
 
 sub xlog_escape {

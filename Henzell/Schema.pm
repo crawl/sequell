@@ -29,7 +29,6 @@ sub sql {
   join("\n\n",
        $self->cleanup_sql(),
        $self->table_ddl(),
-       $self->table_indexes(),
        $self->canary_ddl())
 }
 
@@ -110,11 +109,6 @@ sub table_def {
 
   my $table = $self->table($table_name, $base);
   $table->sql()
-}
-
-sub table_indexes {
-  my ($self, $table, $base) = @_;
-  ''
 }
 
 sub canary_ddl {

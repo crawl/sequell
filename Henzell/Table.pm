@@ -78,7 +78,7 @@ SQL
 
 sub index {
   my ($self, @fields) = @_;
-  my @sql_fields = map(Henzell::Column->new($_)->sql_name(), @fields);
+  my @sql_fields = map($_->sql_ref_name(), @fields);
   my $name = $self->name();
   my $index_name = "ind_${name}_" . join("_", @sql_fields);
   "CREATE INDEX $index_name ON $name (" . join(", ", @sql_fields) . ")"
@@ -89,9 +89,14 @@ sub index_defs {
 
   my @compound_index_defs =
     Henzell::Crawl::config_list($self->basename() . "-indexes");
-  my @indexes = (map($self->index(@{$_}), @compound_index_defs),
-                 map($self->index($_->name()),
-                     grep($_->indexed(), $self->fieldset()->columns())));
+  my @indexes =
+    ((map {
+      my @field_list = @$_;
+      $self->index(map(Henzell::Column->by_name($_), @field_list))
+     } @compound_index_defs),
+     map($self->index($_),
+         grep($_->indexed() || $_->foreign_key(),
+              $self->fieldset()->columns())));
   join(";\n", @indexes)
 }
 

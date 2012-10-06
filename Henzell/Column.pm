@@ -46,10 +46,17 @@ sub _create_lookup_table_for_column {
   my $column_name = $column->name();
   for my $lookup_table (keys %lookups) {
     my $fields = $lookups{$lookup_table};
+    my $generated_fields = [];
+    if (ref($fields) eq 'HASH') {
+      $generated_fields =
+        [map(Henzell::Column->new($_), @{$$fields{'generated-fields'} || []})];
+      $fields = $$fields{fields};
+    }
     if (grep($_ eq $column_name, @$fields)) {
       my $columns = [map(Henzell::Column->by_name($_), @$fields)];
       return Henzell::LookupTable->new(name => $lookup_table,
-                                       fields => $columns);
+                                       fields => $columns,
+                                       generated_fields => $generated_fields);
     }
   }
 
@@ -74,6 +81,15 @@ sub name {
     ($self->{_name} = $self->{_column}) =~ s/[IBD]*\W*$//;
   }
   $self->{_name}
+}
+
+sub sql_value {
+  my ($self, $value) = @_;
+}
+
+sub sql_ref_placeholder {
+  my $self = shift;
+  $self->{date} ? "TO_TIMESTAMP(?, 'YYYYMMDDHH24MISS')" : "?"
 }
 
 sub sql_ref_name {

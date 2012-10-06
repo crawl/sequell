@@ -96,9 +96,7 @@ my $announce_handle = tailed_handle($ANNOUNCEMENTS_FILE);
 if ($CONFIG{sql_store}) {
   initialize_sqllog();
   if (@loghandles >= 1) {
-    sql_register_logfiles(map $_->{file}, @loghandles);
     catchup_logfiles();
-    sql_register_milestones(map $_->{file}, @stonehandles);
     catchup_stonefiles();
   }
   fixup_db();

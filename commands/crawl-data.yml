@@ -487,7 +487,10 @@ milestone-indexes:
 # explicit lookup table gets an implicit lookup table with the same
 # name as the field.
 lookup-tables:
-  version: [v, cv]
+  version:
+    fields: [v, cv]
+    generated-fields:
+      - vnumI?
   killer: [killer, ckiller, ikiller]
   kaux: [kaux, ckaux]
   msg: [tmsg, vmsg]

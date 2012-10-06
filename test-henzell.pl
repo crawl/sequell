@@ -176,12 +176,10 @@ sub db_load_data() {
     my $timestamp = localtime();
     for my $logfile (open_handles(datafile_hashrefs(datafile_logs()))) {
       announce "Loading logfile data from $$logfile{file}";
-      sql_register_logfiles($logfile->{file});
       cat_logfile($logfile);
     }
     for my $milestone (open_handles(datafile_hashrefs(datafile_milestones()))) {
       announce "Loading milestone data from $$milestone{file}";
-      sql_register_milestones($milestone->{file});
       cat_stonefile($milestone);
     }
   };
