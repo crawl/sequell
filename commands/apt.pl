@@ -82,42 +82,28 @@ sub add_extra_apts { # {{{
     return %apts;
 } # }}}
 
-sub skill_is_better($$$) {
-  my ($skill, $ra, $rb) = @_;
-
-  my $a = $apts{$ra};
-  my $b = $apts{$rb};
-
-  my $va = $a->{$skill};
-  my $vb = $b->{$skill};
-  warn "No $skill for $ra\n" unless defined $va;
-  warn "No $skill for $rb\n" unless defined $vb;
-  return $va > $vb;
-}
-
 sub is_best_apt { # {{{
-    my ($race, $skill) = @_;
-    return 0 unless $race && $skill;
+    my ($skill, $apt) = @_;
     for (@races) {
-      no warnings 'uninitialized';
-      return 0 if skill_is_better($skill, $_, $race);
+        return 0 if $apts{$_}{$skill} > $apt;
     }
     return 1;
 } # }}}
 sub is_worst_apt { # {{{
-    my ($race, $skill) = @_;
-    return 0 unless $race && $skill;
+    my ($skill, $apt) = @_;
     for (@races) {
-      no warnings 'uninitialized';
-      return 0 if skill_is_better($skill, $race, $_);
+        next if $apts{$_}{$skill} == -99;
+        return 0 if $apt > $apts{$_}{$skill};
     }
     return 1;
 } # }}}
-sub apt { # {{{
-    my ($race, $skill) = @_;
-    return "?" unless $race && $skill;
-    return $apts{$race}{$skill} . (is_best_apt($race, $skill) ? "!" :
-                                   is_worst_apt($race, $skill) ? "*" : "");
+sub format_apt { # {{{
+    my ($skill, $apt) = @_;
+    if ($apt == -99) {
+        return 'N/A';
+    }
+    return $apt . (is_best_apt($skill, $apt) ? "!" :
+                   is_worst_apt($skill, $apt) ? "*" : "");
 } # }}}
 sub check_long_option { # {{{
     my $word = shift;
@@ -147,27 +133,42 @@ sub print_single_apt { # {{{
     my ($race, $skill) = @_;
     print short_race($race),
           " (", code_skill($skill), ")=",
-          apt($race, $skill), "\n";
+          format_apt($skill, $apts{$race}{$skill}), "\n";
 } # }}}
 sub print_race_apt { # {{{
     my ($race, $sort) = @_;
-    my @list = @skills;
-    @list = sort @list if !defined $sort || $sort eq 'alpha';
+    my %race_apts = map { $_ => $apts{$race}{$_} } @skills;
+    my @keys = @skills;
+    $sort ||= '';
+    if ($sort eq 'apt') {
+        @keys = sort { $race_apts{$b} <=> $race_apts{$a} } @skills;
+    }
+    elsif ($sort eq 'alpha') {
+        @keys = sort @skills;
+    }
     my @out;
-    for (@list) {
-        push @out, (short_skill $_) . ': ' . (apt $race, $_);
+    for (@keys) {
+        push @out, short_skill($_) . ': ' . format_apt($_, $race_apts{$_});
     }
     print short_race($race), ": ", join(', ', @out), "\n";
 } # }}}
 sub print_skill_apt { # {{{
     my ($skill, $sort) = @_;
     die "No skill name?" unless $skill;
-    my @list = @races;
-    @list = sort { lc(short_race($a)) cmp lc(short_race($b)) } @list
-      if !defined $sort || $sort eq 'alpha';
+    my %skill_apts = map { $_ => $apts{$_}{$skill} } @races;
+    my @keys = sort { $skill_apts{$b} <=> $skill_apts{$a} } @races;
+    $sort ||= 'apt';
+    if (!$sort) {
+        @keys = @races;
+    }
+    elsif ($sort eq 'alpha') {
+        @keys = sort { lc(short_race($a)) cmp lc(short_race($b)) } @races;
+    }
     my @out;
-    for (@list) {
-        push @out, (short_race $_) . ': ' . (apt $_, $skill);
+    for (@keys) {
+        my $draconian = $_ =~ /draconian/ && $_ ne 'base draconian';
+        next if $draconian && $skill_apts{$_} == $skill_apts{'base draconian'};
+        push @out, short_race($_) . ': ' . format_apt($skill, $skill_apts{$_});
     }
     print short_skill($skill), ": ", join(', ', @out), "\n";
 } # }}}
@@ -240,3 +241,5 @@ elsif (exists $opts{skill}) {
 else {
     error "You must provide at least a race or a skill";
 }
+
+

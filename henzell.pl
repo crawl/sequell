@@ -121,7 +121,8 @@ if ($irc) {
                           server   => $ircserver,
                           port     => $port,
                           name     => $ircname,
-                          channels => [ @CHANNELS ])
+                          channels => [ @CHANNELS ],
+                          charset  => "utf-8")
     or die "Unable to create Henzell\n";
   $HENZELL->run();
 }
@@ -762,6 +763,5 @@ sub say {
     return;
   }
 
-  my ($ewho, $ebody) = $self->charset_encode($who, $body);
-  $self->privmsg($ewho, $ebody);
+  $self->privmsg($who, $body);
 }
