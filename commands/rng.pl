@@ -141,8 +141,17 @@ sub random_char { # {{{
     return short_race($race) . short_role($role);
 } # }}}
 sub special_choice { # {{{
+# elliot's tweak
     my $special = shift;
     build_char_options;
+    if ($special =~ /^([^\d]+)\*(\d+)$/) {
+        my $count = $2 > 15 ? 15 : $2;
+        my @choices;
+        foreach (1..$count) {
+            push @choices, special_choice($1);
+        }
+        return join ' ', @choices;
+    }
     return random_race if $special eq '@race';
     return random_role if $special eq '@role';
     return random_god  if $special eq '@god';
@@ -157,6 +166,22 @@ sub special_choice { # {{{
     return $special if exists $args{role} && !defined $args{role};
     return $special if exists $args{race} && !defined $args{race};
     return random_char %args;
+#    my $special = shift;
+#    build_char_options;
+#    return random_race if $special eq '@race';
+#    return random_role if $special eq '@role';
+#    return random_god  if $special eq '@god';
+#    return $special
+#        unless $special =~ /\@(good|bad)?(char|race|role)(?:=(.*))?/;
+#    return $special if defined $3 && $2 eq 'char';
+#    my %args = ();
+#    $args{good} = 1 if defined $1 && $1 eq 'good';
+#    $args{good} = 0 if defined $1 && $1 eq 'bad';
+#    $args{role} = normalize_role $3 if $2 eq 'role';
+#    $args{race} = normalize_race $3 if $2 eq 'race';
+#    return $special if exists $args{role} && !defined $args{role};
+#    return $special if exists $args{race} && !defined $args{race};
+#    return random_char %args;
 } # }}}
 sub random_choice { # {{{
     # [ds] Xom IS the RNG!
