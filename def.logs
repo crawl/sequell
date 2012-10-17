@@ -80,6 +80,15 @@ remote.cao-logfile-0.9
 [remote:cao:http://$cao/logfile10]
 remote.cao-logfile-0.10
 
+[remote:cao:http://$cao/logfile11]
+remote.cao-logfile-0.11
+
+[remote:cao:http://$cao/logfile11-sprint]
+remote.cao-logfile-0.11-sprint
+
+[remote:cao:http://$cao/logfile11-zotdef]
+remote.cao-logfile-0.11-zotdef
+
 [remote:cao:http://$cao/logfile-git]
 remote.cao-logfile-git
 
