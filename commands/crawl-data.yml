@@ -645,7 +645,7 @@ tournament-prefixes:
   - tournament
 
 tournament-data:
-  default-tourney: '2012a'
+  default-tourney: '2012'
   crawl:
     '2008':
       version: "0.4"
@@ -666,6 +666,10 @@ tournament-data:
       version: "0.10"
       # Account for CDO clock being 14s slow
       time: [20120224235946, 20120312]
+    '2012':
+      version: "0.11"
+      time: [20121020, 20121104]
+
   sprint:
     '2010':
       version: "0.7"
