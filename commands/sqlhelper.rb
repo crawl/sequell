@@ -18,6 +18,7 @@ require 'commands/henzell_config'
 require 'sql/field_predicate'
 require 'sql/query_result'
 require 'sql/version_number'
+require 'sql/lg_query'
 
 include Tourney
 include HenzellConfig
@@ -752,112 +753,6 @@ def sql_build_query(default_nick, args,
   end
 end
 
-def clean_extra_fields(extra, ctx)
-  QueryFieldList.new(extra, ctx)
-end
-
-def split_combined_arguments(argument_string)
-  argument_string.split().find_all { |x| !x.strip.empty? }
-end
-
-def extra_field_clause(args, ctx, remove_clause=true)
-  combined = args.join(' ')
-  extra = nil
-  reg = %r/\bx\s*=\s*([+-]?\w+(?:\(\w+\))?(?:\s*,\s*\w+(?:\(\w+\))?)*)/
-  extra = $1 if combined =~ reg
-  combined.sub!(reg, '') if remove_clause && extra
-  restargs = split_combined_arguments(combined)
-
-  [ restargs, clean_extra_fields(extra, ctx) ]
-end
-
-def split_query_parts(args)
-  combined = args.join(' ')
-  if combined =~ %r{(.*)/(.*)}
-    args = [$1, $2].map { |x| x.strip }.find_all { |x| !x.empty? }
-    return args.map { |x| split_combined_arguments(x) }
-  end
-  [ args ]
-end
-
-def listgame_fixup_arglist(arglist)
-  arglist = arglist.dup
-  arglist = _op_back_combine(arglist)
-  arglist = _op_separate(arglist)
-  arglist = _combine_args(arglist)
-  arglist
-end
-
-# Combines to arrays of listgame arguments into one, correctly
-# handling keyword-style arguments at the head of the secondary list.
-# Example:  [ '*', 'killer=orc' ], [ 'xom' ]
-#        => [ '*', 'xom', 'killer=orc']
-def listgame_combine_argument_lists(primary, secondary)
-  result = primary.dup
-  secondary = listgame_fixup_arglist(secondary)
-  for arg in secondary do
-    if arg !~ OPMATCH
-      result.insert(0, arg)
-    else
-      result << arg
-    end
-  end
-  result
-end
-
-def cloneargs(args)
-  args.map { |x| x.dup }
-end
-
-def parse_sort_fields(fields, extra)
-  fields.map { |f| extra.parse_sort_expr(f) }
-end
-
-def extract_sort_fields(args, extra)
-  sortpattern = %r/o=(\S+)/
-  found = args.find { |x| x =~ sortpattern }
-  sorts = []
-  if found
-    args = args.find_all { |x| x != found }
-    if found =~ sortpattern
-      sorts = parse_sort_fields($1.split(','), extra)
-    end
-  end
-  [ args, sorts ]
-end
-
-def parse_group_filter(filter, extra)
-  if filter !~ FILTER_PATTERN
-    raise "Invalid summary filter: #{filter}"
-  end
-
-  field, op, arg = $1, $2, $3.to_f
-  field = QuerySortField.new(field, extra)
-  QueryGroupFilter.new(field, op, arg)
-end
-
-def parse_group_filters(filter_arg, extra)
-  filters = [ ]
-
-  if filter_arg
-    args = listgame_fixup_arglist(filter_arg.split())
-    for arg in args do
-      filters << parse_group_filter(arg, extra)
-    end
-  end
-  filters
-end
-
-def extract_group_filters(args, extra)
-  combined = args.join(' ')
-  filters = nil
-  if combined =~ /\?:(.*)/
-    filters = $1.strip
-    combined.sub!(/\?:(.*)/, '')
-  end
-  [ split_combined_arguments(combined), parse_group_filters(filters, extra) ]
-end
-
 # Parse a listgame argument string into
 def sql_parse_query(default_nick, args, context=CTX_LOG)
   oargs = args.dup
@@ -1366,70 +1261,6 @@ def sql_define_query(nick, num, args, extra_fields, back_combine=true)
   predicates, sorts, cargs = parse_query_params(nick, num, args)
   CrawlQuery.new(predicates, sorts, extra_fields, nick, num,
                  _build_argstr(nick, cargs))
-end
-
-def _op_separate(args)
-  cargs = []
-  for arg in args do
-    if arg =~ %r/#{Regexp.quote(OPEN_PAREN)}(\S+)/ then
-      cargs << OPEN_PAREN
-      cargs << $1
-    elsif arg =~ %r/^(\S+)#{Regexp.quote(CLOSE_PAREN)}$/ then
-      cargs << $1
-      cargs << CLOSE_PAREN
-    elsif arg =~ %r/^(\S*)#{BOOLEAN_OR_Q}(\S*)$/ then
-      cargs << $1 unless $1.empty?
-      cargs << BOOLEAN_OR
-      cargs << $2 unless $2.empty?
-    else
-      cargs << arg
-    end
-  end
-  cargs.length > args.length ? _op_separate(cargs) : cargs
-end
-
-def _op_back_combine(args)
-  # First combination: if we have args that start with an operator,
-  # combine them with the preceding arg. For instance
-  # ['killer', '=', 'steam', 'dragon'] will be combined as
-  # ['killer=', 'steam', 'dragon']
-  cargs = []
-  opstart = %r!^(#{OPERATORS.keys.map { |o| Regexp.quote(o) }.join('|')})!;
-  for arg in args do
-    if !cargs.empty? && arg =~ opstart
-      cargs.last << arg
-    else
-      cargs << arg
-    end
-  end
-  cargs
-end
-
-def _arg_is_grouper?(arg)
-  [OPEN_PAREN, CLOSE_PAREN, BOOLEAN_OR].index(arg)
-end
-
-def _uncombinable_args(a, b)
-  return a =~ /^@/ || b =~ /^@/
-end
-
-def _combine_args(args)
-  # Second combination: Go through the arg list and check for
-  # space-split args that should be combined (such as ['killer=steam',
-  # 'dragon'], which should become ['killer=steam dragon']).
-  cargs = []
-  for arg in args do
-    if cargs.empty? || arg =~ ARGSPLITTER || _arg_is_grouper?(arg) || _arg_is_grouper?(cargs.last) || _uncombinable_args(cargs.last, arg)
-      cargs << arg
-    else
-      cargs.last << " " << arg
-    end
-  end
-  cargs
-end
-
-def sanitize_args(args)
-  _combine_args( _op_separate( _op_back_combine( args ) ) )
 end
 
 def _canonical_args(args)
