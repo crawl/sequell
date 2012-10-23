@@ -1,8 +1,8 @@
-require 'sql/operator_back_combine'
-require 'sql/operator_separator'
-require 'sql/arg_combine'
+require 'query/operator_back_combine'
+require 'query/operator_separator'
+require 'query/arg_combine'
 
-module Sql
+module Query
   # Normalizes an array of listgame-style arguments, combining or
   # separating individual words to be easier to analyze.
   class QueryArgumentNormalizer

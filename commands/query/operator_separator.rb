@@ -1,4 +1,4 @@
-module Sql
+module Query
   class OperatorSeparator
     # Applies whitespace around grouping parentheses.
     def self.apply(args)

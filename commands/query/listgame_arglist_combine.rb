@@ -1,6 +1,6 @@
-require 'sql/query_argument_normalizer'
+require 'query/query_argument_normalizer'
 
-module Sql
+module Query
   class ListgameArglistCombine
     # Combines to arrays of listgame arguments into one, correctly
     # handling keyword-style arguments at the head of the secondary list.

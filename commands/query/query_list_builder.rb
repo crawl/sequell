@@ -1,4 +1,4 @@
-module Sql
+module Query
   class QueryListBuilder
     def self.build(primary_query, sorts, group_filters)
       query_list = QueryList.new

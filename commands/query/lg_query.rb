@@ -1,16 +1,16 @@
-require 'sql/query_string'
-require 'sql/query_splitter'
-require 'sql/query_list_builder'
-require 'sql/extra_field_parser'
-require 'sql/sort_field_parser'
-require 'sql/ratio_query_filter'
-require 'sql/nick_resolver'
+require 'query/query_string'
+require 'query/query_splitter'
+require 'query/query_list_builder'
+require 'query/extra_field_parser'
+require 'query/sort_field_parser'
+require 'query/ratio_query_filter'
+require 'query/nick_resolver'
 
-module Sql
+module Query
   class LgQuery
     attr_reader :query_list
 
-    def initialize(nick, argument_string, extra_args, context)
+    def initialize(nick, argument_string, context)
       @default_nick = nick
       @query_string = QueryString.new(argument_string)
       @options = @query.extract_options!('log', 'ttyrec')
@@ -125,7 +125,7 @@ module Sql
     end
 
     def resolve_nick(query)
-      NickResolver.resolve_nick(query, @default_nick)
+      NickResolver.resolve_query_nick(query, @default_nick)
     end
   end
 end

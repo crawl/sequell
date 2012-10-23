@@ -190,19 +190,44 @@ module LGField
   def self.canonicalise_field(field)
     field = field.strip.downcase
     field = COLUMN_ALIASES[field] || field
-    raise "Unknown selector #{field}" unless $CTX.field?(field)
+    raise "Unknown selector #{field}" unless QueryContext.context.field?(field)
     field
   end
 end
 
 class QueryContext
+  @@global_context = nil
+
+  def self.context
+    @@global_context || CTX_LOG
+  end
+
+  def self.context=(ctx)
+    @@global_context = ctx
+  end
+
   attr_accessor :entity_name
   attr_accessor :fields, :synthetic, :summarisable, :defsort
   attr_accessor :noun_verb, :noun_verb_fields
   attr_accessor :fieldmap, :synthmap, :table_alias
 
+  def with
+    old_context = @@global_context
+    begin
+      @@global_context = self
+      yield
+    ensure
+      @@global_context = old_context
+    end
+  end
+
   def field?(field)
     field_type(field)
+  end
+
+  def raw_end_time_field
+    field?('rend') ? 'rend' :
+      field?('rtime') ? 'rtime' : raise "No end_time field"
   end
 
   def table
@@ -310,7 +335,7 @@ CTX_LOG = QueryContext.new('logrecord lg', 'game')
 CTX_STONE = QueryContext.new('milestone mst', 'milestone', CTX_LOG)
 
 # Query context - can be either logrecord or milestone, NOT thread safe.
-$CTX = CTX_LOG
+QueryContext.context = CTX_LOG
 
 $DB_HANDLE = nil
 
@@ -325,16 +350,6 @@ def sql2logdate(v)
     $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
   else
     v
-  end
-end
-
-def with_query_context(ctx)
-  old_context = $CTX
-  begin
-    $CTX = ctx
-    yield
-  ensure
-    $CTX = old_context
   end
 end
 
@@ -393,8 +408,8 @@ class SummaryField
       raise StandardError.new("Malformed summary clause: #{s_clause}")
     end
     @order = $1.empty? ? '+' : $1
-    @field = $CTX.canonicalise_field($2)
-    unless $CTX.summarise?(@field)
+    @field = QueryContext.context..canonicalise_field($2)
+    unless QueryContext.context.summarise?(@field)
       raise StandardError.new("Cannot summarise by #{@field}")
     end
     @percentage = !$3.empty?
@@ -418,7 +433,7 @@ class QueryField
     @display = display
     @calias = calias
     @special = special
-    @type = $CTX.field_type(field)
+    @type = QueryContext.context.field_type(field)
     @order = ''
   end
 
@@ -663,7 +678,7 @@ class QueryFieldList
                             "count_" + QueryFieldList::unique_id(),
                             :percentage)
     end
-    with_query_context(@ctx) do
+    @ctx.with do
       field = LGField.canonicalise_field(field)
     end
     return QueryField.new(self, field, field, field)
@@ -675,7 +690,7 @@ class QueryFieldList
   end
 
   def aggregate_function(func, field)
-    with_query_context(@ctx) do
+    @ctx.with do
       field = LGField.canonicalise_field(field)
     end
     func = canonicalise_aggregate(func)
@@ -742,7 +757,7 @@ def sql_build_query(default_nick, args,
   game = extract_game_type(args)
 
   GameContext.with_game(game) do
-    with_query_context(context) do
+    context.with do
       q = sql_define_query(nick, num, args, extra_fields, false)
       q.summarise = SummaryFieldList.new(summarise) if summarise
       q.random_game = random_game
@@ -878,7 +893,7 @@ end
 def row_to_fieldmap(row)
   map = { }
   (0 ... row.size).each do |i|
-    lfd = $CTX.fields[i]
+    lfd = QueryContext.context.fields[i]
     map[lfd.name] = lfd.value(row[i])
   end
   map
@@ -955,8 +970,8 @@ def sql_each_row_for_query(query_text, *params)
 end
 
 def sql_game_by_key(key)
-  with_query_context(CTX_LOG) do
-    q = \
+  CTX_LOG.with do
+    q =
       CrawlQuery.new([ 'AND', field_pred(key, '=', 'game_key') ],
                      [ ], nil, '*', 1, "gid=#{key}")
     #puts "Query: #{q.select_all}"
@@ -987,7 +1002,7 @@ class CrawlQuery
   attr_accessor :summary_sort, :table, :game
 
   def initialize(predicates, sorts, extra_fields, nick, num, argstr)
-    @table = $CTX.table
+    @table = QueryContext.context.table
     @pred = predicates
     @sort = sorts
     @nick = nick
@@ -1000,15 +1015,15 @@ class CrawlQuery
     @summary_sort = nil
     @raw = nil
     @joins = false
-    @ctx = $CTX
+    @ctx = QueryContext.context
     @game = GameContext.game
 
-    check_joins(predicates) if $CTX == CTX_STONE
+    check_joins(predicates) if @ctx == CTX_STONE
   end
 
   def with_contexts
     GameContext.with_game(@game) do
-      with_query_context(@ctx) do
+      @ctx.with do
         yield
       end
     end
@@ -1070,15 +1085,15 @@ class CrawlQuery
     need_join = false
     for summary_field in @summarise.fields
       fieldname = summary_field.field
-      if $CTX.noun_verb[fieldname]
-        noun, verb = $CTX.noun_verb_fields
+      if QueryContext.context.noun_verb[fieldname]
+        noun, verb = QueryContext.context.noun_verb_fields
         # Ulch, we have to modify our predicates.
         add_predicate('AND', field_pred(fieldname, '=', verb))
         summary_field.field = noun
       end
 
       # If this is not a directly summarisable field, we need a join.
-      if !$CTX.summarisable[summary_field.field]
+      if !QueryContext.context.summarisable[summary_field.field]
         fixup_join()
       end
     end
@@ -1099,8 +1114,8 @@ class CrawlQuery
   end
 
   def select_all
-    decfields = $CTX.fields
-    fields = decfields.map { |x| $CTX.dbfield(x.name) }.join(", ")
+    decfields = QueryContext.context.fields
+    fields = decfields.map { |x| QueryContext.context.dbfield(x.name) }.join(", ")
     "SELECT #{fields} FROM #@table " + where
   end
 
@@ -1130,7 +1145,7 @@ class CrawlQuery
   end
 
   def summary_db_fields
-    @summarise.fields.map { |f| $CTX.dbfield(f.field) }
+    @summarise.fields.map { |f| QueryContext.context.dbfield(f.field) }
   end
 
   def summary_group
@@ -1172,7 +1187,7 @@ class CrawlQuery
     unless @sort.empty? or !with_sorts
       @query << " " unless @query.empty?
       @query << @sort[0]
-      @query << ", #{$CTX.dbfield('id')}"
+      @query << ", #{QueryContext.context.dbfield('id')}"
     end
     @query
   end
@@ -1198,7 +1213,7 @@ class CrawlQuery
       sort << ", " unless sort.empty?
       sort << "#{field} #{direction == :desc ? 'DESC' : ''}"
     end
-    @sort << "ORDER BY #{$CTX.dbfield(sort)}"
+    @sort << "ORDER BY #{QueryContext.context.dbfield(sort)}"
   end
 
   def reverse_sorts(sorts)
@@ -1232,119 +1247,12 @@ class CrawlQuery
   end
 end
 
-def _clean_argstr(text)
-  op_match = /#{SORTEDOPS.map { |o| Regexp.quote(o) }.join("|")}/
-  popen = Regexp.quote(OPEN_PAREN)
-  pclose = Regexp.quote(CLOSE_PAREN)
-  text.gsub(/#{popen}(.*?)#{pclose}/) do |m|
-    payload = $1.dup
-    count = 0
-    payload.gsub(op_match) do |pm|
-      count += 1
-      pm
-    end
-    if count == 1
-      payload.strip
-    else
-      OPEN_PAREN + payload.strip + CLOSE_PAREN
-    end
-  end
-end
-
-def _build_argstr(nick, cargs)
-  cargs.empty? ? nick : "#{nick} (#{_clean_argstr(cargs.join(' '))})"
-end
-
-def sql_define_query(nick, num, args, extra_fields, back_combine=true)
-  args = _op_back_combine(args) if back_combine
-  args = _op_separate(args)
-  predicates, sorts, cargs = parse_query_params(nick, num, args)
-  CrawlQuery.new(predicates, sorts, extra_fields, nick, num,
-                 _build_argstr(nick, cargs))
-end
-
-def _canonical_args(args)
-  raw = args.map { |a| a.sub(ARGSPLITTER, '\1\2\3').tr('_', ' ') }
-  cargs = []
-  for r in raw
-    if !cargs.empty? && cargs.last == OPEN_PAREN && r == CLOSE_PAREN
-      cargs = cargs.slice(0, cargs.length - 1)
-      next
-    end
-    cargs << r
-  end
-  cargs
-end
-
 def const_pred(pred)
   [ :const, pred ]
 end
 
-
 def field_pred(v, op, fname, fexpr=nil)
   Sql::FieldPredicate.predicate(v, op, fname, fexpr)
-end
-
-# Examines args for | operators at the top level and returns the
-# positions of all such.
-def split_or_clauses(args)
-  level = 0
-  i = 0
-  or_positions = []
-  while i < args.length
-    arg = args[i]
-    if arg == BOOLEAN_OR && level == 0
-      or_positions << i
-    end
-    if arg == OPEN_PAREN
-      level += 1
-    elsif arg == CLOSE_PAREN
-      level -= 1
-      if level == -1
-        or_positions << i
-        return or_positions
-      end
-    end
-    i += 1
-  end
-  or_positions << args.length unless or_positions.empty?
-  or_positions
-end
-
-def parse_param_group(preds, sorts, args)
-  # Check for top-level OR operators.
-  or_pos = split_or_clauses(args)
-  if not or_pos.empty?
-    preds << 'OR'
-    last = 0
-    for i in or_pos
-      slice = args.slice(last, i - last)
-      subpred = []
-      parse_param_group(subpred, sorts, slice)
-      preds << subpred
-      last = i + 1
-    end
-    return last
-  end
-
-  preds << 'AND'
-
-  i = 0
-  while i < args.length
-    arg = args[i]
-
-    i += 1
-
-    return i if arg == CLOSE_PAREN
-    if arg == OPEN_PAREN
-      subpreds = []
-      i = parse_param_group(subpreds, sorts, args[i .. -1]) + i
-      preds << subpreds
-      next
-    end
-
-    process_param(preds, sorts, arg)
-  end
 end
 
 def is_charabbrev? (arg)
@@ -1358,467 +1266,6 @@ end
 
 def is_class? (arg)
   CLASS_EXPANSIONS[arg.downcase]
-end
-
-LISTGAME_SHORTCUTS =
-  [
-   lambda do |arg, reproc|
-     godmatch = GODABBRS.find { |g| arg.downcase.index(g) == 0 }
-     if godmatch && arg =~ /^[a-z]+$/i
-       reproc.call('god', GODMAP[godmatch] || arg)
-       return true
-     end
-     nil
-   end,
-   lambda do |value, reproc|
-     %w/win won quit left leav mon beam
-        pois cloud star/.any? { |ktyp| value =~ /^#{ktyp}[a-z]*$/i } && 'ktyp'
-   end,
-   lambda do |value, reproc|
-     if value =~ /^drown/i
-       reproc.call('ktyp', 'water')
-       return true
-     end
-     nil
-   end,
-   lambda do |value, reproc|
-     if value =~ /^\d+[.]\d+([.]\d+)*$/
-       return value =~ /^\d+[.]\d+$/ ? 'cv' : 'v'
-     end
-     nil
-   end,
-   lambda do |value, reproc|
-     SOURCES.index(value) ? 'src' : nil
-   end,
-   lambda do |value, reproc|
-     if BOOL_FIELDS.index(value.downcase)
-       reproc.call(value.downcase, 'y')
-       return true
-     end
-     nil
-   end
-  ]
-
-def fixup_listgame_arg(preds, sorts, arg)
-  atom = arg =~ /^\S+$/
-  if atom
-    negated = arg =~ /^!/
-    arg = arg.sub(/^!/, '')
-    eqop = negated ? '!=' : '='
-    reproc = lambda do |field, value|
-      process_param(preds, sorts, field + eqop + value)
-    end
-
-    # Check if it's a nick or nick alias:
-    if arg =~ /^@/ then
-      return reproc.call('name', arg)
-    end
-
-    # Check if it's a character abbreviation.
-    if is_charabbrev?(arg) then
-      return reproc.call('char', arg)
-    elsif arg =~ /^[a-z]{2}$/i then
-      cls = is_class?(arg)
-      sp = is_race?(arg)
-      return reproc.call('cls', arg) if cls && !sp
-      return reproc.call('race', arg) if sp && !cls
-      if cls && sp
-        clause = [negated ? 'AND' : 'OR']
-        process_param(clause, sorts, "cls" + eqop + arg)
-        process_param(clause, sorts, "race" + eqop + arg)
-        preds << clause
-        return
-      end
-    end
-
-    if MILE_TYPES.index(arg.downcase)
-      return reproc.call('verb', arg.downcase)
-    end
-
-    if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
-        BRANCH_SET.include?(arg.downcase)
-      return reproc.call('place', arg)
-    end
-
-    return reproc.call('when', arg) if tourney_keyword?(arg)
-
-    for s in LISTGAME_SHORTCUTS
-      res = s.call(arg, reproc)
-      if res
-        return reproc.call(res, arg) if res.is_a?(String)
-        return res
-      end
-    end
-  end
-
-  # If all else fails, split on whitespace and retry.
-  pieces = arg.split
-  if pieces.size > 1
-    pieces.each { |p| fixup_listgame_arg(preds, sorts, p) }
-  else
-    raise "Malformed argument: #{arg}"
-  end
-end
-
-def fixup_listgame_selector(key, op, val)
-  # Check for regex operators in an equality check and map it to a
-  # regex check instead.
-  if (op == '=' || op == '!=') && val =~ /[()|?]/ then
-    op = op == '=' ? '~~' : '!~~'
-  end
-
-  cval = val.downcase.strip
-  rkey = COLUMN_ALIASES[key.downcase] || key.downcase
-  eqop = ['=', '!='].index(op)
-  if ['kaux', 'ckaux', 'killer', 'ktyp'].index(rkey) && eqop then
-    if ['poison', 'poisoning'].index(cval)
-      key, val = %w/ktyp pois/
-    end
-    if cval =~ /drown/
-      key, val = %w/ktyp water/
-    end
-  end
-
-  if rkey == 'ktyp' && eqop
-    val = 'winning' if cval =~ /^win/ || cval =~ /^won/
-    val = 'leaving' if cval =~ /^leav/ || cval == 'left'
-    val = 'quitting' if cval =~ /^quit/
-  end
-
-  [key, op, val]
-end
-
-def process_param(preds, sorts, rawarg)
-  arg = rawarg
-  if arg !~ ARGSPLITTER
-    return fixup_listgame_arg(preds, sorts, arg)
-  end
-  key, op, val = $1, $2, $3
-
-  key, op, val = fixup_listgame_selector(key, op, val)
-
-  key.downcase!
-  val.downcase
-  val.tr! '_', ' '
-
-  sort = (key == 'max' || key == 'min')
-
-  selector = sort ? val.downcase : key
-  selector = COLUMN_ALIASES[selector] || selector
-  raise "Unknown selector: #{selector}" unless $CTX.field?(selector)
-
-  raise "Bad sort: #{arg}" if sort && op != '='
-  raise "Too many sort conditions" if sort && !sorts.empty?
-
-  if sort
-    order = key == 'max'? ' DESC' : ''
-    sorts << "ORDER BY #{$CTX.dbfield(selector)}#{order}"
-  else
-    sqlop = OPERATORS[op]
-    field = selector.downcase
-    if $CTX.field_type(selector) == 'I'
-      if ['=~','!~','~~', '!~~'].index(op)
-        raise "Can't use #{op} on numeric field #{selector} in #{rawarg}"
-      end
-      val = val.to_i
-    end
-    preds << query_field(selector, field, op, sqlop, val)
-  end
-end
-
-def add_extra_predicate(p, arg, value, operator, fieldname,
-                        fieldexpr, hidden=false)
-  fp = field_pred(value, operator, fieldname, fieldexpr)
-  p << fp
-  if not hidden
-    frag = "#{fieldname}#{operator}#{value}"
-    arg << frag
-  end
-end
-
-# A predicate chain can be flattened if:
-# - It starts with an operator string.
-# - It contains only one member.
-# - All members share the same starting operator.
-def flatten_predicates(pred)
-  return pred unless pred.is_a? Array
-
-  pred = [ pred[0] ] + pred[1 .. -1].map { |x| flatten_predicates(x) }
-
-  op = pred[0]
-  return pred unless op.is_a? String
-
-  return flatten_predicates(pred[1]) if pred.length == 2
-
-  rest = pred[1 .. -1]
-
-  if rest.any? { |x| x[0] == op } &&
-      rest.all? { |x| x[0] == op || x[0] == :field } then
-
-    newlist = pred[1 .. -1].map { |x| x[0] == :field ? [x] : x[1 .. -1] } \
-    .inject([]) { |full,p| full + p }
-    return flatten_predicates([ op ] + newlist)
-  end
-  pred.find_all { |x| !x.is_a?(Array) || x.length > 1 }
-end
-
-def _add_nick(nick, preds, inverted = false)
-  preds << field_pred(nick, inverted ? '!=' : '=', 'name', 'name')
-end
-
-def _add_nick_preds(nick, preds, inverted = false)
-  if nick =~ /^!/
-    nick.sub!(/^!/, '')
-    inverted = !inverted
-  end
-
-  aliases = nick_aliases(nick)
-  if aliases.size == 1
-    _add_nick(aliases[0], preds, inverted)
-  else
-    clause = [ inverted ? 'AND' : 'OR' ]
-    aliases.each { |a| _add_nick(a, clause, inverted) }
-    preds << clause
-  end
-end
-
-def parse_query_params(nick, num, args)
-  preds, sorts = [ 'AND' ], Array.new()
-  _add_nick_preds(nick, preds) if nick != '*'
-
-  args = _combine_args(args)
-
-  subpreds = []
-  parse_param_group(subpreds, sorts, args)
-  preds << subpreds
-
-  talias = $CTX.table_alias
-  sorts << "ORDER BY #{talias}.#{LOG2SQL[$CTX.defsort]} DESC" if sorts.empty?
-
-  canargs = _canonical_args(args)
-  preds = flatten_predicates(preds)
-  [ preds, sorts, canargs ]
-end
-
-def query_field(selector, field, op, sqlop, val)
-  selfield = selector
-  if selector =~ /^\w+:(.*)/
-    selfield = $1
-  end
-
-  if 'name' == selfield && val[0, 1] == '@' and [ '=', '!=' ].index(op)
-    clauses = []
-    _add_nick_preds(val[1 .. -1], clauses, op == '!=')
-    return clauses[0]
-  end
-
-  if ['v', 'cv'].index(selfield)
-    if (['<', '<=', '>', '>='].index(op) &&
-        val =~ /^\d+\.\d+(?:\.\d+)*(?:-[a-z]+[0-9]*)?$/)
-      return field_pred(Sql::VersionNumber.version_numberize(val), op,
-                        selector.sub(/v$/i, 'vnum'),
-                        field.sub(/v$/i, 'vnum'))
-    end
-  end
-
-  if ['killer', 'ckiller', 'ikiller'].index(selfield)
-    if [ '=', '!=' ].index(op) and val !~ /^an? /i then
-      if val.downcase == 'uniq' and ['killer', 'ikiller'].index(selfield)
-        # Handle check for uniques.
-        uniq = op == '='
-        clause = [ uniq ? 'AND' : 'OR' ]
-
-        # killer field should not be empty.
-        clause << field_pred('', OPERATORS[uniq ? '!=' : '='], selector, field)
-        # killer field should not start with "a " or "an " for uniques
-        clause << field_pred("^an? |^the ", OPERATORS[uniq ? '!~~' : '~~'],
-                             selector, field)
-        clause << field_pred("ghost", OPERATORS[uniq ? '!~' : '=~'],
-                             selector, field)
-      else
-        clause = [ op == '=' ? 'OR' : 'AND' ]
-        clause << field_pred(val, sqlop, selector, field)
-        clause << field_pred("a " + val, sqlop, selector, field)
-        clause << field_pred("an " + val, sqlop, selector, field)
-      end
-      return clause
-    end
-  end
-
-  if $CTX.noun_verb[selfield]
-    clause = [ 'AND' ]
-    key = $CTX.noun_verb[selector]
-    noun, verb = $CTX.noun_verb_fields
-    clause << field_pred(selector, '=', verb, verb)
-    clause << field_pred(val, sqlop, noun, noun)
-    return clause
-  end
-
-  if ((selfield == 'place' || selfield == 'oplace') and !val.index(':') and
-      [ '=', '!=' ].index(op) and DEEP_BRANCH_SET.include?(val)) then
-    val = val + ':*'
-    op = op == '=' ? '=~' : '!~'
-    sqlop = OPERATORS[op]
-  end
-
-  if selfield == 'race' || selfield == 'crace'
-    if val.downcase == 'dr' && (op == '=' || op == '!=')
-      sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
-      val = "%#{val}"
-    else
-      val = RACE_EXPANSIONS[val.downcase] || val
-    end
-  end
-  if selfield == 'cls'
-    val = CLASS_EXPANSIONS[val.downcase] || val
-  end
-
-  if (selfield == 'place' and ['=', '!=', '=~', '!~'].index(op)) then
-    place_fixups = CFG['place-fixups']
-    for place_fixup_match in place_fixups.keys do
-      regex = %r/#{place_fixup_match}/i
-      if val =~ regex then
-        replacement = place_fixups[place_fixup_match]
-        replacement = [replacement] unless replacement.is_a?(Array)
-        values = replacement.map { |r|
-          val.sub(regex, r.sub(%r/\$(\d)/, '\\\1'))
-        }
-        inclusive = op.index('=') == 0
-        clause = [inclusive ? 'OR' : 'AND']
-        for value in values do
-          clause << field_pred(value, sqlop, selector, field)
-        end
-        return clause
-      end
-    end
-  end
-
-  if selfield == 'when'
-    tourney = tourney_info(val, GameContext.game)
-
-    if [ '=', '!=' ].index(op)
-      cv = tourney.version
-
-      in_tourney = op == '='
-      clause = [ in_tourney ? 'AND' : 'OR' ]
-      lop = in_tourney ? '>' : '<'
-      rop = in_tourney ? '<' : '>'
-      eqop = in_tourney ? '=' : '!='
-
-      tstart = tourney.tstart
-      tend   = tourney.tend
-
-      if $CTX == CTX_LOG
-        clause << query_field('rstart', 'rstart', lop, lop, tstart)
-        clause << query_field('rend', 'rend', rop, rop, tend)
-      else
-        clause << query_field('rstart', 'rstart', lop, lop, tstart)
-        clause << query_field('rtime', 'rtime', rop, rop, tend)
-      end
-
-      version_clause = [in_tourney ? 'OR' : 'AND']
-      version_clause += cv.map { |cv_i|
-        query_field('cv', 'cv', eqop, eqop, cv_i)
-      }
-      clause << version_clause
-      if tourney.tmap
-        clause << query_field('map', 'map', eqop, eqop, tourney.tmap)
-      end
-      return clause
-    else
-      raise "Bad selector #{selector} (#{selector}=t for tourney games)"
-    end
-  end
-
-  field_pred(val, sqlop, selector, field)
-end
-
-def nick_exists?(nick)
-  lnick = nick.downcase
-  return DB_NICKS[lnick] if DB_NICKS.key?(lnick)
-  nick_exists = false
-  sql_db_handle.execute('SELECT pname FROM logrecord WHERE pname = ? LIMIT 1',
-                  lnick) do |row|
-    nick_exists = true
-  end
-  DB_NICKS[lnick] = nick_exists
-  return nick_exists
-end
-
-def self_nick?(nick)
-  nick.nil? || nick =~ /^!?[.]$/
-end
-
-def extract_nick(args)
-  return nil if args.empty?
-
-  nick = nil
-  (0 ... args.size).each do |i|
-    return nick if OPERATORS.keys.find { |x| args[i].index(x) }
-    if args[i] =~ /^!?([^+0-9@-][\w_`'-]+)$/ ||
-        args[i] =~ /^!?@([\w_`'-]+)$/ ||
-        args[i] =~ /^!?([.])$/ ||
-        args[i] =~ /^([*])$/ then
-      nick = $1
-      nick = "!#{nick}" if args[i] =~ /^!/
-
-      if nick.size == 1 ||
-          !(is_class?(nick) || is_race?(nick) || is_charabbrev?(nick)) ||
-          nick_exists?(nick) then
-        args.slice!(i)
-        break
-      else
-        nick = nil
-      end
-    end
-  end
-  nick
-end
-
-def _parse_number(arg)
-  arg =~ /^[+-]?\d+$/ ? arg.to_i : nil
-end
-
-def game_direct_match(game, arg, found=nil)
-  return [game, found] if found
-  return [arg, true] if GAMES.index(arg)
-  return [game, nil]
-end
-
-def game_negated_match(game, arg, found=nil)
-  return [game, found] if found
-  if arg =~ /^!/ && GAMES[1..-1].index(arg[1..-1])
-    return [GAME_TYPE_DEFAULT, true]
-  end
-  return [game, nil]
-end
-
-def extract_game_type(args)
-  game = GAME_TYPE_DEFAULT
-  (0 ... args.size).each do |i|
-    dcarg = args[i].downcase
-    game, found = game_direct_match(game, dcarg)
-    game, found = game_negated_match(game, dcarg, found)
-    if found then
-      args.slice!(i)
-      break
-    end
-  end
-  game
-end
-
-def extract_num(args)
-  return -1 if args.empty?
-
-  num = nil
-  (0 ... args.size).each do |i|
-    num = _parse_number(args[i])
-    if num
-      args.slice!(i)
-      break
-    end
-  end
-  num ? (num > 0 ? num - 1 : num) : -1
 end
 
 class SummaryRowGroup

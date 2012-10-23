@@ -1,7 +1,8 @@
 require 'cmd/option_parser'
-require 'sql/listgame_arglist_combine'
+require 'query/listgame_arglist_combine'
+require 'query/operator_back_combine'
 
-module Sql
+module Query
   class QueryString
     attr_reader :args, :original_args, :argument_string, :context_word
 
@@ -26,12 +27,50 @@ module Sql
       }
     end
 
+    def args= (args_list)
+      @args = args_list.map { |x| x.dup.strip }.find_all { |x| !x.empty? }
+      @argument_string = @args.join(' ')
+    end
+
+    def empty?
+      @args.empty?
+    end
+
+    # Applies the back-combine argument transform: arguments starting
+    # with an operator will be merged into the preceding argument.
+    #
+    # This is a useful transform to apply before looking for keyword
+    # arguments. i.e. to convert ['foo', '=', 'bar'] into ['foo=', 'bar'] and
+    # prevent a keyword argument check for 'foo' from matching 'foo='.
+    def operator_back_combine!
+      @args = OperatorBackCombine.apply(@args)
+    end
+
+    def normalize!
+      @args = QueryArgumentNormalizer.normalize(@args)
+    end
+
     # Extract option flags from the arguments and return them.
     def extract_options!(*options)
       parser = Cmd::OptionParser.new(@args)
       parsed_options = parser.parse!(*options)
       @args = parser.args
       parsed_options
+    end
+
+    def option!(option)
+      options = extract_options!(option)
+      options[option]
+    end
+
+    def find(&block)
+      @args.find(&block)
+    end
+
+    def extract!(&block)
+      arg = @args.find(&block)
+      @args.delete(arg) if arg
+      arg
     end
 
     def [](index)
@@ -44,6 +83,28 @@ module Sql
 
     def to_s
       self.argument_string
+    end
+
+    # Returns a string suitable for display, stripping spurious
+    # enclosing parentheses where possible.
+    def display_string
+      op_match = /#{SORTEDOPS.map { |o| Regexp.quote(o) }.join("|")}/
+      popen = Regexp.quote(OPEN_PAREN)
+      pclose = Regexp.quote(CLOSE_PAREN)
+      text = self.to_s
+      text.gsub(/#{popen}(.*?)#{pclose}/) { |m|
+        payload = $1.dup
+        count = 0
+        payload.gsub(op_match) do |pm|
+          count += 1
+          pm
+        end
+        if count == 1
+          payload.strip
+        else
+          OPEN_PAREN + payload.strip + CLOSE_PAREN
+        end
+      }.strip
     end
 
     def + (other)

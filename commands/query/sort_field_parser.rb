@@ -1,4 +1,4 @@
-module Sql
+module Query
   class SortFieldParser
     # Parses sort expressions (o=x) in the context of any extra-field
     # expression

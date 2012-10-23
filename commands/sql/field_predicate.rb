@@ -3,7 +3,8 @@ require 'sql/timestamp_format'
 module Sql
   class FieldPredicate
     def self.predicate(value, operator, field_name, field_expr=nil)
-      self.new($CTX, value, operator, field_name, field_expr=nil).predicate
+      self.new(QueryContext.context, value, operator, field_name,
+               field_expr=nil).predicate
     end
 
     def initialize(context, value, operator, field_name, field_expr=nil)

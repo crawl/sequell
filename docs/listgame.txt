@@ -47,7 +47,7 @@ Where:
   3. . to consider games by the person issuing the !lg command.
   4. Omitted altogether to consider games by the player issuing the
      !lg command. Using . is preferred when selecting your own games --
-     !lg may not recognise keyword arguments if you skip the
+     !lg will not recognise keyword arguments correctly if you skip the
      target-player-name.
 
   The player nick may be negated by prefixing it with !. For instance:

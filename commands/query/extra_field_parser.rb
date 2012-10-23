@@ -1,4 +1,4 @@
-module Sql
+module Query
   class ExtraFieldParser
     EXTRA_REG = %r/\bx\s*=\s*([+-]?\w+(?:\(\w+\))?(?:\s*,\s*\w+(?:\(\w+\))?)*)/
 

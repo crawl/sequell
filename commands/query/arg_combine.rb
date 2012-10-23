@@ -1,4 +1,4 @@
-module Sql
+module Query
   class ArgCombine
     # Second combination: Go through the arg list and check for
     # space-split args that should be combined (such as ['killer=steam',

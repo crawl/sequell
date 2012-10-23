@@ -1,6 +1,6 @@
-require 'sql/query_argument_normalizer'
+require 'query/query_argument_normalizer'
 
-module Sql
+module Query
   class RatioQueryFilter
     def self.parse(query, extra_field)
       arg_str = query.to_s

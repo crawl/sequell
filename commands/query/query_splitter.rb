@@ -1,4 +1,4 @@
-module Sql
+module Query
   class QuerySplitter
     def self.apply(query_string)
       query = query_string.to_s
