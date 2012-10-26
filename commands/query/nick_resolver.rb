@@ -35,11 +35,11 @@ module Query
       nick
     end
 
-    def nick_is_special?(nick)
+    def self.nick_is_special?(nick)
       nick && nick =~ /^!?[*.]$/
     end
 
-    def nick_is_self?(nick)
+    def self.nick_is_self?(nick)
       nick.nil? || nick =~ /^!?[.]$/
     end
 

@@ -4,7 +4,8 @@ require 'query/operator_back_combine'
 
 module Query
   class QueryString
-    attr_reader :args, :original_args, :argument_string, :context_word
+    attr_reader :args, :argument_string, :context_word
+    attr_reader :original_args, :original_string
 
     # Creates a QueryString for a raw !lg/!lm command line, i.e.
     # discarding the first word (!lg / !lm)
@@ -15,7 +16,11 @@ module Query
     end
 
     def initialize(argument_string, context_word=nil)
+      if argument_string.is_a?(Array)
+        argument_string = argument_string.join(' ')
+      end
       self.argument_string = argument_string
+      @original_string = argument_string.dup
       @original_args = @args.dup
       @context_word = context_word
     end

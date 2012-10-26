@@ -1,7 +1,7 @@
 module Query
   class QueryStruct
     attr_reader :predicates, :sorts
-    def initialize(initial_predicate, *expressions)
+    def initialize(initial_predicate='AND', *expressions)
       @predicates = [initial_predicate, *expressions]
       @sorts = []
     end

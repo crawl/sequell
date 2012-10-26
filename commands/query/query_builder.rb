@@ -39,7 +39,7 @@ module Query
           query.summarise = SummaryFieldList.new(summarise) if summarise
           query.random_game = @random
           query.extra_fields = @extra_fields
-          query.context = @context
+          query.ctx = @context
           query
         end
       end

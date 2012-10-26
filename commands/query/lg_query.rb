@@ -1,5 +1,6 @@
 require 'query/query_string'
 require 'query/query_splitter'
+require 'query/query_builder'
 require 'query/query_list_builder'
 require 'query/extra_field_parser'
 require 'query/sort_field_parser'
@@ -13,7 +14,7 @@ module Query
     def initialize(nick, argument_string, context)
       @default_nick = nick
       @query_string = QueryString.new(argument_string)
-      @options = @query.extract_options!('log', 'ttyrec')
+      @options = @query_string.extract_options!('log', 'ttyrec')
       @context = context
       self.parse_query
     end
@@ -51,13 +52,13 @@ module Query
       @ratio_filters = self.parse_ratio_filters()
 
       @split_query_strings = self.split_queries(@query_string)
-      @primary_query_string = @split_queries[0]
+      @primary_query_string = @split_query_strings[0]
 
       if compound_query_needs_sort?
         @sorts = self.parse_sort_fields(QueryString.new("o=%"))
       end
 
-      @nick = self.resolve_nick(@primary_query)
+      @nick = self.resolve_nick(@primary_query_string)
 
       self.build_primary_query
       self.build_query_list
@@ -101,6 +102,13 @@ module Query
         @query_list << QueryBuilder.build(@nick, combined_query_string,
                                           @context, @extra_fields, false)
       end
+
+      # If we have multiple queries, all must be summary queries:
+      if query_list.size > 1 and !query_list.all? { |q| q.summarise? }
+        raise ("Bad input: #{@query_string.original_string}; when using /, " +
+               "all query pieces must be summary queries")
+      end
+
       @query_list
     end
 
@@ -117,7 +125,7 @@ module Query
     end
 
     def parse_ratio_filters(query_string=@query_string)
-      RatioQueryFilter.parse(query_string)
+      RatioQueryFilter.parse(query_string, @extra_fields)
     end
 
     def split_queries(query_string=@query_string)

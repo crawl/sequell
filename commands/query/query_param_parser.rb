@@ -15,13 +15,14 @@ module Query
     end
 
     def parse
-      parse_groups(@query, @args)
-      unless @query.has_sorts?
+      struct = QueryStruct.new
+      parse_groups(struct, @args)
+      unless struct.has_sorts?
         table_alias = QueryContext.context.table_alias
-        @query.sort("ORDER BY #{table_alias}." +
+        struct.sort("ORDER BY #{table_alias}." +
                     "#{LOG2SQL[QueryContext.context.defsort]} DESC")
       end
-      @query
+      struct
     end
 
     # Examines args for | operators at the top level and returns the

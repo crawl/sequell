@@ -2,6 +2,7 @@ require 'query/nick'
 require 'query/query_struct'
 require 'query/query_param_parser'
 require 'query/nick_expr'
+require 'sql/crawl_query'
 
 module Query
   class QueryParser
@@ -20,8 +21,8 @@ module Query
       @query_string.normalize!
       @body = QueryStruct.new
       self.parse_query_params
-      CrawlQuery.new(@body.predicates, @body.sorts, @extra, @nick, @num,
-                     self.argument_string)
+      Sql::CrawlQuery.new(@body.predicates, @body.sorts, @extra, @nick, @num,
+                          self.argument_string)
     end
 
     def parse_query_params

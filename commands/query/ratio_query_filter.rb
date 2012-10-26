@@ -5,7 +5,7 @@ module Query
     def self.parse(query, extra_field)
       arg_str = query.to_s
       filters = nil
-      if combined =~ /\?:(.*)/
+      if arg_str =~ /\?:(.*)/
         filters = $1.strip
         query.argument_string = arg_str.sub(/\?:(.*)/, '').strip
       end

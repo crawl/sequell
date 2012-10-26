@@ -18,7 +18,8 @@ require 'commands/henzell_config'
 require 'sql/field_predicate'
 require 'sql/query_result'
 require 'sql/version_number'
-require 'sql/lg_query'
+require 'query/lg_query'
+require 'sql/crawl_query'
 
 include Tourney
 include HenzellConfig
@@ -227,7 +228,7 @@ class QueryContext
 
   def raw_end_time_field
     field?('rend') ? 'rend' :
-      field?('rtime') ? 'rtime' : raise "No end_time field"
+      field?('rtime') ? 'rtime' : raise(StandardError, "No end_time field")
   end
 
   def table
@@ -725,107 +726,10 @@ def update_tv_count(g)
              "WHERE id = ?", g['id'])
 end
 
-def resolve_nick(nickexpr, default_nick)
-  if self_nick?(nickexpr)
-    nick = default_nick
-    if nickexpr =~ /^!/
-      nick = "!#{nick}"
-    end
-    return nick
-  end
-  nickexpr
-end
-
-def sql_build_query(default_nick, args,
-                    context=CTX_LOG, extra_fields=nil,
-                    extract_nick_from_args=true)
-  #puts "sql_build_query(#{args.inspect})"
-
-  random_game = args.find { |a| a.downcase == '-random' }
-  args.delete(random_game) if random_game
-
-  summarise = args.find { |a| SummaryFieldList.summary_field? a }
-  args.delete(summarise) if summarise
-
-  args = _op_back_combine(args)
-  if extract_nick_from_args
-    nick = resolve_nick(extract_nick(args), default_nick)
-  else
-    nick = default_nick
-  end
-  num  = extract_num(args)
-  game = extract_game_type(args)
-
-  GameContext.with_game(game) do
-    context.with do
-      q = sql_define_query(nick, num, args, extra_fields, false)
-      q.summarise = SummaryFieldList.new(summarise) if summarise
-      q.random_game = random_game
-      q.extra_fields = extra_fields
-      q.ctx = context
-      q
-    end
-  end
-end
-
 # Parse a listgame argument string into
 def sql_parse_query(default_nick, args, context=CTX_LOG)
-  oargs = args.dup
-  args, extra = extra_field_clause(args, context)
-  args, sort_fields = extract_sort_fields(args, extra)
-  args, group_filters = extract_group_filters(args, extra)
-
-  split_args = split_query_parts(args)
-  primary_args = split_args[0]
-
-  if split_args.size > 1 && sort_fields.empty?
-    sort_fields = extract_sort_fields(["o=%"], extra)[1]
-  end
-
-  nick = resolve_nick(extract_nick(primary_args), default_nick)
-  primary_query = sql_build_query(nick, cloneargs(primary_args),
-                                  context, extra, false)
-
-  # Not all split queries will have an aggregate column. For instance:
-  # !lg * / win has no aggregate column, but the user presumably wants to use
-  # counts. In such cases, add x=n for the user.
-  if split_args.size > 1 && !primary_query.summarise? && extra.empty?
-    _, extra = extra_field_clause(['x=n'], context)
-    primary_query = sql_build_query(nick, cloneargs(primary_args),
-                                    context, extra, false)
-  end
-
-  # If the query has no sorts, but has an x=foo form => o=foo form.
-  # If the query has no sorts and no x=foo, but has s=[+-]foo => o=[+-]n
-  if primary_query.summarise && sort_fields.empty?
-    if !extra.empty?
-      sort_fields = extra.default_sorts
-    else
-      summary_field_list = primary_query.summarise
-      sort_field = summary_field_list.fields[0]
-      sort_fields = extract_sort_fields(["o=#{sort_field.order}n"], extra)[1]
-    end
-  end
-
-  query_list = QueryList.new
-  query_list.sorts = sort_fields
-  query_list.filters = group_filters
-  query_list << primary_query
-
-  for fragment_args in split_args[1..-1] do
-    combined_args = listgame_combine_argument_lists(cloneargs(primary_args),
-                                                    fragment_args)
-    query_list << sql_build_query(nick, combined_args,
-                                  context, extra, false)
-  end
-
-  # If we have multiple queries, all must be summary queries:
-  if query_list.size > 1 and !query_list.all? { |q| q.summarise? }
-    raise ("Bad input: #{oargs.join(' ')}; when using /, " +
-           "all query pieces must be summary queries")
-  end
-
-  query_list
+  query = Query::LgQuery.new(default_nick, args, context)
+  query.query_list
 end
 
 def add_extra_fields_to_xlog_record(extra_fields, xlog_record)
@@ -969,11 +873,15 @@ def sql_each_row_for_query(query_text, *params)
   end
 end
 
+def field_pred(v, op, fname, fexpr=nil)
+  Sql::FieldPredicate.predicate(v, op, fname, fexpr)
+end
+
 def sql_game_by_key(key)
   CTX_LOG.with do
     q =
-      CrawlQuery.new([ 'AND', field_pred(key, '=', 'game_key') ],
-                     [ ], nil, '*', 1, "gid=#{key}")
+      Sql::CrawlQuery.new([ 'AND', field_pred(key, '=', 'game_key') ],
+                          [ ], nil, '*', 1, "gid=#{key}")
     #puts "Query: #{q.select_all}"
     r = nil
     sql_each_row_matching(q) do |row|
@@ -997,262 +905,8 @@ class QueryList < Array
   end
 end
 
-class CrawlQuery
-  attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
-  attr_accessor :summary_sort, :table, :game
-
-  def initialize(predicates, sorts, extra_fields, nick, num, argstr)
-    @table = QueryContext.context.table
-    @pred = predicates
-    @sort = sorts
-    @nick = nick
-    @num = num
-    @extra_fields = extra_fields
-    @argstr = argstr
-    @values = nil
-    @summarise = nil
-    @random_game = nil
-    @summary_sort = nil
-    @raw = nil
-    @joins = false
-    @ctx = QueryContext.context
-    @game = GameContext.game
-
-    check_joins(predicates) if @ctx == CTX_STONE
-  end
-
-  def with_contexts
-    GameContext.with_game(@game) do
-      @ctx.with do
-        yield
-      end
-    end
-  end
-
-  def has_joins?(preds)
-    return false if preds.empty? || !preds.is_a?(Array)
-    if preds[0].is_a?(Symbol)
-      return preds[3] =~ /^#{CTX_LOG.table_alias}\./
-    end
-    preds.any? { |x| has_joins?(x) }
-  end
-
-  def fixup_join
-    return if @joins
-    @joins = true
-    @table = "#@table, #{CTX_LOG.table}"
-    stone_alias = CTX_STONE.table_alias
-    log_alias = CTX_LOG.table_alias
-    add_predicate('AND',
-                  const_pred("#{stone_alias}.game_key = #{log_alias}.game_key"))
-  end
-
-  def sort_joins?
-    talias = CTX_LOG.table_alias
-    @sort.any? { |s| s =~ /ORDER BY #{talias}\./ }
-  end
-
-  def check_joins(preds)
-    if has_joins?(preds) || sort_joins?
-      fixup_join()
-    end
-  end
-
-  # Is this a query aimed at a single nick?
-  def single_nick?
-    @nick != '*'
-  end
-
-  def summarise
-    @summarise
-  end
-
-  def summarise?
-    @summarise || (@extra_fields && @extra_fields.aggregate?)
-  end
-
-  def random_game?
-    @random_game
-  end
-
-  def random_game=(random_game)
-    @random_game = random_game
-  end
-
-  def summarise= (s)
-    @summarise = s
-
-    need_join = false
-    for summary_field in @summarise.fields
-      fieldname = summary_field.field
-      if QueryContext.context.noun_verb[fieldname]
-        noun, verb = QueryContext.context.noun_verb_fields
-        # Ulch, we have to modify our predicates.
-        add_predicate('AND', field_pred(fieldname, '=', verb))
-        summary_field.field = noun
-      end
-
-      # If this is not a directly summarisable field, we need a join.
-      if !QueryContext.context.summarisable[summary_field.field]
-        fixup_join()
-      end
-    end
-
-    @query = nil
-  end
-
-  def add_predicate(operator, pred)
-    if @pred[0] == operator
-      @pred << pred
-    else
-      @pred = [ operator, @pred, pred ]
-    end
-  end
-
-  def select(what, with_sorts=true)
-    "SELECT #{what} FROM #@table " + where(with_sorts)
-  end
-
-  def select_all
-    decfields = QueryContext.context.fields
-    fields = decfields.map { |x| QueryContext.context.dbfield(x.name) }.join(", ")
-    "SELECT #{fields} FROM #@table " + where
-  end
-
-  def select_count
-    "SELECT COUNT(*) FROM #@table " + where(false)
-  end
-
-  def summary_query
-    temp = @sort
-    begin
-      @sort = []
-      @query = nil
-      sortdir = @summary_sort
-      %{SELECT #{summary_fields} FROM #@table
-        #{where} #{summary_group} #{summary_order}}
-    ensure
-      @sort = temp
-    end
-  end
-
-  def summary_order
-    if @summarise && !@summarise.multiple_field_group?
-      "ORDER BY fieldcount #{@summary_sort}"
-    else
-      ''
-    end
-  end
-
-  def summary_db_fields
-    @summarise.fields.map { |f| QueryContext.context.dbfield(f.field) }
-  end
-
-  def summary_group
-    @summarise ? "GROUP BY #{summary_db_fields.join(',')}" : ''
-  end
-
-  def summary_fields
-    basefields = ''
-    extras = ''
-    if @summarise
-      basefields = "COUNT(*) AS fieldcount, #{summary_db_fields.join(", ")}"
-    end
-    if @extra_fields && !@extra_fields.empty?
-      # At this point extras must be aggregate columns.
-      if !@extra_fields.aggregate?
-        raise "Extra fields (#{@extra_fields.extra}) contain non-aggregates"
-      end
-      extras = @extra_fields.fields.map { |f| f.to_s }.join(", ")
-    end
-    [basefields, extras].find_all { |x| x && !x.empty? }.join(", ")
-  end
-
-  def query(with_sorts=true)
-    build_query(with_sorts)
-  end
-
-  def values
-    build_query unless @values
-    @values || []
-  end
-
-  def version_predicate
-    %{v #{OPERATORS['=~']} ?}
-  end
-
-  def build_query(with_sorts=true)
-    @query, @values = collect_clauses(@pred)
-    @query = "WHERE #{@query}" unless @query.empty?
-    unless @sort.empty? or !with_sorts
-      @query << " " unless @query.empty?
-      @query << @sort[0]
-      @query << ", #{QueryContext.context.dbfield('id')}"
-    end
-    @query
-  end
-
-  alias where query
-
-  def reverse
-    rq = CrawlQuery.new(@pred, reverse_sorts(@sort), @extra_fields,
-                        @nick, @num, @argstr)
-    rq.table = @table
-    rq
-  end
-
-  def clear_sorts!
-    @sort.clear
-    @query = nil
-  end
-
-  def sort_by! (*fields)
-    clear_sorts!
-    sort = ""
-    for field, direction in fields
-      sort << ", " unless sort.empty?
-      sort << "#{field} #{direction == :desc ? 'DESC' : ''}"
-    end
-    @sort << "ORDER BY #{QueryContext.context.dbfield(sort)}"
-  end
-
-  def reverse_sorts(sorts)
-    sorts.map do |s|
-      s =~ /\s+DESC\s*$/i ? s.sub(/\s+DESC\s*$/, '') : s + " DESC"
-    end
-  end
-
-  def collect_clauses(preds)
-    clauses = ''
-    return clauses unless preds.size > 1
-
-    op = preds[0]
-    return [ preds[1], [ preds[2] ] ] if op == :field
-    return [ preds[1], [ ] ] if op == :const
-
-    values = []
-
-    preds[1 .. -1].each do |p|
-      clauses << " " << op << " " unless clauses.empty?
-
-      subclause, subvalues = collect_clauses(p)
-      if p[0].is_a?(Symbol)
-        clauses << subclause
-      else
-        clauses << "(#{subclause})"
-      end
-      values += subvalues
-    end
-    [ clauses, values ]
-  end
-end
-
 def const_pred(pred)
   [ :const, pred ]
-end
-
-def field_pred(v, op, fname, fexpr=nil)
-  Sql::FieldPredicate.predicate(v, op, fname, fexpr)
 end
 
 def is_charabbrev? (arg)
