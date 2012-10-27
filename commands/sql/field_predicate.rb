@@ -2,17 +2,13 @@ require 'sql/timestamp_format'
 
 module Sql
   class FieldPredicate
-    def self.predicate(value, operator, field_name, field_expr=nil)
-      self.new(QueryContext.context, value, operator, field_name,
-               field_expr=nil).predicate
+    def self.predicate(value, operator, field)
+      self.new(QueryContext.context, value, operator, field).predicate
     end
 
-    def initialize(context, value, operator, field_name, field_expr=nil)
+    def initialize(context, value, operator, field)
       @context = context
-      @field_expr = @context.dbfield(field_expr || field_name)
-      @field_name = field_name
-      @sql_field_name = @field_name
-      @sql_field_name = $1 + @field_name if @field_expr =~ /^(\w+\.)/
+      @field = field
       @operator = operator
       @value = value
     end
@@ -21,16 +17,20 @@ module Sql
       [ :field, self.sql_expr, self.sql_value, self.sql_field ]
     end
 
+    def field_def
+      @field_def ||= @context.field_def(@field)
+    end
+
     def sql_expr
       "#{sql_field_expr} #{@operator} #{sql_value_placeholder}"
     end
 
     def sql_field_expr
-      @field_expr || sql_field
+      @context.dbfield(@field)
     end
 
     def sql_field
-      @sql_field_name
+      @sql_field ||= @context.field_def(@field).sql_column_name
     end
 
     def sql_value_placeholder
@@ -49,7 +49,7 @@ module Sql
     end
 
     def date_field?
-      @context.field_type(@field_name) == 'D'
+      self.field_def.date?
     end
 
     def timestamp_format

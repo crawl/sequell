@@ -2,6 +2,10 @@ module Sql
   class VersionNumber
     CANONICAL_VERSION_SEGMENTS = 4
 
+    def self.version_number?(text)
+      text =~ /^\d+\.\d+(?:\.\d+)*(?:-[a-z]+[0-9]*)?$/
+    end
+
     def self.version_numberize(version_string)
       version, qualifier = version_string.split('-')
       qualifier ||= ''

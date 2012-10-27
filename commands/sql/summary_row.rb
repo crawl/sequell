@@ -1,0 +1,197 @@
+module Sql
+  class SummaryRow
+    attr_accessor :counts, :extra_fields, :extra_values, :fields, :key
+    attr_accessor :summary_field_spec, :parent
+    attr_reader :subrows
+    attr_reader :summary_reporter
+
+    def initialize(summary_reporter,
+        summary_fields, count,
+        extra_fields,
+        extra_values)
+      @summary_reporter = summary_reporter
+      @parent = @summary_reporter
+
+      @summary_field_spec = nil
+      summarise_fields = summary_reporter.query.summarise
+      @summary_field_spec = summarise_fields.fields[0] if summarise_fields
+      @fields = summary_fields
+      @key = summary_fields ? summary_fields.join('@@') : nil
+      @counts = count.nil? ? nil : [count]
+      @extra_fields = extra_fields
+      @extra_values = extra_values.map { |e| [ e ] }
+      @subrows = nil
+    end
+
+    def count
+      @counts.nil? ? 0 : @counts[0]
+    end
+
+    def zero_counts
+      @counts ? @counts.map { |x| 0 } : []
+    end
+
+    def add_count!(extra_counts)
+      extra_counts.size.times do |i|
+        @counts[i] += extra_counts[i]
+      end
+    end
+
+    def subrows= (rows)
+      @subrows = rows
+      if @subrows
+        @counts = zero_counts
+        for row in @subrows
+          row.parent = self
+          add_count! row.counts
+        end
+      end
+    end
+
+    def self.subrow_from_fullrow(fullrow, key_override=nil, subrows=nil)
+      row = SummaryRow.new(fullrow.summary_reporter,
+        [fullrow.fields[-1]],
+        fullrow.count,
+        fullrow.extra_fields,
+        fullrow.extra_values)
+      row.extra_fields = fullrow.extra_fields
+      row.extra_values = fullrow.extra_values
+      row.counts = fullrow.counts
+      row.key = key_override if key_override
+      row.subrows = subrows
+      row
+    end
+
+    def key
+      @key.nil? ? :identity : @key
+    end
+
+    def extend!(size)
+      extend_array(@counts, size)
+      for ev in @extra_values do
+        extend_array(ev, size)
+      end
+    end
+
+    def extend_array(array, size)
+      if not array.nil?
+        (array.size ... size).each do
+          array << 0
+        end
+      end
+    end
+
+    def combine!(sr)
+      @counts << sr.counts[0] if not sr.counts.nil?
+
+      extra_index = 0
+      for eval in sr.extra_values do
+        @extra_values[extra_index] << eval[0]
+        extra_index += 1
+      end
+    end
+
+    def <=> (sr)
+      sr.count <=> count
+    end
+
+    def master_string
+      return [counted_keys, percentage_string].find_all { |x|
+        !x.empty?
+      }.join(" ")
+    end
+
+    def subrows_string
+      @subrows.map { |s| s.to_s }.join(", ")
+    end
+
+    def master_group_to_s
+      "#{master_string} (#{subrows_string})"
+    end
+
+    def to_s
+      if @subrows
+        master_group_to_s
+      elsif @key
+        [counted_keys, percentage_string, extra_val_string].find_all { |x|
+          !x.to_s.empty?
+        }.join(" ")
+      else
+        annotated_extra_val_string
+      end
+    end
+
+    def percentage_string
+      if !@summary_reporter.ratio_query?
+        if @summary_field_spec && @summary_field_spec.percentage
+          return "(" + percentage(@counts[0], @parent.count) + ")"
+        end
+      end
+      ""
+    end
+
+    def counted_keys
+      if count_string == '1'
+        key
+      else
+        "#{count_string}x #{@key}"
+      end
+    end
+
+    def count_string
+      @counts.reverse.join("/")
+    end
+
+    def extra_val_string
+      allvals = []
+      if @counts.size > 1
+        allvals << percentage(@counts[1], @counts[0])
+      end
+      allvals << @extra_values.map { |x| value_string(x) }.join(";")
+      es = allvals.find_all { |x| !x.empty? }.join(";")
+      es.empty? ? es : "[" + es + "]"
+    end
+
+    def annotated_extra_val_string
+      res = []
+      index = 0
+      fields = @extra_fields.fields
+      @extra_values.each do |ev|
+        res << annotated_value(fields[index], ev)
+        index += 1
+      end
+      res.join("; ")
+    end
+
+    def annotated_value(field, value)
+      "#{field.display}=#{value_string(value)}"
+    end
+
+    def format_value(v)
+      if v.is_a?(BigDecimal) || v.is_a?(Float)
+        rawv = sprintf("%.2f", v)
+        rawv.sub!(/([.]\d*?)0+$/, '\1')
+        rawv.sub!(/[.]$/, '')
+        rawv
+      else
+        v
+      end
+    end
+
+    def value_string(value)
+      sz = value.size
+      if not [1,2].index(sz)
+        raise "Unexpected value array size: #{value.size}"
+      end
+      if sz == 1
+        format_value(value[0])
+      else
+        short = value.reverse.join("/") + " (#{percentage(value[1], value[0])})"
+      end
+    end
+
+    def percentage(num, den)
+      den == 0 ? "-" : sprintf("%.2f%%", num.to_f * 100.0 / den.to_f)
+    end
+  end
+end

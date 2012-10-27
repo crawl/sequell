@@ -1,3 +1,6 @@
+require 'query/sort'
+require 'sql/field'
+
 module Sql
   class CrawlQuery
     attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
@@ -116,8 +119,7 @@ module Sql
     end
 
     def select_all
-      decfields = QueryContext.context.fields
-      fields = decfields.map { |x| QueryContext.context.dbfield(x.name) }.join(", ")
+      fields = QueryContext.context.db_field_names.join(", ")
       "SELECT #{fields} FROM #@table " + where
     end
 
@@ -188,8 +190,8 @@ module Sql
       @query = "WHERE #{@query}" unless @query.empty?
       unless @sort.empty? or !with_sorts
         @query << " " unless @query.empty?
-        @query << @sort[0]
-        @query << ", #{QueryContext.context.dbfield('id')}"
+        @query << "ORDER BY " << @sort[0].to_sql
+        @query << ", " << Query::Sort.new(Sql::Field.new('id'), 'ASC').to_sql
       end
       @query
     end

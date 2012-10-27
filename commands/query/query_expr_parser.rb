@@ -2,6 +2,7 @@ require 'query/query_struct'
 require 'query/query_keyword_parser'
 require 'sql/version_number'
 require 'sql/field_predicate'
+require 'sql/field'
 
 module Query
   class QueryExprParser
@@ -24,119 +25,113 @@ module Query
       @arg !~ ARGSPLITTER
     end
 
-    def field_pred(val, op, field, expr)
-      Sql::FieldPredicate.predicate(val, op, field, expr)
+    def field_pred(val, op, field)
+      Sql::FieldPredicate.predicate(val, op, field)
+    end
+
+    def context
+      @context ||= QueryContext.context
     end
 
     def parse
       return QueryKeywordParser.parse(@arg) if operator_missing?
 
       @arg =~ ARGSPLITTER
-      key, op, val = fixup_selector($1, $2, $3)
-      key.downcase!
-      val.downcase!
-      val.tr! '_', ' '
+      raw_key, op, val = $1, $2, $3
 
-      sort = (key == 'max' || key == 'min')
+      key = Sql::Field.new(raw_key)
+      op = Sql::Operator.new(op)
+      key, val, op = fixup_selector(key, val, op)
 
-      selector = sort ? val.downcase : key
-      selector = COLUMN_ALIASES[selector] || selector
-      unless QueryContext.context.field?(selector)
+      val = Sql::Value.cleanse_input(val)
+
+      selector = key.sort? ? Sql::Field.new(val) : key
+      unless context.field?(selector)
         raise "Unknown selector: #{selector}"
       end
 
-      raise "Bad sort: #{arg}" if sort && op != '='
+      raise "Bad sort: #{arg}" if key.sort? && op != '='
 
-      if sort
-        order = key == 'max'? ' DESC' : ''
-        body.sort("ORDER BY #{QueryContext.context.dbfield(selector)}#{order}")
+      if key.sort?
+        order = key.max? ? ' DESC' : ''
+        body.sort("ORDER BY #{context.dbfield(selector)}#{order}")
       else
-        sqlop = OPERATORS[op]
-        field = selector.downcase
-        if QueryContext.context.field_type(selector) == 'I'
-          if ['=~','!~','~~', '!~~'].index(op)
+        if context.field_def(selector).integer?
+          if op.textual?
             raise "Can't use #{op} on numeric field #{selector} in #{rawarg}"
           end
           val = val.to_i
         end
-        body.append(query_field(selector, field, op, sqlop, val))
+        body.append(query_field(selector, op, val))
       end
 
       self.body
     end
 
-    def query_field(selector, field, op, sqlop, val)
-      selfield = selector
-      if selector =~ /^\w+:(.*)/
-        selfield = $1
+    def query_field(field, op, val)
+      if field === 'name' && val[0, 1] == '@' and op.equality?
+        return NickExpr.expr(val[1..-1], op.not_equal?)
       end
 
-      if 'name' == selfield && val[0, 1] == '@' and [ '=', '!=' ].index(op)
-        return NickExpr.expr(val[1..-1], op == '!=')
+      if field === ['v', 'cv'] && op.relational? &&
+          Sql::VersionNumber.version_number?(val)
+        return field_pred(Sql::VersionNumber.version_numberize(val),
+                          op,
+                          field.resolve(selector.name + 'num'))
       end
 
-      if ['v', 'cv'].index(selfield)
-        if (['<', '<=', '>', '>='].index(op) &&
-            val =~ /^\d+\.\d+(?:\.\d+)*(?:-[a-z]+[0-9]*)?$/)
-          return field_pred(Sql::VersionNumber.version_numberize(val), op,
-            selector.sub(/v$/i, 'vnum'),
-            field.sub(/v$/i, 'vnum'))
-        end
-      end
-
-      if ['killer', 'ckiller', 'ikiller'].index(selfield)
-        if [ '=', '!=' ].index(op) and val !~ /^an? /i then
-          if val.downcase == 'uniq' and ['killer', 'ikiller'].index(selfield)
+      if field === ['killer', 'ckiller', 'ikiller']
+        if op.equality? and val !~ /^an? /i then
+          if val.downcase == 'uniq' and field === ['killer', 'ikiller']
             # Handle check for uniques.
-            uniq = op == '='
+            uniq = op.equal?
             clause = QueryStruct.new(uniq ? 'AND' : 'OR')
 
             # killer field should not be empty.
-            clause.append(field_pred('', OPERATORS[uniq ? '!=' : '='], selector, field))
+            clause.append(field_pred('', op.negate, field))
             # killer field should not start with "a " or "an " for uniques
-            clause.append(field_pred("^an? |^the ", OPERATORS[uniq ? '!~~' : '~~'],
-                selector, field))
-            clause.append(field_pred("ghost", OPERATORS[uniq ? '!~' : '=~'],
-              selector, field))
+            clause.append(field_pred("^an? |^the ",
+                                     Sql::Operator.new(uniq ? '!~~' : '~~'),
+                                     field))
+            clause.append(field_pred("ghost",
+                                     Sql::Operator.new(uniq ? '!~' : '=~'),
+                                     field))
           else
-            clause = QueryStruct.new(op == '=' ? 'OR' : 'AND')
-            clause.append(field_pred(val, sqlop, selector, field))
-            clause.append(field_pred("a " + val, sqlop, selector, field))
-            clause.append(field_pred("an " + val, sqlop, selector, field))
+            clause = QueryStruct.new(op.equal? ? 'OR' : 'AND')
+            clause.append(field_pred(val, op, field))
+            clause.append(field_pred("a " + val, op, field))
+            clause.append(field_pred("an " + val, op, field))
           end
           return clause
         end
       end
 
-      if QueryContext.context.noun_verb[selfield]
-        clause = QueryStruct.new
-        key = QueryContext.context.noun_verb[selector]
-        noun, verb = QueryContext.context.noun_verb_fields
-        clause << field_pred(selector, '=', verb, verb)
-        clause << field_pred(val, sqlop, noun, noun)
-        return clause
+      if context.value_key?(field)
+        return QueryStruct.new(
+          op.equal? ? 'AND' : 'OR',
+          field_pred(field.to_s, op, context.key_field),
+          field_pred(val, op, context.value_field))
       end
 
-      if ((selfield == 'place' || selfield == 'oplace') and !val.index(':') and
-          [ '=', '!=' ].index(op) and DEEP_BRANCH_SET.include?(val)) then
-        val = val + ':*'
-        op = op == '=' ? '=~' : '!~'
-        sqlop = OPERATORS[op]
+      if (field === 'place' || field === 'oplace') and !val.index(':') and
+          op.equality? and BRANCHES.deep?(val) then
+        val += ':*'
+        op = Sql::Operator.new(op.equal? ? '=~' : '!~')
       end
 
-      if selfield == 'race' || selfield == 'crace'
-        if val.downcase == 'dr' && (op == '=' || op == '!=')
-          sqlop = op == '=' ? OPERATORS['=~'] : OPERATORS['!~']
-          val = "%#{val}"
+      if field === 'race' || field === 'crace'
+        if val.downcase == 'dr' && op.equality?
+          op = Sql::Operator.new(op.equal? ? '=~' : '!~')
+          val = "%draconian"
         else
           val = RACE_EXPANSIONS[val.downcase] || val
         end
       end
-      if selfield == 'cls'
+      if field === 'cls'
         val = CLASS_EXPANSIONS[val.downcase] || val
       end
 
-      if (selfield == 'place' and ['=', '!=', '=~', '!~'].index(op)) then
+      if field === ['place', 'oplace'] && op === ['=', '!=', '=~', '!~'] then
         place_fixups = CFG['place-fixups']
         for place_fixup_match in place_fixups.keys do
           regex = %r/#{place_fixup_match}/i
@@ -146,42 +141,42 @@ module Query
             values = replacement.map { |r|
               val.sub(regex, r.sub(%r/\$(\d)/, '\\\1'))
             }
-            inclusive = op.index('=') == 0
-            clause = [inclusive ? 'OR' : 'AND']
+            inclusive = op.to_s.index('=') == 0
+            clause = QueryStruct.new(inclusive ? 'OR' : 'AND')
             for value in values do
-              clause << field_pred(value, sqlop, selector, field)
+              clause << field_pred(value, op, field)
             end
             return clause
           end
         end
       end
 
-      if selfield == 'when'
+      if field === 'when'
         tourney = tourney_info(val, GameContext.game)
 
-        if [ '=', '!=' ].index(op)
+        if op.equality?
           cv = tourney.version
 
-          in_tourney = op == '='
+          in_tourney = op.equal?
           clause = QueryStruct.new(in_tourney ? 'AND' : 'OR')
-          lop = in_tourney ? '>' : '<'
-          rop = in_tourney ? '<' : '>'
-          eqop = in_tourney ? '=' : '!='
+          lop = Sql::Operator.new(in_tourney ? '>' : '<')
+          rop = Sql::Operator.new(in_tourney ? '<' : '>')
+          eqop = Sql::Operator.new(in_tourney ? '=' : '!=')
 
           tstart = tourney.tstart
           tend   = tourney.tend
 
-          end_time_field = QueryContext.context.raw_end_time_field
-          clause << query_field('rstart', 'rstart', lop, lop, tstart)
-          clause << query_field(end_time_field, end_time_field, rop, rop, tend)
+          time_field = QueryContext.context.raw_time_field
+          clause << query_field(Sql::Field.new('rstart'), lop, tstart)
+          clause << query_field(end_time_field, rop, tend)
 
-          version_clause = [in_tourney ? 'OR' : 'AND']
+          version_clause = QueryStruct.new(in_tourney ? 'OR' : 'AND')
           version_clause += cv.map { |cv_i|
-            query_field('cv', 'cv', eqop, eqop, cv_i)
+            query_field(Sql::Operator.new('cv'), eqop, cv_i)
           }
           clause << version_clause
           if tourney.tmap
-            clause << query_field('map', 'map', eqop, eqop, tourney.tmap)
+            clause << query_field(Sql::Operator.new('map'), eqop, tourney.tmap)
           end
           return clause
         else
@@ -189,29 +184,29 @@ module Query
         end
       end
 
-      field_pred(val, sqlop, selector, field)
+      field_pred(val, op, field)
     end
 
     def fixup_selector(key, op, val)
       # Check for regex operators in an equality check and map it to a
       # regex check instead.
-      if (op == '=' || op == '!=') && val =~ /[()|?]/ then
-        op = op == '=' ? '~~' : '!~~'
+      if op.equality? && val =~ /[()|?]/ then
+        op = op.equal? ? '~~' : '!~~'
       end
 
       cval = val.downcase.strip
-      rkey = COLUMN_ALIASES[key.downcase] || key.downcase
-      eqop = ['=', '!='].index(op)
-      if ['kaux', 'ckaux', 'killer', 'ktyp'].index(rkey) && eqop then
+      if key === ['kaux', 'ckaux', 'killer', 'ktyp'] && op.equality? then
         if ['poison', 'poisoning'].index(cval)
-          key, val = %w/ktyp pois/
+          key = key.resolve('ktyp')
+          val = 'pois'
         end
         if cval =~ /drown/
-          key, val = %w/ktyp water/
+          key = key.resolve('ktyp')
+          val = 'water'
         end
       end
 
-      if rkey == 'ktyp' && eqop
+      if key === 'ktyp' && op.equality?
         val = 'winning' if cval =~ /^win/ || cval =~ /^won/
         val = 'leaving' if cval =~ /^leav/ || cval == 'left'
         val = 'quitting' if cval =~ /^quit/

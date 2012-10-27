@@ -1,5 +1,7 @@
 require 'query/query_struct'
+require 'query/sort'
 require 'query/query_expr_parser'
+require 'sql/query_context'
 
 module Query
   class QueryParamParser
@@ -18,9 +20,8 @@ module Query
       struct = QueryStruct.new
       parse_groups(struct, @args)
       unless struct.has_sorts?
-        table_alias = QueryContext.context.table_alias
-        struct.sort("ORDER BY #{table_alias}." +
-                    "#{LOG2SQL[QueryContext.context.defsort]} DESC")
+        context = Sql::QueryContext.context
+        struct.sort(Query::Sort.new(context.defsort))
       end
       struct
     end
