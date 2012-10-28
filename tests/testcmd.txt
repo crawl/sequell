@@ -114,3 +114,7 @@ E !gkills * deathonacow
 !gkills
 
 !lm * gid=WasJordan:cdo:20101130144401S s=char ::~ 10x NaCK
+
+!lg * / win ?: N>1 ::~ games for \*:
+
+!lg * won s=char x=min(start)

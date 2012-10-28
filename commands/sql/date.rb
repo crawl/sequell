@@ -1,3 +1,5 @@
+require 'date'
+
 module Sql
   class Date
     def self.log_date(sql_date)
@@ -11,6 +13,14 @@ module Sql
         $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
       else
         sql_date
+      end
+    end
+
+    def self.display_date(sql_date)
+      if sql_date.is_a?(DateTime)
+        sql_date.strftime('%Y-%m-%d %H:%M:%S')
+      else
+        sql_date.to_s
       end
     end
   end

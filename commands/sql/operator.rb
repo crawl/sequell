@@ -5,6 +5,10 @@ module Sql
       self.new(op)
     end
 
+    def self.operator(o)
+      self.op(o)
+    end
+
     def initialize(logical_op)
       @op = logical_op
     end

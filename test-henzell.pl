@@ -360,7 +360,8 @@ sub filter_tests(@) {
 sub run_tests() {
   Henzell::Cmd::load_all_commands();
   my @tests = filter_tests(read_tests());
-  announce "Running " . scalar(@tests) . " tests";
+  my $test_count = grep(!$$_{shell}, @tests);
+  announce "Running $test_count tests";
   open my $logf, '>', $TESTLOG or die "Can't write $TESTLOG: $!\n";
   for my $test (@tests) {
     execute_test($test, $logf);

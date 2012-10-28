@@ -1,3 +1,6 @@
+require 'date'
+require 'sql/date'
+
 module Sql
   class SummaryRow
     attr_accessor :counts, :extra_fields, :extra_values, :fields, :key
@@ -173,6 +176,8 @@ module Sql
         rawv.sub!(/([.]\d*?)0+$/, '\1')
         rawv.sub!(/[.]$/, '')
         rawv
+      elsif v.is_a?(DateTime)
+        Sql::Date.display_date(v)
       else
         v
       end

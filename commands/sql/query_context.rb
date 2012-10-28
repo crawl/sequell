@@ -82,6 +82,7 @@ module Sql
     end
 
     def field_def(field)
+      return nil unless field
       field = Sql::Field.field(field)
       if field.prefixed?
         if field.has_prefix?(@table_alias)

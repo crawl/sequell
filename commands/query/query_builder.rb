@@ -1,9 +1,12 @@
 require 'query/query_parser'
+require 'query/game_type_extractor'
 require 'sql/summary_field_list'
+require 'sql/query_field_list'
 
 module Query
   class QueryBuilder
-    def self.build(nick, query_string, context, extra_fields=nil,
+    def self.build(nick, query_string, context,
+                   extra_fields=Sql::QueryFieldList.new(nil, context),
                    extract_nick_from_query=false)
       self.new(nick, query_string, context, extra_fields,
                extract_nick_from_query).build
@@ -66,32 +69,7 @@ module Query
     end
 
     def extract_game_type
-      game = GAME_TYPE_DEFAULT
-      args = @query_string.args
-      (0 ... args.size).each do |i|
-        dcarg = args[i].downcase
-        game, found = game_direct_match(game, dcarg)
-        game, found = game_negated_match(game, dcarg, found)
-        if found then
-          @query_string.args = args.slice(i)
-          break
-        end
-      end
-      game
-    end
-
-    def game_direct_match(game, arg, found=nil)
-      return [game, found] if found
-      return [arg, true] if SQL_CONFIG.games.index(arg)
-      return [game, nil]
-    end
-
-    def game_negated_match(game, arg, found=nil)
-      return [game, found] if found
-      if arg =~ /^!/ && SQL_CONFIG.games[1..-1].index(arg[1..-1])
-        return [SQL_CONFIG.default_game_type, true]
-      end
-      return [game, nil]
+      GameTypeExtractor.game_type(@query_string)
     end
 
     def parse_query

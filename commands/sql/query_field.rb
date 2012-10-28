@@ -14,8 +14,8 @@ module Sql
     end
 
     def expr(table_set)
-      field_expr = @context.dbfield(@field, table_set)
-      @expr ? @expr.sub('%s', field_expr) : field_expr
+      field_expr = @context.dbfield(@field, table_set) if @field
+      @expr ? @expr.sub('%s', field_expr.to_s) : field_expr
     end
 
     def default_sort
@@ -29,7 +29,7 @@ module Sql
     def format_value(value)
       if @type
         return (@field == 'dur' ? pretty_duration(value.to_i) :
-          @type == 'D' ? pretty_date(value) : value)
+                @type == 'D' ? pretty_date(value) : value)
       end
       value
     end

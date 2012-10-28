@@ -9,7 +9,9 @@ module Query
       extra = nil
       extra = $1 if arg_str =~ EXTRA_REG
       query_string.argument_string = arg_str.sub(EXTRA_REG, '') if extra
-      Sql::QueryFieldList.new(extra, context)
+      context.with {
+        Sql::QueryFieldList.new(extra, context)
+      }
     end
   end
 end

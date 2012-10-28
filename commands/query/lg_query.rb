@@ -33,7 +33,7 @@ module Query
     end
 
     def has_extra?
-      @extra_fields.empty?
+      !@extra_fields.empty?
     end
 
     def compound_query_needs_sort?
@@ -109,6 +109,7 @@ module Query
 
       # If we have multiple queries, all must be summary queries:
       if query_list.size > 1 and !query_list.all? { |q| q.summarise? }
+        STDERR.puts("First: #{query_list[0].extra_fields}, Second: #{query_list[1].extra_fields}")
         raise ("Bad input: #{@query_string.original_string}; when using /, " +
                "all query pieces must be summary queries")
       end

@@ -193,7 +193,7 @@ module Query
       # Check for regex operators in an equality check and map it to a
       # regex check instead.
       if op.equality? && val =~ /[()|?]/ then
-        op = op.equal? ? '~~' : '!~~'
+        op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
       end
 
       cval = val.downcase.strip

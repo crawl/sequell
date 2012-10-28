@@ -1,3 +1,5 @@
+require 'date'
+
 module Sql
   class QuerySortField
     def initialize(field, extra)
@@ -24,6 +26,7 @@ module Sql
         end
       end
       v = @binder.call(row)
+      return Sql::Date.display_date(v) if v.is_a?(DateTime)
       v
     end
 
@@ -64,9 +67,9 @@ module Sql
         @binder = Proc.new { |r| r.key }
       else
         extractor = if @base_index == 2
-                      Proc.new { |v| ratio(v[1], v[0]) }
+                      Proc.new { |v| v && ratio(v[1], v[0]) }
                     else
-                      Proc.new { |v| v[@base_index] }
+                      Proc.new { |v| v && v[@base_index] }
                     end
 
         if @index == 1

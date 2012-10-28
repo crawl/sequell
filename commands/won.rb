@@ -3,6 +3,9 @@
 $:.push('commands')
 require 'helper'
 require 'sqlhelper'
+require 'query/query_string'
+require 'query/game_type_extractor'
+require 'query/query_builder'
 
 help("Shows the number of games won. Usage:" +
      " !won <nick> [<number of wins to skip>]")
@@ -36,6 +39,7 @@ def times(n)
 end
 
 nick, num, trail_select = parse_args
+query = Query::QueryString.new(trail_select)
 
 if not num or num < 0
   puts "Bad index: #{num}"
@@ -45,13 +49,11 @@ end
 games = nil
 begin
   desc = nick
-  game = extract_game_type(trail_select)
+  game = Query::GameTypeExtractor.game_type(query)
   if num == 0
     q, game_count_query = GameContext.with_game(game) do
-      [sql_define_query(nick, -1,
-                        trail_select + ["ktyp=winning"],
-                        nil).reverse,
-       sql_define_query(nick, -1, trail_select, nil)]
+      [Query::QueryBuilder.build(nick, query + "ktyp=winning", CTX_LOG).reverse,
+       Query::QueryBuilder.build(nick, query, CTX_LOG)]
     end
     count = sql_count_rows_matching(game_count_query)
     desc = game_count_query.argstr

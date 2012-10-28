@@ -1,4 +1,5 @@
 require 'sql/query_sort_field'
+require 'date'
 
 module Sql
   class QuerySortCondition
@@ -10,9 +11,14 @@ module Sql
       value = @field.value(row)
     end
     def sort_cmp(a, b)
-      av, bv = sort_value(a).to_f, sort_value(b).to_f
+      av, bv = cmp_value(a), cmp_value(b)
       @reverse ? av <=> bv : bv <=> av
     end
+
+    def cmp_value(x)
+      sort_value(x)
+    end
+
     def inspect
       "#{@field}#{@reverse ? ' (reverse)' : ''}"
     end

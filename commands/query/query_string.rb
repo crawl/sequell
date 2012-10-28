@@ -15,6 +15,11 @@ module Query
       self.new(args[1 .. -1].join(' '), context_word)
     end
 
+    def self.query(thing)
+      return thing if thing.is_a?(self)
+      self.new(thing)
+    end
+
     def initialize(argument_string, context_word=nil)
       if argument_string.is_a?(Array)
         argument_string = argument_string.join(' ')
@@ -117,6 +122,7 @@ module Query
     end
 
     def + (other)
+      other = QueryString.query(other)
       combined_args = ListgameArglistCombine.apply(@args, other.args)
       QueryString.new(combined_args.join(' '), self.context_word)
     end
