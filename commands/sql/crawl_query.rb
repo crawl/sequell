@@ -214,21 +214,12 @@ module Sql
     alias where query
 
     def reverse
-      rq = CrawlQuery.new(@pred, reverse_sorts(@sort), @extra_fields,
+      predicate_copy = @pred.dup
+      predicate_copy.reverse_sorts!
+      rq = CrawlQuery.new(predicate_copy, @extra_fields,
                           @nick, @num, @argstr)
       rq.table = @table
       rq
-    end
-
-    def clear_sorts!
-      @sort.clear
-      @query = nil
-    end
-
-    def reverse_sorts(sorts)
-      sorts.map do |s|
-        s.reverse
-      end
     end
   end
 end

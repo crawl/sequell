@@ -24,6 +24,16 @@ module Query
       @sorts = []
     end
 
+    def dup
+      copy = QueryStruct.new(@operator.dup, * @predicates.map { |p| p.dup })
+      copy.sorts = @sorts.map { |s| s.dup }
+      copy
+    end
+
+    def reverse_sorts!
+      @sorts = @sorts.map { |s| s.reverse }
+    end
+
     def primary_sort
       @sorts[0]
     end
@@ -50,12 +60,12 @@ module Query
       false
     end
 
-    def each_predicate(preds=@predicates)
+    def each_predicate(preds=@predicates, &block)
       preds.each { |p|
         if p.simple_expression?
-          yield p
+          block.call(p)
         else
-          each_predicate(p)
+          each_predicate(p, &block)
         end
       }
     end
@@ -74,7 +84,7 @@ module Query
     end
 
     def body
-      self.atom? ? [self.atom] : self.predicates
+      self.atom || self
     end
 
     def sort(sort)
@@ -117,13 +127,19 @@ module Query
     end
 
     def to_s
-      "Query[#{self.map(&:to_s).join(',')}]"
+      "Query[#{self.map(&:to_s).join(' ' + @operator + ' ')}]"
     end
 
   private
     def append_predicates(predicate)
       return if predicate.empty?
-      @predicates += predicate.body
+
+      body = predicate.body
+      if body.operator == self.operator
+        @predicates += body.predicates
+      else
+        @predicates << body
+      end
     end
 
     def parenthesize(expr, parens=true)

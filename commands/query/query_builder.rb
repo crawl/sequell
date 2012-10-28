@@ -51,9 +51,11 @@ module Query
       num = nil
       args = @query_string.args
       (0 ... args.size).each do |i|
+        STDERR.puts("Examining arg: #{args[i]}")
         num = _parse_number(args[i])
         if num
-          @query_string.args = args.slice(i)
+          args.slice!(i)
+          @query_string.args = args
           break
         end
       end

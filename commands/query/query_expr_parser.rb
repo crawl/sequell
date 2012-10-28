@@ -102,6 +102,7 @@ module Query
             clause.append(field_pred(val, op, field))
             clause.append(field_pred("a " + val, op, field))
             clause.append(field_pred("an " + val, op, field))
+            STDERR.puts("Clause: #{clause}")
           end
           return clause
         end

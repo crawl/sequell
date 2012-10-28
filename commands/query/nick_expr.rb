@@ -13,7 +13,7 @@ module Query
         self.single_nick_predicate(nick, inverted)
       else
         QueryStruct.or_clause(inverted,
-          aliases.map { |a| single_nick_predicate(a, inverted) })
+          *aliases.map { |a| single_nick_predicate(a, inverted) })
       end
     end
 

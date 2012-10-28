@@ -12,6 +12,10 @@ module Query
       @direction = direction
     end
 
+    def dup
+      Sort.new(@field.dup, @direction.dup)
+    end
+
     def reverse
       Sort.new(@field, @direction == 'DESC' ? 'ASC' : 'DESC')
     end

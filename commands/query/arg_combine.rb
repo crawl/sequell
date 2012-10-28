@@ -9,6 +9,7 @@ module Query
 
     def initialize(args)
       @args = args.map { |a| a.dup }
+      @original_args = args
     end
 
     def combine
@@ -22,7 +23,7 @@ module Query
             arg_is_grouper?(cargs.last) ||
             args_uncombinable?(cargs.last, arg))
           cargs << arg
-          can_combine = true if can_combine && arg_enables_combine?(arg)
+          can_combine = true if !can_combine && arg_enables_combine?(arg)
         else
           cargs.last << " " << arg
         end

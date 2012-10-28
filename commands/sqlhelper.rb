@@ -233,11 +233,13 @@ end
 
 def row_to_fieldmap(row)
   map = { }
-  columns = Sql::QueryContext.context.db_columns
+  context = Sql::QueryContext.context
+  columns = context.db_columns
   (0 ... row.size).each do |i|
     lfd = columns[i]
     map[lfd.name] = lfd.value(row[i])
   end
+  map['sql_table'] = context.table
   map
 end
 

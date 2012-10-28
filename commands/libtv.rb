@@ -2,6 +2,7 @@
 
 require 'gserver'
 require 'helper'
+require 'sqlop/tv_view_count'
 
 module TV
   @@tv_args = nil
@@ -316,7 +317,7 @@ module TV
         puts "#{n}. #{summary}#{suffix} requested for #{tv}."
       end
 
-      update_tv_count(g)
+      Sqlop::TVViewCount.increment(g)
       g['req'] = ARGV[1]
     end
 

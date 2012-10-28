@@ -53,7 +53,7 @@ module Sql
     end
 
     def to_s
-      "#{@field.name}#{@op}#{@value}"
+      "#{@field.name}#{@operator}#{@value}"
     end
 
   private
