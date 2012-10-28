@@ -40,7 +40,7 @@ module Sql
     end
 
     def sql_value
-      return like_escape(@value) if @operator =~ /LIKE/
+      return like_escape(@value) if @operator.sql_operator =~ /LIKE/
       @value
     end
 

@@ -57,7 +57,7 @@ module Query
         order = key.max? ? 'DESC' : 'ASC'
         body.sort(Sort.new(selector, order))
       else
-        if context.field_def(selector).integer?
+        if context.integer?(selector)
           if op.textual?
             raise "Can't use #{op} on numeric field #{selector} in #{rawarg}"
           end

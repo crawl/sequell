@@ -18,10 +18,6 @@ module Sql
       @predicates.each_predicate { |p|
         resolve_predicate(p)
       }
-
-      @predicates.sorts.each { |sort|
-        Sql::FieldResolver.resolve(@context, @tables, sort.field)
-      }
     end
 
     def resolve_predicate(p)

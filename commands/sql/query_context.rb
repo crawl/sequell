@@ -47,6 +47,11 @@ module Sql
       fdef && fdef.boolean?
     end
 
+    def integer?(field)
+      fdef = self.field_def(field)
+      fdef && fdef.integer?
+    end
+
     def value_key?(field)
       @value_keys && Sql::Field.field(field) === @value_keys
     end
@@ -119,8 +124,9 @@ module Sql
     end
 
     def summarise?(field)
+      return true if value_key?(field)
       fdef = self.field_def(field)
-      fdef.summarisable?
+      fdef && fdef.summarisable?
     end
 
     def join_field

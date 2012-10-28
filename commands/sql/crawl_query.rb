@@ -1,3 +1,4 @@
+require 'query/query_struct'
 require 'query/sort'
 require 'sql/field'
 require 'sql/query_tables'
@@ -27,12 +28,19 @@ module Sql
       @ctx = QueryContext.context
       @game = GameContext.game
 
-      check_joins(predicates) if @ctx == CTX_STONE
       resolve_predicate_columns(predicates)
 
       @count_tables = @tables.dup
       @summary_tables = @tables.dup
+
+      resolve_sort_fields
       @query_fields = resolve_query_fields
+    end
+
+    def resolve_sort_fields
+      @pred.sorts.each { |sort|
+        resolve_field(sort.field, @tables)
+      }
     end
 
     def with_contexts
@@ -43,42 +51,22 @@ module Sql
       end
     end
 
-    def resolve_predicate_columns(predicates)
-      Sql::ColumnResolver.resolve(@ctx, @tables, predicates)
+    def resolve_predicate_columns(predicates, table_set=@tables)
+      Sql::ColumnResolver.resolve(@ctx, table_set, predicates)
+    end
+
+    # When predicates are updated after initial resolution, update the
+    # table sets for joins.
+    def update_predicate_columns
+      resolve_predicate_columns(@pred, @tables)
+      resolve_predicate_columns(@pred, @summary_tables)
+      resolve_predicate_columns(@pred, @count_tables)
     end
 
     def resolve_query_fields
       @ctx.db_columns.map { |c| Sql::Field.new(c.name) }.each { |field|
-        Sql::FieldResolver.resolve(@ctx, @tables, field)
+        resolve_field(field, @tables)
       }
-    end
-
-    def has_joins?(preds)
-      return false if preds.empty? || !preds.is_a?(Array)
-      if preds[0].is_a?(Symbol)
-        return preds[3] =~ /^#{CTX_LOG.table_alias}\./
-      end
-      preds.any? { |x| has_joins?(x) }
-    end
-
-    def fixup_join
-      return if @joins
-
-      @joins = true
-      game_key = Sql::Field.new('game_key')
-      ref_key = @ctx.field_ref(game_key)
-      @tables.join(Join.new(@tables.primary_table, CTX_LOG.table,
-                            ref_key, ref_key))
-    end
-
-    def sort_joins?
-      @pred.sorts.any? { |s| not @ctx.local_field_def(s.field) }
-    end
-
-    def check_joins(preds)
-      if has_joins?(preds) || sort_joins?
-        fixup_join()
-      end
     end
 
     # Is this a query aimed at a single nick?
@@ -102,10 +90,13 @@ module Sql
       @random_game = random_game
     end
 
+    def resolve_field(field, table)
+      Sql::FieldResolver.resolve(@ctx, table, field)
+    end
+
     def summarise= (s)
       @summarise = s
 
-      need_join = false
       for summary_field in @summarise.fields
         fieldname = summary_field.field
         if @ctx.value_key?(fieldname)
@@ -113,24 +104,22 @@ module Sql
           # Ulch, we have to modify our predicates.
           add_predicate('AND',
                         Sql::FieldPredicate.predicate(fieldname, '=', verb))
-          summary_field.field = noun
-        end
+          summary_field.field = Sql::Field.field(@ctx.value_field)
 
-        # If this is not a local field, we need a join.
-        if !QueryContext.context.local_field_def(summary_field.field)
-          fixup_join()
+          # Resolve the verb field in both the summary and normal tables.
+          update_predicate_columns
         end
       end
 
       @summarise.fields.each { |summary_field|
-        Sql::FieldResolver.resolve(@ctx, @summary_tables, summary_field.field)
+        resolve_field(summary_field.field, @summary_tables)
       }
 
       @query = nil
     end
 
     def add_predicate(operator, pred)
-      @pred << QueryStruct.new(operator, pred)
+      @pred << Query::QueryStruct.new(operator, pred)
     end
 
     def select(what, with_sorts=true)
