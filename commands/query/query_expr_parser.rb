@@ -51,7 +51,7 @@ module Query
         raise "Unknown selector: #{selector}"
       end
 
-      raise "Bad sort: #{arg}" if key.sort? && op != '='
+      raise "Bad sort: #{@arg}" if key.sort? && !op.equal?
 
       if key.sort?
         order = key.max? ? 'DESC' : 'ASC'
@@ -78,7 +78,7 @@ module Query
           Sql::VersionNumber.version_number?(val)
         return field_pred(Sql::VersionNumber.version_numberize(val),
                           op,
-                          field.resolve(selector.name + 'num'))
+                          field.resolve(field.name + 'num'))
       end
 
       if field === ['killer', 'ckiller', 'ikiller']
@@ -167,21 +167,21 @@ module Query
           tstart = tourney.tstart
           tend   = tourney.tend
 
-          time_field = QueryContext.context.raw_time_field
+          time_field = context.raw_time_field
           clause << query_field(Sql::Field.new('rstart'), lop, tstart)
-          clause << query_field(end_time_field, rop, tend)
+          clause << query_field(time_field, rop, tend)
 
           version_clause = QueryStruct.new(in_tourney ? 'OR' : 'AND')
-          version_clause += cv.map { |cv_i|
-            query_field(Sql::Operator.new('cv'), eqop, cv_i)
-          }
+          version_clause.append_all(cv.map { |cv_i|
+            query_field(Sql::Field.new('cv'), eqop, cv_i)
+          })
           clause << version_clause
           if tourney.tmap
-            clause << query_field(Sql::Operator.new('map'), eqop, tourney.tmap)
+            clause << query_field(Sql::Field.new('map'), eqop, tourney.tmap)
           end
           return clause
         else
-          raise "Bad selector #{selector} (#{selector}=t for tourney games)"
+          raise "Bad selector #{field} (#{field}=t for tourney games)"
         end
       end
 

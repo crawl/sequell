@@ -43,11 +43,11 @@ module Query
       nick.nil? || nick =~ /^!?[.]$/
     end
 
-    def nick_negated?(nick)
+    def self.nick_negated?(nick)
       nick && nick =~ /^!/
     end
 
-    def negate_nick(nick)
+    def self.negate_nick(nick)
       "!#{nick}"
     end
   end

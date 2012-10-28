@@ -52,6 +52,10 @@ module Sql
       self.sql_expr(table_set)
     end
 
+    def to_s
+      "#{@field.name}#{@op}#{@value}"
+    end
+
   private
     def like_escape(val)
       val.index('*') || val.index('?') ? val.tr('*?', '%_') : "%#{val}%"

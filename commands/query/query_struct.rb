@@ -74,7 +74,7 @@ module Query
     end
 
     def body
-      self.atom || self.predicates
+      self.atom? ? [self.atom] : self.predicates
     end
 
     def sort(sort)
@@ -107,6 +107,11 @@ module Query
       self
     end
 
+    def append_all(predicates)
+      predicates.each { |p| self << p }
+      self
+    end
+
     def << (predicate)
       self.append(predicate)
     end
@@ -118,7 +123,7 @@ module Query
   private
     def append_predicates(predicate)
       return if predicate.empty?
-      @predicates << predicate.body
+      @predicates += predicate.body
     end
 
     def parenthesize(expr, parens=true)

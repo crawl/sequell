@@ -3,12 +3,15 @@
 $:.push('commands')
 require 'helper'
 require 'sqlhelper'
+require 'query/query_string'
+require 'query/nick_resolver'
 
 help("Lists the top kills for a player's ghost.")
 
 args = (ARGV[2].split)[1 .. -1] || []
 
-ghosts = nick_aliases( extract_nick(args) || ARGV[1] )
+query = Query::QueryString.new(args)
+ghosts = Query::NickResolver.resolve_query_nick(query, ARGV[1])
 
 def ghost_field(ghost)
   if ghost == '*'
@@ -26,4 +29,4 @@ else
   fields << "killer~~^(#{ghosts.join("|")})'.*ghost"
 end
 
-report_grouped_games('name', '', '*', [ '*' ] + fields + paren_args(args))
+report_grouped_games('name', '', '*', [ '*' ] + fields + paren_args(query.args))

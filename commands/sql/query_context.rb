@@ -17,6 +17,7 @@ module Sql
     attr_accessor :table_alias
     attr_reader   :raw_time_field
     attr_reader   :key_field, :value_field
+    attr_reader   :alt
 
     def with
       old_context = @@global_context
@@ -120,6 +121,10 @@ module Sql
     def summarise?(field)
       fdef = self.field_def(field)
       fdef.summarisable?
+    end
+
+    def join_field
+      'game_key_id'
     end
 
     def initialize(config, table, entity_name, alt_context,

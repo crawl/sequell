@@ -4,6 +4,8 @@ $:.push('commands')
 require 'helper'
 require 'sqlhelper'
 require 'libtv'
+require 'query/query_string'
+require 'query/extra_field_parser'
 
 help("Lists milestones for the specified player. Usage: !lm (<player>) (<number>) (options) where options are in the form field=value, or (max|min)=field. See ??milestone for more info.")
 
@@ -12,12 +14,12 @@ ctx = CommandContext.new
 TV.with_tv_opts(ctx.arguments) do |args, tvopt|
   ctx.arguments = args
   ctx.extract_options!('game', 'log', 'ttyrec')
-  sargs, extra = extra_field_clause(ctx.arguments,
-                                    ctx[:game] ? CTX_LOG : CTX_STONE,
-                                    false)
+
+  query = Query::QueryString.new(ctx.arguments)
+  extra = Query::ExtraFieldParser.parse(query, CTX_STONE)
 
   tv = tvopt[:tv]
-  sql_show_game(ctx.default_nick, sargs, CTX_STONE) do |res|
+  sql_show_game(ctx.default_nick, query.args, CTX_STONE) do |res|
     if ctx[:log] && res.game['verb'] == 'crash'
       puts("#{res.n}. #{short_game_summary(res.game)}: " +
            (find_milestone_crash_dump(res.game) || "Can't find crash dump."))

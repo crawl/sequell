@@ -76,8 +76,10 @@ GODS = Crawl::Gods.new(CFG['god'])
 
 SOURCES = LG_SERVER_CFG['sources'].keys.sort
 
-CLASS_EXPANSIONS = CFG['classes']
-RACE_EXPANSIONS = CFG['species']
+CLASS_EXPANSIONS =
+  Hash[CFG['classes'].map { |abbr, cls| [abbr, cls.sub('*', '')] }]
+RACE_EXPANSIONS =
+  Hash[CFG['species'].map { |abbr, sp| [abbr, sp.sub('*', '')] }]
 
 BOOL_FIELDS = CFG['boolean-fields']
 
@@ -349,9 +351,10 @@ end
 
 def report_grouped_games(group_by, defval, who, args,
                          separator=', ', formatter=nil)
-  q = sql_build_query(who, args)
-  q.summarise = SummaryFieldList.new("s=#{group_by}")
-  query_group = QueryList.new
+  q = Query::QueryBuilder.build(who, Query::QueryString.new(args),
+                                Sql::QueryContext.context, nil, true)
+  q.summarise = Sql::SummaryFieldList.new("s=#{group_by}")
+  query_group = Sql::QueryList.new
   query_group << q
   report_grouped_games_for_query(query_group, defval, separator, formatter)
 rescue

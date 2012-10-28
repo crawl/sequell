@@ -28,6 +28,11 @@ module Sql
       # Find the table that the predicate's field belongs to
       qualified_field = @context.table_qualified(field)
 
+      # If this is not a local field, we need to join to the alt table first:
+      if !@context.local_field_def(field)
+        apply_alt_join(@context)
+      end
+
       # Set up the join
       join = Sql::Join.new(qualified_field.table,
                            reference_table,
@@ -41,6 +46,13 @@ module Sql
       field.name  = column.lookup_field_name
 
       field
+    end
+
+    def apply_alt_join(context)
+      alt = context.alt
+      ref_field = context.join_field
+      @tables.join(Join.new(@tables.primary_table, alt.table,
+                            ref_field, ref_field))
     end
   end
 end

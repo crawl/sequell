@@ -367,8 +367,7 @@ sub cat_xlog {
 
 sub game_type_table_name($$) {
   my ($game_type, $base_tablename) = @_;
-  $game_type && $game_type ne 'crawl'? "${game_type}_${base_tablename}" :
-    $base_tablename
+  ($GAME_TYPE_PREFIXES{$game_type || 'crawl'} || '') . $base_tablename
 }
 
 sub game_table_name($$) {

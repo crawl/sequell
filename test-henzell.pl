@@ -22,7 +22,7 @@ $ENV{'HENZELL_DBPASS'} = $DBPASS;
 
 new_db_handle($DBNAME, $DBUSER, $DBPASS) && initialize_sqllog();
 
-my $SCHEMAFILE = 'henzell.sql';
+my $SCHEMAFILE = 'henzell-schema.sql';
 my $TESTFILE = 'testcmd.txt';
 
 my $TESTLOG = 'test.log';
