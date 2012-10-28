@@ -1,4 +1,5 @@
 require 'sql/query_sort_condition'
+require 'sql/query_field'
 
 module Sql
   class QueryFieldList
@@ -80,19 +81,18 @@ module Sql
           :percentage)
       end
       @ctx.with do
-        field = LGField.canonicalise_field(field)
+        return Sql::QueryField.new(self, nil, Sql::Field.field(field), field)
       end
-      return QueryField.new(self, field, field, field)
     end
 
     def aggregate_typematch(func, field)
-      ftype = AGGREGATE_FUNC_TYPES[func]
+      ftype = SQL_CONFIG.aggregate_function_types[func]
       return ftype == '*' || ftype == @ctx.field_type(field)
     end
 
     def aggregate_function(func, field)
       @ctx.with do
-        field = LGField.canonicalise_field(field)
+        field = Sql::Field.field(field)
       end
       func = canonicalise_aggregate(func)
 
@@ -101,19 +101,18 @@ module Sql
         raise "#{func} cannot be applied to #{field}"
       end
 
-      fieldalias = (func + "_" + field.gsub(/[^\w]+/, '_') +
+      fieldalias = (func + "_" + field.name.gsub(/[^\w]+/, '_') +
         QueryFieldList::unique_id())
 
-      dbf = @ctx.dbfield(field)
-      fieldexpr = "#{func}(#{dbf})"
-      fieldexpr = "COUNT(DISTINCT #{dbf})" if func == 'cdist'
+      fieldexpr = "#{func}(%s)"
+      fieldexpr = "COUNT(DISTINCT %s)" if func == 'cdist' || func == 'count'
       return QueryField.new(self, fieldexpr, field,
         "#{func}(#{field})", fieldalias)
     end
 
     def canonicalise_aggregate(func)
       func = func.strip.downcase
-      if not AGGREGATE_FUNC_TYPES[func]
+      if not SQL_CONFIG.aggregate_function_types[func]
         raise "Unknown aggregate function #{func} in #{extra}"
       end
       func

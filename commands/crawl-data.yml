@@ -456,8 +456,10 @@ prefix-field-fixups:
     cloud: cloud
     starv: starvation
 
+# cdist and count are both count distinct
 aggregate-function-types:
   cdist: '*'
+  count: '*'
   avg: I
   median: I
   max: '*'

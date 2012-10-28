@@ -214,6 +214,10 @@ module Query
         val = 'quitting' if cval =~ /^quit/
       end
 
+      if context.boolean?(key) && val.empty?
+        val = 'n'
+      end
+
       [key, op, val]
     end
   end

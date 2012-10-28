@@ -5,8 +5,7 @@ LISTGAME_SHORTCUTS =
    lambda do |arg, reproc|
      god_name = GODS.god_resolve_name(arg)
      if god_name
-       reproc.call('god', god_name)
-       return true
+       return reproc.call('god', god_name)
      end
      nil
    end,
@@ -16,8 +15,7 @@ LISTGAME_SHORTCUTS =
    end,
    lambda do |value, reproc|
      if value =~ /^drown/i
-       reproc.call('ktyp', 'water')
-       return true
+       return reproc.call('ktyp', 'water')
      end
      nil
    end,
@@ -33,8 +31,7 @@ LISTGAME_SHORTCUTS =
    lambda do |value, reproc|
      context = Sql::QueryContext.context
      if context.boolean?(Sql::Field.field(value))
-       reproc.call(value.downcase, 'y')
-       return true
+       return reproc.call(value.downcase, 'y')
      end
      nil
    end

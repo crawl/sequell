@@ -111,10 +111,7 @@ module Sql
         end
       end
 
-      @summarise.fields.each { |summary_field|
-        resolve_field(summary_field.field, @summary_tables)
-      }
-
+      resolve_summary_fields
       @query = nil
     end
 
@@ -138,7 +135,23 @@ module Sql
       "SELECT COUNT(*) FROM #{@count_tables.to_sql} " + where(false)
     end
 
+    def resolve_summary_fields
+      if @summarise
+        @summarise.fields.each { |summary_field|
+          resolve_field(summary_field.field, @summary_tables)
+        }
+      end
+
+      if @extra_fields
+        @extra_fields.fields.each { |extra_field|
+          resolve_field(extra_field.field, @summary_tables)
+        }
+      end
+    end
+
     def summary_query
+      resolve_summary_fields
+
       temp = @pred.sorts
       begin
         @pred.sorts = []
@@ -178,7 +191,9 @@ module Sql
         if !@extra_fields.aggregate?
           raise "Extra fields (#{@extra_fields.extra}) contain non-aggregates"
         end
-        extras = @extra_fields.fields.map { |f| f.to_s }.join(", ")
+        extras = @extra_fields.fields.map { |f|
+          f.to_sql(@summary_tables)
+        }.join(", ")
       end
       [basefields, extras].find_all { |x| x && !x.empty? }.join(", ")
     end

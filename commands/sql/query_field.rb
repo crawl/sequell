@@ -8,8 +8,14 @@ module Sql
       @display = display
       @calias = calias
       @special = special
-      @type = QueryContext.context.field_type(field)
+      @context = Sql::QueryContext.context
+      @type = @context.field_type(field)
       @order = ''
+    end
+
+    def expr(table_set)
+      field_expr = @context.dbfield(@field, table_set)
+      @expr ? @expr.sub('%s', field_expr) : field_expr
     end
 
     def default_sort
@@ -28,12 +34,13 @@ module Sql
       value
     end
 
-    def to_s
-      @calias ? "#{@expr} AS #{@calias}" : @expr
+    def to_sql(table_set)
+      sql_expr = expr(table_set)
+      @calias ? "#{sql_expr} AS #{@calias}" : sql_expr
     end
 
     def aggregate?
-      return expr =~ /\w+\(/
+      return @expr && @expr =~ /\w+\(/
     end
 
     def count?

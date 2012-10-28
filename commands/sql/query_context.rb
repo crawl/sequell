@@ -97,7 +97,7 @@ module Sql
 
     def field_type(field)
       field_definition = self.field_def(field)
-      field_definition && field_definition.type
+      (field_definition && field_definition.type) || 'S'
     end
 
     def table

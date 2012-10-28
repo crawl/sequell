@@ -791,12 +791,13 @@ The available aggregate functions [usable as x=aggregate(field)]:
 5. sum
 6. std (standard deviation)
 7. variance
-8. cdist (count distinct)
+8. count (count distinct)
+9. cdist (count distinct, identical to 'count')
 
 You may use avg, median, sum, std and variance only for numeric
 fields.
 
-max, min, cdist may also be used on text (character) fields.
+max, min and count may also be used on text (character) fields.
 
 
 Nick Aliases
