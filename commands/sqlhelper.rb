@@ -125,14 +125,16 @@ module GameContext
 end
 
 CTX_LOG =
-  Sql::QueryContext.new(SQL_CONFIG, 'logrecord lg', 'game', nil,
+  Sql::QueryContext.new(SQL_CONFIG, 'logrecord', 'game', nil,
+                        :alias => 'lg',
                         :fields => SQL_CONFIG.logfields,
                         :synthetic_fields => SQL_CONFIG.fakefields,
                         :default_sort => 'end',
                         :raw_time_field => 'rend')
 
 CTX_STONE =
-  Sql::QueryContext.new(SQL_CONFIG, 'milestone mst', 'milestone', CTX_LOG,
+  Sql::QueryContext.new(SQL_CONFIG, 'milestone', 'milestone', CTX_LOG,
+                        :alias => 'lm',
                         :fields => SQL_CONFIG.milefields,
                         :synthetic_fields => SQL_CONFIG.fakefields,
                         :default_sort => 'time',
@@ -229,8 +231,9 @@ end
 
 def row_to_fieldmap(row)
   map = { }
+  columns = Sql::QueryContext.context.db_columns
   (0 ... row.size).each do |i|
-    lfd = QueryContext.context.fields[i]
+    lfd = columns[i]
     map[lfd.name] = lfd.value(row[i])
   end
   map
@@ -281,7 +284,7 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
-  STDERR.puts "Query: #{q.select_all} (#{q.values.join(', ')})"
+  STDERR.puts "Count Query: #{q.select_count} (#{q.values.join(', ')})"
   sql_db_handle.get_first_value(q.select_count, *q.values).to_i
 end
 
@@ -294,6 +297,7 @@ def sql_each_row_matching(q, limit=0)
       query += " LIMIT #{limit}"
     end
   end
+  STDERR.puts("SELECT query: #{query}")
   sql_db_handle.execute(query, *q.values) do |row|
     yield row
   end

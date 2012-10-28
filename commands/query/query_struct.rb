@@ -24,6 +24,10 @@ module Query
       @sorts = []
     end
 
+    def primary_sort
+      @sorts[0]
+    end
+
     def each(&block)
       @predicates.each(&block)
     end

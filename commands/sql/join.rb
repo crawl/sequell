@@ -24,5 +24,9 @@ module Sql
         "#{@left_table.field_sql(@left_field)} = " +
         "#{@right_table.field_sql(@right_field)}"
     end
+
+    def to_s
+      "Join[#{@left_table.name}.#{@left_field.name}=#{@right_table.name}.#{@right_field.name}]"
+    end
   end
 end

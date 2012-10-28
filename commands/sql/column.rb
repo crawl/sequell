@@ -26,12 +26,29 @@ module Sql
     end
 
     def lookup_table
-      # TODO
       self.reference? && @config.lookup_table(self)
+    end
+
+    def lookup_config
+      @lookup_config ||= find_lookup_config
+    end
+
+    def lookup_field_name
+      return @name unless self.reference?
+      lookup_config.lookup_field(self.name)
+    end
+
+    def fk_name
+      return @name unless self.reference?
+      lookup_config.fk_field(self.name)
     end
 
     def text?
       self.type == 'S'
+    end
+
+    def unique?
+      !self.summarisable?
     end
 
     def date?
@@ -62,6 +79,10 @@ module Sql
     end
 
   private
+    def find_lookup_config
+      @config.lookup_table_config(self.lookup_table.name)
+    end
+
     def strip_decoration(name)
       name.sub(/[A-Z]*[\W]*$/, '')
     end

@@ -5,7 +5,7 @@ module Sql
     def initialize(config, column_list)
       @config = config
       @column_list = column_list || []
-      @columns = column_list.map { |column_config|
+      @columns = @column_list.map { |column_config|
         Sql::Column.new(config, column_config)
       }
       add_derived_columns

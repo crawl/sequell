@@ -490,11 +490,11 @@ lookup-tables:
   version:
     fields: [v]
     generated-fields:
-      - vnumIH?
+      - vnumIH?^
   cversion:
     fields: [cv]
     generated-fields:
-      - vnumIH?
+      - cvnumIH?^
   killer: [killer, ckiller, ikiller]
   kaux: [kaux, ckaux]
   msg: [tmsg, vmsg]

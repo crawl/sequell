@@ -1,3 +1,5 @@
+require 'sql/join'
+
 module Sql
   class FieldResolver
     def self.resolve(context, table_set, field)
@@ -29,13 +31,16 @@ module Sql
       # Set up the join
       join = Sql::Join.new(qualified_field.table,
                            reference_table,
-                           qualified_field.reference_field)
+                           qualified_field.resolve(column.fk_name))
 
       # Register the join
       @tables.join(join)
 
       # And qualify the field with the reference table
       field.table = reference_table
+      field.name  = column.lookup_field_name
+
+      field
     end
   end
 end

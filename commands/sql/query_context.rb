@@ -28,10 +28,13 @@ module Sql
       end
     end
 
-    def db_field_names
-      @fields.columns.map { |column_def|
-        db_column_expr(column_def)
-      }
+    def db_columns
+      @fields.columns
+    end
+
+    def unique_valued?(field)
+      fdef = self.field_def(field)
+      fdef && fdef.unique?
     end
 
     def field?(field)
@@ -104,6 +107,7 @@ module Sql
 
     def db_column_expr(fdef, table_set)
       table = table_set.table(@table)
+      raise "Could not resolve #{@table} in #{table_set}" unless table
       table.field_sql(fdef)
     end
 
@@ -120,13 +124,8 @@ module Sql
       @alt = alt_context
       @game = GAME_TYPE_DEFAULT
 
-      if @table =~ / (\w+)$/
-        @table_alias = $1
-      else
-        @table_alias = @table
-      end
-
       @noun_verb = { }
+      @table_alias = options[:alias]
       @fields = options[:fields]
       @synthetic = options[:synthetic_fields]
       @defsort = Sql::Field.field(options[:default_sort])

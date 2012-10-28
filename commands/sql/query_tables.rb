@@ -15,6 +15,13 @@ module Sql
       @alias_index = 0
     end
 
+    def dup
+      tables = self.class.new(@primary_table)
+      tables.instance_variable_set(:@joins, @joins.map { |j| j.dup })
+      tables.instance_variable_set(:@table_aliases, @table_aliases.dup)
+      tables
+    end
+
     def resolve!(table, force_new_alias=false)
       return table if !force_new_alias && self[table.alias] == table
 
@@ -43,7 +50,6 @@ module Sql
       end
 
       if @joins.include?(join_condition)
-        STDERR.puts("Not adding join #{join_condition} -- it already exists")
         update_join_table_aliases(join_condition)
         return
       end
@@ -63,6 +69,10 @@ module Sql
         sql << " " << join.to_sql
       end
       sql
+    end
+
+    def to_s
+      "QueryTables[#{@tables.map(&:name).join(',')}]"
     end
 
   private

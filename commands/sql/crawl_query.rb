@@ -2,11 +2,14 @@ require 'query/sort'
 require 'sql/field'
 require 'sql/query_tables'
 require 'sql/field_predicate'
+require 'sql/column_resolver'
+require 'sql/field_resolver'
 
 module Sql
   class CrawlQuery
     attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
     attr_accessor :summary_sort, :table, :game
+    attr_reader   :query_fields
 
     def initialize(predicates, extra_fields, nick, num, argstr)
       @tables = QueryTables.new(QueryContext.context.table)
@@ -25,7 +28,11 @@ module Sql
       @game = GameContext.game
 
       check_joins(predicates) if @ctx == CTX_STONE
+
       resolve_predicate_columns(predicates)
+
+      @count_tables = @tables.dup
+      @query_fields = resolve_query_fields
     end
 
     def with_contexts
@@ -38,6 +45,12 @@ module Sql
 
     def resolve_predicate_columns(predicates)
       Sql::ColumnResolver.resolve(@ctx, @tables, predicates)
+    end
+
+    def resolve_query_fields
+      @ctx.db_columns.map { |c| Sql::Field.new(c.name) }.each { |field|
+        Sql::FieldResolver.resolve(@ctx, @tables, field)
+      }
     end
 
     def has_joins?(preds)
@@ -120,13 +133,16 @@ module Sql
       "SELECT #{what} FROM #{@tables.to_sql} " + where(with_sorts)
     end
 
+    def query_columns
+      self.query_fields.map { |f| @ctx.dbfield(f, @tables) }
+    end
+
     def select_all
-      fields = QueryContext.context.db_field_names.join(", ")
-      "SELECT #{fields} FROM #{@tables.to_sql} " + where
+      "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " + where
     end
 
     def select_count
-      "SELECT COUNT(*) FROM #{@tables.to_sql} " + where(false)
+      "SELECT COUNT(*) FROM #{@count_tables.to_sql} " + where(false)
     end
 
     def summary_query
@@ -188,13 +204,16 @@ module Sql
     end
 
     def build_query(with_sorts=true)
-      @query, @values = @pred.to_sql, @pred.sql_values
+      @query, @values = @pred.to_sql(@tables, @ctx), @pred.sql_values
       @query = "WHERE #{@query}" unless @query.empty?
       if with_sorts && @pred.has_sorts?
         @query << " " unless @query.empty?
-        @query << "ORDER BY " << @sort[0].to_sql(@tables)
-        @query << ", " <<
-               Query::Sort.new(Sql::Field.new('id'), 'ASC').to_sql(@tables)
+        @query << "ORDER BY " << @pred.primary_sort.to_sql(@tables)
+
+        unless @ctx.unique_valued?(@pred.primary_sort.field)
+          @query << ", " <<
+                 Query::Sort.new(Sql::Field.new('id'), 'ASC').to_sql(@tables)
+        end
       end
       @query
     end

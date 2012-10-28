@@ -24,12 +24,12 @@ module Sql
     end
 
     def lookup_table
-      SQL_CONFIG.lookup_table_named(self.name)
+      SQL_CONFIG.lookup_table_config(self.name)
     end
 
     def field_sql_name(field)
       column = self.column_list[field.name]
-      column ? column.sql_column_name : field.name
+      column ? column.sql_column_name : field.sql_column_name
     end
 
     def field_sql(field)
@@ -41,7 +41,7 @@ module Sql
     end
 
     def to_sql
-      return @name if @alias == @name
+      return @name.dup if @alias == @name
       "#{@name} AS #{@alias}"
     end
 

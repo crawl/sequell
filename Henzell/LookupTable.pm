@@ -9,7 +9,13 @@ my %COMPUTED_FIELDS = (
   vnum => sub {
     my $value = shift;
     Henzell::Crawl::version_numberize($value)
-  });
+  },
+
+  cvnum => sub {
+    my $value = shift;
+    Henzell::Crawl::version_numberize($value)
+  }
+);
 
 sub new {
   my ($cls, %props) = @_;

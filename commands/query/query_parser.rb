@@ -21,8 +21,7 @@ module Query
       @query_string.normalize!
       @body = QueryStruct.new
       self.parse_query_params
-      Sql::CrawlQuery.new(@body, @body.sorts, @extra, @nick, @num,
-                          self.argument_string)
+      Sql::CrawlQuery.new(@body, @extra, @nick, @num, self.argument_string)
     end
 
     def parse_query_params

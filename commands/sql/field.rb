@@ -6,7 +6,9 @@ module Sql
       self.new(name)
     end
 
-    attr_reader :prefix, :name, :aliased_name, :table
+    attr_reader :prefix, :aliased_name
+    attr_accessor :table
+    attr_accessor :name
 
     # A (possibly-prefixed) field
     def initialize(field_name)
@@ -29,11 +31,12 @@ module Sql
     end
 
     def resolve(new_name)
+      new_name = new_name.name if new_name.is_a?(self.class)
       self.class.new(@prefix ? "#{@prefix}:#{new_name}" : new_name)
     end
 
     def reference_field
-      self.resolve(self.name + '_id')
+      self.resolve(self.sql_column_name + '_id')
     end
 
     def === (name)

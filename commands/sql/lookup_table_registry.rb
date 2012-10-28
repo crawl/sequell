@@ -1,16 +1,18 @@
 require 'sql/query_table'
+require 'sql/lookup_table_config'
 
 module Sql
   class LookupTableRegistry
     def initialize(cfg)
       @cfg = cfg
       @lookups = @cfg['lookup-tables']
+      @column_keys = { }
     end
 
     def lookup_table_config(lookup_table_name)
-      cfg = @lookups[lookup_table_name]
-      return nil unless cfg
-      Sql::LookupTableConfig.new(cfg)
+      lookup_table_name = lookup_table_name.sub(/^l_/, '')
+      lookup_cfg = @lookups[lookup_table_name]
+      Sql::LookupTableConfig.new(@cfg, lookup_table_name, lookup_cfg)
     end
 
     def lookup_table(column)
@@ -19,7 +21,7 @@ module Sql
     end
 
     def lookup_key(column)
-      @column_key[column.name] ||= find_lookup_key(column)
+      @column_keys[column.name] ||= find_lookup_key(column)
     end
 
   private
@@ -42,7 +44,7 @@ module Sql
 
         return lookup['generated-fields'] &&
           lookup['generated-fields'].map { |f|
-            Sql::Column.new(f)
+            Sql::Column.new(@cfg, f)
           }.find { |c| c.name == column.name }
       end
     end
