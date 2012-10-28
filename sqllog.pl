@@ -268,6 +268,8 @@ sub fixup_db {
 
 sub find_start_offset_in {
   my ($table, $file) = @_;
+
+  $file =~ s{.*/}{};
   my $query = <<OFFSET;
 SELECT MAX(t.file_offset)
   FROM $table AS t INNER JOIN l_file AS lf ON lf.id = t.file_id
@@ -309,8 +311,8 @@ sub go_to_offset {
 
 sub filename_gametype($) {
   my $filename = shift;
-  return 'zot' if $filename =~ /-zd/ || $filename =~ /-zotdef/;
-  return 'spr' if $filename =~ /-spr/;
+  return 'zotdef' if $filename =~ /-(?:zd|zotdef)/i;
+  return 'sprint' if $filename =~ /-spr/i;
   return undef;
 }
 
@@ -446,6 +448,8 @@ sub fixup_logfields {
   my $milestone = exists($g->{milestone});
 
   ($g->{cv} = $g->{v}) =~ s/^(\d+\.\d+).*/$1/;
+  # Strip trailing zeros from the version field.
+  $g->{v} = Henzell::Crawl::canonical_version($g->{v});
 
   if ($g->{alpha}) {
     $g->{cv} .= "-a";
@@ -714,7 +718,7 @@ sub add_milestone {
   my $m = logfield_hash($line);
 
   return if broken_record($m);
-  $m->{file} = $lf->{file};
+  ($m->{file} = $lf->{file}) =~ s{.*/}{};
   $m->{offset} = $offset;
   $m->{src} = $lf->{server};
   $m->{alpha} = record_is_alpha_version($lf, $m);
@@ -734,7 +738,7 @@ sub add_logline {
   return if broken_record($fields);
   $fields->{src} = $lf->{server};
   $fields->{alpha} = record_is_alpha_version($lf, $fields);
-  $fields->{file} = $lf->{file};
+  ($fields->{file} = $lf->{file}) =~ s{.*/}{};
   $fields->{offset} = $offset;
   $fields = fixup_logfields($fields);
 

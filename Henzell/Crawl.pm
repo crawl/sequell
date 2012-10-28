@@ -47,6 +47,16 @@ sub version_numberize {
   $result
 }
 
+# Cleans up the given version number, ensuring it's at least a dotted triple.
+# 0.10 -> 0.10.0
+# 0.9-b1 -> 0.9.0-b1
+# 0.3.5 -> 0.3.5
+sub canonical_version {
+  my $v = shift;
+  $v =~ s/^(\d+\.\d+)($|[^\d.])/$1.0$2/;
+  $v
+}
+
 sub decorated_fields {
   my $property_name = shift;
   map {
