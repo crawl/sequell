@@ -18,7 +18,7 @@ module Query
     end
 
     def self.single_nick_predicate(nick, inverted)
-      Sql::FieldPredicate.predicate(nick, inverted ? '!=' : '=', 'name', 'name')
+      Sql::FieldPredicate.predicate(nick, inverted ? '!=' : '=', 'name')
     end
   end
 end

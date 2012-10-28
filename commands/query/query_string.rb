@@ -25,6 +25,10 @@ module Query
       @context_word = context_word
     end
 
+    def original
+      QueryString.new(@original_string, @context_word)
+    end
+
     def argument_string= (argument_string)
       @argument_string = argument_string
       @args = argument_string.split().map { |x| x.strip }.find_all { |x|

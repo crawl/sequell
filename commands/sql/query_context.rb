@@ -41,8 +41,13 @@ module Sql
       self.field_def(field) || self.value_key?(field)
     end
 
+    def boolean?(field)
+      fdef = self.field_def(field)
+      fdef && fdef.boolean?
+    end
+
     def value_key?(field)
-      @value_keys && field === @value_keys
+      @value_keys && Sql::Field.field(field) === @value_keys
     end
 
     def local_field_def(field)
@@ -71,6 +76,7 @@ module Sql
     end
 
     def field_def(field)
+      field = Sql::Field.field(field)
       if field.prefixed?
         if field.has_prefix?(@table_alias)
           @fields[field.name] || @synthetic[field.name]

@@ -31,7 +31,7 @@ module Query
     end
 
     def nick_predicate(nick=@nick, inverted=false)
-      NickExpr.predicate(nick, inverted)
+      NickExpr.expr(nick, inverted)
     end
 
     def parse_query_param_groups

@@ -1,3 +1,5 @@
+require 'sql/query_sort_condition'
+
 module Sql
   class QueryFieldList
     @@idbase = 0

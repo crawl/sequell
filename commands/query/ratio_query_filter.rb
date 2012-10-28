@@ -1,4 +1,6 @@
 require 'query/query_argument_normalizer'
+require 'sql/query_sort_field'
+require 'sql/query_group_filter'
 
 module Query
   class RatioQueryFilter
@@ -16,7 +18,7 @@ module Query
     def self.parse_ratio_filters(filter_arg, extra_field)
       return [] unless filter_arg
 
-      args = QueryArgumentNormalizer.normalizer(filter_arg.split)
+      args = QueryArgumentNormalizer.normalize(filter_arg.split)
       args.map { |a| ratio_filter(a, extra_field) }
     end
 
@@ -26,8 +28,8 @@ module Query
       end
 
       field, op, arg = $1, $2, $3.to_f
-      field = QuerySortField.new(field, extra)
-      QueryGroupFilter.new(field, op, arg)
+      field = Sql::QuerySortField.new(field, extra)
+      Sql::QueryGroupFilter.new(field, op, arg)
     end
   end
 end

@@ -28,7 +28,6 @@ module Sql
       @game = GameContext.game
 
       check_joins(predicates) if @ctx == CTX_STONE
-
       resolve_predicate_columns(predicates)
 
       @count_tables = @tables.dup

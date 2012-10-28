@@ -8,20 +8,30 @@ module Query
     end
 
     def initialize(args)
-      @args = args
+      @args = args.map { |a| a.dup }
     end
 
     def combine
       cargs = []
+      can_combine = false
       for arg in @args do
-        if (cargs.empty? || arg =~ ARGSPLITTER || arg_is_grouper?(arg) ||
-            arg_is_grouper?(cargs.last) || args_uncombinable?(cargs.last, arg))
+        if (!can_combine ||
+            cargs.empty? ||
+            arg =~ ARGSPLITTER ||
+            arg_is_grouper?(arg) ||
+            arg_is_grouper?(cargs.last) ||
+            args_uncombinable?(cargs.last, arg))
           cargs << arg
+          can_combine = true if can_combine && arg_enables_combine?(arg)
         else
           cargs.last << " " << arg
         end
       end
       cargs
+    end
+
+    def arg_enables_combine?(arg)
+      arg =~ ARGSPLITTER || arg_is_grouper?(arg)
     end
 
     def arg_is_grouper?(arg)

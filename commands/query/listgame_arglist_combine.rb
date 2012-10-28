@@ -11,7 +11,7 @@ module Query
       secondary = QueryArgumentNormalizer.normalize(arguments_b)
       for arg in secondary do
         if arg !~ OPMATCH
-          result.insert(0, arg)
+          result.insert(1, arg)
         else
           result << arg
         end

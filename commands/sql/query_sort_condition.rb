@@ -1,3 +1,5 @@
+require 'sql/query_sort_field'
+
 module Sql
   class QuerySortCondition
     def initialize(extra, field, reverse=true)

@@ -9,7 +9,13 @@ module Crawl
     end
 
     def god_abbreviations
-      @god_abbreviations = @god_abbrev_map.keys
+      @god_abbreviations ||= @god_abbrev_map.keys
+    end
+
+    def god_resolve_name(abbr)
+      return unless abbr =~ /^[a-z]+$/i
+      match = self.god_abbreviations.find { |g| abbr.downcase.index(g) == 0 }
+      match && self.god_full_name(match)
     end
   end
 end

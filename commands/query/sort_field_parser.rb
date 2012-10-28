@@ -17,10 +17,11 @@ module Query
     end
 
     def parse
-      sort_match = @query.args.find { |x| x =~ sort_pattern }
+      args = @query.args
+      sort_match = args.find { |x| x =~ sort_pattern }
       sorts = []
       if sort_match
-        @query.argument_string = args.find_all { |x| x != sort_match }.join(' ')
+        @query.args = args.find_all { |x| x != sort_match }
         sorts = parse_sort_fields(sort_match)
       end
       sorts

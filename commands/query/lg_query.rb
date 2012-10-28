@@ -99,6 +99,8 @@ module Query
       for fragment_args in @split_query_strings[1 .. -1]
         combined_query_string =
           self.combine_query_strings(@primary_query_string, fragment_args)
+        # This is just to strip the nick:
+        self.resolve_nick(combined_query_string)
         @query_list << QueryBuilder.build(@nick, combined_query_string,
                                           @context, @extra_fields, false)
       end
@@ -113,7 +115,7 @@ module Query
     end
 
     def combine_query_strings(primary, fragment)
-      primary + fragment
+      primary.original + fragment
     end
 
     def parse_extra_field_clause(query_string=@query_string)

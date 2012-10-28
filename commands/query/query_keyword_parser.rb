@@ -3,9 +3,9 @@ require 'query/query_struct'
 LISTGAME_SHORTCUTS =
   [
    lambda do |arg, reproc|
-     godmatch = GODABBRS.find { |g| arg.downcase.index(g) == 0 }
-     if godmatch && arg =~ /^[a-z]+$/i
-       reproc.call('god', GODMAP[godmatch] || arg)
+     god_name = GODS.god_resolve_name(arg)
+     if god_name
+       reproc.call('god', god_name)
        return true
      end
      nil
@@ -31,7 +31,8 @@ LISTGAME_SHORTCUTS =
      SOURCES.index(value) ? 'src' : nil
    end,
    lambda do |value, reproc|
-     if BOOL_FIELDS.index(value.downcase)
+     context = Sql::QueryContext.context
+     if context.boolean?(Sql::Field.field(value))
        reproc.call(value.downcase, 'y')
        return true
      end
@@ -76,12 +77,11 @@ module Query
         end
       end
 
-      if MILE_TYPES.index(arg.downcase)
+      if Sql::QueryContext.context.value_key?(arg)
         return parse_expr('verb', arg.downcase)
       end
 
-      if (arg =~ /^([a-z]+):/i && BRANCH_SET.include?($1.downcase)) ||
-          BRANCH_SET.include?(arg.downcase)
+      if BRANCHES.branch?(arg)
         return parse_expr('place', arg)
       end
 

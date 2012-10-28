@@ -19,5 +19,13 @@ module Crawl
       branch = self[name]
       branch && branch.deep?
     end
+
+    def branch?(keyword)
+      if keyword =~ /^([a-z]+):/i
+        self[$1]
+      else
+        self[keyword]
+      end
+    end
   end
 end
