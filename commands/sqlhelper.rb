@@ -304,7 +304,7 @@ def sql_each_row_matching(q, limit=0)
 end
 
 def sql_each_row_for_query(query_text, *params)
-  #puts "Query: #{query_text}"
+  STDERR.puts "sql_each_row_for_query: #{query_text}"
   sql_db_handle.execute(query_text, *params) do |row|
     yield row
   end
@@ -344,7 +344,7 @@ def is_class? (arg)
 end
 
 def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
-  SummaryReporter.new(q, defval, separator, formatter).report_summary
+  Sql::SummaryReporter.new(q, defval, separator, formatter).report_summary
 end
 
 def report_grouped_games(group_by, defval, who, args,

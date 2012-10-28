@@ -80,7 +80,7 @@ module Query
           predicates << subpreds
           next
         end
-        parse_param(arg)
+        predicates << parse_param(arg)
       end
     end
 

@@ -7,7 +7,7 @@ module Sql
         raise StandardError.new("Malformed summary clause: #{s_clause}")
       end
       @order = $1.empty? ? '+' : $1
-      @field = QueryContext.context.canonicalise_field($2)
+      @field = Sql::Field.new($2)
       unless QueryContext.context.summarise?(@field)
         raise StandardError.new("Cannot summarise by #{@field}")
       end

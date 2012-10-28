@@ -3,6 +3,7 @@ require 'query/query_keyword_parser'
 require 'sql/version_number'
 require 'sql/field_predicate'
 require 'sql/field'
+require 'sql/value'
 
 module Query
   class QueryExprParser
@@ -30,7 +31,7 @@ module Query
     end
 
     def context
-      @context ||= QueryContext.context
+      @context ||= Sql::QueryContext.context
     end
 
     def parse
@@ -41,7 +42,7 @@ module Query
 
       key = Sql::Field.new(raw_key)
       op = Sql::Operator.new(op)
-      key, val, op = fixup_selector(key, val, op)
+      key, op, val = fixup_selector(key, op, val)
 
       val = Sql::Value.cleanse_input(val)
 

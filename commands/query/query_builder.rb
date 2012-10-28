@@ -1,4 +1,5 @@
 require 'query/query_parser'
+require 'sql/summary_field_list'
 
 module Query
   class QueryBuilder
@@ -23,7 +24,7 @@ module Query
     def build
       @random = @query_string.option!('-random')
       summarise = @query_string.extract! { |a|
-        SummaryFieldList.summary_field?(a)
+        Sql::SummaryFieldList.summary_field?(a)
       }
       @query_string.operator_back_combine!
 
@@ -36,7 +37,7 @@ module Query
       GameContext.with_game(@game) do
         @context.with do
           query = self.parse_query
-          query.summarise = SummaryFieldList.new(summarise) if summarise
+          query.summarise = Sql::SummaryFieldList.new(summarise) if summarise
           query.random_game = @random
           query.extra_fields = @extra_fields
           query.ctx = @context
@@ -80,14 +81,14 @@ module Query
 
     def game_direct_match(game, arg, found=nil)
       return [game, found] if found
-      return [arg, true] if GAMES.index(arg)
+      return [arg, true] if SQL_CONFIG.games.index(arg)
       return [game, nil]
     end
 
     def game_negated_match(game, arg, found=nil)
       return [game, found] if found
-      if arg =~ /^!/ && GAMES[1..-1].index(arg[1..-1])
-        return [GAME_TYPE_DEFAULT, true]
+      if arg =~ /^!/ && SQL_CONFIG.games[1..-1].index(arg[1..-1])
+        return [SQL_CONFIG.default_game_type, true]
       end
       return [game, nil]
     end

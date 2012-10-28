@@ -32,6 +32,7 @@ module Sql
       resolve_predicate_columns(predicates)
 
       @count_tables = @tables.dup
+      @summary_tables = @tables.dup
       @query_fields = resolve_query_fields
     end
 
@@ -108,7 +109,7 @@ module Sql
       need_join = false
       for summary_field in @summarise.fields
         fieldname = summary_field.field
-        if @ctx.value_keys[fieldname]
+        if @ctx.value_key?(fieldname)
           verb = @ctx.key_field
           # Ulch, we have to modify our predicates.
           add_predicate('AND',
@@ -116,11 +117,15 @@ module Sql
           summary_field.field = noun
         end
 
-        # If this is not a directly summarisable field, we need a join.
-        if !QueryContext.context.summarisable[summary_field.field]
+        # If this is not a local field, we need a join.
+        if !QueryContext.context.local_field_def(summary_field.field)
           fixup_join()
         end
       end
+
+      @summarise.fields.each { |summary_field|
+        Sql::FieldResolver.resolve(@ctx, @summary_tables, summary_field.field)
+      }
 
       @query = nil
     end
@@ -151,7 +156,7 @@ module Sql
         @pred.sorts = []
         @query = nil
         sortdir = @summary_sort
-        %{SELECT #{summary_fields} FROM #{@tables.to_sql}
+        %{SELECT #{summary_fields} FROM #{@summary_tables.to_sql}
           #{where} #{summary_group} #{summary_order}}
       ensure
         @pred.sorts = temp

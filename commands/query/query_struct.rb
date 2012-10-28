@@ -94,7 +94,7 @@ module Query
     def append(predicate)
       if predicate
         if predicate.is_a?(Sql::FieldPredicate)
-          @body << predicate
+          @predicates << predicate
         else
           unless predicate.is_a?(self.class)
             raise "Bad predicate #{predicate} appended to #{self}"
@@ -109,6 +109,10 @@ module Query
 
     def << (predicate)
       self.append(predicate)
+    end
+
+    def to_s
+      "Query[#{self.map(&:to_s).join(',')}]"
     end
 
   private

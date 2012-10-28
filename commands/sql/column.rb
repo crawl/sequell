@@ -56,6 +56,10 @@ module Sql
     end
 
     def numeric?
+      self.integer?
+    end
+
+    def integer?
       self.type == 'I'
     end
 

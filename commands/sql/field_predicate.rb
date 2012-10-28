@@ -26,7 +26,7 @@ module Sql
     end
 
     def sql_expr(table_set)
-      "#{sql_field_expr(table_set, context)} #{@operator.sql_operator} " +
+      "#{sql_field_expr(table_set)} #{@operator.sql_operator} " +
         "#{sql_value_placeholder}"
     end
 

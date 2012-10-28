@@ -41,7 +41,7 @@ module Sql
 
     def === (name)
       if name.is_a?(Enumerable)
-        name.any? { |n| self === n }
+        name.any? { |n| @name == n }
       else
         @name == name
       end

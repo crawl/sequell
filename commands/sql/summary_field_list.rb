@@ -1,3 +1,5 @@
+require 'sql/summary_field'
+
 module Sql
   class SummaryFieldList
     attr_reader :fields
