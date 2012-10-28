@@ -53,8 +53,8 @@ module Query
       raise "Bad sort: #{arg}" if key.sort? && op != '='
 
       if key.sort?
-        order = key.max? ? ' DESC' : ''
-        body.sort("ORDER BY #{context.dbfield(selector)}#{order}")
+        order = key.max? ? 'DESC' : 'ASC'
+        body.sort(Sort.new(selector, order))
       else
         if context.field_def(selector).integer?
           if op.textual?

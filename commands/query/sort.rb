@@ -12,8 +12,12 @@ module Query
       @direction = direction
     end
 
-    def to_sql(context=Sql::QueryContext.context)
-      "#{context.dbfield(@field)} #{@direction}"
+    def reverse
+      Sort.new(@field, @direction == 'DESC' ? 'ASC' : 'DESC')
+    end
+
+    def to_sql(table_set, context=Sql::QueryContext.context)
+      "#{context.dbfield(@field, table_set)} #{@direction}"
     end
 
     def to_s

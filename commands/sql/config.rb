@@ -1,4 +1,5 @@
 require 'sql/column_list'
+require 'sql/lookup_table_registry'
 
 module Sql
   class Config
@@ -6,6 +7,18 @@ module Sql
 
     def initialize(cfg)
       @cfg = cfg
+    end
+
+    def lookup_table(column)
+      self.lookup_table_registry.lookup_table(column)
+    end
+
+    def lookup_table_config(lookup_table_name)
+      self.lookup_table_registry.lookup_table_config(lookup_table_name)
+    end
+
+    def lookup_table_registry
+      @lookup_table_registry ||= Sql::LookupTableRegistry.new(self)
     end
 
     def games

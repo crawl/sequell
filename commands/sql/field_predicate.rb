@@ -1,36 +1,37 @@
 require 'sql/timestamp_format'
+require 'sql/field'
+require 'sql/operator'
 
 module Sql
   class FieldPredicate
     def self.predicate(value, operator, field)
-      self.new(QueryContext.context, value, operator, field).predicate
+      self.new(QueryContext.context, value, operator, field)
     end
+
+    attr_reader :field, :operator, :value
 
     def initialize(context, value, operator, field)
       @context = context
-      @field = field
-      @operator = operator
+      @field = Sql::Field.field(field)
+      @operator = Sql::Operator.op(operator)
       @value = value
     end
 
-    def predicate
-      [ :field, self.sql_expr, self.sql_value, self.sql_field ]
+    def simple_expression?
+      true
     end
 
     def field_def
       @field_def ||= @context.field_def(@field)
     end
 
-    def sql_expr
-      "#{sql_field_expr} #{@operator} #{sql_value_placeholder}"
+    def sql_expr(table_set)
+      "#{sql_field_expr(table_set, context)} #{@operator.sql_operator} " +
+        "#{sql_value_placeholder}"
     end
 
-    def sql_field_expr
-      @context.dbfield(@field)
-    end
-
-    def sql_field
-      @sql_field ||= @context.field_def(@field).sql_column_name
+    def sql_field_expr(table_set)
+      @context.dbfield(@field, table_set)
     end
 
     def sql_value_placeholder
@@ -41,6 +42,14 @@ module Sql
     def sql_value
       return like_escape(@value) if @operator =~ /LIKE/
       @value
+    end
+
+    def sql_values
+      [self.sql_value]
+    end
+
+    def to_sql(table_set, context, parenthesize=false)
+      self.sql_expr(table_set)
     end
 
   private

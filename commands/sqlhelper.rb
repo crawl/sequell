@@ -24,6 +24,7 @@ require 'sql/crawl_query'
 require 'sql/summary_reporter'
 require 'sql/query_context'
 require 'query/lg_query'
+require 'query/query_struct'
 require 'crawl/branch_set'
 require 'crawl/gods'
 
@@ -305,15 +306,17 @@ def sql_each_row_for_query(query_text, *params)
   end
 end
 
-def field_pred(v, op, fname, fexpr=nil)
-  Sql::FieldPredicate.predicate(v, op, fname, fexpr)
+def field_pred(value, op, field)
+  Sql::FieldPredicate.predicate(v, op, field)
 end
 
 def sql_game_by_key(key)
   CTX_LOG.with do
     q =
-      Sql::CrawlQuery.new([ 'AND', field_pred(key, '=', 'game_key') ],
-                          [ ], nil, '*', 1, "gid=#{key}")
+      Sql::CrawlQuery.new(
+        Query::QueryStruct.new('AND',
+          field_pred(key, '=', 'game_key')),
+          [ ], nil, '*', 1, "gid=#{key}")
     #puts "Query: #{q.select_all}"
     r = nil
     sql_each_row_matching(q) do |row|
@@ -321,10 +324,6 @@ def sql_game_by_key(key)
     end
     r
   end
-end
-
-def const_pred(pred)
-  [ :const, pred ]
 end
 
 def is_charabbrev? (arg)

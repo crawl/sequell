@@ -20,6 +20,16 @@ module Sql
       @type ||= find_type(@decorated_name)
     end
 
+    # Foreign key into a table.
+    def reference?
+      @decorated_name =~ /\^/
+    end
+
+    def lookup_table
+      # TODO
+      self.reference? && @config.lookup_table(self)
+    end
+
     def text?
       self.type == 'S'
     end

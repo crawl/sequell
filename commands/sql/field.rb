@@ -1,21 +1,27 @@
 module Sql
   class Field
-    def self.field_named(name)
+    def self.field(name)
       return nil unless name
+      return name if name.is_a?(self)
       self.new(name)
     end
 
-    attr_reader :prefix, :name, :aliased_name
+    attr_reader :prefix, :name, :aliased_name, :table
 
     # A (possibly-prefixed) field
     def initialize(field_name)
       @full_name = field_name
       @aliased_name = field_name.downcase
       @prefix = nil
+      @table = nil
       if @aliased_name =~ /^(\w+):([\w.]+)$/
         @prefix, @aliased_name = $1, $2
       end
       @name = SQL_CONFIG.column_aliases[@aliased_name] || @aliased_name
+    end
+
+    def sql_column_name
+      SQL_CONFIG.sql_field_name_map[self.name] || self.name
     end
 
     def assert_valid!
@@ -24,6 +30,10 @@ module Sql
 
     def resolve(new_name)
       self.class.new(@prefix ? "#{@prefix}:#{new_name}" : new_name)
+    end
+
+    def reference_field
+      self.resolve(self.name + '_id')
     end
 
     def === (name)

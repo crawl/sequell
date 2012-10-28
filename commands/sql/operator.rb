@@ -1,5 +1,10 @@
 module Sql
   class Operator
+    def self.op(op)
+      return op if !op || op.is_a?(self)
+      self.new(op)
+    end
+
     def initialize(logical_op)
       @op = logical_op
     end

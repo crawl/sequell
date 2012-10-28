@@ -1,15 +1,16 @@
 require 'query/sort'
 require 'sql/field'
+require 'sql/query_tables'
+require 'sql/field_predicate'
 
 module Sql
   class CrawlQuery
     attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
     attr_accessor :summary_sort, :table, :game
 
-    def initialize(predicates, sorts, extra_fields, nick, num, argstr)
-      @table = QueryContext.context.table
+    def initialize(predicates, extra_fields, nick, num, argstr)
+      @tables = QueryTables.new(QueryContext.context.table)
       @pred = predicates
-      @sort = sorts
       @nick = nick
       @num = num
       @extra_fields = extra_fields
@@ -24,6 +25,7 @@ module Sql
       @game = GameContext.game
 
       check_joins(predicates) if @ctx == CTX_STONE
+      resolve_predicate_columns(predicates)
     end
 
     def with_contexts
@@ -32,6 +34,10 @@ module Sql
           yield
         end
       end
+    end
+
+    def resolve_predicate_columns(predicates)
+      Sql::ColumnResolver.resolve(@ctx, @tables, predicates)
     end
 
     def has_joins?(preds)
@@ -44,17 +50,16 @@ module Sql
 
     def fixup_join
       return if @joins
+
       @joins = true
-      @table = "#@table, #{CTX_LOG.table}"
-      stone_alias = CTX_STONE.table_alias
-      log_alias = CTX_LOG.table_alias
-      add_predicate('AND',
-        const_pred("#{stone_alias}.game_key = #{log_alias}.game_key"))
+      game_key = Sql::Field.new('game_key')
+      ref_key = @ctx.field_ref(game_key)
+      @tables.join(Join.new(@tables.primary_table, CTX_LOG.table,
+                            ref_key, ref_key))
     end
 
     def sort_joins?
-      talias = CTX_LOG.table_alias
-      @sort.any? { |s| s =~ /ORDER BY #{talias}\./ }
+      @pred.sorts.any? { |s| not @ctx.local_field_def(s.field) }
     end
 
     def check_joins(preds)
@@ -90,10 +95,11 @@ module Sql
       need_join = false
       for summary_field in @summarise.fields
         fieldname = summary_field.field
-        if QueryContext.context.noun_verb[fieldname]
-          noun, verb = QueryContext.context.noun_verb_fields
+        if @ctx.value_keys[fieldname]
+          verb = @ctx.key_field
           # Ulch, we have to modify our predicates.
-          add_predicate('AND', field_pred(fieldname, '=', verb))
+          add_predicate('AND',
+                        Sql::FieldPredicate.predicate(fieldname, '=', verb))
           summary_field.field = noun
         end
 
@@ -107,36 +113,32 @@ module Sql
     end
 
     def add_predicate(operator, pred)
-      if @pred[0] == operator
-        @pred << pred
-      else
-        @pred = [ operator, @pred, pred ]
-      end
+      @pred << QueryStruct.new(operator, pred)
     end
 
     def select(what, with_sorts=true)
-      "SELECT #{what} FROM #@table " + where(with_sorts)
+      "SELECT #{what} FROM #{@tables.to_sql} " + where(with_sorts)
     end
 
     def select_all
       fields = QueryContext.context.db_field_names.join(", ")
-      "SELECT #{fields} FROM #@table " + where
+      "SELECT #{fields} FROM #{@tables.to_sql} " + where
     end
 
     def select_count
-      "SELECT COUNT(*) FROM #@table " + where(false)
+      "SELECT COUNT(*) FROM #{@tables.to_sql} " + where(false)
     end
 
     def summary_query
-      temp = @sort
+      temp = @pred.sorts
       begin
-        @sort = []
+        @pred.sorts = []
         @query = nil
         sortdir = @summary_sort
-        %{SELECT #{summary_fields} FROM #@table
-        #{where} #{summary_group} #{summary_order}}
+        %{SELECT #{summary_fields} FROM #{@tables.to_sql}
+          #{where} #{summary_group} #{summary_order}}
       ensure
-        @sort = temp
+        @pred.sorts = temp
       end
     end
 
@@ -149,7 +151,7 @@ module Sql
     end
 
     def summary_db_fields
-      @summarise.fields.map { |f| QueryContext.context.dbfield(f.field) }
+      @summarise.fields.map { |f| @ctx.dbfield(f.field, @tables) }
     end
 
     def summary_group
@@ -186,12 +188,13 @@ module Sql
     end
 
     def build_query(with_sorts=true)
-      @query, @values = collect_clauses(@pred)
+      @query, @values = @pred.to_sql, @pred.sql_values
       @query = "WHERE #{@query}" unless @query.empty?
-      unless @sort.empty? or !with_sorts
+      if with_sorts && @pred.has_sorts?
         @query << " " unless @query.empty?
-        @query << "ORDER BY " << @sort[0].to_sql
-        @query << ", " << Query::Sort.new(Sql::Field.new('id'), 'ASC').to_sql
+        @query << "ORDER BY " << @sort[0].to_sql(@tables)
+        @query << ", " <<
+               Query::Sort.new(Sql::Field.new('id'), 'ASC').to_sql(@tables)
       end
       @query
     end
@@ -210,44 +213,10 @@ module Sql
       @query = nil
     end
 
-    def sort_by! (*fields)
-      clear_sorts!
-      sort = ""
-      for field, direction in fields
-        sort << ", " unless sort.empty?
-        sort << "#{field} #{direction == :desc ? 'DESC' : ''}"
-      end
-      @sort << "ORDER BY #{QueryContext.context.dbfield(sort)}"
-    end
-
     def reverse_sorts(sorts)
       sorts.map do |s|
-        s =~ /\s+DESC\s*$/i ? s.sub(/\s+DESC\s*$/, '') : s + " DESC"
+        s.reverse
       end
-    end
-
-    def collect_clauses(preds)
-      clauses = ''
-      return clauses unless preds.size > 1
-
-      op = preds[0]
-      return [ preds[1], [ preds[2] ] ] if op == :field
-      return [ preds[1], [ ] ] if op == :const
-
-      values = []
-
-      preds[1 .. -1].each do |p|
-        clauses << " " << op << " " unless clauses.empty?
-
-        subclause, subvalues = collect_clauses(p)
-        if p[0].is_a?(Symbol)
-          clauses << subclause
-        else
-          clauses << "(#{subclause})"
-        end
-        values += subvalues
-      end
-      [ clauses, values ]
     end
   end
 end
