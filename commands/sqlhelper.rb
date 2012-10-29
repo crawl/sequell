@@ -4,6 +4,7 @@ if !ENV['HENZELL_SQL_QUERIES']
   raise Exception.new("sqlhelper: HENZELL_SQL_QUERIES is not set")
 end
 
+DEBUG_HENZELL = ENV['DEBUG_HENZELL']
 LG_CONFIG_FILE = 'commands/crawl-data.yml'
 LG_SERVERS_FILE = 'servers.yml'
 
@@ -288,7 +289,7 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
-  STDERR.puts "Count: #{q.select_count} (#{q.values.inspect})"
+  STDERR.puts "Count: #{q.select_count} (#{q.values.inspect})" if DEBUG_HENZELL
   sql_db_handle.get_first_value(q.select_count, *q.values).to_i
 end
 
@@ -301,14 +302,19 @@ def sql_each_row_matching(q, limit=0)
       query += " LIMIT #{limit}"
     end
   end
-  STDERR.puts("SELECT query: #{query}, values: #{q.values.inspect}")
+  if DEBUG_HENZELL
+    STDERR.puts("SELECT query: #{query}, values: #{q.values.inspect}")
+  end
   sql_db_handle.execute(query, *q.values) do |row|
     yield row
   end
 end
 
 def sql_each_row_for_query(query_text, *params)
-  STDERR.puts "sql_each_row_for_query: #{query_text}, params: #{params.inspect}"
+  if DEBUG_HENZELL
+    STDERR.puts("sql_each_row_for_query: #{query_text}, " +
+                "params: #{params.inspect}")
+  end
   sql_db_handle.execute(query_text, *params) do |row|
     yield row
   end

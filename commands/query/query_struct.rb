@@ -30,6 +30,14 @@ module Query
       copy
     end
 
+    def or?
+      @operator == 'OR'
+    end
+
+    def and?
+      @operator == 'AND'
+    end
+
     def reverse_sorts!
       @sorts = @sorts.map { |s| s.reverse }
     end
@@ -43,11 +51,23 @@ module Query
     end
 
     def to_sql(table_set, context=Sql::QueryContext.context, parens=false)
-      parenthesize(
-        self.map { |p|
-          p.to_sql(table_set, context, true)
-        }.join(" #{operator} "),
-        parens)
+      parenthesize(self.sql_expr(table_set, context), parens)
+    end
+
+    def sql_expr(table_set, context)
+      # Try to identify IN clauses for more readable queries.
+      if @predicates.size > 1 && @predicates.all? { |p| p.simple_expression? }
+        first = @predicates[0]
+        if (((first.operator === '=' && self.or?) ||
+              (first.operator === '!=' && self.and?)) &&
+            @predicates.all? { |p| p.condition_match?(first) })
+          return sql_in_clause(table_set, context)
+        end
+      end
+
+      self.map { |p|
+        p.to_sql(table_set, context, true)
+      }.join(" #{operator} ")
     end
 
     def sql_values
@@ -145,6 +165,13 @@ module Query
     def parenthesize(expr, parens=true)
       return expr unless parens
       "(#{expr})"
+    end
+
+    def sql_in_clause(table_set, context)
+      op = self.or? ? 'IN' : 'NOT IN'
+      first = @predicates[0]
+      placeholders = ['?'] * @predicates.size
+      "#{first.sql_field_expr(table_set) #{op} (#{placeholders})"
     end
   end
 end

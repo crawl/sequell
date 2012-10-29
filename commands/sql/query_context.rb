@@ -33,23 +33,29 @@ module Sql
       @fields.columns
     end
 
-    def unique_valued?(field)
+    def field_prop(field, property)
       fdef = self.field_def(field)
-      fdef && fdef.unique?
+      fdef && fdef.send(property)
+    end
+
+    def unique_valued?(field)
+      field_prop(field, :unique?)
+    end
+
+    def boolean?(field)
+      field_prop(field, :boolean?)
+    end
+
+    def integer?(field)
+      field_prop(field, :integer?)
+    end
+
+    def case_sensitive?(field)
+      field_prop(field, :case_sensitive?)
     end
 
     def field?(field)
       self.field_def(field) || self.value_key?(field)
-    end
-
-    def boolean?(field)
-      fdef = self.field_def(field)
-      fdef && fdef.boolean?
-    end
-
-    def integer?(field)
-      fdef = self.field_def(field)
-      fdef && fdef.integer?
     end
 
     def value_key?(field)
@@ -98,7 +104,7 @@ module Sql
 
     def field_type(field)
       field_definition = self.field_def(field)
-      (field_definition && field_definition.type) || 'S'
+      (field_definition && field_definition.type) || ''
     end
 
     def table

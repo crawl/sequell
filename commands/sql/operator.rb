@@ -9,6 +9,8 @@ module Sql
       self.op(o)
     end
 
+    attr_reader :op
+
     def initialize(logical_op)
       @op = logical_op
     end
@@ -47,6 +49,10 @@ module Sql
       else
         @op == ops
       end
+    end
+
+    def == (other)
+      @op == Sql::Operator.op(other).op
     end
 
     def to_sql

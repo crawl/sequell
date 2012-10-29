@@ -187,6 +187,11 @@ sub non_summarisable {
   $self->has_qualifier('*')
 }
 
+sub case_sensitive {
+  my $self = shift;
+  $self->type() eq 'S'
+}
+
 sub primary_key {
   my $self = shift;
   $self->has_qualifier('%')

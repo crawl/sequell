@@ -467,6 +467,8 @@ sub fixup_logfields {
     $$g{game_type} = $game_type;
   }
 
+  $g->{ntv} = 0;
+
   $g->{place} = Henzell::Crawl::canonical_place_name($g->{place});
   $g->{oplace} = Henzell::Crawl::canonical_place_name($g->{oplace});
 

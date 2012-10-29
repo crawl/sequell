@@ -44,6 +44,10 @@ module Sql
     end
 
     def text?
+      self.type == '' || self.type == 'S'
+    end
+
+    def case_sensitive?
       self.type == 'S'
     end
 
@@ -109,7 +113,7 @@ module Sql
       elsif name =~ /!/
         return '!'
       end
-      'S'
+      ''
     end
   end
 end

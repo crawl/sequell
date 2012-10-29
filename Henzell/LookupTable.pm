@@ -30,6 +30,20 @@ sub name {
 
 sub ddl {
   my $self = shift;
+  my @ddl = $self->table_ddl();
+  my $lookup = $self->lookup_column();
+  if ($lookup->case_sensitive()) {
+    my $name = $self->name();
+    my $column_name = $lookup->sql_name();
+    push @ddl, <<INDEX_DDL
+CREATE INDEX ind_${name}_${column_name}_ci ON $name (LOWER($column_name))
+INDEX_DDL
+  }
+  join(";\n", @ddl)
+}
+
+sub table_ddl {
+  my $self = shift;
   my $name = $self->name();
   <<DDL
 CREATE TABLE $name (
