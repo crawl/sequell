@@ -10,7 +10,7 @@ module Query
       end
       aliases = Query::Nick.aliases(nick)
       if aliases.size == 1
-        self.single_nick_predicate(nick, inverted)
+        self.single_nick_predicate(aliases[0], inverted)
       else
         QueryStruct.or_clause(inverted,
           *aliases.map { |a| single_nick_predicate(a, inverted) })
