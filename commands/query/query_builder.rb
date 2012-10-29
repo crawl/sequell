@@ -25,7 +25,7 @@ module Query
     end
 
     def build
-      @random = @query_string.option!('random')
+      @random = @query_string.option!(:random)
       summarise = @query_string.extract! { |a|
         Sql::SummaryFieldList.summary_field?(a)
       }

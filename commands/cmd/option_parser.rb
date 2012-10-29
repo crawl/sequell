@@ -11,7 +11,7 @@ module Cmd
       final_args = []
       options_found = { }
       for arg in @args
-        if arg =~ /^-(\w+)(?::(.*))?$/ && keyset.include?($1)
+        if arg =~ /^-(\w+)(?::(.*))?$/ && keyset.include?($1.to_sym)
           options_found[$1.to_sym] = $2 || true
         else
           final_args << arg
