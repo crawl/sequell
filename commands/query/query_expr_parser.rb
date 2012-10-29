@@ -97,12 +97,14 @@ module Query
             clause.append(field_pred("ghost",
                                      Sql::Operator.new(uniq ? '!~' : '=~'),
                                      field))
+            clause.append(field_pred("illusion",
+                                     Sql::Operator.new(uniq ? '!~' : '=~'),
+                                     field))
           else
             clause = QueryStruct.new(op.equal? ? 'OR' : 'AND')
             clause.append(field_pred(val, op, field))
             clause.append(field_pred("a " + val, op, field))
             clause.append(field_pred("an " + val, op, field))
-            STDERR.puts("Clause: #{clause}")
           end
           return clause
         end

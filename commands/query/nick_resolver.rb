@@ -20,11 +20,10 @@ module Query
       args = query.args
       (0 ... args.size).each do |i|
         return nick if OPERATORS.keys.find { |x| args[i].index(x) }
-        if args[i] =~ /^!?([^+0-9@-][\w_`'-]+)$/ ||
-            args[i] =~ /^!?@([\w_`'-]+)$/ ||
-            args[i] =~ /^!?([.])$/ ||
-            args[i] =~ /^([*])$/ then
-          nick = $1
+
+        possible_nick = nick_expr(args[i])
+        if possible_nick
+          nick = possible_nick
           nick = "!#{nick}" if args[i] =~ /^!/
 
           args.slice!(i)
@@ -33,6 +32,13 @@ module Query
         end
       end
       nick
+    end
+
+    def self.nick_expr(arg)
+      ((arg !~ /^[+-]?[0-9]*$/ && arg =~ /^!?([^+@-][\w_`'-]+)$/) ||
+        arg =~ /^!?@([\w_`'-]+)$/ ||
+        arg =~ /^!?([.])$/ ||
+        arg =~ /^([*])$/) && $1
     end
 
     def self.nick_is_special?(nick)
