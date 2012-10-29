@@ -288,7 +288,7 @@ def sql_exec_query(num, q, lastcount = nil)
 end
 
 def sql_count_rows_matching(q)
-  #STDERR.puts "Count Query: #{q.select_count} (#{q.values.join(', ')})"
+  STDERR.puts "Count: #{q.select_count} (#{q.values.inspect})"
   sql_db_handle.get_first_value(q.select_count, *q.values).to_i
 end
 
@@ -301,21 +301,21 @@ def sql_each_row_matching(q, limit=0)
       query += " LIMIT #{limit}"
     end
   end
-  #STDERR.puts("SELECT query: #{query}")
+  STDERR.puts("SELECT query: #{query}, values: #{q.values.inspect}")
   sql_db_handle.execute(query, *q.values) do |row|
     yield row
   end
 end
 
 def sql_each_row_for_query(query_text, *params)
-  #STDERR.puts "sql_each_row_for_query: #{query_text}"
+  STDERR.puts "sql_each_row_for_query: #{query_text}, params: #{params.inspect}"
   sql_db_handle.execute(query_text, *params) do |row|
     yield row
   end
 end
 
 def field_pred(value, op, field)
-  Sql::FieldPredicate.predicate(v, op, field)
+  Sql::FieldPredicate.predicate(value, op, field)
 end
 
 def sql_game_by_key(key)
@@ -324,7 +324,7 @@ def sql_game_by_key(key)
       Sql::CrawlQuery.new(
         Query::QueryStruct.new('AND',
           field_pred(key, '=', 'game_key')),
-          [ ], nil, '*', 1, "gid=#{key}")
+          nil, '*', 1, "gid=#{key}")
     #puts "Query: #{q.select_all}"
     r = nil
     sql_each_row_matching(q) do |row|
