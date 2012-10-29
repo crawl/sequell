@@ -504,6 +504,7 @@ lookup-tables:
 ##
 # Field type suffixes:
 # - I (integer)
+# - S (String, case sensitive)
 # - IB (big integer)
 # - IH (huge - 18 digits)
 # - D (date+time)
@@ -524,7 +525,7 @@ logrecord-fields-with-type:
   - cv?^
   - lv^
   - scIB*?
-  - name?^
+  - nameS?^
   - race?^
   - crace?^
   - cls?^
@@ -545,8 +546,8 @@ logrecord-fields-with-type:
   - br^
   - lvlI
   - ltyp^
-  - hpI
-  - mhpI
+  - hpI?
+  - mhpI?
   - mmhpI
   - damI
   - strI
@@ -581,7 +582,7 @@ milestone-fields-with-type:
   - src?^
   - v?^
   - cv?^
-  - name?^
+  - nameS?^
   - race?^
   - crace?^
   - cls?^
@@ -594,8 +595,8 @@ milestone-fields-with-type:
   - br^
   - lvlI
   - ltyp^
-  - hpI
-  - mhpI
+  - hpI?
+  - mhpI?
   - mmhpI
   - strI
   - intI

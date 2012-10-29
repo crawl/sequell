@@ -9,6 +9,7 @@ use Henzell::LookupTable;
 my %SQL_NAME_MAP = Henzell::Crawl::config_hash('sql-field-names');
 
 my %TYPEMAP = ('' => 'CITEXT',
+               'S' => 'TEXT',
                'PK' => 'SERIAL',
                'I' => 'INT',
                'REF' => 'INT',
@@ -121,7 +122,8 @@ sub sql_ref_type {
 
 sub sql_ref_default {
   my $self = shift;
-  $self->foreign_key() ? '' : ($DEFMAP{$self->type()} || '')
+  $self->foreign_key() ? '' : ((!$self->primary_key() &&
+                                $DEFMAP{$self->type()}) || '')
 }
 
 sub lookup_table {
