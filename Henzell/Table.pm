@@ -43,7 +43,7 @@ sub _find_lookup_tables {
 sub column_defs {
   my $self = shift;
   map {
-    $_->sql_ref_name() . ' ' . $_->sql_ref_type()
+    $_->sql_ref_name() . ' ' . $_->sql_ref_type() . ' ' . $_->sql_ref_default()
   } $self->fieldset()->columns()
 }
 

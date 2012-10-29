@@ -17,6 +17,10 @@ my %TYPEMAP = ('' => 'CITEXT',
                'D' => 'TIMESTAMP',
                '!' => 'BOOLEAN');
 
+my %DEFMAP = ('I' => 'DEFAULT 0',
+              'IB' => 'DEFAULT 0',
+              'IH' => 'DEFAULT 0');
+
 my %COLS;
 sub decorated_column_by_name {
   my $name = shift;
@@ -113,6 +117,11 @@ sub sql_ref_name {
 sub sql_ref_type {
   my $self = shift;
   $self->foreign_key() ? $TYPEMAP{REF} : $self->sql_type()
+}
+
+sub sql_ref_default {
+  my $self = shift;
+  $self->foreign_key() ? '' : ($DEFMAP{$self->type()} || '')
 }
 
 sub lookup_table {

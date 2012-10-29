@@ -258,7 +258,7 @@ sub create_indexes {
     my $ddl = "CREATE INDEX $name ON milestone ($col);";
     $dbh->do($ddl);
   }
-  reopen_db();
+  #reopen_db();
 }
 
 sub fixup_db {
