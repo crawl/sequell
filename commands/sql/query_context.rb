@@ -73,7 +73,7 @@ module Sql
       fdef = self.local_field_def(field)
       if fdef
         clone = field.dup
-        clone.table = Sql::QueryTable.new(@table)
+        clone.table = Sql::QueryTable.new(self.table)
         return clone
       elsif @alt
         return @alt.table_qualified(field)
@@ -119,8 +119,8 @@ module Sql
     end
 
     def db_column_expr(fdef, table_set)
-      table = table_set.table(@table)
-      raise "Could not resolve #{@table} in #{table_set}" unless table
+      table = table_set.table(self.table)
+      raise "Could not resolve #{self.table} in #{table_set}" unless table
       table.field_sql(fdef)
     end
 

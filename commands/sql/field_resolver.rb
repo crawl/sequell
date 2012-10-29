@@ -50,6 +50,7 @@ module Sql
 
     def apply_alt_join(context)
       alt = context.alt
+      return unless alt
       ref_field = context.join_field
       @tables.join(Join.new(@tables.primary_table, alt.table,
                             ref_field, ref_field))

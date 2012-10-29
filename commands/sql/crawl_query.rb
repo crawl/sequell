@@ -91,7 +91,9 @@ module Sql
     end
 
     def resolve_field(field, table)
-      Sql::FieldResolver.resolve(@ctx, table, field)
+      with_contexts {
+        Sql::FieldResolver.resolve(@ctx, table, field)
+      }
     end
 
     def summarise= (s)
@@ -124,7 +126,9 @@ module Sql
     end
 
     def query_columns
-      self.query_fields.map { |f| @ctx.dbfield(f, @tables) }
+      with_contexts {
+        self.query_fields.map { |f| @ctx.dbfield(f, @tables) }
+      }
     end
 
     def select_all

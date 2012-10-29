@@ -16,7 +16,8 @@ module Query
         game, found = game_direct_match(game, dcarg)
         game, found = game_negated_match(game, dcarg, found)
         if found then
-          @query.args = args.slice(i)
+          args.slice!(i)
+          @query.args = args
           break
         end
       end
