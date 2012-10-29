@@ -30,6 +30,10 @@ module Query
       @context_word = context_word
     end
 
+    def first
+      @args[0]
+    end
+
     def original
       QueryString.new(@original_string, @context_word)
     end

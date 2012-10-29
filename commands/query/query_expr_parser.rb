@@ -42,8 +42,6 @@ module Query
 
       key = Sql::Field.new(raw_key)
       op = Sql::Operator.new(op)
-      key, op, val = fixup_selector(key, op, val)
-
       val = Sql::Value.cleanse_input(val)
 
       selector = key.sort? ? Sql::Field.new(val) : key
@@ -70,6 +68,23 @@ module Query
     end
 
     def query_field(field, op, val)
+      val = 'n' if context.boolean?(field) && val.empty?
+
+      # Is it of the form ktyp=drowning|lava? Turn it into an a=x or a=y clause
+      if op.equality? && val =~ /^\w+(?:\|\w+)+$/
+        values = val.split('|')
+        operator = op.equal? ? 'OR' : 'AND'
+        return QueryStruct.new(operator, *values.map { |v|
+          query_field(field, op, v)
+        })
+      end
+
+      # Check for regex operators in an equality check and map it to a
+      # regex check instead.
+      if op.equality? && val =~ /[()|?]/ then
+        op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
+      end
+
       if field === 'name' && val[0, 1] == '@' and op.equality?
         return NickExpr.expr(val[1..-1], op.not_equal?)
       end
@@ -79,6 +94,23 @@ module Query
         return field_pred(Sql::VersionNumber.version_numberize(val),
                           op,
                           field.resolve(field.name + 'num'))
+      end
+
+      if field === ['kaux', 'ckaux', 'killer', 'ktyp'] && op.equality? then
+        if ['poison', 'poisoning'].index(val)
+          field = field.resolve('ktyp')
+          val = 'pois'
+        end
+        if val =~ /drown/
+          field = field.resolve('ktyp')
+          val = 'water'
+        end
+      end
+
+      if field === 'ktyp' && op.equality?
+        val = 'winning' if val =~ /^w[io]n/
+        val = 'leaving' if val =~ /^leav/ || val == 'left'
+        val = 'quitting' if val =~ /^quit/
       end
 
       if field === ['killer', 'ckiller', 'ikiller']
@@ -189,38 +221,6 @@ module Query
       end
 
       field_pred(val, op, field)
-    end
-
-    def fixup_selector(key, op, val)
-      # Check for regex operators in an equality check and map it to a
-      # regex check instead.
-      if op.equality? && val =~ /[()|?]/ then
-        op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
-      end
-
-      cval = val.downcase.strip
-      if key === ['kaux', 'ckaux', 'killer', 'ktyp'] && op.equality? then
-        if ['poison', 'poisoning'].index(cval)
-          key = key.resolve('ktyp')
-          val = 'pois'
-        end
-        if cval =~ /drown/
-          key = key.resolve('ktyp')
-          val = 'water'
-        end
-      end
-
-      if key === 'ktyp' && op.equality?
-        val = 'winning' if cval =~ /^win/ || cval =~ /^won/
-        val = 'leaving' if cval =~ /^leav/ || cval == 'left'
-        val = 'quitting' if cval =~ /^quit/
-      end
-
-      if context.boolean?(key) && val.empty?
-        val = 'n'
-      end
-
-      [key, op, val]
     end
   end
 end

@@ -1,4 +1,5 @@
 require 'query/query_struct'
+require 'query/compound_keyword_parser'
 
 LISTGAME_SHORTCUTS =
   [
@@ -45,7 +46,10 @@ module Query
 
     def initialize(arg)
       @arg = arg.strip
-      @atom = @arg =~ /^\S+/
+    end
+
+    def atom?
+      @arg !~ /[()| ]/
     end
 
     def body
@@ -53,7 +57,7 @@ module Query
     end
 
     def parse
-      return self.parse_split_keywords unless @atom
+      return self.parse_split_keywords(@arg) unless self.atom?
 
       arg = @arg.dup
       negated = arg =~ /^!/
@@ -100,13 +104,8 @@ module Query
       QueryExprParser.parse("#{field}#{@equal_op}#{value}")
     end
 
-    def parse_split_keywords
-      pieces = @arg.split
-      raise "Malformed argument: #{@arg}" if pieces.size <= 1
-      pieces.each { |piece|
-        self.body.append(QueryKeywordParser.parse(piece))
-      }
-      self.body
+    def parse_split_keywords(argument)
+      CompoundKeywordParser.parse(argument)
     end
   end
 end
