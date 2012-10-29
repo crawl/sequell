@@ -53,7 +53,7 @@ begin
   if num == 0
     q, game_count_query = GameContext.with_game(game) do
       [Query::QueryBuilder.build(nick, query + "ktyp=winning", CTX_LOG).reverse,
-       Query::QueryBuilder.build(nick, query, CTX_LOG)]
+       Query::QueryBuilder.build(nick, query.dup, CTX_LOG)]
     end
     count = sql_count_rows_matching(game_count_query)
     desc = game_count_query.argstr
@@ -63,7 +63,7 @@ begin
       exit 0
     end
     q = GameContext.with_game(game) do
-      sql_define_query(nick, -1, trail_select, nil).reverse
+      Query::QueryBuilder.build(nick, query, CTX_LOG).reverse
     end
     desc = q.argstr
     count = 0

@@ -71,7 +71,7 @@ module Sql
 
     # Is this a query aimed at a single nick?
     def single_nick?
-      @nick != '*'
+      @nick != '*' && @nick !~ /^!/
     end
 
     def summarise

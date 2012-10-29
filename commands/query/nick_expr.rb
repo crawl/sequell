@@ -5,7 +5,7 @@ module Query
   class NickExpr
     def self.expr(nick, inverted)
       if nick =~ /^!/
-        nick = nick.sub!(/^!/, '')
+        nick = nick.sub(/^!/, '')
         inverted = !inverted
       end
       aliases = Query::Nick.aliases(nick)
