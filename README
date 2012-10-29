@@ -87,8 +87,12 @@ This is more complicated than a simple announcement bot:
    Henzell needs the CITEXT extension for case-insensitive comparison
    and grouping and the orafce extension for the median aggregate function.
 
-2. Set up the database schema with:
+2. Set up the database schema as:
 
+   Generate the schema:
+   perl schema-gen.pl
+
+   Create the tables:
    psql -U henzell henzell < henzell.sql
 
 3. Make sure def.logs and def.stones are set up correctly.
