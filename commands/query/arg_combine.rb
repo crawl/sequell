@@ -32,7 +32,7 @@ module Query
     end
 
     def arg_enables_combine?(arg)
-      arg =~ ARGSPLITTER || arg_is_grouper?(arg)
+      arg =~ ARGSPLITTER
     end
 
     def arg_is_grouper?(arg)
