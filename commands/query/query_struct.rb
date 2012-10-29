@@ -170,8 +170,8 @@ module Query
     def sql_in_clause(table_set, context)
       op = self.or? ? 'IN' : 'NOT IN'
       first = @predicates[0]
-      placeholders = ['?'] * @predicates.size
-      "#{first.sql_field_expr(table_set) #{op} (#{placeholders})"
+      placeholders = (['?'] * @predicates.size).join(", ")
+      "#{first.sql_field_expr(table_set)} #{op} (#{placeholders})"
     end
   end
 end

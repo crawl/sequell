@@ -121,8 +121,18 @@ module Sql
       @pred << Query::QueryStruct.new(operator, pred)
     end
 
-    def select(what, with_sorts=true)
-      "SELECT #{what} FROM #{@tables.to_sql} " + where(with_sorts)
+    def select(field_expressions, with_sorts=true)
+      with_contexts {
+        field_expressions.each { |field_expr|
+          resolve_field(field_expr.field, @tables)
+        }
+
+        select_cols = field_expressions.map { |fe|
+          fe.to_sql(@tables, @ctx)
+        }.join(", ")
+
+        "SELECT #{select_cols} FROM #{@tables.to_sql} " + where(with_sorts)
+      }
     end
 
     def query_columns

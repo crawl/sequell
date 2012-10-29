@@ -99,7 +99,6 @@ if ($CONFIG{sql_store}) {
     catchup_logfiles();
     catchup_stonefiles();
   }
-  fixup_db();
   # And once again, because creating indexes takes time.
   catchup_stonefiles();
   catchup_logfiles();

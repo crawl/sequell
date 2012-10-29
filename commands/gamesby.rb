@@ -2,16 +2,27 @@
 
 $:.push('commands')
 require 'helper.rb'
-require 'sqlhelper.rb'
+require 'sqlhelper'
+require 'query/query_string'
+require 'query/query_builder'
+require 'sql/field_expr'
+require 'sql/date'
 
-help("Summarizes a player's crawl.akrasiac.org career.")
+help("Summarizes a player's public server career.")
 
-q = sql_build_query(ARGV[1], (ARGV[2].split)[1 .. -1])
+query_string = Query::QueryString.new(ARGV[2].split()[1..-1])
+q = Query::QueryBuilder.build(ARGV[1], query_string.dup, CTX_LOG, nil, true)
 
-full_query = \
-q.select("MAX(#{LOG2SQL['name']}), COUNT(*), MIN(#{LOG2SQL['start']}), " +
-         "MAX(#{LOG2SQL['end']}), " +
-         "MAX(sc), SUM(sc), SUM(turn), SUM(dur)", false)
+full_query =
+  q.select([Sql::FieldExpr.max('name'),
+            Sql::FieldExpr.count_all,
+            Sql::FieldExpr.min('start'),
+            Sql::FieldExpr.max('end'),
+            Sql::FieldExpr.max('sc'),
+            Sql::FieldExpr.sum('sc'),
+            Sql::FieldExpr.sum('turn'),
+            Sql::FieldExpr.sum('dur')],
+           false)
 
 rows = []
 sql_each_row_for_query(full_query, *q.values) do |r|
@@ -39,12 +50,11 @@ else
 
   win_count = \
     sql_count_rows_matching(
-       sql_build_query(ARGV[1],
-                       paren_args((ARGV[2].split)[1 .. -1]) +
-                       ["ktyp=winning"]))
+       Query::QueryBuilder.build(ARGV[1], query_string + 'ktyp=winning',
+                                 CTX_LOG, nil, true))
 
-  tstart = sql2logdate(r[2])
-  tend = sql2logdate(r[3])
+  tstart = Sql::Date.display_date(r[2])
+  tend = Sql::Date.display_date(r[3])
   puts "#{q.argstr} has played #{ngames} game#{plural}, between " +
       "#{datestr(tstart)} and #{datestr(tend)}, won #{winstr(win_count, ngames)}, " +
       "high score #{r[4]}, total score #{sqlnumber(r[5])}, total turns #{sqlnumber(r[6])}, " +

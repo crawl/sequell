@@ -118,3 +118,13 @@ E !gkills * deathonacow
 !lg * / win ?: N>1 ::~ games for \*:
 
 !lg * won s=char x=min(start)
+
+!gamesby elliptic
+
+!deathsin Tomb
+
+!killsby hobgoblin
+
+!won elliptic 10
+
+!streak elliptic

@@ -1,5 +1,5 @@
 require 'sql/timestamp_format'
-require 'sql/field'
+require 'sql/field_expr'
 require 'sql/operator'
 
 module Sql
@@ -8,22 +8,27 @@ module Sql
       self.new(QueryContext.context, value, operator, field)
     end
 
-    attr_reader :field, :operator, :value, :expr
+    attr_reader :field_expr, :operator, :value, :expr
 
     def initialize(context, value, operator, field)
       @context = context
-      @expr = nil
-      @field = Sql::Field.field(field)
       @operator = Sql::Operator.op(operator)
       @value = value
-      @expr = 'LOWER(%s)' if @context.case_sensitive?(@field)
+
+      if @context.case_sensitive?(field)
+        @field_expr = Sql::FieldExpr.lower(field)
+      else
+        @field_expr = Sql::FieldExpr.new(field)
+      end
+    end
+
+    def field
+      self.field_expr.field
     end
 
     def condition_match?(predicate)
-      field.name == predicate.field.name &&
-        field.prefix == predicate.field.prefix &&
-        @operator == predicate.operator &&
-        @expr == predicate.expr
+      @field_expr == predicate.field_expr &&
+        @operator == predicate.operator
     end
 
     def simple_expression?
@@ -31,7 +36,7 @@ module Sql
     end
 
     def field_def
-      @field_def ||= @context.field_def(@field)
+      @field_def ||= @context.field_def(self.field)
     end
 
     def sql_expr(table_set)
@@ -39,13 +44,8 @@ module Sql
         "#{sql_value_placeholder}"
     end
 
-    def sql_field(table_set)
-      @context.dbfield(@field, table_set)
-    end
-
     def sql_field_expr(table_set)
-      sql_field_name = self.sql_field(table_set)
-      @expr ? @expr.sub('%s', sql_field_name) : sql_field_name
+      @field_expr.to_sql(table_set, @context)
     end
 
     def sql_value_placeholder

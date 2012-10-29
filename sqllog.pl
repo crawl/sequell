@@ -48,12 +48,7 @@ my $TLOGFILE   = 'logrecord';
 my $TMILESTONE = 'milestone';
 
 my $LOGFILE = "allgames.txt";
-my $COMMIT_INTERVAL = 15000;
-
-# Dump indexes if we need to add more than around 9000 lines of data.
-my $INDEX_DISCARD_THRESHOLD = 300 * 9000;
-
-my $need_indexes = 1;
+my $COMMIT_INTERVAL = 1000;
 
 my $standalone = not caller();
 
@@ -105,14 +100,7 @@ sub new_db_handle(;$$$) {
 }
 
 sub open_db {
-  my $dbh = new_db_handle();
-  check_indexes($dbh);
-  return $dbh;
-}
-
-sub check_indexes {
-  my $dbh = shift;
-  $need_indexes = 1;
+  new_db_handle();
 }
 
 sub cleanup_db {
@@ -221,51 +209,6 @@ sub open_handles
   return @handles;
 }
 
-sub index_cols {
-  my @cols = ();
-  for my $case (@INDEX_CASES) {
-    my @fields = split /\+/, $case;
-    for my $field (@INDEX_COLS) {
-      next if grep($_ eq $field, @fields);
-      push @cols, [ map($LOG2SQL{$_}, @fields, $field) ];
-    }
-  }
-  @cols
-}
-
-sub index_name {
-  my $cols = shift;
-  "ind_" . join("_", @$cols)
-}
-
-sub create_indexes {
-  my $op = shift;
-  print "Creating indexes on logrecord...\n";
-  for my $cols (index_cols()) {
-    my $name = index_name($cols);
-    print "Creating index $name...\n";
-    my $ddl = ("CREATE INDEX " . index_name($cols) . " ON logrecord (" .
-      join(", ", @$cols) . ");");
-    $dbh->do($ddl);
-  }
-  $need_indexes = 0;
-
-
-  for my $rcol (@MILE_INDEX_COLS) {
-    my $col = $LOG2SQL{$rcol} || $rcol;
-    my $name = "mile_index_$col";
-    print "Creating index $name...\n";
-    my $ddl = "CREATE INDEX $name ON milestone ($col);";
-    $dbh->do($ddl);
-  }
-  #reopen_db();
-}
-
-sub fixup_db {
-  #Henzell::DB::compute_version_numbers($dbh);
-  create_indexes() if $need_indexes;
-}
-
 sub find_start_offset_in {
   my ($table, $file) = @_;
 
@@ -357,13 +300,13 @@ sub cat_xlog {
     if (!($rows % $COMMIT_INTERVAL)) {
       $dbh->commit;
       $dbh->begin_work;
-      print "Committed $rows rows from $lfile.\r";
+      print "\rCommitted $rows records from $lfile.";
       STDOUT->flush;
     }
   }
   $dbh->commit;
   seek($loghandle, $linestart, SEEK_SET);
-  print "Updated db with $rows records from $lfile.\n" if $rows;
+  print "\rUpdated db with $rows records from $lfile.\n" if $rows;
   return 1;
 }
 
