@@ -6,6 +6,7 @@ require 'bundler/setup'
 require 'sinatra'
 
 set :port, SERVICE_PORT
+set :lock, true
 
 get '/tv/channels' do
   require 'tv/channel_manager'
