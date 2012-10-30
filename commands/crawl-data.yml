@@ -610,7 +610,7 @@ milestone-fields-with-type:
   - rtime*?
   - rstart*?
   - verb?^
-  - noun?^
+  - nounS?^
   - milestone^
   - ntvI?
   - oplace^
