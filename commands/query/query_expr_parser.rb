@@ -158,7 +158,7 @@ module Query
       if field === 'race' || field === 'crace'
         if val.downcase == 'dr' && op.equality?
           op = Sql::Operator.new(op.equal? ? '=~' : '!~')
-          val = "%draconian"
+          val = "*draconian"
         else
           val = RACE_EXPANSIONS[val.downcase] || val
         end
