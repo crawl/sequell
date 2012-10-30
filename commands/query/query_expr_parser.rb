@@ -71,7 +71,7 @@ module Query
       val = 'n' if context.boolean?(field) && val.empty?
 
       # Is it of the form ktyp=drowning|lava? Turn it into an a=x or a=y clause
-      if op.equality? && val =~ /^\(?\w+(?:\|\w+)+\)?$/
+      if op.equality? && val =~ /^\(?[\w ]+(?:\|[\w ]+)+\)?$/
         val = val.gsub(/^\(|\)$/, '')
         values = val.split('|')
         operator = op.equal? ? 'OR' : 'AND'
