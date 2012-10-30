@@ -749,6 +749,15 @@ The = operator is *not* an exact equality operator; it uses several
 heuristics to fix common broken queries. These heuristics depend on
 the field used in the comparison:
 
+lg:ktyp:
+~~~~~~~
+For !lm queries only, using the form
+  lg:ktyp=
+
+Will query milestones with no matching game. These milestones are not
+necessarily only from ongoing games, so you may need additional
+filters to filter out old orphan milestones.
+
 killer/ckiller/index:
 ~~~~~~~~~~~~~~~~~~~~~
 Queries of the form killer=X (Example: killer=hobgoblin) are
