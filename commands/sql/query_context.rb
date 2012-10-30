@@ -140,8 +140,7 @@ module Sql
       'game_key_id'
     end
 
-    def initialize(config, table, entity_name, alt_context,
-                   options)
+    def initialize(config, table, entity_name, alt_context, options)
       @config = config
       @table = table
       @entity_name = entity_name

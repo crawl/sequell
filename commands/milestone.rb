@@ -35,7 +35,9 @@ TV.with_tv_opts(ctx.arguments) do |args, tvopt|
       elsif tv
         TV.request_game_verbosely(key, game, ARGV[1])
       else
-        print_game_n(key, add_extra_fields_to_xlog_record(extra, game))
+        CTX_STONE.with {
+          print_game_n(key, add_extra_fields_to_xlog_record(extra, game))
+        }
       end
     elsif ctx[:ttyrec]
       # ttyrec for the milestone

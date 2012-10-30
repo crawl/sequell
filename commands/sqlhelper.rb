@@ -172,7 +172,10 @@ end
 
 def add_extra_fields_to_xlog_record(extra_fields, xlog_record)
   if extra_fields && !extra_fields.empty? && xlog_record
-    xlog_record['extra'] = extra_fields.fields.map { |f| f.field.name }.join(",")
+    context = Sql::QueryContext.context
+    xlog_record['extra'] = extra_fields.fields.map { |f|
+      context.value_key?(f.field) ? context.value_field.name : f.field.name
+    }.join(",")
   end
   xlog_record
 end
