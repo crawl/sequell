@@ -458,6 +458,21 @@ Listgame keywords may be one of:
     Example: "!lm * abyss.enter" (the last milestone for a player
                                   entering the Abyss)
 
+14. A combination of keywords separated by | to indicate alternatives.
+
+    Example: !lg * xom|nemelex (games worshipping Xom or Nemelex)
+             !lg * alpha|0.11  (alpha versions or any cv=0.11)
+
+15. A negated parenthesized group of keywords separated by | to indicate
+    none-of-the-alternatives.
+
+    Example: !lg * !(xom|nemelex) (games worshipping neither Xom nor Nemelex)
+          => !lg * !xom !nemelex
+
+    Parentheses in keywords cannot be nested to build more complex
+    conditions.
+
+
 Logfile Fields
 --------------
 
