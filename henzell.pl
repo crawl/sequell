@@ -79,7 +79,7 @@ Henzell::Utils::lock(verbose => 1,
                      lock_name => $CONFIG{lock_name});
 
 if ($irc && $CONFIG{http_services}) {
-  Henzell::Utils::spawn_service("http_service", "rackup config.ru");
+  Henzell::Utils::spawn_service("http_service", "rackup -p 29880 config.ru");
 }
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
