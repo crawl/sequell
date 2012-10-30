@@ -73,6 +73,7 @@ FILTER_PATTERN =
              ')(\S+)$')
 
 BRANCHES = Crawl::BranchSet.new(CFG['branches'])
+UNIQUES = Set.new(CFG['uniques'].map { |u| u.downcase })
 GODS = Crawl::Gods.new(CFG['god'])
 
 SOURCES = LG_SERVER_CFG['sources'].keys.sort

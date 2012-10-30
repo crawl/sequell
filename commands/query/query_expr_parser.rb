@@ -115,7 +115,7 @@ module Query
       end
 
       if field === ['killer', 'ckiller', 'ikiller']
-        if op.equality? and val !~ /^an? /i then
+        if op.equality? && val !~ /^an? /i && !UNIQUES.include?(val) then
           if val.downcase == 'uniq' and field === ['killer', 'ikiller']
             # Handle check for uniques.
             uniq = op.equal?

@@ -17,7 +17,7 @@ module Sql
       return if predicate.resolved?
 
       # Is this a test for the milestone having no associated game?
-      if @field.full_name == 'lg:ktyp' && @predicate.value.empty? &&
+      if @field === 'ktyp' && @predicate.value.empty? &&
           @predicate.operator.equal? && !@context.local_field_def(@field)
         apply_orphan_milestone_join
       end
