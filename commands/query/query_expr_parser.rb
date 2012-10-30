@@ -144,9 +144,8 @@ module Query
       end
 
       if context.value_key?(field)
-        return QueryStruct.new(
-          op.equal? ? 'AND' : 'OR',
-          field_pred(field.to_s, op, context.key_field),
+        return QueryStruct.new('AND',
+          field_pred(field.to_s, '=', context.key_field),
           field_pred(val, op, context.value_field))
       end
 
