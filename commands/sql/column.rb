@@ -8,6 +8,10 @@ module Sql
       @decorated_name = decorated_name
     end
 
+    def to_s
+      self.name
+    end
+
     def name
       @name ||= strip_decoration(@decorated_name)
     end

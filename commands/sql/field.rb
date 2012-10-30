@@ -20,6 +20,11 @@ module Sql
         @prefix, @aliased_name = $1, $2
       end
       @name = SQL_CONFIG.column_aliases[@aliased_name] || @aliased_name
+      @oname = @name.dup
+    end
+
+    def qualified?
+      @table
     end
 
     def sql_column_name

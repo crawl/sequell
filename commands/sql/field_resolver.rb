@@ -19,6 +19,8 @@ module Sql
       # reference field: 'place_id'
       # reference table: 'l_place'
       field = @field
+      return if field.qualified?
+
       column = @context.field_def(field)
       return unless column && column.reference?
 
