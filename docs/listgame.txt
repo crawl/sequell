@@ -784,7 +784,9 @@ Any X=A|B|C query will be converted to ((X=A || X=B || X=C)) if A, B
 and C contain only letters, underscores, numbers and spaces.
 
 Any X=Y query will be converted to an X~~Y query if Y contains these
-regex metacharacters: ()|?
+regex metacharacters: ()|? Note that the rule above takes precedence
+to this one. If in doubt, indicate your intentions explicitly by using
+X~~<foo>.
 
 If you want to test (in)equality without any mangling, use == or !==
 

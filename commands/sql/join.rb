@@ -3,6 +3,7 @@ require 'sql/field'
 module Sql
   class Join
     attr_reader :left_table, :right_table, :left_field, :right_field
+    attr_accessor :left_join
 
     def initialize(left_table, right_table, left_field,
                    right_field=Sql::Field.new('id'))
@@ -10,6 +11,11 @@ module Sql
       @right_table = Sql::QueryTable.table(right_table)
       @left_field = Sql::Field.field(left_field)
       @right_field = Sql::Field.field(right_field)
+      @left_join = false
+    end
+
+    def left_join?
+      @left_join
     end
 
     def == (other)
@@ -20,7 +26,8 @@ module Sql
     end
 
     def to_sql
-      "INNER JOIN #{@right_table.to_sql} ON " +
+      join_type = self.left_join? ? 'LEFT' : 'INNER'
+      "#{join_type} JOIN #{@right_table.to_sql} ON " +
         "#{@left_table.field_sql(@left_field)} = " +
         "#{@right_table.field_sql(@right_field)}"
     end

@@ -6,13 +6,13 @@ module Sql
       self.new(name)
     end
 
-    attr_reader :prefix, :aliased_name
+    attr_reader :prefix, :aliased_name, :full_name
     attr_accessor :table
     attr_accessor :name
 
     # A (possibly-prefixed) field
     def initialize(field_name)
-      @full_name = field_name
+      @full_name = field_name.downcase
       @aliased_name = field_name.downcase
       @prefix = nil
       @table = nil

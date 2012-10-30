@@ -1,4 +1,5 @@
 require 'sql/field_resolver'
+require 'sql/predicate_translator'
 
 module Sql
   class ColumnResolver
@@ -21,6 +22,7 @@ module Sql
     end
 
     def resolve_predicate(p)
+      Sql::PredicateTranslator.translate(@context, @tables, p)
       Sql::FieldResolver.resolve(@context, @tables, p.field)
     end
   end

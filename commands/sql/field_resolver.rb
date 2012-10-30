@@ -43,7 +43,12 @@ module Sql
       # Register the join
       @tables.join(join)
 
-      # And qualify the field with the reference table
+      # And qualify the field with the reference table. NOTE: the
+      # reference table *instance* will be bound to an alias specific
+      # to the join, so the same table may be joined multiple times
+      # with different instances and aliases. Two tables with the same
+      # name may be part of different joins and have different
+      # aliases. See QueryTable.
       field.table = reference_table
       field.name  = column.lookup_field_name
 

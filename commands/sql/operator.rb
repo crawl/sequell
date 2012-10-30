@@ -16,7 +16,7 @@ module Sql
     end
 
     def sql_operator
-      OPERATORS[@op]
+      OPERATORS[@op] || @op
     end
 
     def textual?

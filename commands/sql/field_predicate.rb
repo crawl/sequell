@@ -8,13 +8,24 @@ module Sql
       self.new(QueryContext.context, value, operator, field)
     end
 
-    attr_reader :field_expr, :operator, :value, :expr
+    attr_reader :field_expr, :value
+    attr_accessor :value_expr, :static, :operator
 
     def initialize(context, value, operator, field)
       @context = context
       @operator = Sql::Operator.op(operator)
       @value = value
       @field_expr = Sql::FieldExpr.autocase(field, context)
+      @static = false
+      @value_expr = nil
+    end
+
+    def resolved?
+      self.field.qualified?
+    end
+
+    def static?
+      @static
     end
 
     def field
@@ -22,8 +33,7 @@ module Sql
     end
 
     def condition_match?(predicate)
-      @field_expr == predicate.field_expr &&
-        @operator == predicate.operator
+      @field_expr == predicate.field_expr && @operator == predicate.operator
     end
 
     def simple_expression?
@@ -44,6 +54,7 @@ module Sql
     end
 
     def sql_value_placeholder
+      return @value_expr if @value_expr
       return "to_timestamp(?, '#{timestamp_format}')" if date_field?
       "?"
     end
@@ -54,7 +65,7 @@ module Sql
     end
 
     def sql_values
-      [self.sql_value]
+      self.static? ? [] : [self.sql_value]
     end
 
     def to_sql(table_set, context, parenthesize=false)
