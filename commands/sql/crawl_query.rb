@@ -187,7 +187,9 @@ module Sql
     end
 
     def summary_db_fields
-      @summarise.fields.map { |f| @ctx.dbfield(f.field, @tables) }
+      @summarise.fields.map { |f|
+        Sql::FieldExpr.autocase(f.field, @ctx).to_sql(@summary_tables, @ctx)
+      }
     end
 
     def summary_group

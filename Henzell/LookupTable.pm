@@ -36,7 +36,7 @@ sub ddl {
     my $name = $self->name();
     my $column_name = $lookup->sql_name();
     push @ddl, <<INDEX_DDL
-CREATE INDEX ind_${name}_${column_name}_ci ON $name (LOWER($column_name))
+CREATE INDEX ind_${name}_${column_name}_ci ON $name (CAST($column_name AS CITEXT))
 INDEX_DDL
   }
   join(";\n", @ddl)

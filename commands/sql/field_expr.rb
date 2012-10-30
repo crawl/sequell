@@ -26,7 +26,15 @@ module Sql
     end
 
     def self.lower(field)
-      self.new(field, 'LOWER')
+      self.new(field, 'CAST(%s AS CITEXT)')
+    end
+
+    def self.autocase(field, context)
+      if context.case_sensitive?(field)
+        self.lower(field)
+      else
+        self.new(field)
+      end
     end
 
     attr_reader :field, :expr

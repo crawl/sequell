@@ -14,12 +14,7 @@ module Sql
       @context = context
       @operator = Sql::Operator.op(operator)
       @value = value
-
-      if @context.case_sensitive?(field)
-        @field_expr = Sql::FieldExpr.lower(field)
-      else
-        @field_expr = Sql::FieldExpr.new(field)
-      end
+      @field_expr = Sql::FieldExpr.autocase(field, context)
     end
 
     def field
