@@ -54,6 +54,10 @@ module Sql
       field_prop(field, :case_sensitive?)
     end
 
+    def text?(field)
+      field_prop(field, :text?)
+    end
+
     def field?(field)
       self.field_def(field) || self.value_key?(field)
     end

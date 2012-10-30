@@ -1,12 +1,13 @@
 require 'query/query_struct'
 require 'query/compound_keyword_parser'
+require 'sql/operator'
 
 LISTGAME_SHORTCUTS =
   [
    lambda do |arg, reproc|
      god_name = GODS.god_resolve_name(arg)
      if god_name
-       return reproc.call('god', god_name)
+       return reproc.parse('god', god_name)
      end
      nil
    end,
@@ -16,7 +17,7 @@ LISTGAME_SHORTCUTS =
    end,
    lambda do |value, reproc|
      if value =~ /^drown/i
-       return reproc.call('ktyp', 'water')
+       return reproc.parse('ktyp', 'water')
      end
      nil
    end,
@@ -31,14 +32,29 @@ LISTGAME_SHORTCUTS =
    end,
    lambda do |value, reproc|
      context = Sql::QueryContext.context
-     if context.boolean?(Sql::Field.field(value))
-       return reproc.call(value.downcase, 'y')
+     if context.boolean?(value)
+       return reproc.parse(value.downcase, 'y')
+     end
+     if context.text?(value)
+       return reproc.parse(value.downcase, '', reproc.op.negate)
      end
      nil
    end
   ]
 
 module Query
+  class QueryExprCandidate
+    attr_accessor :op
+
+    def initialize(op)
+      @op = Sql::Operator.op(op)
+    end
+
+    def parse(field, value, op=@op)
+      QueryExprParser.parse("#{field}#{op}#{value}")
+    end
+  end
+
   class QueryKeywordParser
     def self.parse(arg)
       self.new(arg).parse
@@ -88,9 +104,9 @@ module Query
 
       return parse_expr('when', arg) if tourney_keyword?(arg)
 
-      expr_parser = lambda { |field, value| parse_expr(field, value) }
+      expr_candidate = QueryExprCandidate.new(@equal_op)
       for s in LISTGAME_SHORTCUTS
-        res = s.call(arg, expr_parser)
+        res = s.call(arg, expr_candidate)
         if res
           return parse_expr(res, arg) if res.is_a?(String)
           return res
