@@ -14,7 +14,8 @@ module Sql
 
     def initialize(predicates, extra_fields, nick, num, argstr)
       @tables = QueryTables.new(QueryContext.context.table)
-      @pred = predicates
+      @original_pred = predicates
+      @pred = predicates.dup
       @nick = nick
       @num = num
       @extra_fields = extra_fields
@@ -28,7 +29,7 @@ module Sql
       @ctx = QueryContext.context
       @game = GameContext.game
 
-      resolve_predicate_columns(predicates)
+      resolve_predicate_columns(@pred)
 
       @count_pred = @pred.dup
       @summary_pred = @pred.dup
@@ -138,7 +139,7 @@ module Sql
         }.join(", ")
 
         "SELECT #{select_cols} FROM #{@tables.to_sql} " +
-           query(@pred, with_sorts)
+           where(@pred, with_sorts)
       }
     end
 
@@ -183,16 +184,10 @@ module Sql
     def summary_query
       resolve_summary_fields
 
-      temp = @summary_pred.sorts
-      begin
-        @summary_pred.sorts = []
-        @query = nil
-        sortdir = @summary_sort
-        %{SELECT #{summary_fields} FROM #{@summary_tables.to_sql}
-          #{where} #{summary_group} #{summary_order}}
-      ensure
-        @summary_pred.sorts = temp
-      end
+      @query = nil
+      sortdir = @summary_sort
+      %{SELECT #{summary_fields} FROM #{@summary_tables.to_sql}
+        #{where(@summary_pred, false)} #{summary_group} #{summary_order}}
     end
 
     def summary_order
@@ -236,8 +231,8 @@ module Sql
     end
 
     def values
-      build_query
-      @values || []
+      raise "Must build a query first" unless @values
+      @values
     end
 
     def version_predicate
@@ -260,7 +255,7 @@ module Sql
     end
 
     def reverse
-      predicate_copy = predicates.dup
+      predicate_copy = @original_pred.dup
       predicate_copy.reverse_sorts!
       rq = CrawlQuery.new(predicate_copy, @extra_fields,
                           @nick, @num, @argstr)

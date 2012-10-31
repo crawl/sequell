@@ -32,7 +32,6 @@ module Sql
 
       # If this is not a local field, we need to join to the alt table first:
       if !@context.local_field_def(field)
-        STDERR.puts("Not a local def, apply join, context: #{@context}")
         apply_alt_join(@context)
       end
 
