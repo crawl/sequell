@@ -30,6 +30,9 @@ module Sql
 
       resolve_predicate_columns(predicates)
 
+      @count_pred = @pred.dup
+      @summary_pred = @pred.dup
+
       @count_tables = @tables.dup
       @summary_tables = @tables.dup
 
@@ -59,8 +62,8 @@ module Sql
     # table sets for joins.
     def update_predicate_columns
       resolve_predicate_columns(@pred, @tables)
-      resolve_predicate_columns(@pred, @summary_tables)
-      resolve_predicate_columns(@pred, @count_tables)
+      resolve_predicate_columns(@summary_pred, @summary_tables)
+      resolve_predicate_columns(@count_pred, @count_tables)
     end
 
     def resolve_query_fields
@@ -100,16 +103,13 @@ module Sql
       @summarise = s
 
       for summary_field in @summarise.fields
-        fieldname = summary_field.field
+        fieldname = summary_field.field.dup
         if @ctx.value_key?(fieldname)
           verb = @ctx.key_field
           # Ulch, we have to modify our predicates.
           add_predicate('AND',
                         Sql::FieldPredicate.predicate(fieldname, '=', verb))
           summary_field.field = Sql::Field.field(@ctx.value_field)
-
-          # Resolve the verb field in both the summary and normal tables.
-          update_predicate_columns
         end
       end
 
@@ -118,7 +118,13 @@ module Sql
     end
 
     def add_predicate(operator, pred)
-      @pred << Query::QueryStruct.new(operator, pred)
+      with_contexts {
+        new_pred = Query::QueryStruct.new(operator, pred)
+        @pred << new_pred
+        @count_pred << new_pred.dup
+        @summary_pred << new_pred.dup
+        update_predicate_columns
+      }
     end
 
     def select(field_expressions, with_sorts=true)
@@ -131,7 +137,8 @@ module Sql
           fe.to_sql(@tables, @ctx)
         }.join(", ")
 
-        "SELECT #{select_cols} FROM #{@tables.to_sql} " + where(with_sorts)
+        "SELECT #{select_cols} FROM #{@tables.to_sql} " +
+           query(@pred, with_sorts)
       }
     end
 
@@ -142,18 +149,21 @@ module Sql
     end
 
     def select_all(with_sorts=true)
-      "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " + where(with_sorts)
+      "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " +
+         where(@pred, with_sorts)
     end
 
     def select_id(with_sorts=false)
       id_field = Sql::Field.field('id')
       resolve_field(id_field, @count_tables)
       id_sql = @ctx.dbfield(id_field, @count_tables)
-      "SELECT #{id_sql} FROM #{@count_tables.to_sql} #{where(with_sorts)}"
+      "SELECT #{id_sql} FROM #{@count_tables.to_sql} " +
+        "#{where(@count_pred, with_sorts)}"
     end
 
     def select_count
-      "SELECT COUNT(*) FROM #{@count_tables.to_sql} " + where(false)
+      "SELECT COUNT(*) FROM #{@count_tables.to_sql} " +
+        where(@count_pred, false)
     end
 
     def resolve_summary_fields
@@ -173,15 +183,15 @@ module Sql
     def summary_query
       resolve_summary_fields
 
-      temp = @pred.sorts
+      temp = @summary_pred.sorts
       begin
-        @pred.sorts = []
+        @summary_pred.sorts = []
         @query = nil
         sortdir = @summary_sort
         %{SELECT #{summary_fields} FROM #{@summary_tables.to_sql}
           #{where} #{summary_group} #{summary_order}}
       ensure
-        @pred.sorts = temp
+        @summary_pred.sorts = temp
       end
     end
 
@@ -221,12 +231,12 @@ module Sql
       [basefields, extras].find_all { |x| x && !x.empty? }.join(", ")
     end
 
-    def query(with_sorts=true)
-      build_query(with_sorts)
+    def where(predicates, with_sorts)
+      build_query(predicates, with_sorts)
     end
 
     def values
-      build_query unless @values
+      build_query
       @values || []
     end
 
@@ -234,14 +244,14 @@ module Sql
       %{v #{OPERATORS['=~']} ?}
     end
 
-    def build_query(with_sorts=true)
-      @query, @values = @pred.to_sql(@tables, @ctx), @pred.sql_values
+    def build_query(predicates, with_sorts=true)
+      @query, @values = predicates.to_sql(@tables, @ctx), predicates.sql_values
       @query = "WHERE #{@query}" unless @query.empty?
-      if with_sorts && @pred.has_sorts?
+      if with_sorts && predicates.has_sorts?
         @query << " " unless @query.empty?
-        @query << "ORDER BY " << @pred.primary_sort.to_sql(@tables)
+        @query << "ORDER BY " << predicates.primary_sort.to_sql(@tables)
 
-        unless @ctx.unique_valued?(@pred.primary_sort.field)
+        unless @ctx.unique_valued?(predicates.primary_sort.field)
           @query << ", " <<
                  Query::Sort.new(Sql::Field.new('id'), 'ASC').to_sql(@tables)
         end
@@ -249,10 +259,8 @@ module Sql
       @query
     end
 
-    alias where query
-
     def reverse
-      predicate_copy = @pred.dup
+      predicate_copy = predicates.dup
       predicate_copy.reverse_sorts!
       rq = CrawlQuery.new(predicate_copy, @extra_fields,
                           @nick, @num, @argstr)

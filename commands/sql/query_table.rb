@@ -13,6 +13,12 @@ module Sql
       @alias = name
     end
 
+    def dup
+      copy = QueryTable.new(@name)
+      copy.alias = self.alias
+      copy
+    end
+
     def column_list
       @column_list ||=
         Sql::ColumnList.new(SQL_CONFIG,

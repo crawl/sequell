@@ -16,8 +16,9 @@ module Sql
     end
 
     def dup
-      tables = self.class.new(@primary_table)
+      tables = self.class.new(@primary_table.dup)
       tables.instance_variable_set(:@joins, @joins.map { |j| j.dup })
+      tables.instance_variable_set(:@tables, @tables.map { |t| t.dup })
       tables.instance_variable_set(:@table_aliases, @table_aliases.dup)
       tables
     end

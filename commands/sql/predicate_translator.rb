@@ -35,6 +35,7 @@ module Sql
 
       @field.table = alt_table
       @field.name  = context.join_field
+      STDERR.puts("Fixed up field: #{@field}")
       @predicate.value_expr = 'NULL'
       @predicate.operator = Sql::Operator.op('IS')
       @predicate.static = true

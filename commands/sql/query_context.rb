@@ -161,5 +161,9 @@ module Sql
       @key_field  = Sql::Field.field(options[:key_field])
       @value_field = Sql::Field.field(options[:value_field])
     end
+
+    def to_s
+      "CTX[#{@table}]"
+    end
   end
 end

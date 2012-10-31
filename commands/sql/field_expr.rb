@@ -44,6 +44,12 @@ module Sql
       @expr  = expression
     end
 
+    def dup
+      copy = self.new(@field.dup)
+      copy.instance_variable_set(:@expr, @expr.dup)
+      copy
+    end
+
     def sql_expr(table_set, context)
       return @expr unless @field
       sql_field_name = self.sql_field(table_set, context) if @field
@@ -62,6 +68,11 @@ module Sql
       @field.name == other.field.name &&
         @field.prefix == other.field.prefix &&
         @expr == other.expr
+    end
+
+    def to_s
+      return @field.to_s unless @expr
+      build_expr(@expr, @field.to_s)
     end
 
   private

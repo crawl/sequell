@@ -23,6 +23,13 @@ module Sql
       @oname = @name.dup
     end
 
+    def dup
+      copy = Field.new(@full_name.dup)
+      copy.table = @table.dup if @table
+      copy.name = self.name.dup
+      copy
+    end
+
     def qualified?
       @table
     end
@@ -73,7 +80,8 @@ module Sql
     end
 
     def to_s
-      @full_name
+      return "#{@table}.#{@name}" if @table
+      @name
     end
   end
 end

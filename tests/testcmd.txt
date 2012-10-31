@@ -138,3 +138,5 @@ E !gkills * deathonacow
 # Killer is a hobgoblin or an imp (superfluous parens ignored)
 !lg * killer=(hobgoblin|imp)
 !lg * killer!=(hobgoblin|imp)
+
+!lm crate t !ktyp s=rune

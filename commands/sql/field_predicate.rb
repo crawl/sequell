@@ -20,6 +20,14 @@ module Sql
       @value_expr = nil
     end
 
+    def dup
+      copy = FieldPredicate.new(@context, @value.dup, @operator.dup,
+                                @field_expr.field.dup)
+      copy.value_expr = @value_expr
+      copy.static = @static
+      copy
+    end
+
     def resolved?
       self.field.qualified?
     end
@@ -73,7 +81,7 @@ module Sql
     end
 
     def to_s
-      "#{@field.name}#{@operator}#{@value}"
+      "#{@field_expr} #{@operator} #{@value}"
     end
 
   private
