@@ -22,8 +22,7 @@ explicitly as "!lg", "!lm", etc.
 Mnemonic: lg = Last Game or List Game
 
 The !lg command queries completed games (i.e. games in the logfile)
-on the public servers (currently crawl.akrasiac.org, crawl.develz.org
-and rl.heh.fi).
+on the public servers.
 
 Syntax
 ======
@@ -431,8 +430,9 @@ Listgame keywords may be one of:
    - X.Y.Z finds games matching that version number exactly.
 
 8. Public server abbreviation:
-   cao / cdo / rhf / csn / cszo :: selects games from the corresponding
-                                   public server.
+   cao / cdo / cszo (et al.) :: selects games from the corresponding
+                                public server; use !lg * s=src to see
+                                the public servers Sequell is aware of.
 
 9. Player nick or nick alias:
    @nick  :: selects games by that player or nick alias. See the section
@@ -504,7 +504,7 @@ lv:
 Logfile format version
 
 src:
-Public server abbreviation. One of "cao", "cdo", "rhf".
+Public server abbreviation. One of "cao", "cdo", "cszo", etc.
 
 sc/score:
 Game score (integer)
