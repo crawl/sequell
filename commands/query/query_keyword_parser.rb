@@ -22,8 +22,8 @@ LISTGAME_SHORTCUTS =
      nil
    end,
    lambda do |value, reproc|
-     if value =~ /^\d+[.]\d+([.]\d+)*$/
-       return value =~ /^\d+[.]\d+$/ ? 'cv' : 'v'
+     if value =~ /^\d+[.]\d+([.]\d+)*(?:-\w+\d*)?$/
+       return value =~ /^\d+[.]\d+(?:$|-)/ ? 'cv' : 'v'
      end
      nil
    end,
