@@ -6,7 +6,6 @@ require 'bundler/setup'
 require 'sinatra'
 
 set :port, SERVICE_PORT
-set :lock, true
 
 get '/tv/channels' do
   require 'tv/channel_manager'
@@ -25,7 +24,11 @@ get '/search' do
 
   require 'cmd/executor'
   require 'libtv'
-  TV.as_channel_server {
-    Cmd::Executor.execute(query, :permitted_commands => ['!lg', '!lm', '??'])
+  require 'services/request_throttle'
+
+  Services::RequestThrottle.throttle(1, self) {
+    TV.as_channel_server {
+      Cmd::Executor.execute(query, :permitted_commands => ['!lg', '!lm', '??'])
+    }
   }
 end
