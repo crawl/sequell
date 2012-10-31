@@ -81,6 +81,7 @@ sub new {
   my $self = bless { _column => $column }, $cls;
   $self->{date} = $self->type() eq 'D';
   $self->{boolean} = $self->boolean();
+  $self->{numeric} = $self->numeric();
   $self
 }
 
@@ -98,10 +99,16 @@ sub sql_boolean_value {
   $value eq 'y' ? 't' : 'f'
 }
 
+sub sql_numeric_value {
+  my ($self, $value) = @_;
+  $value || 0
+}
+
 sub sql_value {
   my ($self, $value) = @_;
   return $self->sql_boolean_value($value) if $self->{boolean};
-  $value
+  return $self->sql_numeric_value($value) if $self->{numeric};
+  $value || ''
 }
 
 sub sql_ref_placeholder {
@@ -190,6 +197,11 @@ sub non_summarisable {
 sub case_sensitive {
   my $self = shift;
   $self->type() eq 'S'
+}
+
+sub numeric {
+  my $self = shift;
+  index($self->type(), 'I') == 0
 }
 
 sub primary_key {
