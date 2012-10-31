@@ -253,8 +253,9 @@ def index_sanity(index)
 end
 
 def sql_exec_query(num, q, lastcount = nil)
-  origindex = num
+  return sql_random_row(q) if q.random_game?
 
+  origindex = num
   dbh = sql_db_handle
 
   # -1 is the natural index 0, -2 = 1, etc.
@@ -264,11 +265,6 @@ def sql_exec_query(num, q, lastcount = nil)
   # our work by reversing the sort order.
   count = lastcount || sql_count_rows_matching(q)
   return Sql::QueryResult.none(q) if count == 0
-
-  if q.random_game?
-    num = rand(count)
-    q.random_game = false
-  end
 
   if num < 0
     num = count + num
@@ -295,6 +291,34 @@ end
 def sql_count_rows_matching(q)
   STDERR.puts "Count: #{q.select_count} (#{q.values.inspect})" if DEBUG_HENZELL
   sql_db_handle.get_first_value(q.select_count, *q.values).to_i
+end
+
+def sql_random_row(q)
+  query = q.select_id(false)
+  wrapped_random_query = <<QUERY
+  WITH query AS (#{query}),
+       selected AS (SELECT FLOOR(RANDOM() * (SELECT COUNT(*) FROM query))::INT
+                    as random_offset)
+  SELECT (SELECT random_offset FROM selected) selected,
+         (SELECT COUNT(*) FROM query) count,
+         id
+    FROM query
+  OFFSET (SELECT random_offset FROM selected) LIMIT 1
+QUERY
+  if DEBUG_HENZELL
+    STDERR.puts("Random select: #{wrapped_random_query}")
+  end
+
+  index = nil
+  count = nil
+  id = nil
+  sql_db_handle.execute(wrapped_random_query, *q.values) do |row|
+    index, count, id = row
+  end
+  return Sql::QueryResult.none(q) unless index
+  q.with_contexts {
+    return sql_game_by_id(id, index, count, q)
+  }
 end
 
 def sql_each_row_matching(q, limit=0)
@@ -326,6 +350,16 @@ end
 
 def field_pred(value, op, field)
   Sql::FieldPredicate.predicate(value, op, field)
+end
+
+def sql_game_by_id(id, index, count, original_query)
+  query = Sql::CrawlQuery.new(
+    Query::QueryStruct.new('AND', field_pred(id, '=', 'id')),
+    nil, '*', 1, original_query.argstr)
+  sql_each_row_matching(query) { |row|
+    return Sql::QueryResult.new(index, count, row, original_query)
+  }
+  return Sql::QueryResult.none(original_query)
 end
 
 def sql_game_by_key(key)

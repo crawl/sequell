@@ -141,8 +141,15 @@ module Sql
       }
     end
 
-    def select_all
-      "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " + where
+    def select_all(with_sorts=true)
+      "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " + where(with_sorts)
+    end
+
+    def select_id(with_sorts=false)
+      id_field = Sql::Field.field('id')
+      resolve_field(id_field, @count_tables)
+      id_sql = @ctx.dbfield(id_field, @count_tables)
+      "SELECT #{id_sql} FROM #{@count_tables.to_sql} #{where(with_sorts)}"
     end
 
     def select_count
