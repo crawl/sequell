@@ -418,7 +418,7 @@ sub respond_with_message {
 
   my $private = $$m{channel} eq 'msg';
 
-  $output = ontoclasmize($m, $output) unless $private;
+  $output = ontoclasmize($m, $output) if !$private && !int(rand(1000));
 
   $output = substr($output, 0, $MAX_PAGINATE_LENGTH) . "..."
     if length($output) > $MAX_PAGINATE_LENGTH;
