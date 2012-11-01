@@ -21,6 +21,7 @@ GetOptions("daemon!" => \$daemon,
            "rc=s" => \$config_file) or die "Invalid options\n";
 
 $ENV{LC_ALL} = 'en_US.utf8';
+$ENV{RUBYOPT} = '-rubygems';
 
 my $SERVER = 'cao';     # Local server.
 my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
