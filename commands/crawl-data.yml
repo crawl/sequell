@@ -448,13 +448,18 @@ prefix-field-fixups:
   ktyp:
     win: winning
     won: winning
+    acid: acid
+    trap: trap
     drown: water
     leav: leaving
     left: leaving
     quit: quitting
     pois: pois
     cloud: cloud
-    starv: starvation
+    star: starvation
+    mon: mon
+    beam: beam
+    lava: lava
 
 # cdist and count are both count distinct
 aggregate-function-types:
