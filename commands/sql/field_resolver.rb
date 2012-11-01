@@ -1,10 +1,12 @@
 require 'sql/join'
+require 'sql/query_table'
+require 'sql/field'
 
 module Sql
   class FieldResolver
     def self.resolve(context, table_set, field)
       return unless field
-      self.new(context, table_set, field).resolve
+      self.new(context, table_set, Sql::Field.field(field)).resolve
     end
 
     def initialize(context, table_set, field)
@@ -19,10 +21,11 @@ module Sql
       # reference field: 'place_id'
       # reference table: 'l_place'
       field = @field
-      return if field.qualified?
+      return field if field.qualified?
 
       column = @context.field_def(field)
-      return unless column && column.reference?
+      raise "Unknown field: #{field}" unless column
+      return resolve_simple_field(field) unless column.reference?
 
       # Reference column -- find the reference table
       reference_table = column.lookup_table
@@ -61,6 +64,12 @@ module Sql
       ref_field = context.join_field
       @tables.join(Join.new(@tables.primary_table, alt.table,
                             ref_field, ref_field))
+    end
+
+    def resolve_simple_field(field)
+      table = Sql::QueryTable.table(@context.field_table(field))
+      field.table = @tables.lookup!(table)
+      field
     end
   end
 end

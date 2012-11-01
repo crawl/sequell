@@ -23,6 +23,10 @@ module Sql
       tables
     end
 
+    def lookup!(table)
+      self[table.alias] or raise "Lookup failed: #{table} is not in #{self}"
+    end
+
     def resolve!(table, force_new_alias=false)
       return table if !force_new_alias && self[table.alias] == table
 
@@ -30,8 +34,8 @@ module Sql
       new_alias = table.alias
       if self[new_alias]
         new_alias = disambiguate_alias(table.alias)
-        table.alias = new_alias
       end
+      table.alias = new_alias
       register_table(table)
       @table_aliases[new_alias] = table
     end

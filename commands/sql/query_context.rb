@@ -115,14 +115,12 @@ module Sql
       GAME_PREFIXES[GameContext.game] + @table
     end
 
-    def dbfield(field, table_set)
-      return field.table.field_sql(field) if field.table
-
-      local_fdef = self.local_field_def(field)
-      if local_fdef
-        self.db_column_expr(local_fdef, table_set)
-      elsif @alt
-        @alt.dbfield(field, table_set)
+    def field_table(field)
+      return field.table if field.table
+      if self.local_field_def(field)
+        self.table
+      elsif @alt && @alt.local_field_def(field)
+        @alt.table
       else
         raise "Unknown field: #{field}"
       end

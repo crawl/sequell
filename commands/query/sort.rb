@@ -21,7 +21,7 @@ module Query
     end
 
     def to_sql(table_set, context=Sql::QueryContext.context)
-      "#{context.dbfield(@field, table_set)} #{@direction}"
+      "#{@field.to_sql} #{@direction}"
     end
 
     def to_s

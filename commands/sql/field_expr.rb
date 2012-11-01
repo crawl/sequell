@@ -57,7 +57,7 @@ module Sql
     end
 
     def sql_field(table_set, context)
-      context.dbfield(@field, table_set)
+      @field.to_sql
     end
 
     def to_sql(table_set, context)

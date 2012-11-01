@@ -94,7 +94,7 @@ module Sql
       @random_game = random_game
     end
 
-    def resolve_field(field, table)
+    def resolve_field(field, table=@tables)
       with_contexts {
         Sql::FieldResolver.resolve(@ctx, table, field)
       }
@@ -145,7 +145,7 @@ module Sql
 
     def query_columns
       with_contexts {
-        self.query_fields.map { |f| @ctx.dbfield(f, @tables) }
+        self.query_fields.map { |f| f.to_sql }
       }
     end
 
@@ -156,8 +156,7 @@ module Sql
 
     def select_id(with_sorts=false)
       id_field = Sql::Field.field('id')
-      resolve_field(id_field, @count_tables)
-      id_sql = @ctx.dbfield(id_field, @count_tables)
+      id_sql = resolve_field(id_field, @count_tables).to_sql
       "SELECT #{id_sql} FROM #{@count_tables.to_sql} " +
         "#{where(@count_pred, with_sorts)}"
     end
@@ -248,7 +247,7 @@ module Sql
 
         unless @ctx.unique_valued?(predicates.primary_sort.field)
           @query << ", " <<
-                 Query::Sort.new(Sql::Field.new('id'), 'ASC').to_sql(@tables)
+                 Query::Sort.new(resolve_field('id'), 'ASC').to_sql(@tables)
         end
       end
       @query

@@ -14,7 +14,7 @@ module Sql
     end
 
     def expr(table_set)
-      field_expr = @context.dbfield(@field, table_set) if @field
+      field_expr = @field.to_sql if @field
       @expr ? @expr.sub('%s', field_expr.to_s) : field_expr
     end
 

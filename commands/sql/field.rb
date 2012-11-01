@@ -1,3 +1,6 @@
+require 'sql/query_context'
+require 'sql/query_table'
+
 module Sql
   class Field
     def self.field(name)
@@ -77,6 +80,13 @@ module Sql
 
     def has_prefix?(prefix)
       @prefix == prefix
+    end
+
+    def to_sql
+      unless @table
+        raise "Attempt to use unresolved field #{self} in a SQL statement"
+      end
+      "#{table.alias}.#{self.sql_column_name}"
     end
 
     def to_s
