@@ -480,6 +480,16 @@ value-functions:
     return: 'D'
     summarisable: true
     display-format: %Y%m%d
+  month:
+    type: 'D'
+    expr: "date_trunc('month', %s)"
+    summarisable: true
+    display-format: %Y%m
+  year:
+    type: 'D'
+    expr: "date_trunc('year', %s)"
+    summarisable: true
+    display-format: %Y
 
 query-tables:
   - logrecord
