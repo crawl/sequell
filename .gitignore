@@ -33,3 +33,4 @@ password.txt
 Gemfile.lock
 *.el
 henzell-schema.sql
+*.json

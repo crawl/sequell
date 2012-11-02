@@ -29,7 +29,7 @@ require 'query/lg_query'
 require 'query/query_struct'
 require 'crawl/branch_set'
 require 'crawl/gods'
-require 'formatter/json_summary'
+require 'formatter/graph_summary'
 
 include Tourney
 include HenzellConfig
@@ -149,11 +149,14 @@ def sql_find_game(default_nick, args, context=CTX_LOG)
 end
 
 def sql_show_game(default_nick, args, context=CTX_LOG)
+  args, opts = extract_options(args, 'graph')
+
   query_group = sql_parse_query(default_nick, args, context)
   query_group.with_context do
     q = query_group.primary_query
     if q.summarise?
-      report_grouped_games_for_query(query_group)
+      formatter = opts[:graph] && Formatter::GraphSummary.new
+      report_grouped_games_for_query(query_group, formatter)
     else
       result = sql_exec_query(q.num, q)
       if result.empty?
@@ -341,19 +344,18 @@ def is_class? (arg)
   CLASS_EXPANSIONS[arg.downcase]
 end
 
-def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
-  reporter = Sql::SummaryReporter.new(q, defval, separator, formatter)
+def report_grouped_games_for_query(q, formatter=nil)
+  reporter = Sql::SummaryReporter.new(q, formatter)
   reporter.report_summary
 end
 
-def report_grouped_games(group_by, defval, who, args,
-                         separator=', ', formatter=nil)
+def report_grouped_games(group_by, who, args, formatter=nil)
   q = Query::QueryBuilder.build(who, Query::QueryString.new(args),
                                 Sql::QueryContext.context, nil, true)
   q.summarise = Sql::SummaryFieldList.new("s=#{group_by}")
   query_group = Sql::QueryList.new
   query_group << q
-  report_grouped_games_for_query(query_group, defval, separator, formatter)
+  report_grouped_games_for_query(query_group, formatter)
 rescue
   puts $!
   raise

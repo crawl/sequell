@@ -6,15 +6,14 @@ module Sql
   class SummaryReporter
     attr_reader :query_group, :counts, :sorted_row_values
 
-    def initialize(query_group, defval, separator, formatter)
+    def initialize(query_group, formatter)
       @query_group = query_group
       @q = query_group.primary_query
       @lq = query_group[-1]
-      @defval = defval
-      @sep = separator
       @extra = @q.extra_fields
       @efields = @extra ? @extra.fields : nil
       @sorted_row_values = nil
+      @formatter = formatter
     end
 
     def query
@@ -39,8 +38,7 @@ module Sql
         "No #{summary_entities} for #{@q.argstr}"
       else
         filter_count_summary_rows!
-
-        formatter = Formatter::TextSummary unless formatter
+        formatter = formatter || @formatter || Formatter::TextSummary
         formatter.format(self)
       end
     end

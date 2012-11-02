@@ -12,9 +12,12 @@ module Formatter
       @summary.query
     end
 
+    def prefix
+      "#{summary_count} #{summary_entities} for #{@summary.query.argstr}: "
+    end
+
     def format
-      ("#{summary_count} #{summary_entities} " +
-        "for #{summary.query.argstr}: #{summary_details}")
+      "#{prefix}#{summary_details}"
     end
 
     def counts
@@ -23,6 +26,14 @@ module Formatter
 
     def count
       @summary.counts[0]
+    end
+
+    def summary_count
+      if self.counts.size == 1
+        self.count == 1 ? "One" : "#{self.count}"
+      else
+        self.counts.reverse.join("/")
+      end
     end
 
     def summary_entities
