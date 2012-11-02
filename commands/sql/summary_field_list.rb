@@ -1,7 +1,13 @@
 require 'sql/summary_field'
+require 'query/grammar'
 
 module Sql
   class SummaryFieldList
+    include Query::Grammar
+
+    FIELD_OR_FUNCTION = %r/#{FIELD}|#{FUNCTION_CALL}/
+
+
     attr_reader :fields
 
     def multiple_field_group?
@@ -9,7 +15,7 @@ module Sql
     end
 
     def self.summary_field?(clause)
-      field_regex = %r/[+-]?[a-zA-Z.0-9_:]+%?/
+      field_regex = %r/[+-]?#{FIELD_OR_FUNCTION}%?/
       if clause =~ /^-?s(?:\s*=(\s*#{field_regex}(?:\s*,\s*#{field_regex})*))$/
         return $1 || 'name'
       end

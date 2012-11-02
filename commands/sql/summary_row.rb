@@ -69,6 +69,10 @@ module Sql
       @key.nil? ? :identity : @key
     end
 
+    def key_display_value
+      format_value(self.key, @summary_field_spec)
+    end
+
     def extend!(size)
       extend_array(@counts, size)
       for ev in @extra_values do
@@ -135,9 +139,9 @@ module Sql
 
     def counted_keys
       if count_string == '1'
-        key
+        key_display_value
       else
-        "#{count_string}x #{@key}"
+        "#{count_string}x #{key_display_value}"
       end
     end
 
@@ -150,7 +154,9 @@ module Sql
       if @counts.size > 1
         allvals << percentage(@counts[1], @counts[0])
       end
-      allvals << @extra_values.map { |x| value_string(x) }.join(";")
+      allvals << @extra_values.each_with_index.map { |x, i|
+        value_string(x, @extra_fields[i])
+      }.join(";")
       es = allvals.find_all { |x| !x.empty? }.join(";")
       es.empty? ? es : "[" + es + "]"
     end
@@ -167,10 +173,11 @@ module Sql
     end
 
     def annotated_value(field, value)
-      "#{field.display}=#{value_string(value)}"
+      "#{field.display}=#{value_string(value, field)}"
     end
 
-    def format_value(v)
+    def format_value(v, field)
+      return field.display_value(v) if field
       if v.is_a?(BigDecimal) || v.is_a?(Float)
         rawv = sprintf("%.2f", v)
         rawv.sub!(/([.]\d*?)0+$/, '\1')

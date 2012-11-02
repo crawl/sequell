@@ -26,7 +26,7 @@ module Sql
         end
       end
       v = @binder.call(row)
-      return Sql::Date.display_date(v) if v.is_a?(DateTime)
+      return v.downcase if v.is_a?(String)
       v
     end
 

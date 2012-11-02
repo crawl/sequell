@@ -16,9 +16,11 @@ module Sql
       end
     end
 
-    def self.display_date(sql_date)
+    def self.display_date(sql_date, format=nil)
       if sql_date.is_a?(DateTime)
-        sql_date.strftime('%Y-%m-%d %H:%M:%S')
+        sql_date.strftime(format || '%Y-%m-%d %H:%M:%S')
+      elsif sql_date =~ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+        self.display_date(DateTime.parse(sql_date), format)
       else
         sql_date.to_s
       end

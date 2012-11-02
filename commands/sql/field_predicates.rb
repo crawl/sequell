@@ -14,6 +14,10 @@ module Sql
       clone
     end
 
+    def display_format
+      field.display_format
+    end
+
     def name
       field.name
     end

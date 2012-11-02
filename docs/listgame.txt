@@ -141,7 +141,7 @@ Where:
 
   You may use only one x=A,B,C form per query.
 
-- o=<aggregate-expr> or o=-<aggregate-expr>
+- o=<aggregate-expr> or o=-<aggregate-expr> or o=.
   Mnemonic: o = Order By
 
   When used in queries of the form:
@@ -153,6 +153,11 @@ Where:
   of counts for each group.
 
   If you want an ascending order sort, use o=-aggregate(field)
+
+  You may also want to sort by the summary group (for example, sort by
+  name in an s=name query). In such cases, use o=. or o=-.
+
+  !lg * s=name o=-.  (Games played by each player, ordered by player name)
 
   You may use only one o=X form per query.
 

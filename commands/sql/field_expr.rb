@@ -45,7 +45,7 @@ module Sql
     end
 
     attr_reader :expr
-    attr_accessor :field, :type
+    attr_accessor :field, :type, :function
 
     include FieldPredicates
 
@@ -55,8 +55,16 @@ module Sql
       @type  = type
     end
 
+    def display_format
+      @function ? @function.display_format : @field.display_format
+    end
+
+    def summarisable?
+      @function ? @function.summarisable? : @field.summarisable?
+    end
+
     def type
-      @type ||= @field.type
+      @type ||= (@function && @function.type) || @field.type
     end
 
     def expr?
@@ -87,8 +95,9 @@ module Sql
     end
 
     def to_s
-      return @field.to_s unless @expr
-      build_expr(@expr, @field.to_s)
+      return @expr unless @field
+      return @field.to_s unless @function
+      "#{@function.name}(#{@field})"
     end
 
   private

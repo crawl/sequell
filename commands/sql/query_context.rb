@@ -41,6 +41,10 @@ module Sql
       self.function_type(function)
     end
 
+    def function_def(function)
+      @config.functions.function(function)
+    end
+
     def function_type(function)
       @config.functions.function_type(function)
     end

@@ -474,10 +474,12 @@ aggregate-function-types:
   variance: I
 
 value-functions:
-  date_trunc:
+  date:
     type: 'D'
     expr: "date_trunc('day', %s)"
     return: 'D'
+    summarisable: true
+    display-format: %Y%m%d
 
 query-tables:
   - logrecord

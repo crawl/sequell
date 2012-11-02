@@ -8,7 +8,7 @@ module Sql
 
     def function_defs
       @function_defs ||= Hash[ @functions.map { |name, fdef|
-          [name, Sql::FunctionDef.new(fdef)]
+          [name, Sql::FunctionDef.new(name, fdef)]
         } ]
     end
 

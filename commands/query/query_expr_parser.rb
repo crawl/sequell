@@ -44,15 +44,14 @@ module Query
 
       key = Sql::FieldExprParser.expr(raw_key)
       op = Sql::Operator.new(op)
-      val = Sql::Value.cleanse_input(val)
-
       selector = key.sort? ? Sql::FieldExprParser.expr(val) : key
+      raise "Bad sort: #{@arg}" if key.sort? && !op.equal?
+
       unless context.field?(selector.field)
         raise "Unknown selector: #{selector}"
       end
 
-      raise "Bad sort: #{@arg}" if key.sort? && !op.equal?
-
+      val = Sql::Value.cleanse_input(val)
       if key.sort?
         order = key.max? ? 'DESC' : 'ASC'
         body.sort(Sort.new(selector, order))

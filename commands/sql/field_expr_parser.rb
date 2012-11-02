@@ -33,8 +33,10 @@ module Sql
         raise "Cannot apply #{function_name} to #{field}: type mismatch"
       end
 
-      function_def = context.functions.function(function_name)
-      FieldExpr.new(field, function_def.expr, function_def.return_type)
+      function_def = context.function_def(function_name)
+      expr = FieldExpr.new(field, function_def.expr, function_def.return_type)
+      expr.function = function_def
+      expr
     end
   end
 end
