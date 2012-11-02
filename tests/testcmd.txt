@@ -144,3 +144,5 @@ E !gkills * deathonacow
 E !lg * won god=xom urune=15 sp -2
 
 !lm * t9 won type=god.renounce x=cdist(gid)
+
+!lg @elliptic t s=name x=sum(dur)

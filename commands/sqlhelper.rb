@@ -29,6 +29,7 @@ require 'query/lg_query'
 require 'query/query_struct'
 require 'crawl/branch_set'
 require 'crawl/gods'
+require 'formatter/json_summary'
 
 include Tourney
 include HenzellConfig
@@ -155,8 +156,8 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
       report_grouped_games_for_query(query_group)
     else
       result = sql_exec_query(q.num, q)
-      type = context.entity_name + 's'
       if result.empty?
+        type = context.entity_name + 's'
         puts "No #{type} for #{q.argstr}."
       else
         if block_given?
@@ -341,7 +342,8 @@ def is_class? (arg)
 end
 
 def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
-  Sql::SummaryReporter.new(q, defval, separator, formatter).report_summary
+  reporter = Sql::SummaryReporter.new(q, defval, separator, formatter)
+  reporter.report_summary()
 end
 
 def report_grouped_games(group_by, defval, who, args,

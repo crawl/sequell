@@ -1,9 +1,10 @@
 require 'sql/summary_row_group'
 require 'sql/summary_row'
+require 'formatter/text_summary'
 
 module Sql
   class SummaryReporter
-    attr_reader :query_group
+    attr_reader :query_group, :counts, :sorted_row_values
 
     def initialize(query_group, defval, separator, formatter)
       @query_group = query_group
@@ -24,7 +25,7 @@ module Sql
       @counts &&  @counts.size == 2
     end
 
-    def summary
+    def summary(formatter=nil)
       @counts = []
 
       for q in @query_group do
@@ -38,13 +39,14 @@ module Sql
         "No #{summary_entities} for #{@q.argstr}"
       else
         filter_count_summary_rows!
-        ("#{summary_count} #{summary_entities} " +
-          "for #{@q.argstr}: #{summary_details}")
+
+        formatter = Formatter::TextSummary unless formatter
+        formatter.format(self)
       end
     end
 
     def report_summary
-      puts(summary)
+      puts(self.summary)
     end
 
     def count
@@ -67,6 +69,7 @@ module Sql
     def filter_count_summary_rows!
       group_by = @q.summarise
       summary_field_count = group_by ? group_by.fields.size : 0
+      STDERR.puts("summary_field_count: #{summary_field_count}")
 
       rowmap = { }
       rows = []
@@ -125,10 +128,6 @@ module Sql
       if filters
         @counts = count_filtered_values(@sorted_row_values)
       end
-    end
-
-    def summary_details
-      @sorted_row_values.join(", ")
     end
 
     def count_filtered_values(sorted_summary_row_values)
