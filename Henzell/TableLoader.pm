@@ -51,7 +51,8 @@ sub insert_lookup_record {
 sub resolve_foreign_key {
   my ($self, $fk, $g) = @_;
   my $value = $g->{$fk->name()} || '';
-  my $ref_key = $fk->name() . ":" . lc($value);
+  my $canonical_value = $fk->case_sensitive()? $value : lc($value);
+  my $ref_key = $fk->name() . ":" . $canonical_value;
   my $ref_value = $fk_cache{$ref_key};
   if (!$ref_value) {
     $ref_value = $self->insert_lookup_record($fk, $value);
