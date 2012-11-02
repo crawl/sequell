@@ -23,11 +23,10 @@ module Query
   }
 
   KeywordMatcher.matcher(:boolean) {
-    context = Sql::QueryContext.context
-    if context.boolean?(value)
+    if value_field.boolean?
       return expr.parse(value.downcase, 'y')
     end
-    if context.text?(value)
+    if value_field.text?
       return expr.parse(value.downcase, '', expr.op.negate)
     end
   }

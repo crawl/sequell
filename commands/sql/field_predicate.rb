@@ -1,5 +1,5 @@
 require 'sql/timestamp_format'
-require 'sql/field_expr'
+require 'sql/field_expr_parser'
 require 'sql/operator'
 
 module Sql
@@ -15,7 +15,7 @@ module Sql
       @context = context
       @operator = Sql::Operator.op(operator)
       @value = value
-      @field_expr = Sql::FieldExpr.autocase(field, context)
+      @field_expr = Sql::FieldExprParser.expr(field)
       @static = false
       @value_expr = nil
     end
@@ -60,7 +60,7 @@ module Sql
     end
 
     def sql_field_expr(table_set)
-      @field_expr.to_sql(table_set, @context)
+      @field_expr.to_sql
     end
 
     def sql_value_placeholder

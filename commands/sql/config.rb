@@ -1,5 +1,6 @@
 require 'sql/column_list'
 require 'sql/lookup_table_registry'
+require 'sql/function_defs'
 
 module Sql
   class Config
@@ -7,6 +8,10 @@ module Sql
 
     def initialize(cfg)
       @cfg = cfg
+    end
+
+    def functions
+      @functions ||= Sql::FunctionDefs.new(@cfg['value-functions'])
     end
 
     def lookup_table(column)

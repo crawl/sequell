@@ -33,40 +33,28 @@ module Sql
       @fields.columns
     end
 
-    def field_prop(field, property)
-      fdef = self.field_def(field)
-      fdef && fdef.send(property)
-    end
-
-    def unique_valued?(field)
-      field_prop(field, :unique?)
-    end
-
-    def boolean?(field)
-      field_prop(field, :boolean?)
-    end
-
-    def integer?(field)
-      field_prop(field, :integer?)
-    end
-
-    def case_sensitive?(field)
-      field_prop(field, :case_sensitive?)
-    end
-
-    def text?(field)
-      field_prop(field, :text?)
-    end
-
     def field?(field)
       self.field_def(field) || self.value_key?(field)
     end
 
+    def function?(function)
+      self.function_type(function)
+    end
+
+    def function_type(function)
+      @config.functions.function_type(function)
+    end
+
+    def function_expr(function)
+      @config.functions.function_expr(function)
+    end
+
     def value_key?(field)
-      @value_keys && Sql::Field.field(field) === @value_keys
+      @value_keys && @value_keys.include?(field.to_s)
     end
 
     def local_field_def(field)
+      field = Sql::FieldExprParser.expr(field)
       (!field.prefixed? || field.has_prefix?(@table_alias)) &&
         (@fields[field.name] || @synthetic[field.name])
     end
@@ -106,11 +94,6 @@ module Sql
       end
     end
 
-    def field_type(field)
-      field_definition = self.field_def(field)
-      (field_definition && field_definition.type) || ''
-    end
-
     def table
       GAME_PREFIXES[GameContext.game] + @table
     end
@@ -132,7 +115,7 @@ module Sql
       table.field_sql(fdef)
     end
 
-    def summarise?(field)
+    def summarisable?(field)
       return true if value_key?(field)
       fdef = self.field_def(field)
       fdef && fdef.summarisable?

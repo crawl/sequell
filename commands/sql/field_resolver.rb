@@ -6,7 +6,7 @@ module Sql
   class FieldResolver
     def self.resolve(context, table_set, field)
       return unless field
-      self.new(context, table_set, Sql::Field.field(field)).resolve
+      self.new(context, table_set, Sql::FieldExprParser.expr(field)).resolve
     end
 
     def initialize(context, table_set, field)
@@ -16,22 +16,28 @@ module Sql
     end
 
     def resolve
+      @field.each_field { |field|
+        resolve_field(field)
+      }
+      @field
+    end
+
+    def resolve_field(field)
       # Example predicate place=Snake:3
       # field: 'place'
       # reference field: 'place_id'
       # reference table: 'l_place'
-      field = @field
       return field if field.qualified?
 
-      column = @context.field_def(field)
+      column = field.column
       raise "Unknown field: #{field}" unless column
-      return resolve_simple_field(field) unless column.reference?
+      return resolve_simple_field(field) unless field.reference?
 
       # Reference column -- find the reference table
       reference_table = column.lookup_table
 
       # Find the table that the predicate's field belongs to
-      qualified_field = @context.table_qualified(field)
+      qualified_field = field.context_qualified
 
       # If this is not a local field, we need to join to the alt table first:
       if !@context.local_field_def(field)

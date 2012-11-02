@@ -24,6 +24,7 @@ require 'sql/version_number'
 require 'sql/crawl_query'
 require 'sql/summary_reporter'
 require 'sql/query_context'
+require 'query/grammar'
 require 'query/lg_query'
 require 'query/query_struct'
 require 'crawl/branch_set'
@@ -39,38 +40,7 @@ LG_SERVER_CFG = YAML.load_file(LG_SERVERS_FILE)
 MAX_MEMORY_USED = 768 * 1024 * 1024
 Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
 
-OPERATORS = {
-  '==' => '=', '!==' => '!=',
-  '=' => '=', '!=' => '!=', '<' => '<', '>' => '>',
-  '<=' => '<=', '>=' => '>=', '=~' => 'ILIKE', '!~' => 'NOT ILIKE',
-  '~~' => '~*', '!~~' => '!~*'
-}
-
-OPERATOR_NEGATION = {
-  '=='  => '!==',
-  '='   => '!=',
-  '<'   => '>=',
-  '>'   => '<=',
-  '=~'  => '!~',
-  '~~'  => '!~~'
-}
-OPERATOR_NEGATION.merge!(OPERATOR_NEGATION.invert)
-
-FILTER_OPS = {
-  '<'   => Proc.new { |a, b| a.to_f < b },
-  '<='  => Proc.new { |a, b| a.to_f <= b },
-  '>'   => Proc.new { |a, b| a.to_f > b },
-  '>='  => Proc.new { |a, b| a.to_f >= b },
-  '='   => Proc.new { |a, b| a.to_f == b },
-  '!='  => Proc.new { |a, b| a.to_f != b }
-}
-
-FILTER_OPS_ORDERED = FILTER_OPS.keys.sort { |a,b| b.length <=> a.length }
-
-FILTER_PATTERN =
-  Regexp.new('^((?:(?:den|num|%)[.])?\S+?)(' +
-             FILTER_OPS_ORDERED.map { |o| Regexp.quote(o) }.join('|') +
-             ')(\S+)$')
+include Query::Grammar
 
 BRANCHES = Crawl::BranchSet.new(CFG['branches'])
 UNIQUES = Set.new(CFG['uniques'].map { |u| u.downcase })
@@ -91,22 +61,7 @@ BOOL_FIELDS = CFG['boolean-fields']
   end
 end
 
-OPEN_PAREN = '(('
-CLOSE_PAREN = '))'
-
-BOOLEAN_OR = '||'
-BOOLEAN_OR_Q = Regexp.quote(BOOLEAN_OR)
-
-# Never fetch more than 5000 rows, kthx.
-ROWFETCH_MAX = 5000
-
 SQL_CONFIG = Sql::Config.new(CFG)
-
-SORTEDOPS = OPERATORS.keys.sort { |a,b| b.length <=> a.length }
-OPMATCH = Regexp.new(SORTEDOPS.map { |o| Regexp.quote(o) }.join('|'))
-ARGSPLITTER = Regexp.new('^-?([a-z.:_]+)\s*(' +
-                         SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
-                         ')\s*(.*)$', Regexp::IGNORECASE)
 
 DB_NICKS = { }
 
@@ -248,10 +203,6 @@ def row_to_fieldmap(row)
   map
 end
 
-def index_sanity(index)
-  #raise "Index too large: #{index}" if index > ROWFETCH_MAX
-end
-
 def sql_exec_query(num, q, lastcount = nil)
   return sql_random_row(q) if q.random_game?
 
@@ -276,8 +227,6 @@ def sql_exec_query(num, q, lastcount = nil)
   if !lastcount && num > count / 2
     return sql_exec_query(num - count, q.reverse, count)
   end
-
-  index_sanity(num)
 
   n = num
   sql_each_row_matching(q, n + 1) do |row|

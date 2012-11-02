@@ -8,6 +8,8 @@ use Henzell::Cmd qw/load_all_commands execute_cmd/;
 my $DEFAULT_NICK = 'greensnark';
 
 $ENV{IRC_NICK_AUTHENTICATED} = 'y';
+$ENV{HENZELL_SQL_QUERIES} = 'y';
+$ENV{RUBYOPT} = '-rubygems';
 Henzell::Cmd::load_all_commands();
 
 sub runcmd($) {

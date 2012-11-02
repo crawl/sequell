@@ -8,6 +8,7 @@ use Henzell::Cmd;
 
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{HENZELL_TEST} = 'y';
+$ENV{RUBYOPT} = '-rubygems';
 
 require 'sqllog.pl';
 
@@ -294,7 +295,8 @@ $output
 TESTREPORT
 
   my $err =
-    $exitcode && !$$test{err}? "$cmd error:\n$output\n" :
+    ($exitcode && !$$test{err}) ? "$cmd error:\n$output\n" :
+    (!$exitcode && $$test{err}) ? "$cmd ok, but expected error:\n$output\n" :
     $$test{regex_match} && $output !~ /$$test{regex_match}/m?
       ("Output '$output' does not contain expected match: " .
        "$$test{regex_match}: $output") :

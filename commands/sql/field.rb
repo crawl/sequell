@@ -1,13 +1,20 @@
 require 'sql/query_context'
 require 'sql/query_table'
+require 'sql/type_predicates'
 
 module Sql
   class Field
     def self.field(name)
       return nil unless name
-      return name if name.is_a?(self)
+      return name if self.field?(name)
       self.new(name)
     end
+
+    def self.field?(name)
+      name.is_a?(self)
+    end
+
+    include TypePredicates
 
     attr_reader :prefix, :aliased_name, :full_name
     attr_accessor :table
@@ -24,6 +31,57 @@ module Sql
       end
       @name = SQL_CONFIG.column_aliases[@aliased_name] || @aliased_name
       @oname = @name.dup
+    end
+
+    def context
+      Sql::QueryContext.context
+    end
+
+    # Returns a copy of this field that is qualified with the table of
+    # the context.
+    def context_qualified
+      context.table_qualified(self)
+    end
+
+    def column_prop(prop)
+      self.column && self.column.send(prop)
+    end
+
+    def unique_valued?
+      column_prop(:unique?)
+    end
+
+    def value_key?
+      context.value_key?(self.name)
+    end
+
+    def local?
+      context.local_field_def(self)
+    end
+
+    def summarisable?
+      return true if self.value_key?
+      column_prop(:summarisable?)
+    end
+
+    def reference?
+      column_prop(:reference?)
+    end
+
+    def type
+      column_prop(:type) || ''
+    end
+
+    def column
+      @column ||= context.field_def(self)
+    end
+
+    def expr?
+      false
+    end
+
+    def each_field
+      yield self
     end
 
     def dup

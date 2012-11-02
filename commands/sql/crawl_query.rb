@@ -104,13 +104,13 @@ module Sql
       @summarise = s
 
       for summary_field in @summarise.fields
-        fieldname = summary_field.field.dup
-        if @ctx.value_key?(fieldname)
+        if summary_field.value_key?
           verb = @ctx.key_field
           # Ulch, we have to modify our predicates.
           add_predicate('AND',
-                        Sql::FieldPredicate.predicate(fieldname, '=', verb))
-          summary_field.field = Sql::Field.field(@ctx.value_field)
+                        Sql::FieldPredicate.predicate(summary_field.name,
+                                                      '=', verb))
+          summary_field.field = Sql::FieldExprParser.expr(@ctx.value_field)
         end
       end
 
@@ -129,16 +129,13 @@ module Sql
     end
 
     def select(field_expressions, with_sorts=true)
+      table_context = @count_tables.dup
       with_contexts {
-        field_expressions.each { |field_expr|
-          resolve_field(field_expr.field, @tables)
-        }
-
         select_cols = field_expressions.map { |fe|
-          fe.to_sql(@tables, @ctx)
+          resolve_field(fe, table_context).to_sql
         }.join(", ")
 
-        "SELECT #{select_cols} FROM #{@tables.to_sql} " +
+        "SELECT #{select_cols} FROM #{table_context.to_sql} " +
            where(@pred, with_sorts)
       }
     end
@@ -199,7 +196,7 @@ module Sql
 
     def summary_db_fields
       @summarise.fields.map { |f|
-        Sql::FieldExpr.autocase(f.field, @ctx).to_sql(@summary_tables, @ctx)
+        f.field.to_sql
       }
     end
 
@@ -245,7 +242,7 @@ module Sql
         @query << " " unless @query.empty?
         @query << "ORDER BY " << predicates.primary_sort.to_sql(@tables)
 
-        unless @ctx.unique_valued?(predicates.primary_sort.field)
+        unless predicates.primary_sort.unique_valued?
           @query << ", " <<
                  Query::Sort.new(resolve_field('id'), 'ASC').to_sql(@tables)
         end

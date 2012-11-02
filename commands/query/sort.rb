@@ -1,8 +1,11 @@
 require 'sql/query_context'
+require 'sql/field_predicates'
 
 module Query
   class Sort
     attr_reader :field, :direction
+
+    include Sql::FieldPredicates
 
     def initialize(field, direction='DESC')
       unless direction == 'ASC' || direction == 'DESC'

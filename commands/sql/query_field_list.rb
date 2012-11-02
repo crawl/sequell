@@ -87,7 +87,7 @@ module Sql
 
     def aggregate_typematch(func, field)
       ftype = SQL_CONFIG.aggregate_function_types[func]
-      return ftype == '*' || ftype == @ctx.field_type(field)
+      return field.type_match?(ftype)
     end
 
     def aggregate_function(func, field)

@@ -2,11 +2,13 @@ require 'query/query_struct'
 require 'query/query_keyword_parser'
 require 'sql/version_number'
 require 'sql/field_predicate'
-require 'sql/field'
+require 'sql/field_expr_parser'
 require 'sql/value'
 
 module Query
   class QueryExprParser
+    include Grammar
+
     # Parses a single word of a listgame-style query, either as a keyword
     # parameter, or a field-op-value.
     def self.parse(arg)
@@ -40,12 +42,12 @@ module Query
       @arg =~ ARGSPLITTER
       raw_key, op, val = $1, $2, $3
 
-      key = Sql::Field.new(raw_key)
+      key = Sql::FieldExprParser.expr(raw_key)
       op = Sql::Operator.new(op)
       val = Sql::Value.cleanse_input(val)
 
-      selector = key.sort? ? Sql::Field.new(val) : key
-      unless context.field?(selector)
+      selector = key.sort? ? Sql::FieldExprParser.expr(val) : key
+      unless context.field?(selector.field)
         raise "Unknown selector: #{selector}"
       end
 
@@ -55,9 +57,12 @@ module Query
         order = key.max? ? 'DESC' : 'ASC'
         body.sort(Sort.new(selector, order))
       else
-        if context.integer?(selector)
+        if selector.integer?
           if op.textual?
             raise "Can't use #{op} on numeric field #{selector} in #{rawarg}"
+          end
+          if val !~ /^[+-]?(?:\d+[.]?|[.]\d+|\d+[.]\d+)$/
+            raise "Bad expression: '#{@arg}': #{selector} is numeric, but value '#{val}' is not."
           end
           val = val.to_i
         end
@@ -68,7 +73,7 @@ module Query
     end
 
     def query_field(field, op, val)
-      val = 'n' if context.boolean?(field) && val.empty?
+      val = 'n' if field.boolean? && val.empty?
 
       # Is it of the form ktyp=drowning|lava? Turn it into an a=x or a=y clause
       if op.equality? && val =~ /^\(?[\w. ]+(?:\|[\w. ]+)+\)?$/
@@ -143,7 +148,7 @@ module Query
         end
       end
 
-      if context.value_key?(field)
+      if field.value_key?
         return QueryStruct.new('AND',
           field_pred(field.to_s, '=', context.key_field),
           field_pred(val, op, context.value_field))
@@ -203,7 +208,8 @@ module Query
           tend   = tourney.tend
 
           time_field = context.raw_time_field
-          clause << query_field(Sql::Field.new('rstart'), lop, tstart)
+          clause << query_field(Sql::FieldExprParser.expr('rstart'),
+                                lop, tstart)
           clause << query_field(time_field, rop, tend)
 
           version_clause = QueryStruct.new(in_tourney ? 'OR' : 'AND')

@@ -1,8 +1,14 @@
 require 'sql/field'
+require 'sql/field_predicates'
 
 module Sql
   # A SQL expression for a given field's db column.
   class FieldExpr
+    def self.expr(field)
+      return field if field.respond_to?(:expr?) && field.expr?
+      self.new(field)
+    end
+
     def self.max(field)
       self.new(field, 'MAX')
     end
@@ -29,39 +35,49 @@ module Sql
       self.new(field, 'CAST(%s AS CITEXT)')
     end
 
-    def self.autocase(field, context)
-      if context.case_sensitive?(field)
+    def self.autocase(field)
+      field = Sql::Field.field(field)
+      if field.case_sensitive?
         self.lower(field)
       else
         self.new(field)
       end
     end
 
-    attr_reader :field, :expr
+    attr_reader :expr
+    attr_accessor :field, :type
 
-    def initialize(field, expression=nil)
+    include FieldPredicates
+
+    def initialize(field, expression=nil, type=nil)
       @field = Sql::Field.field(field)
       @expr  = expression
+      @type  = type
+    end
+
+    def type
+      @type ||= @field.type
+    end
+
+    def expr?
+      true
     end
 
     def dup
-      copy = self.new(@field.dup)
-      copy.instance_variable_set(:@expr, @expr.dup)
+      copy = FieldExpr.new(@field.dup)
+      copy.instance_variable_set(:@expr, @expr.dup) if @expr
+      copy.instance_variable_set(:@type, @type.dup) if @type
       copy
     end
 
-    def sql_expr(table_set, context)
+    def sql_expr
       return @expr unless @field
-      sql_field_name = self.sql_field(table_set, context) if @field
+      sql_field_name = @field.to_sql if @field
       @expr ? build_expr(@expr, sql_field_name) : sql_field_name
     end
 
-    def sql_field(table_set, context)
-      @field.to_sql
-    end
-
-    def to_sql(table_set, context)
-      sql_expr(table_set, context)
+    def to_sql
+      sql_expr
     end
 
     def == (other)

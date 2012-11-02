@@ -1,8 +1,11 @@
 require 'sql/date'
 require 'sql/config'
+require 'sql/type_predicates'
 
 module Sql
   class Column
+    include TypePredicates
+
     def initialize(config, decorated_name)
       @config = config
       @decorated_name = decorated_name
@@ -47,32 +50,8 @@ module Sql
       lookup_config.fk_field(self.name)
     end
 
-    def text?
-      self.type == '' || self.type == 'S'
-    end
-
-    def case_sensitive?
-      self.type == 'S'
-    end
-
     def unique?
       !self.summarisable?
-    end
-
-    def date?
-      self.type == 'D'
-    end
-
-    def numeric?
-      self.integer?
-    end
-
-    def integer?
-      self.type == 'I'
-    end
-
-    def boolean?
-      self.type == '!'
     end
 
     def summarisable?

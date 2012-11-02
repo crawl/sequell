@@ -140,3 +140,5 @@ E !gkills * deathonacow
 !lg * killer!=(hobgoblin|imp)
 
 !lm crate t !ktyp s=rune
+
+E !lg * won god=xom urune=15 sp -2

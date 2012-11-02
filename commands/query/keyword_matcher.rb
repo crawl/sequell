@@ -25,7 +25,12 @@ module Query
     def match(keyword, expr)
       @keyword = keyword
       @expr = expr
+      @value_field = nil
       self.parse
+    end
+
+    def value_field
+      @value_field ||= Sql::Field.field(@keyword)
     end
   end
 end

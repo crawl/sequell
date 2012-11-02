@@ -473,6 +473,12 @@ aggregate-function-types:
   std: I
   variance: I
 
+value-functions:
+  date_trunc:
+    type: 'D'
+    expr: "date_trunc('day', %s)"
+    return: 'D'
+
 query-tables:
   - logrecord
   - milestone
