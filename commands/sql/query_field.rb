@@ -43,6 +43,11 @@ module Sql
       @calias ? "#{sql_expr} AS #{@calias}" : sql_expr
     end
 
+    def to_s
+      return @expr unless @field
+      @field.to_s
+    end
+
     def aggregate?
       return @expr && @expr =~ /\w+\(/
     end

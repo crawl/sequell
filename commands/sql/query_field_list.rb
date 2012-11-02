@@ -72,16 +72,22 @@ module Sql
 
     def simple_field(field)
       field = field.downcase.strip
-      if field == 'n'
+      case field
+      when 'n'
         return QueryField.new(self, 'COUNT(*)', nil, 'N',
           "count_" + QueryFieldList::unique_id())
-      elsif field == '%'
+      when '%'
         return QueryField.new(self, 'COUNT(*)', nil, '%',
           "count_" + QueryFieldList::unique_id(),
           :percentage)
-      end
-      @ctx.with do
-        return Sql::QueryField.new(self, nil, Sql::Field.field(field), field)
+      else
+        @ctx.with do
+          query_field = Sql::QueryField.new(self, nil, field, field)
+          unless query_field.known?
+            raise "Unknown field: #{query_field}"
+          end
+          query_field
+        end
       end
     end
 

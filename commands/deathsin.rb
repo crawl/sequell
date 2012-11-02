@@ -14,4 +14,4 @@ query =
 
 filters.args = filters.args[1 .. -1]
 
-report_grouped_games('name', '', '*', (query + filters).args)
+report_grouped_games('name', '*', (query + filters).args)

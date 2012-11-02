@@ -82,6 +82,10 @@ module Sql
       field.column
     end
 
+    def known?
+      value_key? || column
+    end
+
     def === (thing)
       @field === thing
     end

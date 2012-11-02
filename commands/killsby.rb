@@ -14,5 +14,4 @@ killer_field = args.include?('-i') ? 'ikiller' : 'ckiller'
 args = args.select { |x| x != '-i' }
 
 query = Query::QueryString.new("* #{killer_field}=" + args.join(' '))
-STDERR.puts("Query args: #{query.args.inspect}")
-report_grouped_games('name', '', '*', query.args)
+report_grouped_games('name', '*', query.args)

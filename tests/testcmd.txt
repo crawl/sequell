@@ -148,4 +148,3 @@ E !lg * won god=xom urune=15 sp -2
 !lg @elliptic t s=name x=sum(dur)
 
 !chars elliptic
-!gods elliptic

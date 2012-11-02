@@ -1,6 +1,6 @@
 require 'sql/query_context'
 require 'sql/query_table'
-require 'sql/type_predicates'
+require 'sql/field_predicates'
 
 module Sql
   class Field
@@ -14,7 +14,7 @@ module Sql
       name.is_a?(self)
     end
 
-    include TypePredicates
+    include FieldPredicates
 
     attr_reader :prefix, :aliased_name, :full_name
     attr_accessor :table

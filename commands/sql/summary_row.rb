@@ -176,7 +176,7 @@ module Sql
       "#{field.display}=#{value_string(value, field)}"
     end
 
-    def format_value(v, field)
+    def format_value(v, field=nil)
       return field.display_value(v) if field
       if v.is_a?(BigDecimal) || v.is_a?(Float)
         rawv = sprintf("%.2f", v)
@@ -190,13 +190,13 @@ module Sql
       end
     end
 
-    def value_string(value)
+    def value_string(value, field=nil)
       sz = value.size
       if not [1,2].index(sz)
         raise "Unexpected value array size: #{value.size}"
       end
       if sz == 1
-        format_value(value[0])
+        format_value(value[0], field)
       else
         short = value.reverse.join("/") + " (#{percentage(value[1], value[0])})"
       end
