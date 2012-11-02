@@ -343,7 +343,7 @@ end
 
 def report_grouped_games_for_query(q, defval=nil, separator=', ', formatter=nil)
   reporter = Sql::SummaryReporter.new(q, defval, separator, formatter)
-  reporter.report_summary()
+  reporter.report_summary
 end
 
 def report_grouped_games(group_by, defval, who, args,

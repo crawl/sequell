@@ -45,8 +45,8 @@ module Sql
       end
     end
 
-    def report_summary
-      puts(self.summary)
+    def report_summary(formatter=nil)
+      puts(self.summary(formatter))
     end
 
     def count
@@ -64,6 +64,15 @@ module Sql
     def summary_entities
       type = @q.ctx.entity_name
       @count == 1 ? type : type + 's'
+    end
+
+    def group_fields
+      group_by = @q.summarise
+      group_by ? group_by.fields : []
+    end
+
+    def extra_fields
+      @q.extra_fields ? @q.extra_fields.fields : []
     end
 
     def filter_count_summary_rows!
