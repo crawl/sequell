@@ -47,8 +47,16 @@ module Formatter
       'Column'
     end
 
+    def string_only?
+      pie? || stacked_group?
+    end
+
+    def stacked_group?
+      query.group_count == 2
+    end
+
     def graph_datatype(field)
-      return 'string' if self.pie?
+      return 'string' if self.string_only?
       case
       when field.numeric?
         'number'
@@ -63,20 +71,26 @@ module Formatter
       query.summarise.fields[0]
     end
 
-    def data_types
-      [graph_datatype(summary_key_field), 'number']
+    def data_types(json)
+      field_count = json[:fields].size
+      [graph_datatype(summary_key_field)] + ['number'] * (field_count - 1)
     end
 
     def date?
-      !pie? && summary_key_field.date?
+      !string_only? && summary_key_field.date?
     end
 
     def number?
-      !pie? && summary_key_field.numeric?
+      !string_only? && summary_key_field.numeric?
     end
 
     def continuous?
       date? || number?
+    end
+
+    def graph_number_format
+      return '#,###%' if @json_reporter.perc?
+      '#,###'
     end
 
     def format(summary)
@@ -84,7 +98,8 @@ module Formatter
       json = @json_reporter.format
       graph_json = json.merge(:title => self.qualified_title,
                               :chart_type => self.graph_type(json),
-                              :types => self.data_types,
+                              :number_format => self.graph_number_format,
+                              :types => self.data_types(json),
                               :date => self.date?,
                               :number => self.number?)
 
@@ -108,8 +123,8 @@ module Formatter
       end
 
       summarise = query.summarise
-      if !summarise || summarise.fields.size > 1
-        raise "-graph requires single field s=<field> term"
+      if !summarise || summarise.fields.size > 2
+        raise "-graph requires one or two group s=<field> term"
       end
 
       if scatter? && !continuous?

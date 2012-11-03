@@ -165,6 +165,10 @@ E !lg * won god=xom urune=15 sp -2
 
 !lg * x=day(end),year(end)
 
-
 !lg chris t xl>=9 x=cdist(crace),cdist(cls)
 !lg * killer=Xtahua dam>0 s=dam o=-. -graph
+!lg * shoals|swamp|snake s=br,xl -graph
+
+!lg * 0.11 tiles xl>10 s=god% -graph
+!lg * t s=god / win -graph
+

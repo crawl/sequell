@@ -115,6 +115,18 @@ module Sql
       @summarise || (@extra_fields && @extra_fields.aggregate?)
     end
 
+    def grouping_query?
+      @summarise
+    end
+
+    def group_count
+      @summarise ? @summarise.fields.size : 0
+    end
+
+    def query_groups
+      @summarise ? @summarise.fields : []
+    end
+
     def random_game?
       @random_game
     end

@@ -3,23 +3,41 @@ require 'ostruct'
 
 module Formatter
   class JsonSummary < Summary
+    MAX_BAR_GROUPS = 25
+
     def format
       unless self.primary_grouping_field
         raise "JSON summary can only be used for grouped results"
       end
 
+      fields = [primary_grouping_field.name] + count_field_names
       extractor = self.create_data_extractor
-
-      { :fields => [primary_grouping_field.name, primary_count_field.name],
+      { :fields => fields,
         :data => self.data_rows(extractor) }
+    end
+
+    def stacked_grouping_query?
+      @summary.query_group.group_count == 2
+    end
+
+    def stacked_group
+      @stacked_group ||= @summary.query_group.query_groups[1]
+    end
+
+    def count_field_names
+      count_fields.map(&:name)
+    end
+
+    def ratio_query?
+      @summary.ratio_query?
     end
 
     def primary_grouping_field
       @primary_grouping_field ||= find_primary_grouping_field
     end
 
-    def primary_count_field
-      @primary_count_field ||= find_primary_count_field
+    def count_fields
+      @count_fields ||= find_count_fields
     end
 
     def data_rows(extractor)
@@ -28,19 +46,42 @@ module Formatter
       }
     end
 
+    def ratio(numerator, denominator)
+      return 0 if denominator <= 0
+      numerator.to_f / denominator
+    end
+
+    def perc?
+      @perc
+    end
+
     def create_data_extractor
-      if @summary.extra_fields.size > 0
+      if ratio_query?
+        @perc = true
+        lambda { |row|
+          [ratio(row.counts[1], row.counts[0])]
+        }
+      elsif stacked_grouping_query?
+        stacked_group_extractor
+      elsif @summary.extra_fields.size > 0
         extra_fields = @summary.extra_fields
         field = extra_fields.find { |f| f.numeric? }
         if field
           n = extra_fields.index(field)
           return lambda { |row|
-            row.value_string(row.extra_values[n], field).to_i
+            [row.value_string(row.extra_values[n], field).to_i]
           }
         end
+      elsif primary_grouping_field.percentage
+        @perc = true
+        lambda { |row|
+          [ratio(row.count, @summary.count)]
+        }
+      else
+        lambda { |row|
+          [row.counts[0]]
+        }
       end
-
-      lambda { |row| row.counts[0] }
     end
 
   private
@@ -48,12 +89,64 @@ module Formatter
       @summary.group_fields[0]
     end
 
-    def find_primary_count_field
-      @summary.extra_fields[-1] || OpenStruct.new(:name => 'N')
+    def find_count_fields
+      return [OpenStruct.new(:name => "#{ratio_title} %")] if ratio_query?
+      return summary_count_fields if stacked_grouping_query?
+      [@summary.extra_fields[-1] || OpenStruct.new(:name => 'N')]
+    end
+
+    def summary_count_fields
+      group_set = Set.new
+      @summary.sorted_row_values.each { |row|
+        subrows = row.subrows
+        subrows.each { |subrow|
+          key_val = subrow.key_display_value
+          key_val = key_val.to_s if key_val == true || key_val == false
+          group_set << key_val
+        }
+      }
+      count_fields = group_set.to_a.sort.map { |name|
+        OpenStruct.new(:name => name)
+      }
+      count_fields.reverse! if count_fields.size == 2 && stacked_group.boolean?
+
+      @field_indexes = Hash[count_fields.each_with_index.map { |field, i|
+        [field.name, i]
+      }]
+
+      if count_fields.size == 2 && stacked_group.boolean?
+        return [stacked_group.name.to_s,
+                "!" + stacked_group.name.to_s].map { |name|
+          OpenStruct.new(:name => name)
+        }
+      end
+      count_fields
+    end
+
+    def stacked_group_extractor
+      indexes = @field_indexes or
+        raise "Field indexes not discovered for grouping query"
+      n_indexes = indexes.size
+
+      boolean = count_fields.size == 2 && stacked_group.boolean?
+      lambda { |row|
+        result = [0] * n_indexes
+        row.subrows.each { |subrow|
+          key = subrow.key_display_value
+          key = key.to_s if boolean
+          field_index = indexes[key]
+          result[field_index] = subrow.count if field_index
+        }
+        result
+      }
+    end
+
+    def ratio_title
+      @summary.query_group[1].argstr
     end
 
     def data_row(row, extractor)
-      [row.key, extractor.call(row)]
+      [row.key] + extractor.call(row)
     end
   end
 end

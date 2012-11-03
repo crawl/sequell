@@ -35,18 +35,18 @@
 
 
       var queryData = #{data.to_json};
+      var data = queryData.data;
+
+      var typeConvert = function (x) { return "" + x; };
       if (queryData.date) {
-        var data = queryData.data;
-        for (var i = 0, length = data.length; i < length; ++i) {
-          var row = data[i];
-          row[0] = new Date(row[0]);
-        }
-      } else if (queryData.number) {
-        var data = queryData.data;
-        for (var i = 0, length = data.length; i < length; ++i) {
-          var row = data[i];
-          row[0] = parseInt(row[0], 10);
-        }
+        typeConvert = function (x) { return new Date(x); };
+      }
+      if (queryData.number) {
+        typeConvert = function (x) { return parseInt(x, 10); }
+      }
+      for (var i = 0, length = data.length; i < length; ++i) {
+        var row = data[i];
+        row[0] = typeConvert(row[0]);
       }
       // Callback that creates and populates a data table,
       // instantiates the pie chart, passes in the data and
@@ -55,13 +55,17 @@
         // Create the data table.
         var data = new google.visualization.DataTable();
         data.addColumn(#{x_type}, Date.parse(queryData.fields[0]));
-        data.addColumn('number', queryData.fields[1]);
+        for (var i = 1, length = queryData.fields.length; i < length; ++i) {
+          data.addColumn('number', queryData.fields[i]);
+        }
         data.addRows(queryData.data);
 
         var formatter = new google.visualization.NumberFormat({
-          pattern: '#,###'
+          pattern: queryData.number_format
         });
-        formatter.format(data, 1);
+        for (var i = 1, length = queryData.fields.length; i < length; ++i) {
+          formatter.format(data, i);
+        }
 
         // Set chart options
         var options = {'title': queryData.title,
