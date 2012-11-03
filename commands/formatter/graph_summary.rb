@@ -36,11 +36,7 @@ module Formatter
 
     def graph_type(json)
       return @type if @type
-      if json[:data].size > 200
-        'Area'
-      else
-        'Column'
-      end
+      'Column'
     end
 
     def graph_datatype(field)
