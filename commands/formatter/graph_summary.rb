@@ -89,7 +89,7 @@ module Formatter
     end
 
     def graph_number_format
-      return '#,###%' if @json_reporter.perc?
+      return '#,###.##%' if @json_reporter.perc?
       '#,###'
     end
 
