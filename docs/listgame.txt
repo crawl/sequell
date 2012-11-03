@@ -994,6 +994,7 @@ characters by god:
 Graph types:
  - Column (default)
  - Scatter -- only if the X-axis is numeric or a date.
+ - Area -- same restrictions as Scatter
  - Pie
 
 Examples

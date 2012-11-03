@@ -22,8 +22,24 @@ module Formatter
       @type == 'Scatter'
     end
 
+    def area?
+      @type == 'Area'
+    end
+
     def pie?
       @type == 'Pie'
+    end
+
+    def column?
+      !@type || @type == 'Column'
+    end
+
+    def discrete_axis?
+      pie? || column?
+    end
+
+    def continuous_axis?
+      scatter? || area?
     end
 
     def query
@@ -43,13 +59,13 @@ module Formatter
       type
     end
 
-    def graph_type(json)
+    def graph_type
       return @type if @type
       'Column'
     end
 
     def string_only?
-      pie? || stacked_group?
+      pie? || (stacked_group? && !continuous_axis?)
     end
 
     def stacked_group?
@@ -94,11 +110,22 @@ module Formatter
       '#,###'
     end
 
+    def sort_data(data)
+      sorter = lambda { |a, b| a[0] <=> b[0] }
+      sorter = lambda { |a, b| a[0].to_i <=> b[0].to_i } if number?
+      data.sort(&sorter)
+    end
+
     def format(summary)
       @json_reporter = JsonSummary.new(summary)
       json = @json_reporter.format
+
+      if continuous?
+        json[:data] = sort_data(json[:data])
+      end
+
       graph_json = json.merge(:title => self.qualified_title,
-                              :chart_type => self.graph_type(json),
+                              :chart_type => self.graph_type,
                               :number_format => self.graph_number_format,
                               :types => self.data_types(json),
                               :date => self.date?,
