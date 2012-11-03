@@ -18,6 +18,13 @@ module Sql
       @field
     end
 
+    def numeric?(row)
+      return @numeric if @numeric_checked
+      @numeric_checked = true
+      @numeric = @value && row.summary_field_spec.numeric?
+      @numeric
+    end
+
     def version_number?(row)
       return @version_number if @version_number_checked
       @version_number_checked = true
@@ -35,6 +42,9 @@ module Sql
       v = @binder.call(row)
       if self.version_number?(row)
         return Sql::VersionNumber.version_numberize(v)
+      end
+      if self.numeric?(row)
+        return v.to_i
       end
       return v.downcase if v.is_a?(String)
       v
