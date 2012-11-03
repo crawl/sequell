@@ -414,6 +414,7 @@ sub fixup_logfields {
 
   $g->{place} = Henzell::Crawl::canonical_place_name($g->{place});
   $g->{oplace} = Henzell::Crawl::canonical_place_name($g->{oplace});
+  $g->{br} = Henzell::Crawl::canonical_place_name($g->{br});
 
   # Milestone may have oplace
   if ($milestone) {
