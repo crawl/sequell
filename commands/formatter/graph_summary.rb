@@ -1,5 +1,6 @@
 require 'formatter/json_summary'
 require 'time'
+require 'graph/errors'
 
 module Formatter
   class GraphSummary
