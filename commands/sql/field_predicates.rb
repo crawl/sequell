@@ -4,6 +4,10 @@ module Sql
   module FieldPredicates
     include TypePredicates
 
+    def inspect
+      to_s
+    end
+
     def type
       field.type
     end

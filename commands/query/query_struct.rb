@@ -150,6 +150,10 @@ module Query
       "Query[#{self.map(&:to_s).join(' ' + @operator + ' ')}]"
     end
 
+    def inspect
+      self.to_s
+    end
+
   private
     def append_predicates(predicate)
       return if predicate.empty?

@@ -24,7 +24,7 @@ module Sql
       copy = FieldPredicate.new(@context,
                                 @value,
                                 @operator.dup,
-                                @field_expr.field.dup)
+                                @field_expr.dup)
       copy.value_expr = @value_expr
       copy.static = @static
       copy

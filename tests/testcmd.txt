@@ -151,3 +151,5 @@ E !lg * won god=xom urune=15 sp -2
 
 !lg * !boring
 !lg * !bore
+
+!lg * day(end)=20121020

@@ -4,6 +4,8 @@ module Sql
   class FunctionDef
     include TypePredicates
 
+    attr_reader :name
+
     def initialize(name, cfg)
       @name = name
       @cfg = cfg
