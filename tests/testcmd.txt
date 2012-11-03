@@ -153,3 +153,8 @@ E !lg * won god=xom urune=15 sp -2
 !lg * !bore
 
 !lg * day(end)=20121020
+!lg * s=day(end)
+
+!lg * s=day(end) -graph
+
+!lg * win s=cv -graph:pie

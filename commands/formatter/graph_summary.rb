@@ -22,11 +22,7 @@ module Formatter
     end
 
     def qualified_title
-      @qualified_title ||= "#{title} at #{now}"
-    end
-
-    def now
-      Time.now.getutc.strftime('%Y-%m-%d %H:%M:%S')
+      title
     end
 
     def chart_type(type)

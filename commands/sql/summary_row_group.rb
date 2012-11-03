@@ -8,6 +8,7 @@ module Sql
 
     def sort(summary_rows)
       sorts = @summary_reporter.query_group.sorts
+
       #puts "Sorts: #{sorts}"
       sort_condition_exists = sorts && !sorts.empty? ? sorts[0] : nil
       if sort_condition_exists

@@ -5,6 +5,27 @@
 %html
   %head
     %script(type="text/javascript" src="https://www.google.com/jsapi")
+    :css
+      html, p, div {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        padding: 5px;
+      }
+      #chart_div {
+        width: #{width}px;
+        height: #{height}px;
+        clear: both;
+      }
+      .subtext {
+        font-size: 12px;
+        color: #ccc;
+        float: left;
+      }
+      .right {
+        float: right;
+      }
     :javascript
       // Load the Visualization API and the piechart package.
       google.load('visualization', '1.0', {'packages':['corechart']});
@@ -46,7 +67,10 @@
         chart.draw(data, options);
       }
   %body
-    #chart_div(style="width:#{width}px; height: #{height}px")
-
-    %p#subtext(style="font-size: 10px; color: #ccc; margin-top: 3em")
+    %p.subtext
       Chart needs Javascript, is best viewed in sane browsers
+
+    %p.subtext.right
+      = Time.now.getutc.strftime('%Y-%m-%d %H:%M:%S')
+
+    #chart_div

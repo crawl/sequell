@@ -7,9 +7,11 @@ module Sql
       @reverse = reverse
       @field = QuerySortField.new(field, extra)
     end
+
     def sort_value(row)
       value = @field.value(row)
     end
+
     def sort_cmp(a, b)
       av, bv = cmp_value(a), cmp_value(b)
       @reverse ? av <=> bv : bv <=> av
