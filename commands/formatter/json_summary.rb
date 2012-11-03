@@ -16,14 +16,25 @@ module Formatter
         :data => self.data_rows(extractor) }
     end
 
+    # The Y series is determined by extra fields in x=agg(foo),agg(bar) forms.
+    def extra_field_series?
+      @extra_numeric_fields && !@extra_numeric_fields.empty?
+    end
+
+    # The Y series is determined by the stacked grouping two-field
+    # s=foo,bar forms.
     def stacked_grouping_query?
       @summary.query_group.group_count == 2
     end
 
+    # The stacked grouping field in a multi-field s=foo,bar,baz form
+    # (i.e. 'bar' in the example).
     def stacked_group
       @stacked_group ||= @summary.query_group.query_groups[1]
     end
 
+    # The display names of each of the fields (1 or more) used as Y
+    # axis series.
     def count_field_names
       count_fields.map(&:name)
     end
@@ -63,15 +74,20 @@ module Formatter
         }
       elsif stacked_grouping_query?
         stacked_group_extractor
-      elsif @summary.extra_fields.size > 0
+      elsif extra_field_series?
         extra_fields = @summary.extra_fields
-        field = extra_fields.find { |f| f.numeric? }
-        if field
-          n = extra_fields.index(field)
-          return lambda { |row|
-            [row.value_string(row.extra_values[n], field).to_i]
-          }
-        end
+        indexed_fields = @extra_numeric_fields.map { |ef|
+          index = extra_fields.index(ef)
+          [ef, index] if index
+        }.compact
+        n_fields = indexed_fields.size
+        lambda { |row|
+          res = []
+          for field, index in indexed_fields
+            res << row.value_string(row.extra_values[index], field).to_i
+          end
+          res
+        }
       elsif primary_grouping_field.percentage
         @perc = true
         lambda { |row|
@@ -92,7 +108,10 @@ module Formatter
     def find_count_fields
       return [OpenStruct.new(:name => "#{ratio_title} %")] if ratio_query?
       return summary_count_fields if stacked_grouping_query?
-      [@summary.extra_fields[-1] || OpenStruct.new(:name => 'N')]
+
+      @extra_numeric_fields = @summary.extra_fields.find_all { |f| f.numeric? }
+      @extra_numeric_fields.empty? ? [OpenStruct.new(:name => 'N')] :
+                                     @extra_numeric_fields
     end
 
     def summary_count_fields

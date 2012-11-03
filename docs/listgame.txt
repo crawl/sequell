@@ -991,6 +991,16 @@ characters by god:
 
   !lg * win s=god x=median(int) o=-. -graph
 
+Multi-series graphs can be produced using a double-grouping or
+multiple x=foo terms:
+
+  !lg * s=src,tiles -graph (show breakdown of tiles/non-tiles games on servers)
+
+Graphs of median stats in wins by god:
+
+  !lg * win s=god x=median(int),median(str),median(dex) -graph
+  
+
 Graph types:
  - Column (default)
  - Scatter -- only if the X-axis is numeric or a date.

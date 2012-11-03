@@ -152,7 +152,7 @@ module Formatter
 
       summarise = query.summarise
       if !summarise || summarise.fields.size > 2
-        raise "-graph requires one or two group s=<field> term"
+        raise "-graph requires one or two group s=<field> terms"
       end
 
       if scatter? && !continuous?
