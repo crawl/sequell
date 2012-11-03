@@ -105,8 +105,9 @@ sub handle_output
 
 sub format_date {
   my $date = shift;
-  $date =~ /^(\d{4})(\d{2})(\d{2})/;
-  return $1 . "-" . sprintf("%02d", $2 + 1) . "-" . $3;
+  return '' unless $date;
+  $date =~ /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/;
+  return $1 . "-" . sprintf("%02d", $2 + 1) . "-" . $3 . " $4:$5:$6";
 }
 
 sub formatted_game_field {

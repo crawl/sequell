@@ -980,6 +980,22 @@ You may generate graphs for grouped queries using the -graph option:
   !lg * !boring s=day(end) -graph (games completed per day, excluding quitters)
   !lg * s=src -graph:pie (pie chart of games played on public servers)
 
+When generating graphs, the summary/grouping field is used as the X-axis,
+and the count as the Y-axis:
+
+  !lg * t win s=name -graph => player name on X, number of wins on Y
+
+Using an x=aggregate(field) expression makes the graph choose that as the Y
+axis value. For instance, to see the median intelligence of different winning
+characters by god:
+
+  !lg * win s=god x=median(int) o=-. -graph
+
+Graph types:
+ - Column (default)
+ - Scatter -- only if the X-axis is numeric or a date.
+ - Pie
+
 Examples
 --------
 

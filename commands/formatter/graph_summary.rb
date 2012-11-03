@@ -4,7 +4,7 @@ require 'time'
 module Formatter
   class GraphSummary
     GRAPH_TEMPLATE = 'tpl/graph.html.haml'
-    KNOWN_CHART_TYPES = Set.new(%w/Column Area Pie/)
+    KNOWN_CHART_TYPES = Set.new(%w/Column Area Pie Scatter/)
 
     attr_reader :file, :title, :query_group, :query
 
@@ -15,6 +15,14 @@ module Formatter
       @type = chart_type(@options[0])
 
       check_sanity!
+    end
+
+    def scatter?
+      @type == 'Scatter'
+    end
+
+    def pie?
+      @type == 'Pie'
     end
 
     def query
@@ -40,6 +48,7 @@ module Formatter
     end
 
     def graph_datatype(field)
+      return 'string' if self.pie?
       case
       when field.numeric?
         'number'
@@ -59,11 +68,15 @@ module Formatter
     end
 
     def date?
-      summary_key_field.date?
+      !pie? && summary_key_field.date?
     end
 
     def number?
-      summary_key_field.numeric?
+      !pie? && summary_key_field.numeric?
+    end
+
+    def continuous?
+      date? || number?
     end
 
     def format(summary)
@@ -97,6 +110,10 @@ module Formatter
       summarise = query.summarise
       if !summarise || summarise.fields.size > 1
         raise "-graph requires single field s=<field> term"
+      end
+
+      if scatter? && !continuous?
+        raise Graph::Error.new("Scatter plot requires date or numeric grouping")
       end
     end
 
