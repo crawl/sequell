@@ -283,7 +283,7 @@ module TV
       @@tv_args = parse_tv_args(opts)
       yield args, opts
     rescue
-      puts $!
+      puts $! unless $!.is_a?(NameError)
       raise
     ensure
       @@tv_args = old_args

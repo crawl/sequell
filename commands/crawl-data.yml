@@ -474,7 +474,7 @@ aggregate-function-types:
   variance: I
 
 value-functions:
-  date:
+  day:
     type: 'D'
     expr: "date_trunc('day', %s)"
     return: 'D'

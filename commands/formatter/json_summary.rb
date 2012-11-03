@@ -30,13 +30,17 @@ module Formatter
 
     def create_data_extractor
       if @summary.extra_fields.size > 0
-        n = @summary.extra_fields.size - 1
-        lambda { |row|
-          row.value_string(row.extra_values[n]).to_i
-        }
-      else
-        lambda { |row| row.counts[0] }
+        extra_fields = @summary.extra_fields
+        field = extra_fields.find { |f| f.numeric? }
+        if field
+          n = extra_fields.index(field)
+          return lambda { |row|
+            row.value_string(row.extra_values[n], field).to_i
+          }
+        end
       end
+
+      lambda { |row| row.counts[0] }
     end
 
   private

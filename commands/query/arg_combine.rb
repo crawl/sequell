@@ -19,6 +19,7 @@ module Query
         if (!can_combine ||
             cargs.empty? ||
             arg =~ ARGSPLITTER ||
+            arg_keyword?(arg) ||
             arg_is_grouper?(arg) ||
             arg_is_grouper?(cargs.last) ||
             args_uncombinable?(cargs.last, arg))
@@ -29,6 +30,9 @@ module Query
         end
       end
       cargs
+    end
+
+    def arg_keyword?(arg)
     end
 
     def arg_enables_combine?(arg)

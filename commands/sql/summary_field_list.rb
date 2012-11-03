@@ -7,7 +7,6 @@ module Sql
 
     FIELD_OR_FUNCTION = %r/#{FIELD}|#{FUNCTION_CALL}/
 
-
     attr_reader :fields
 
     def multiple_field_group?
@@ -38,6 +37,18 @@ module Sql
             "in summary list #{s_clauses}")
         end
       end
+    end
+
+    def default_sort_expr
+      sort_field = fields[0]
+      sort_order = sort_field.order
+      sort_condition = 'n'
+      # Dates get special treatment: their default order is chronological
+      if sort_field.date?
+        sort_order = sort_order == '+' ? '-' : '+'
+        sort_condition = '.'
+      end
+      "o=#{sort_order}#{sort_condition}"
     end
   end
 end

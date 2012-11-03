@@ -34,3 +34,4 @@ Gemfile.lock
 *.el
 henzell-schema.sql
 *.json
+graphs

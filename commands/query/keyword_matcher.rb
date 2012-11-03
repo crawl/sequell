@@ -22,6 +22,10 @@ module Query
       cls.send(:define_method, :parse, &block)
     end
 
+    def context
+      Sql::QueryContext.context
+    end
+
     def match(keyword, expr)
       @keyword = keyword
       @expr = expr

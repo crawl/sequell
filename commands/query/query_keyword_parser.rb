@@ -42,30 +42,6 @@ module Query
       arg.sub!(/^!/, '')
       @equal_op = negated ? '!=' : '='
 
-      # Check if it's a nick or nick alias:
-      return parse_expr('name', arg) if arg =~ /^@/
-      return parse_expr('char', arg) if is_charabbrev?(arg)
-
-      if arg =~ /^[a-z]{2}$/i then
-        cls = is_class?(arg)
-        sp = is_race?(arg)
-        return parse_expr('cls', arg) if cls && !sp
-        return parse_expr('race', arg) if sp && !cls
-        if cls && sp
-          raise "Ambiguous keyword: #{arg} -- may be interpreted as species or class"
-        end
-      end
-
-      if Sql::QueryContext.context.value_key?(arg)
-        return parse_expr('verb', arg.downcase)
-      end
-
-      if BRANCHES.branch?(arg)
-        return parse_expr('place', arg)
-      end
-
-      return parse_expr('when', arg) if tourney_keyword?(arg)
-
       expr_candidate = QueryExprCandidate.new(@equal_op)
       KeywordMatcher.each do |matcher|
         res = matcher.match(arg, expr_candidate)

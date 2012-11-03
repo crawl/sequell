@@ -87,9 +87,8 @@ module Query
         else
           summary_field_list = @primary_query.summarise
           if summary_field_list
-            sort_field = summary_field_list.fields[0]
             @sorts = self.parse_sort_fields(
-              QueryString.new("o=#{sort_field.order}n"))
+              QueryString.new(summary_field_list.default_sort_expr))
           end
         end
       end

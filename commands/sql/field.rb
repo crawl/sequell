@@ -100,7 +100,7 @@ module Sql
     end
 
     def assert_valid!
-      self.field_def or raise "Unknown field name: #{self}"
+      self.field_def or raise "Unknown field: #{self}"
     end
 
     def resolve(new_name)

@@ -413,6 +413,7 @@ Listgame keywords may be one of:
    - pois                :: deaths by poison
    - cloud               :: deaths by cloud
    - starvation          :: deaths by starvation
+   - bore/boring         :: quit or left, usually used as !boring
 
 5. Place names:
    Recognisable place names such as "D:10", "Temple", etc. will select

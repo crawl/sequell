@@ -27,9 +27,9 @@ require 'sql/query_context'
 require 'query/grammar'
 require 'query/lg_query'
 require 'query/query_struct'
+require 'query/summary_graph_builder'
 require 'crawl/branch_set'
 require 'crawl/gods'
-require 'formatter/graph_summary'
 
 include Tourney
 include HenzellConfig
@@ -149,14 +149,22 @@ def sql_find_game(default_nick, args, context=CTX_LOG)
 end
 
 def sql_show_game(default_nick, args, context=CTX_LOG)
+  original_args = args.map { |a| a.dup }
   args, opts = extract_options(args, 'graph')
 
   query_group = sql_parse_query(default_nick, args, context)
   query_group.with_context do
     q = query_group.primary_query
+
+    graph_formatter =
+      if opts[:graph]
+        Query::SummaryGraphBuilder.build(query_group,
+                                         opts[:graph],
+                                         original_args)
+      end
+
     if q.summarise?
-      formatter = opts[:graph] && Formatter::GraphSummary.new
-      report_grouped_games_for_query(query_group, formatter)
+      report_grouped_games_for_query(query_group, graph_formatter)
     else
       result = sql_exec_query(q.num, q)
       if result.empty?
@@ -172,6 +180,7 @@ def sql_show_game(default_nick, args, context=CTX_LOG)
     end
   end
 rescue
+  raise if $!.is_a?(NameError)
   puts $!
   raise
 end

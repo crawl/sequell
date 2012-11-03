@@ -48,7 +48,7 @@ module Query
       raise "Bad sort: #{@arg}" if key.sort? && !op.equal?
 
       unless context.field?(selector.field)
-        raise "Unknown selector: #{selector}"
+        raise "Unknown field: #{selector}"
       end
 
       val = Sql::Value.cleanse_input(val)
