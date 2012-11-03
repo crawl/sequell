@@ -71,6 +71,10 @@ module Sql
       true
     end
 
+    def simple_field?
+      !@function && @field && @field.simple_field?
+    end
+
     def dup
       copy = FieldExpr.new(@field.dup)
       copy.instance_variable_set(:@expr, @expr.dup) if @expr

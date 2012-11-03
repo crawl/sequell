@@ -41,6 +41,25 @@ module Sql
       @query_fields = resolve_query_fields
     end
 
+    def row_to_fieldmap(row)
+      base_size = @ctx.db_columns.size
+      extras = { }
+      map = { }
+      (0 ... row.size).each do |i|
+        field = @query_fields[i]
+        if i < base_size
+          map[field.to_s] = field.log_value(row[i])
+        else
+          extras[field.to_s] = field.log_value(row[i])
+        end
+      end
+      map['sql_table'] = @ctx.table
+      unless extras.empty?
+        map['extra_values'] = extras.map { |k, v| "#{k}=#{v}" }.join(";;;;")
+      end
+      map
+    end
+
     def resolve_sort_fields
       @pred.sorts.each { |sort|
         resolve_field(sort.field, @tables)
@@ -67,8 +86,18 @@ module Sql
       resolve_predicate_columns(@count_pred, @count_tables)
     end
 
+    def select_query_fields
+      fields = @ctx.db_columns.map { |c| Sql::Field.field(c.name) }
+      if @extra_fields && @extra_fields.fields
+        fields += @extra_fields.fields.find_all { |ef|
+          !ef.simple_field? && !ef.aggregate?
+        }.map { |qf| qf.field }
+      end
+      fields
+    end
+
     def resolve_query_fields
-      @ctx.db_columns.map { |c| Sql::Field.new(c.name) }.each { |field|
+      self.select_query_fields.each { |field|
         resolve_field(field, @tables)
       }
     end
@@ -100,18 +129,21 @@ module Sql
       }
     end
 
+    def resolve_value_key(expr)
+      if expr.value_key?
+        verb = @ctx.key_field
+        # Ulch, we have to modify our predicates.
+        add_predicate('AND',
+                      Sql::FieldPredicate.predicate(expr.name, '=', verb))
+        expr.field = Sql::FieldExprParser.expr(@ctx.value_field)
+      end
+    end
+
     def summarise= (s)
       @summarise = s
 
       for summary_field in @summarise.fields
-        if summary_field.value_key?
-          verb = @ctx.key_field
-          # Ulch, we have to modify our predicates.
-          add_predicate('AND',
-                        Sql::FieldPredicate.predicate(summary_field.name,
-                                                      '=', verb))
-          summary_field.field = Sql::FieldExprParser.expr(@ctx.value_field)
-        end
+        self.resolve_value_key(summary_field)
       end
 
       resolve_summary_fields
@@ -172,6 +204,7 @@ module Sql
 
       if @extra_fields
         @extra_fields.fields.each { |extra_field|
+          self.resolve_value_key(extra_field)
           resolve_field(extra_field.field, @summary_tables)
         }
       end
@@ -216,7 +249,7 @@ module Sql
           raise "Extra fields (#{@extra_fields.extra}) contain non-aggregates"
         end
         extras = @extra_fields.fields.map { |f|
-          f.to_sql(@summary_tables)
+          f.to_sql
         }.join(", ")
       end
       [basefields, extras].find_all { |x| x && !x.empty? }.join(", ")

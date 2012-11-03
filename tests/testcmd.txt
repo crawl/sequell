@@ -117,6 +117,8 @@ E !gkills * deathonacow
 
 !lg * / win ?: N>1 ::~ games for \*:
 
+!lg * s=name / win ?: N>20
+
 !lg * won s=char x=min(start)
 
 !gamesby elliptic
@@ -155,6 +157,13 @@ E !lg * won god=xom urune=15 sp -2
 !lg * day(end)=20121020
 !lg * s=day(end)
 
-!lg * s=day(end) -graph
+!lg * s=year(end) -graph
+!lg * s=month(end) x=max(xl) -graph
 
 !lg * win s=cv -graph:pie
+!lg * s=src -graph:pie
+
+!lg * x=day(end),year(end)
+
+
+!lg chris t xl>=9 x=cdist(crace),cdist(cls)

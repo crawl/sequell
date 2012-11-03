@@ -1,3 +1,5 @@
+require 'sql/errors'
+
 module Query
   class CompoundKeywordParser
     def self.parse(expression)
@@ -13,7 +15,6 @@ module Query
     end
 
     def parse_expression(expr)
-      STDERR.puts("parse_expression(#{expr})")
       negated = false
       if parenthesized?(expr)
         negated = expr =~ /^!/
@@ -21,6 +22,9 @@ module Query
       end
 
       QueryStruct.new(negated ? 'AND' : 'OR', *expr.split('|').map { |or_expr|
+        if or_expr == @expression
+          raise Sql::ParseError.new("Malformed keyword: #{or_expr}")
+        end
         or_expr = "!#{or_expr}" if negated
         QueryKeywordParser.parse(or_expr)
       })

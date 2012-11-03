@@ -155,7 +155,7 @@ module Sql
         allvals << percentage(@counts[1], @counts[0])
       end
       allvals << @extra_values.each_with_index.map { |x, i|
-        value_string(x, @extra_fields[i])
+        value_string(x, @extra_fields.fields[i])
       }.join(";")
       es = allvals.find_all { |x| !x.empty? }.join(";")
       es.empty? ? es : "[" + es + "]"

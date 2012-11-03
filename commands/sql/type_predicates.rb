@@ -41,6 +41,17 @@ module Sql
       value
     end
 
+    def log_value(raw_value)
+      case
+      when self.numeric?
+        raw_value.to_i
+      when self.date?
+        Sql::Date.log_date(raw_value)
+      else
+        raw_value
+      end
+    end
+
     def type_match?(other_type)
       other_type == '*' || (other_type == self.type) ||
         (text_type?(other_type) && text?)

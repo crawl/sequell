@@ -54,8 +54,12 @@ module Sql
       Sql::QueryContext.context
     end
 
+    def value(x)
+      self.column && self.column.value(x)
+    end
+
     def value_key?
-      field.value_key?
+      field.value_key? if field
     end
 
     def sort?

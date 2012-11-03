@@ -199,6 +199,11 @@ sub case_sensitive {
   $self->type() eq 'S'
 }
 
+sub date {
+  my $self = shift;
+  $self->{date}
+}
+
 sub numeric {
   my $self = shift;
   index($self->type(), 'I') == 0

@@ -80,6 +80,10 @@ module Sql
       false
     end
 
+    def simple_field?
+      true
+    end
+
     def each_field
       yield self
     end
@@ -89,6 +93,10 @@ module Sql
       copy.table = @table.dup if @table
       copy.name = self.name.dup
       copy
+    end
+
+    def display_format
+      nil
     end
 
     def qualified?
@@ -148,7 +156,6 @@ module Sql
     end
 
     def to_s
-      return "#{@table}.#{@name}" if @table
       @name
     end
   end

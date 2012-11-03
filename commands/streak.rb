@@ -49,7 +49,7 @@ def finish_streak(reset)
 end
 
 sql_each_row_matching(query.reverse) do |row|
-  game = row_to_fieldmap(row)
+  game = query.row_to_fieldmap(row)
 
   $name ||= game['name']
   $games += 1

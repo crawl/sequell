@@ -79,6 +79,9 @@ Where:
   Values may contain embedded spaces. Underscores in values are
   converted to spaces before running listgame queries.
 
+  A simple function call may be used on a field, such as day(end).
+  See "Non-Aggregate Functions" for a list of functions.
+
 - s=<field1>[%],<field2>... or s=-<field>[%]
 
   Mnemonic: s = Summarise by field
@@ -178,9 +181,11 @@ Where:
 
 - <option>
   Some options modify the behaviour of !lg:
-  * -log  Get a URL to the game morgue instead of displaying the game details.
-  * -tv   Play the game on FooTV instead of displaying details. See
-          the "FooTV" section.
+  * -log    Get a URL to the game morgue instead of displaying the game details.
+  * -tv     Play the game on FooTV instead of displaying details. See
+            the "FooTV" section.
+  * -graph  For a grouping/summary query, produces a graph. See the "Graphs"
+            section.
   * -ttyrec Get URLs to the game's ttyrecs.
   These options are not applicable to summary queries (queries using s=foo)
 
@@ -850,6 +855,17 @@ fields.
 max, min and count may also be used on text (character) fields.
 
 
+Non-Aggregate Functions
+-----------------------
+
+Non-aggregate functions may be applied to fields in query conditions,
+grouping clauses (s=X) and extra-field info (x=X).
+
+- day(<date>)   Truncates the date to the closest prior midnight time.
+- month(<date>) Truncates to midnight of the 1st day of the month
+- year(<date>)  Truncates to midnight of the 1st day of the year
+
+
 Nick Aliases
 ------------
 
@@ -954,6 +970,15 @@ Note: turn-based playback will work only for relatively recent Crawl
 games. Games from very old versions lack the timestamp files that
 FooTV needs to match turn counts to UTC times.
 
+Graphs (Experimental)
+---------------------
+
+You may generate graphs for grouped queries using the -graph option:
+
+  !lg * t win s=name -graph (graph of number of wins per player in the tourney)
+  !lg * win s=src -graph (graph of wins by public server)
+  !lg * !boring s=day(end) -graph (games completed per day, excluding quitters)
+  !lg * s=src -graph:pie (pie chart of games played on public servers)
 
 Examples
 --------
@@ -997,3 +1022,5 @@ Examples
                                   ttyrec than FooTV normally would.
 !lm * rune=obsidian lg:place=Coc  Last obsidian-rune (Geh) milestone for a game
                                   that ended in Cocytus.
+
+!lg * !boring s=day(end) -graph   Graph games by date completed.

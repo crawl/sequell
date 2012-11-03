@@ -1,5 +1,6 @@
 require 'query/grammar'
 require 'sql/field_expr'
+require 'sql/errors'
 
 module Sql
   class FieldExprParser
@@ -19,8 +20,10 @@ module Sql
 
       if expression.to_s =~ CAPTURING_FUNCTION_CALL
         function_expr(context, $1, $2)
-      else
+      elsif expression.to_s =~ /^[\w.]+(?::[\w.]+)?$/
         FieldExpr.autocase(expression)
+      else
+        raise MalformedTermError.new(expression)
       end
     end
 

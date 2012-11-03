@@ -63,6 +63,13 @@ sub demunge_xlogline # {{{
     return undef;
   }
 
+  if ($game{extra_values}) {
+    for my $extra_value (split /;;;;/, $game{extra_values}) {
+      my ($key, $value) = $extra_value =~ /^(.*?)=(.*)/;
+      $game{$key} = $value unless $game{$key};
+    }
+  }
+
   return \%game;
 } # }}}
 # }}}

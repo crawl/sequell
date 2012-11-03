@@ -29,4 +29,4 @@ else
   fields << "killer~~^(#{ghosts.join("|")})'.*ghost"
 end
 
-report_grouped_games('name', '', '*', [ '*' ] + fields + paren_args(query.args))
+report_grouped_games('name', '*', [ '*' ] + fields + paren_args(query.args))

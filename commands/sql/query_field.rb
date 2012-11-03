@@ -17,7 +17,11 @@ module Sql
       @order = ''
     end
 
-    def expr(table_set)
+    def simple_field?
+      !aggregate? && @field.simple_field?
+    end
+
+    def expr
       field_expr = @field.to_sql if @field
       @expr ? @expr.sub('%s', field_expr.to_s) : field_expr
     end
@@ -38,8 +42,8 @@ module Sql
       value
     end
 
-    def to_sql(table_set)
-      sql_expr = expr(table_set)
+    def to_sql
+      sql_expr = self.expr
       @calias ? "#{sql_expr} AS #{@calias}" : sql_expr
     end
 

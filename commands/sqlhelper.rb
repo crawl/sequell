@@ -131,7 +131,7 @@ def add_extra_fields_to_xlog_record(extra_fields, xlog_record)
   if extra_fields && !extra_fields.empty? && xlog_record
     context = Sql::QueryContext.context
     xlog_record['extra'] = extra_fields.fields.map { |f|
-      context.value_key?(f.field) ? context.value_field.name : f.field.name
+      context.value_key?(f.field.name) ? context.value_field.name : f.field.to_s
     }.join(",")
   end
   xlog_record
@@ -202,18 +202,6 @@ def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
       end
     end
   end
-end
-
-def row_to_fieldmap(row)
-  map = { }
-  context = Sql::QueryContext.context
-  columns = context.db_columns
-  (0 ... row.size).each do |i|
-    lfd = columns[i]
-    map[lfd.name] = lfd.value(row[i])
-  end
-  map['sql_table'] = context.table
-  map
 end
 
 def sql_exec_query(num, q, lastcount = nil)
@@ -334,7 +322,7 @@ def sql_game_by_key(key)
     #puts "Query: #{q.select_all}"
     r = nil
     sql_each_row_matching(q) do |row|
-      r = row_to_fieldmap(row)
+      r = q.row_to_fieldmap(row)
     end
     r
   end

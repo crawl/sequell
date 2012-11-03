@@ -81,7 +81,7 @@ begin
 
   name = nick
   sql_each_row_matching(q) do |row|
-    g = row_to_fieldmap(row)
+    g = q.row_to_fieldmap(row)
     count += 1 if num != 0
 
     name = g['name'] unless name == '*'

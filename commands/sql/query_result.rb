@@ -8,7 +8,7 @@ module Sql
       self.new(nil, nil, nil, query)
     end
 
-    def initialize(index, count, result, query=nil)
+    def initialize(index, count, result, query)
       @index = index
       @count = count || 0
       @result = result
@@ -44,11 +44,9 @@ module Sql
   private
     def row_fieldmap
       return nil unless @result
-      fieldmap = row_to_fieldmap(@result)
-      if @query
-        fieldmap =
-          add_extra_fields_to_xlog_record(@query.extra_fields, fieldmap)
-      end
+      fieldmap = @query.row_to_fieldmap(@result)
+      fieldmap =
+        add_extra_fields_to_xlog_record(@query.extra_fields, fieldmap)
       fieldmap
     end
   end

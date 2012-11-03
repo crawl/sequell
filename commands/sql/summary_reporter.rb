@@ -76,7 +76,6 @@ module Sql
     def filter_count_summary_rows!
       group_by = @q.summarise
       summary_field_count = group_by ? group_by.fields.size : 0
-      STDERR.puts("summary_field_count: #{summary_field_count}")
 
       rowmap = { }
       rows = []
@@ -132,7 +131,7 @@ module Sql
       end
 
       @sorted_row_values = raw_values
-      if filters
+      if filters && !filters.empty?
         @counts = count_filtered_values(@sorted_row_values)
       end
     end

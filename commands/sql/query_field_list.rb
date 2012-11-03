@@ -1,5 +1,7 @@
 require 'sql/query_sort_condition'
 require 'sql/query_field'
+require 'sql/field_expr_parser'
+require 'sql/errors'
 
 module Sql
   class QueryFieldList
@@ -32,11 +34,16 @@ module Sql
         order = $1
         f = f[1 .. -1]
       end
-      field = if f =~ /^(\w+)\((\w+)\)/
-                aggregate_function($1, $2)
-              else
-                simple_field(f)
-              end
+      field =
+        begin
+          simple_field(f)
+        rescue Sql::ParseError
+          if f =~ /^(\w+)\((\S+)\)$/
+            aggregate_function($1, $2)
+          else
+            raise
+          end
+        end
       field.order = order
       field
     end
@@ -98,7 +105,7 @@ module Sql
 
     def aggregate_function(func, field)
       @ctx.with do
-        field = Sql::Field.field(field)
+        field = Sql::FieldExprParser.expr(field)
       end
       func = canonicalise_aggregate(func)
 
@@ -107,8 +114,8 @@ module Sql
         raise "#{func} cannot be applied to #{field}"
       end
 
-      fieldalias = (func + "_" + field.name.gsub(/[^\w]+/, '_') +
-        QueryFieldList::unique_id())
+      fieldalias = (func + "_" + field.to_s.gsub(/[^\w]+/, '_') +
+                    QueryFieldList::unique_id())
 
       fieldexpr = "#{func}(%s)"
       fieldexpr = "COUNT(DISTINCT %s)" if func == 'cdist' || func == 'count'

@@ -1,4 +1,5 @@
 require 'sql/function_def'
+require 'sql/errors'
 
 module Sql
   class FunctionDefs
@@ -26,7 +27,7 @@ module Sql
 
     def function_property(function_name, prop)
       function = self.function_defs[function_name.downcase]
-      raise "No function named #{function_name}" unless function
+      raise UnknownFunctionError.new(function_name) unless function
       function.send(prop)
     end
   end
