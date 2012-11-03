@@ -43,25 +43,31 @@ module Formatter
       end
     end
 
-    def graph_datatype(local_type)
-      case local_type
-      when 'D'
+    def graph_datatype(field)
+      case
+      when field.numeric?
+        'number'
+      when field.date?
         'date'
       else
         'string'
       end
     end
 
-    def summary_key_type
-      query.summarise.fields[0].type
+    def summary_key_field
+      query.summarise.fields[0]
     end
 
     def data_types
-      [graph_datatype(summary_key_type), 'number']
+      [graph_datatype(summary_key_field), 'number']
     end
 
     def date?
-      summary_key_type == 'D'
+      summary_key_field.date?
+    end
+
+    def number?
+      summary_key_field.numeric?
     end
 
     def format(summary)
@@ -70,7 +76,8 @@ module Formatter
       graph_json = json.merge(:title => self.qualified_title,
                               :chart_type => self.graph_type(json),
                               :types => self.data_types,
-                              :date => self.date?)
+                              :date => self.date?,
+                              :number => self.number?)
 
       with_graph_file { |f|
         f.write(self.graph_template.render(:data => graph_json))

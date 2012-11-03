@@ -46,7 +46,6 @@ module Query
       KeywordMatcher.each do |matcher|
         res = matcher.match(arg, expr_candidate)
         if res
-          STDERR.puts("res: #{res}")
           return parse_expr(res, arg) if res.is_a?(String)
           return res
         end

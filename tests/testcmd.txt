@@ -167,3 +167,4 @@ E !lg * won god=xom urune=15 sp -2
 
 
 !lg chris t xl>=9 x=cdist(crace),cdist(cls)
+!lg * killer=Xtahua dam>0 s=dam o=-. -graph

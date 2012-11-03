@@ -41,6 +41,12 @@
           var row = data[i];
           row[0] = new Date(row[0]);
         }
+      } else if (queryData.number) {
+        var data = queryData.data;
+        for (var i = 0, length = data.length; i < length; ++i) {
+          var row = data[i];
+          row[0] = parseInt(row[0], 10);
+        }
       }
       // Callback that creates and populates a data table,
       // instantiates the pie chart, passes in the data and
