@@ -13,6 +13,7 @@ my $CRAWLDATA = LoadFile($CONFIG_FILE);
 
 my %UNIQUES = map(($_ => 1), @{$$CRAWLDATA{uniques}});
 my %ORCS = map(($_ => 1), @{$$CRAWLDATA{orcs}});
+my %GOD_ALIASES = %{$$CRAWLDATA{'god-aliases'}};
 
 sub version_qualifier_numberize {
   my $qualifier = shift;
@@ -113,6 +114,11 @@ sub known_orc {
 sub possible_pan_lord {
   my $name = shift;
   !/^(?:an?|the) / && !crawl_unique($name) && !known_orc($name)
+}
+
+sub canonical_god_name {
+  my $name = shift;
+  $GOD_ALIASES{lc($name)} || $name
 }
 
 sub canonical_place_name {

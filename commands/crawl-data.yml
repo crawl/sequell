@@ -323,6 +323,9 @@ god:
   tso: The Shining One
   nem: Nemelex Xobeh
 
+god-aliases:
+  feawn: Fedhas
+
 # * - dead species
 species:
   Ce: Centaur
