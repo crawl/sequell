@@ -48,6 +48,15 @@
         var row = data[i];
         row[0] = typeConvert(row[0]);
       }
+
+      var vAxes = [];
+      for (var i = 1, length = queryData.fields.length; i < length; ++i) {
+        vAxes.push({
+          baseline: 0,
+          format: queryData.number_format
+        });
+      }
+
       // Callback that creates and populates a data table,
       // instantiates the pie chart, passes in the data and
       // draws it.
@@ -68,9 +77,16 @@
         }
 
         // Set chart options
-        var options = {'title': queryData.title,
-                       'width': #{width},
-                       'height': #{height}};
+        var options = {
+          title: queryData.title,
+          width: #{width},
+          height: #{height},
+          animation: { duration: 150 }
+        };
+
+        if (queryData.chart_type !== 'Pie') {
+          options.vAxes = vAxes;
+        }
 
         // Instantiate and draw our chart, passing in some options.
         var chart = new google.visualization.#{data[:chart_type]}Chart(document.getElementById('chart_div'));
