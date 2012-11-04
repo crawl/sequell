@@ -6,6 +6,7 @@ module Sql
     include FieldPredicates
 
     attr_accessor :expr, :field, :calias, :special, :display, :order
+    attr_accessor :function
     def initialize(field_list, dbexpr, field, display, calias=nil, special=nil)
       @field_list = field_list
       @expr = dbexpr
@@ -15,6 +16,10 @@ module Sql
       @special = special
       @context = Sql::QueryContext.context
       @order = ''
+    end
+
+    def type
+      aggregate? && self.function ? self.function.return_type : self.field.type
     end
 
     def simple_field?

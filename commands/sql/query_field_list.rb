@@ -98,9 +98,8 @@ module Sql
       end
     end
 
-    def aggregate_typematch(func, field)
-      ftype = SQL_CONFIG.aggregate_function_types[func]
-      return field.type_match?(ftype)
+    def aggregate_typematch(function, field)
+      return function && field.type_match?(function.type)
     end
 
     def aggregate_function(func, field)
@@ -114,21 +113,23 @@ module Sql
         raise "#{func} cannot be applied to #{field}"
       end
 
-      fieldalias = (func + "_" + field.to_s.gsub(/[^\w]+/, '_') +
+      fieldalias = (func.to_s + "_" + field.to_s.gsub(/[^\w]+/, '_') +
                     QueryFieldList::unique_id())
 
-      fieldexpr = "#{func}(%s)"
-      fieldexpr = "COUNT(DISTINCT %s)" if func == 'cdist' || func == 'count'
-      return QueryField.new(self, fieldexpr, field,
-        "#{func}(#{field})", fieldalias)
+      fieldexpr = func.expr
+      qf = QueryField.new(self, fieldexpr, field,
+                          "#{func}(#{field})", fieldalias)
+      qf.function = func
+      qf
     end
 
     def canonicalise_aggregate(func)
       func = func.strip.downcase
-      if not SQL_CONFIG.aggregate_function_types[func]
+      func_def = SQL_CONFIG.aggregate_functions.function(func)
+      if not func_def
         raise "Unknown aggregate function #{func} in #{extra}"
       end
-      func
+      func_def
     end
   end
 end

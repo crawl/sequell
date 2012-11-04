@@ -109,7 +109,9 @@ module Formatter
       return [OpenStruct.new(:name => "#{ratio_title} %")] if ratio_query?
       return summary_count_fields if stacked_grouping_query?
 
-      @extra_numeric_fields = @summary.extra_fields.find_all { |f| f.numeric? }
+      @extra_numeric_fields = @summary.extra_fields.find_all { |f|
+        f.numeric?
+      }
       @extra_numeric_fields.empty? ? [OpenStruct.new(:name => 'N')] :
                                      @extra_numeric_fields
     end

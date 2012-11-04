@@ -14,6 +14,10 @@ module Sql
       @functions ||= Sql::FunctionDefs.new(@cfg['value-functions'])
     end
 
+    def aggregate_functions
+      @aggregate_functions ||= Sql::FunctionDefs.new(@cfg['aggregate-functions'])
+    end
+
     def lookup_table(column)
       self.lookup_table_registry.lookup_table(column)
     end
@@ -48,10 +52,6 @@ module Sql
 
     def column_aliases
       @cfg['column-aliases']
-    end
-
-    def aggregate_function_types
-      @cfg['aggregate-function-types']
     end
 
     def logfields

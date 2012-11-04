@@ -465,9 +465,15 @@ prefix-field-fixups:
     lava: lava
 
 # cdist and count are both count distinct
-aggregate-function-types:
-  cdist: '*'
-  count: '*'
+aggregate-functions:
+  cdist:
+    type: '*'
+    expr: "COUNT(DISTINCT %s)"
+    return: I
+  count:
+    type: '*'
+    expr: "COUNT(DISTINCT %s)"
+    return: I
   avg: I
   median: I
   max: '*'
