@@ -172,3 +172,5 @@ E !lg * won god=xom urune=15 sp -2
 !lg * 0.11 tiles xl>10 s=god% -graph
 !lg * t s=god / win -graph
 
+
+!lg theglow win -ttyrec

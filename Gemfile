@@ -1,5 +1,6 @@
 source :rubygems
 
+gem 'sqlite3'
 gem 'dbi'
 gem 'dbd-pg'
 gem 'sinatra'
