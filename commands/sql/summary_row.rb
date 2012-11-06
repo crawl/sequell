@@ -209,7 +209,9 @@ module Sql
       if sz == 1
         format_value(value[0], field)
       else
-        short = value.reverse.join("/") + " (#{percentage(value[1], value[0])})"
+        short = value.reverse.map { |v|
+          format_value(v, field)
+        }.join("/") + " (#{percentage(value[1], value[0])})"
       end
     end
 

@@ -8,17 +8,15 @@ module Sql
       @field = QuerySortField.new(field, extra)
     end
 
-    def sort_value(row)
+    def cmp_value(row)
       value = @field.value(row)
+      return value.to_s if value == true || value == false
+      value
     end
 
     def sort_cmp(a, b)
       av, bv = cmp_value(a), cmp_value(b)
       @reverse ? av <=> bv : bv <=> av
-    end
-
-    def cmp_value(x)
-      sort_value(x)
     end
 
     def inspect

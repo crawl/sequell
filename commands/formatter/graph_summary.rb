@@ -65,7 +65,7 @@ module Formatter
     end
 
     def string_only?
-      pie? || (stacked_group? && !continuous_axis?)
+      pie?
     end
 
     def stacked_group?

@@ -178,6 +178,8 @@ E !lg * won god=xom urune=15 sp -2
 !lg * s=log(sc) -graph
 !lg * s=ndayofweek(end) -graph
 !lg * s=trunc1000(sc) sc<100000
+!lg * won start>=20120101 s=day(end),tiles -graph
 E !lg * s=trunc99(sc)
 
-!lg * won start>=20120101 s=day(end),tiles -graph
+!lg * s=day(end) x=sum(sc) / tiles -graph
+!lg * day(end)=20121029 s=day(end) x=sum(sc) / tiles 

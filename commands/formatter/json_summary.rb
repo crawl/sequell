@@ -1,4 +1,6 @@
 require 'formatter/summary'
+require 'formatter/util'
+require 'formatter/extra_field_extractor'
 require 'ostruct'
 
 module Formatter
@@ -57,41 +59,20 @@ module Formatter
       }
     end
 
-    def ratio(numerator, denominator)
-      return 0 if denominator <= 0
-      numerator.to_f / denominator
-    end
-
     def perc?
       @perc
     end
 
     def create_data_extractor
-      if ratio_query?
-        @perc = true
-        lambda { |row|
-          [ratio(row.counts[1], row.counts[0])]
-        }
-      elsif stacked_grouping_query?
+      if stacked_grouping_query?
         stacked_group_extractor
       elsif extra_field_series?
-        extra_fields = @summary.extra_fields
-        indexed_fields = @extra_numeric_fields.map { |ef|
-          index = extra_fields.index(ef)
-          [ef, index] if index
-        }.compact
-        n_fields = indexed_fields.size
-        lambda { |row|
-          res = []
-          for field, index in indexed_fields
-            res << row.value_string(row.extra_values[index], field).to_i
-          end
-          res
-        }
+        @perc = true if ratio_query?
+        ExtraFieldExtractor.extractor(@summary, @extra_numeric_fields)
       elsif primary_grouping_field.percentage
         @perc = true
         lambda { |row|
-          [ratio(row.count, @summary.count)]
+          [Formatter.ratio(row.count, @summary.count)]
         }
       else
         lambda { |row|
@@ -106,12 +87,14 @@ module Formatter
     end
 
     def find_count_fields
-      return [OpenStruct.new(:name => "#{ratio_title} %")] if ratio_query?
       return summary_count_fields if stacked_grouping_query?
 
       @extra_numeric_fields = @summary.extra_fields.find_all { |f|
         f.numeric?
       }
+      if @extra_numeric_fields.empty? && ratio_query?
+        return [OpenStruct.new(:name => "#{ratio_title} %")]
+      end
       @extra_numeric_fields.empty? ? [OpenStruct.new(:name => 'N')] :
                                      @extra_numeric_fields
     end

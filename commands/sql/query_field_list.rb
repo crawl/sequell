@@ -99,7 +99,6 @@ module Sql
     end
 
     def aggregate_typematch(function, field)
-      STDERR.puts("function type: #{function.type}, field type: #{field.type}")
       return function && field.type_match?(function.type)
     end
 
