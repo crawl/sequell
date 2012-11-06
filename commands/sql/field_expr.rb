@@ -64,7 +64,7 @@ module Sql
     end
 
     def type
-      return @function.type if @function && !@function.type.any?
+      return @function.return_type(@field) if @function
       @field.type
     end
 

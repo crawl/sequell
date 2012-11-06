@@ -175,7 +175,7 @@ E !lg * won god=xom urune=15 sp -2
 
 !lg theglow win -ttyrec
 
-!lg * s=log(sc) -graph
+!lg * sc>0 s=log(sc) -graph
 !lg * s=ndayofweek(end) -graph
 !lg * s=trunc1000(sc) sc<100000
 !lg * won start>=20120101 s=day(end),tiles -graph

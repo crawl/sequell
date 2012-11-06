@@ -869,7 +869,9 @@ grouping clauses (s=X) and extra-field info (x=X).
 - ndayofmonth(<date>)  Day of the month as a number (1-31)
 - nmonth(<date>)       Month as a number (1-12)
 - ndayofweek(<date>)   Day of week as a number (0-6, 0 being Sunday)
-- log(<number>)        Base 10 logarithm of <field> rounded to steps of 0.1
+- log(<number>)        Base 10 logarithm of <field>, rounded to steps of 0.1
+                       Note: you probably need a field>0 condition to prevent
+                       zero or negative values exploding the log() function.
 
 
 Nick Aliases
