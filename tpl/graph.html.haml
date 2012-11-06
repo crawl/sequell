@@ -49,6 +49,10 @@
         row[0] = typeConvert(row[0]);
       }
 
+      var hAxis = { };
+      if (queryData.number) {
+        hAxis.baseline = 0;
+      }
       var vAxes = [];
       for (var i = 1, length = queryData.fields.length; i < length; ++i) {
         vAxes.push({
@@ -81,6 +85,7 @@
           title: queryData.title,
           width: #{width},
           height: #{height},
+          hAxis: hAxis,
           animation: { duration: 150 },
           colors: ['#1B91E0', '#B80D49', '#15B80D', '#999600',
                    '#00B39E', '#0056B3', '#8600B3', '#B36E00']
