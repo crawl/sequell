@@ -42,6 +42,10 @@ module Sql
       self.type.log_value(raw_value)
     end
 
+    def comparison_value(raw_value)
+      self.type.comparison_value(raw_value)
+    end
+
     def type_match?(other_type)
       self.type.type_match?(other_type)
     end

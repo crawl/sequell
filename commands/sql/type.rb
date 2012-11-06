@@ -84,6 +84,14 @@ module Sql
       end
     end
 
+    def comparison_value(raw_value)
+      return raw_value.to_f if self.real?
+      return raw_value.to_i if self.integer?
+      return (raw_value || '').downcase if self.text?
+      return raw_value.to_s if self.boolean?
+      raw_value
+    end
+
     def compatible?(other)
       other = Type.type(other)
       return true if self.any? || other.any?

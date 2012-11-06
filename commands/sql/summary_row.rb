@@ -76,6 +76,11 @@ module Sql
       @key.nil? ? :identity : @key
     end
 
+    def compare_key
+      my_key = self.key
+      @summary_field_spec.comparison_value(my_key)
+    end
+
     def key_value
       @key.is_a?(BigDecimal) ? @key.to_f : @key
     end

@@ -18,20 +18,6 @@ module Sql
       @field
     end
 
-    def numeric?(row)
-      return @numeric if @numeric_checked
-      @numeric_checked = true
-      @numeric = @value && row.summary_field_spec.numeric?
-      @numeric
-    end
-
-    def version_number?(row)
-      return @version_number if @version_number_checked
-      @version_number_checked = true
-      @version_number = @value && row.summary_field_spec === ['v', 'cv']
-      @version_number
-    end
-
     def value(row)
       if @index.nil?
         bind_row_index!
@@ -40,12 +26,6 @@ module Sql
         end
       end
       v = @binder.call(row)
-      if self.version_number?(row)
-        return Sql::VersionNumber.version_numberize(v)
-      end
-      if self.numeric?(row)
-        return v.to_i
-      end
       return v.downcase if v.is_a?(String)
       v
     end
@@ -84,7 +64,7 @@ module Sql
       end
 
       if @value
-        @binder = Proc.new { |r| r.key }
+        @binder = Proc.new { |r| r.compare_key }
       else
         extractor = if @base_index == 2
                       Proc.new { |v| v && ratio(v[1], v[0]) }

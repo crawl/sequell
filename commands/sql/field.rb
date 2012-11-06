@@ -89,6 +89,19 @@ module Sql
       yield self
     end
 
+    def comparison_value(raw_value)
+      if self.version_number?
+        return Sql::VersionNumber.version_numberize(raw_value)
+      end
+      self.type.comparison_value(raw_value)
+    end
+
+    def version_number?
+      return @version_number if @version_number_checked
+      @version_number_checked = true
+      @version_number = self === ['v', 'cv']
+    end
+
     def dup
       copy = Field.new(@full_name.dup)
       copy.table = @table.dup if @table
