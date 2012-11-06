@@ -629,7 +629,7 @@ logrecord-fields-with-type:
   - wizI
   - startD*?
   - endD*?
-  - durI*?
+  - durIB*?
   - turnI*?
   - uruneI?
   - nruneI?
@@ -672,7 +672,7 @@ milestone-fields-with-type:
   - intI
   - dexI
   - god?^
-  - durI*
+  - durIB*
   - turnI*?
   - uruneI?
   - nruneI?

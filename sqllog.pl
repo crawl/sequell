@@ -647,7 +647,7 @@ sub logfile_loader($) {
 
 sub broken_record {
   my $r = shift;
-  !$r->{v} || !$r->{start}
+  !$r->{v} || !$r->{start} || $r->{dur} < 0
 }
 
 sub insert_record {
@@ -675,7 +675,7 @@ sub add_milestone {
   $m->{noun} = $m->{milestone};
   $m = fixup_logfields($m);
 
-  insert_record($m, $line);
+  insert_record($m, $line)
 }
 
 sub add_logline {
@@ -689,7 +689,7 @@ sub add_logline {
   $fields->{offset} = $offset;
   $fields = fixup_logfields($fields);
 
-  insert_record($fields, $line);
+  insert_record($fields, $line)
 }
 
 sub xlog_escape {
