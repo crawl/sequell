@@ -61,59 +61,6 @@ module QueryConfig
 
   FIELD_ALIASES = CFG['column-aliases']
 
-  class LGQueryField
-    attr_reader :name, :type
-
-    def initialize(decorated_field)
-      # Summarisable fields are *not* asterisked
-      @summarisable = !decorated_field.index('*')
-      @type = nil
-
-      if decorated_field =~ QueryConfig::R_FIELD_TYPE
-        @type = $1
-      end
-      @name = decorated_field.gsub(/[*ID]+$/, '')
-    end
-
-    def summarisable?
-      @summarisable
-    end
-
-    def value(sql_query_result_value)
-      case @type
-      when 'I'
-        sql_query_result_value.to_i
-      when 'D'
-        sql_date_to_logfile_date(sql_query_result_value)
-      else
-        sql_query_result_value
-      end
-    end
-
-    def sql_date_to_logfile_date(v)
-      if v.is_a?(DateTime)
-        v = v.strftime('%Y-%m-%d %H:%M:%S')
-      else
-        v = v.to_s
-      end
-      if v =~ /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/
-        # Note we're munging back to POSIX month (0-11) here.
-        $1 + sprintf("%02d", $2.to_i - 1) + $3 + $4 + $5 + $6 + 'S'
-      else
-        v
-      end
-    end
-
-    def to_s
-      name
-    end
-
-    def inspect
-      summary_qualifier = summarisable? ? '' : '*'
-      "#{name}#{type}#{summary_qualifier}"
-    end
-  end
-
   ##
   # An LGQueryContext defines the field names and keywords that a
   # listgame-type query recognises. A context is an abstraction for the

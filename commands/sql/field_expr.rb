@@ -64,7 +64,8 @@ module Sql
     end
 
     def type
-      @type ||= (@function && @function.type) || @field.type
+      return @function.type if @function && !@function.type.any?
+      @field.type
     end
 
     def expr?
@@ -79,6 +80,7 @@ module Sql
       copy = FieldExpr.new(@field.dup)
       copy.instance_variable_set(:@expr, @expr.dup) if @expr
       copy.instance_variable_set(:@type, @type.dup) if @type
+      copy.instance_variable_set(:@function, @function.dup) if @function
       copy
     end
 
@@ -106,7 +108,7 @@ module Sql
 
   private
     def build_expr(expr, field)
-      return expr.sub('%s', field) if expr =~ /%s/
+      return sprintf(expr, field.to_s) if expr =~ /%/
       "#{expr}(#{field})"
     end
   end

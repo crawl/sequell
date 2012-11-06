@@ -19,7 +19,7 @@ module Sql
     end
 
     def type
-      aggregate? && self.function ? self.function.return_type : self.field.type
+      aggregate? && self.function ? self.function.return_type(self.field) : self.field.type
     end
 
     def simple_field?

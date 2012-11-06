@@ -48,6 +48,7 @@ module Sql
       (0 ... row.size).each do |i|
         field = @query_fields[i]
         if i < base_size
+          STDERR.puts("#{field} log_value of #{row[i]} (#{row[i].class}) == #{field.log_value(row[i])}")
           map[field.to_s] = field.log_value(row[i])
         else
           extras[field.to_s] = field.log_value(row[i])

@@ -3,27 +3,31 @@ require 'sql/date'
 module Sql
   module TypePredicates
     def text?
-      text_type?(self.type)
+      self.type.text?
     end
 
     def case_sensitive?
-      self.type == 'S'
+      self.type.case_sensitive?
     end
 
     def date?
-      self.type == 'D'
+      self.type.date?
     end
 
     def numeric?
-      self.integer?
+      self.type.numeric?
+    end
+
+    def real?
+      self.type.real?
     end
 
     def integer?
-      self.type == 'I'
+      self.type.integer?
     end
 
     def boolean?
-      self.type == '!'
+      self.type.boolean?
     end
 
     def display_format
@@ -31,34 +35,15 @@ module Sql
     end
 
     def display_value(value)
-      return Sql::Date.display_date(value, self.display_format) if self.date?
-      if value.is_a?(BigDecimal) || value.is_a?(Float)
-        rawv = sprintf("%.2f", value)
-        rawv.sub!(/([.]\d*?)0+$/, '\1')
-        rawv.sub!(/[.]$/, '')
-        return rawv
-      end
-      value
+      self.type.display_value(value, self.display_format)
     end
 
     def log_value(raw_value)
-      case
-      when self.numeric?
-        raw_value.to_i
-      when self.date?
-        Sql::Date.log_date(raw_value)
-      else
-        raw_value
-      end
+      self.type.log_value(raw_value)
     end
 
     def type_match?(other_type)
-      other_type == '*' || (other_type == self.type) ||
-        (text_type?(other_type) && text?)
-    end
-
-    def text_type?(type_string)
-      !type_string || type_string.empty? || type_string == 'S'
+      self.type.type_match?(other_type)
     end
   end
 end

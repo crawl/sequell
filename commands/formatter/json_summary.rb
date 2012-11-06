@@ -167,7 +167,7 @@ module Formatter
     end
 
     def data_row(row, extractor)
-      [row.key] + extractor.call(row)
+      [row.key_value] + extractor.call(row)
     end
   end
 end

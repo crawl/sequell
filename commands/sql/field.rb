@@ -1,3 +1,4 @@
+require 'sql/type'
 require 'sql/query_context'
 require 'sql/query_table'
 require 'sql/field_predicates'
@@ -69,7 +70,7 @@ module Sql
     end
 
     def type
-      column_prop(:type) || ''
+      column_prop(:type) || Type.type('')
     end
 
     def column

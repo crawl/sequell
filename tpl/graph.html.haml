@@ -42,7 +42,7 @@
         typeConvert = function (x) { return new Date(x); };
       }
       if (queryData.number) {
-        typeConvert = function (x) { return parseInt(x, 10); }
+        typeConvert = function (x) { return parseFloat(x); }
       }
       for (var i = 0, length = data.length; i < length; ++i) {
         var row = data[i];

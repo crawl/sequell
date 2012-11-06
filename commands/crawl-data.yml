@@ -483,6 +483,36 @@ aggregate-functions:
   variance: I
 
 value-functions:
+  log:
+    type: 'I'
+    return: 'F'
+    expr: "TRUNC(LOG(%s + 1) * 10) / 10"
+    summarisable: true
+  nhour:
+    type: 'D'
+    return: 'I'
+    expr: "date_part('hour', %s)"
+    summarisable: true
+  nmin:
+    type: 'D'
+    return: 'I'
+    expr: "date_part('minute', %s)"
+    summarisable: true
+  ndayofmonth:
+    type: 'D'
+    return: 'I'
+    expr: "date_part('day', %s)"
+    summarisable: true
+  nmonth:
+    type: 'D'
+    return: 'I'
+    expr: "date_part('month', %s)"
+    summarisable: true
+  ndayofweek:
+    type: 'D'
+    return: 'I'
+    expr: "extract(dow from %s)"
+    summarisable: true
   day:
     type: 'D'
     expr: "date_trunc('day', %s)"
@@ -532,6 +562,14 @@ lookup-tables:
   killer: [killer, ckiller, ikiller]
   kaux: [kaux, ckaux]
   msg: [tmsg, vmsg]
+
+type-categories:
+  I: I
+  F: I
+  S: S
+  '': S
+  D: D
+  '!': '!'
 
 ##
 # Field type suffixes:

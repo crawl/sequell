@@ -19,7 +19,14 @@ module Sql
       summarise_fields = summary_reporter.query.summarise
       @summary_field_spec = summarise_fields.fields[0] if summarise_fields
       @fields = summary_fields
-      @key = summary_fields ? summary_fields.join('@@') : nil
+      @key =
+        if summary_fields
+          if summary_fields.size == 1
+            summary_fields[0]
+          else
+            summary_fields.join('@@')
+          end
+        end
       @counts = count.nil? ? nil : [count]
       @extra_fields = extra_fields
       @extra_values = extra_values.map { |e| [ e ] }
@@ -67,6 +74,10 @@ module Sql
 
     def key
       @key.nil? ? :identity : @key
+    end
+
+    def key_value
+      @key.is_a?(BigDecimal) ? @key.to_f : @key
     end
 
     def key_display_value

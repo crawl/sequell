@@ -861,9 +861,15 @@ Non-Aggregate Functions
 Non-aggregate functions may be applied to fields in query conditions,
 grouping clauses (s=X) and extra-field info (x=X).
 
-- day(<date>)   Truncates the date to the closest prior midnight time.
-- month(<date>) Truncates to midnight of the 1st day of the month
-- year(<date>)  Truncates to midnight of the 1st day of the year
+- day(<date>)          Truncates the date to the closest prior midnight time.
+- month(<date>)        Truncates to midnight of the 1st day of the month
+- year(<date>)         Truncates to midnight of the 1st day of the year
+- nhour(<date>)        Hour as a number (0-23)
+- nmin(<date>)         Minute as a number (0-59)
+- ndayofmonth(<date>)  Day of the month as a number (1-31)
+- nmonth(<date>)       Month as a number (1-12)
+- ndayofweek(<date>)   Day of week as a number (0-6, 0 being Sunday)
+- log(<number>)        Base 10 logarithm of <field> rounded to steps of 0.1
 
 
 Nick Aliases

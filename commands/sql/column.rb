@@ -1,3 +1,4 @@
+require 'sql/type'
 require 'sql/date'
 require 'sql/config'
 require 'sql/type_predicates'
@@ -5,6 +6,8 @@ require 'sql/type_predicates'
 module Sql
   class Column
     include TypePredicates
+
+    attr_reader :decorated_name
 
     def initialize(config, decorated_name)
       @config = config
@@ -24,7 +27,7 @@ module Sql
     end
 
     def type
-      @type ||= find_type(@decorated_name)
+      @type ||= Type.type(@decorated_name)
     end
 
     # Foreign key into a table.
@@ -59,14 +62,7 @@ module Sql
     end
 
     def value(raw_value)
-      case
-      when self.numeric?
-        raw_value.to_i
-      when self.date?
-        Sql::Date.log_date(raw_value)
-      else
-        raw_value
-      end
+      self.type.log_value(raw_value)
     end
 
   private
@@ -76,27 +72,6 @@ module Sql
 
     def strip_decoration(name)
       name.sub(/[A-Z]*[\W]*$/, '')
-    end
-
-    def find_type(name)
-      raw_type = find_raw_type(name)
-      case raw_type
-      when 'PK'
-        'I'
-      when /^I/
-        'I'
-      else
-        raw_type
-      end
-    end
-
-    def find_raw_type(name)
-      if name =~ /([A-Z]+)/
-        return $1
-      elsif name =~ /!/
-        return '!'
-      end
-      ''
     end
   end
 end
