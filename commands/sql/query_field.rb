@@ -19,7 +19,14 @@ module Sql
     end
 
     def type
-      aggregate? && self.function ? self.function.return_type(self.field) : self.field.type
+      case
+      when aggregate? && self.function
+        self.function.return_type(self.field)
+      when self.field
+        self.field.type
+      else
+        Sql::Type.type('')
+      end
     end
 
     def simple_field?

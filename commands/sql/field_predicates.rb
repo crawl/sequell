@@ -19,7 +19,7 @@ module Sql
     end
 
     def display_format
-      field.display_format
+      field && field.display_format
     end
 
     def name

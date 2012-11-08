@@ -188,3 +188,5 @@ E !lg * s=trunc99(sc)
 !lm * max=start
 !lm * start>201001
 !lm * x=start
+
+!lg * char=hobe / won
