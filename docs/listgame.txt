@@ -872,6 +872,8 @@ grouping clauses (s=X) and extra-field info (x=X).
 - log(<number>)        Base 10 logarithm of <field>, rounded to steps of 0.1
                        Note: you probably need a field>0 condition to prevent
                        zero or negative values exploding the log() function.
+- trunc<X>(<number>)   Truncates the numeric field to <X>. For instance:
+                       trunc500(turn), trunc1000(sc).
 
 
 Nick Aliases
