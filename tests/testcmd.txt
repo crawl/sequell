@@ -185,3 +185,6 @@ E !lg * s=trunc99(sc)
 !lg * day(end)=20121029 s=day(end) x=sum(sc) / tiles 
 
 !lg * cv>=0.10 sc>0 s=log(sc),cv o=-. -graph:area
+!lm * max=start
+!lm * start>201001
+!lm * x=start

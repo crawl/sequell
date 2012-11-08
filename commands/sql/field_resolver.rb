@@ -31,6 +31,12 @@ module Sql
 
       column = field.column
       raise "Unknown field: #{field}" unless column
+
+      # If this is not a local field, we need to join to the alt table first:
+      if !@context.local_field_def(field)
+        apply_alt_join(@context)
+      end
+
       return resolve_simple_field(field) unless field.reference?
 
       # Reference column -- find the reference table
@@ -38,11 +44,6 @@ module Sql
 
       # Find the table that the predicate's field belongs to
       qualified_field = field.context_qualified
-
-      # If this is not a local field, we need to join to the alt table first:
-      if !@context.local_field_def(field)
-        apply_alt_join(@context)
-      end
 
       # Set up the join
       join = Sql::Join.new(qualified_field.table,
