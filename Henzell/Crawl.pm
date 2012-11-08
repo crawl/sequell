@@ -118,6 +118,7 @@ sub possible_pan_lord {
 
 sub canonical_god_name {
   my $name = shift;
+  return '' unless $name;
   $GOD_ALIASES{lc($name)} || $name
 }
 
