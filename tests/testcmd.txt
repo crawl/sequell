@@ -190,3 +190,5 @@ E !lg * s=trunc99(sc)
 !lm * x=start
 
 !lg * char=hobe / won
+
+!lg * s=tiles ::~ 130017x false

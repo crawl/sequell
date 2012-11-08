@@ -135,7 +135,7 @@ module Sql
     def to_s
       if @subrows
         master_group_to_s
-      elsif @key
+      elsif !@key.nil?
         [counted_keys, percentage_string, extra_val_string].find_all { |x|
           !x.to_s.empty?
         }.join(" ")
