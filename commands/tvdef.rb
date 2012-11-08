@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-$:.push('commands')
+$:.push("src")
 
 require 'helper'
 require 'libtv'

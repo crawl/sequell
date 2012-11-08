@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use lib 'commands';
+use lib "src";
 use Helper;
 
 use File::Glob qw/:globally :nocase/;

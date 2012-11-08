@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use lib 'commands';
+use lib 'src';
 use Helper qw/:DEFAULT :skills :races/;
 
 help("Looks up aptitudes for specified race/skill combination.");
@@ -241,5 +241,3 @@ elsif (exists $opts{skill}) {
 else {
     error "You must provide at least a race or a skill";
 }
-
-

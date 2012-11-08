@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Henzell::Config qw/%CMDPATH/;
-use lib 'commands';
+use lib 'src';
 use Helper;
 
 help("Lists available Henzell commands");

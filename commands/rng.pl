@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use lib 'commands';
+use lib "src";
 use Helper qw/:DEFAULT :roles :races :gods/;
 
 help("Chooses randomly between its (space-separated) arguments. Accepts \@god, \@char, \@role, and \@race special arguments. Prefixing the special argument with 'good' or 'bad' limits the choices to only unrestricted or only restricted combos, respectively. \@role=<role> or \@race=<race> chooses a random combo with the specified role/race.");

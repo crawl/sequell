@@ -1,4 +1,4 @@
-$:.push('commands')
+$:.push("src")
 
 SERVICE_PORT = 29880
 

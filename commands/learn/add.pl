@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use lib 'commands/learn';
+use lib "src"learn';
 use LearnDB;
 
 our $RTERM_INDEXED;

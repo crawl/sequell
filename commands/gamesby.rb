@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-$:.push('commands')
+$:.push("src")
 require 'helper.rb'
 require 'sqlhelper'
 require 'query/query_string'

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use lib 'commands';
+use lib "src";
 use Helper qw/short_race short_role/;
 
 Helper::help("Abbreviates race/role abbreviations. " .

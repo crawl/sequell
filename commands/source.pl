@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use lib 'commands';
+use lib "src";
 use File::Next;
 use Helper;
 
