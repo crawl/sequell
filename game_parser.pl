@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 BEGIN {
-  push @INC, 'commands';
+  push @INC, 'src';
 }
 use Helper qw/demunge_xlogline serialize_time/;
 
