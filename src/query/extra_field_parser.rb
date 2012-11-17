@@ -2,7 +2,7 @@ require 'sql/query_field_list'
 
 module Query
   class ExtraFieldParser
-    EXTRA_REG = %r/\bx\s*=\s*([+-]?[:\w]+(?:\(\w+\))?(?:\s*,\s*[:\w]+(?:\(\w+\))?)*)/
+    EXTRA_REG = %r/\bx\s*=\s*([+-]?[:\w]+(?:\([^,\s]+\))?(?:\s*,\s*[:\w]+(?:\([^,\s]+\))?)*)/
 
     def self.parse(query_string, context)
       arg_str = query_string.to_s

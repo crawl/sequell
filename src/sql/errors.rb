@@ -5,9 +5,19 @@ module Sql
   class ParseError < Error
   end
 
+  class UnknownFieldError < ParseError
+    attr_reader :field
+    def initialize(field)
+      super("Unknown field: #{field}")
+      @field = field
+    end
+  end
+
   class UnknownFunctionError < ParseError
+    attr_reader :function
     def initialize(function)
       super("No non-aggregate function \`#{function}\`")
+      @function = function
     end
   end
 

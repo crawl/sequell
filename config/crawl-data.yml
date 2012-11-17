@@ -483,6 +483,11 @@ aggregate-functions:
   variance: I
 
 value-functions:
+  length:
+    type: 'S'
+    return: 'I'
+    expr: "LENGTH(%s)"
+    summarisable: true
   log:
     type: 'I'
     return: 'F'
@@ -594,7 +599,7 @@ logrecord-fields-with-type:
   - v?^
   - cv?^
   - lv^
-  - scIB*?
+  - scIB?
   - nameS?^
   - race?^
   - crace?^

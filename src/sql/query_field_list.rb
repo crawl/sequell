@@ -14,6 +14,7 @@ module Sql
       @ctx = ctx
       @extra = extra
       fields = extra.gsub(' ', '').split(',').find_all { |f| !f.empty? }
+      STDERR.puts("Fields: #{fields.inspect}")
       fields.each do |f|
         @fields << parse_extra_field(f)
       end
@@ -34,16 +35,7 @@ module Sql
         order = $1
         f = f[1 .. -1]
       end
-      field =
-        begin
-          simple_field(f)
-        rescue Sql::ParseError
-          if f =~ /^(\w+)\((\S+)\)$/
-            aggregate_function($1, $2)
-          else
-            raise
-          end
-        end
+      field = parse_field(f)
       field.order = order
       field
     end
@@ -77,6 +69,18 @@ module Sql
       return @fields.all? { |x| x.aggregate?() == aggregate }
     end
 
+    def parse_field(field)
+      begin
+        simple_field(field)
+      rescue Sql::ParseError
+        if field =~ /^(\w+)\((\S+)\)$/
+          aggregate_function($1, $2)
+        else
+          raise
+        end
+      end
+    end
+
     def simple_field(field)
       field = field.downcase.strip
       case field
@@ -91,7 +95,7 @@ module Sql
         @ctx.with do
           query_field = Sql::QueryField.new(self, nil, field, field)
           unless query_field.known?
-            raise "Unknown field: #{query_field}"
+            raise Sql::UnknownFieldError.new(query_field)
           end
           query_field
         end

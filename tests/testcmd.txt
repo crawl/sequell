@@ -192,3 +192,7 @@ E !lg * s=trunc99(sc)
 !lg * char=hobe / won
 
 !lg * s=tiles ::~ 130017x false
+!lg * s=length(name)
+!lg * x=max(length(name))
+!lg * s=length(name)
+!lg * win s=sc
