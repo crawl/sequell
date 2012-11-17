@@ -9,7 +9,7 @@ use warnings;
 #  move A[x] B    -> delete A[x] !learn add B <text>, i.e. add as last entry.
 #  move A B       -> rename all entries in A as B
 
-use lib "src"learn';
+use lib "commands/learn";
 use LearnDB;
 
 our ($RTERM_INDEXED, $RTERM);

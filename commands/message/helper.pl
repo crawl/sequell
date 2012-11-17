@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-do 'commands/helper.pl';
+
+use lib 'src';
+use Helper;
 
 our $message_dir = '/home/henzell/henzell/dat/messages';
 

@@ -2,9 +2,7 @@
 use strict;
 use warnings;
 
-BEGIN {
-  push @INC, 'src';
-}
+use lib 'src';
 use Helper qw/demunge_xlogline serialize_time/;
 
 my %adjective_skill_title =

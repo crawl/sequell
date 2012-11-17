@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use lib "src"learn';
+use lib "commands/learn";
 use LearnDB;
 
 $ARGV[1] =~ y/ /_/;

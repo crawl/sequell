@@ -2,7 +2,7 @@ require 'yaml'
 
 class IrcAuth
   def self.authorizations
-    @authorizations ||= YAML.load_file('commands/auth.yml')
+    @authorizations ||= YAML.load_file('config/auth.yml')
   end
 
   def self.acting_nick

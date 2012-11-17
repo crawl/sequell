@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use lib "src"learn';
+use lib "commands/learn";
 use LearnDB;
 
 my ($term, $num) = parse_query($ARGV[1]);

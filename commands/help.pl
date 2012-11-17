@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-do 'commands/helper.pl';
+do 'src/helper.pl';
 use Henzell::Config qw/%CMDPATH/;
 
 help("Displays help on a command. For a list of commands, see !cmdinfo.");

@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-do 'commands/helper.pl';
+
+use lib 'src';
+use Helper;
 
 help("Learndb. Syntax: !learn query item; !learn (add|del) item text; !learn edit item[num] s/replace-this/with-this/; !learn swap a b; !learn mv a b");
 

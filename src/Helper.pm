@@ -9,7 +9,7 @@ use base 'Exporter';
 use YAML::Any qw/LoadFile/;
 use Data::Dumper;
 
-my $CONFIG_FILE = 'commands/crawl-data.yml';
+my $CONFIG_FILE = 'config/crawl-data.yml';
 
 our $CFG = LoadFile($CONFIG_FILE);
 
