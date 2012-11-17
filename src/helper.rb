@@ -5,7 +5,7 @@ require 'date'
 require 'command_context'
 require 'yaml'
 
-SERVERS_FILE = 'servers.yml'
+SERVERS_FILE = 'config/servers.yml'
 SERVER_CFG = YAML.load_file(SERVERS_FILE)
 
 # Directory containing player directories that contain morgues.

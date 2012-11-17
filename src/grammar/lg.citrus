@@ -1,0 +1,384 @@
+grammar LGGrammar
+  rule query
+    query_mode? query_body ( whitespace? query_ratio_sep query_ratio_tail )? <QueryTree>
+  end
+
+  rule query_ratio_sep
+    "/" whitespace?
+  end
+
+  rule query_ratio_tail
+    query_clauses whitespace? query_having_filter? <QueryRatioTail>
+  end
+
+  rule query_having_filter
+    "?:" whitespace? having_clauses
+  end
+
+  rule having_clauses
+    having_clause*
+  end
+
+  rule having_clause
+    "-"? having_key whitespace? query_cmp_op whitespace? having_value <HavingClause>
+  end
+
+  rule having_key
+    having_key_qualifier? ("count" / [nN] / "%" / query_field) <HavingClauseKey>
+  end
+
+  rule having_key_qualifier
+    ( "num" / "den" ) "." <HavingClauseQualifier>
+  end
+
+  rule having_value
+    query_typed_value
+  end
+
+  rule query_mode
+    ("!lm" / "!lg") whitespace? <QueryMode>
+  end
+
+  rule whitespace
+    [\s]+
+  end
+
+  rule query_body
+    nick_selector? query_clauses <QueryBody>
+  end
+
+  rule query_clauses
+    query_expression query_or query_clauses <QueryORExpr>
+    / query_expression
+  end
+
+  rule query_or
+    whitespace? "||" whitespace? <QueryOr>
+  end
+
+  rule query_expression
+    query_keyword_or_index* query_part*
+  end
+
+  rule nick_selector
+    negation? nick_match whitespace? !query_cmp_op <NickSelector>
+  end
+
+  rule query_keyword_or_index
+    ( result_index / query_keyword ) whitespace?
+  end
+
+  rule query_keyword
+    negation? nickref_symbol? query_keyword_body whitespace? !query_cmp_op <QueryKeywordExpr>
+  end
+
+  rule query_keyword_body
+    [a-zA-Z0-9] [:a-zA-Z0-9.]+ <QueryKeyword>
+  end
+
+  rule negation
+    "!" <Negation>
+  end
+
+  rule nickref_symbol
+    "@" <NickDeref>
+  end
+
+  rule nick_match
+    nickref_symbol expansive_nick / restrictive_nick
+  end
+
+  rule expansive_nick
+    ( [a-zA-Z0-9_+`'-]+ / "." / "*" ) <Nick>
+  end
+
+  rule restrictive_nick
+    ( [a-zA-Z_+`'] [a-zA-Z0-9_+`'-]* / "." / "*" ) <Nick>
+  end
+
+  rule query_part
+    ( query_parenthesized / field_grouping / field_extract / join_fields / field_subquery_match / ordering / result_index / key_op_val_arg / query_flag ) whitespace?
+  end
+
+  rule query_parenthesized
+    query_subpart / query_subquery_join
+  end
+
+  rule query_subpart
+    "((" whitespace? query_clauses whitespace? "))" whitespace?
+  end
+
+  rule query_subquery_clause
+    query_exists_subquery / query_subquery_join
+  end
+
+  rule query_expr_subquery
+    "$" query_subquery
+  end
+
+  rule query_subquery_join
+    query_subquery
+  end
+
+  rule query_subquery
+    query_subquery_prefix whitespace? query whitespace? "]]" whitespace? <Subquery>
+  end
+
+  rule query_subquery_prefix
+    "[" subquery_alias "[" / "[["
+  end
+
+  rule subquery_alias
+    [a-zA-Z] [a-zA-Z_0-9]* <QueryAlias>
+  end
+
+  rule result_index
+    "#"? integer !(".") <ResultIndex>
+  end
+
+  rule integer
+    [+-]? [0-9]+
+  end
+
+  rule query_flag
+    "-" query_flag_body !(!" " .)
+  end
+
+  rule query_flag_body
+    query_flag_name query_flag_extra? <QueryFlagBody>
+  end
+
+  rule query_flag_name
+    [a-zA-Z] [a-zA-Z_]+ <QueryFlagName>
+  end
+
+  rule query_flag_extra
+    [^\s]+ <QueryFlagExtra>
+  end
+
+  rule ordering
+    "-"? (
+    "o" whitespace? "=" whitespace? ordered_special_field ( whitespace? "," whitespace? ordered_special_field )*
+    /
+    sort_op whitespace? "=" whitespace? special_field ) <QueryOrdering>
+  end
+
+  rule ordering_key
+    [+-] <OrderingSign>
+  end
+
+  rule ordered_aggregate_field
+    ordering_key? aggregate_field <OrderedAggregateField>
+  end
+
+  rule aggregate_field
+    ( aggregate_func whitespace? "(" whitespace? query_field whitespace? ")" /
+    query_field ) <AggregateField>
+  end
+
+  rule aggregate_func
+    [a-zA-Z0-9_]+ <AggregateFunc>
+  end
+
+  rule ordered_field
+    ordering_key? query_field <OrderedField>
+  end
+
+  rule ordered_special_field
+    ordering_key? special_field <OrderedSpecialField>
+  end
+
+  rule special_field
+    ( "%" / query_field ) <SpecialField>
+  end
+
+  rule grouping_field
+    ordered_field grouping_flags? <GroupingField>
+  end
+
+  rule grouping_flags
+    "%" <GroupingFlags>
+  end
+
+  rule field_grouping
+    "-"? "s" whitespace? "=" whitespace? grouping_field ( whitespace? "," whitespace? grouping_field )* <FieldGrouping>
+  end
+
+  rule field_subquery_match
+    "-"? "match" whitespace? "=" whitespace? query_field ( whitespace? "," whitespace? query_field )* <SubqueryMatch>
+  end
+
+  rule field_extract
+    "-"? "x" whitespace? "=" whitespace? ordered_aggregate_field ( whitespace? "," whitespace? ordered_aggregate_field )* <FieldExtract>
+  end
+
+  rule join_fields
+    "-"? "j" whitespace? "=" whitespace? ordered_aggregate_field ( whitespace? "," whitespace? ordered_aggregate_field )* <JoinFields>
+  end
+
+  rule sort_op
+    ( "min" / "max" ) <SortOperator>
+  end
+
+  rule key_op_val_arg
+    ( "-"? key_expr whitespace? query_cmp_op &(whitespace (key_op_val_arg / query_parenthesized / result_index)) /
+    "-"? key_expr whitespace? query_cmp_op whitespace? query_sloppy_value_expr /
+    "-"? key_expr whitespace? query_cmp_op )
+    <KeyOpVal>
+  end
+
+  rule key_expr
+    query_esc_expr / query_expr_subquery / query_field
+  end
+
+  rule query_field
+    prefix:word_part suffix:( ":" word_part )? <QueryField>
+  end
+
+  rule query_sloppy_value_expr
+    query_expr_subquery / query_esc_expr / query_sloppy_value <SloppyExpr>
+  end
+
+  rule query_esc_expr
+    "${" whitespace? query_op_expr whitespace? "}"
+  end
+
+  rule query_op_expr
+    query_or_expr
+  end
+
+  rule query_or_expr
+    query_and_expr (  whitespace? op_or whitespace? query_and_expr )* <QueryCalcExpr>
+  end
+
+  rule query_and_expr
+    query_cmp_expr ( whitespace? op_and whitespace? query_cmp_expr )*  <QueryCalcExpr>
+  end
+
+  rule query_cmp_expr
+    query_add_expr ( whitespace? query_cmp_op whitespace? query_add_expr )* <QueryCalcExpr>
+  end
+
+  rule query_add_expr
+    query_mul_expr ( whitespace? op_additive whitespace? query_mul_expr )* <QueryCalcExpr>
+  end
+
+  rule query_mul_expr
+    query_expr_term ( whitespace? op_multiplicative whitespace? query_expr_term )* <QueryCalcExpr>
+  end
+
+  rule query_expr_term
+    query_term /
+    "(" whitespace? query_op_expr whitespace? ")" /
+    op_sign whitespace? query_op_expr <QueryCalcExpr>
+  end
+
+  rule op_sign
+    [+-] <Sign>
+  end
+
+  rule op_additive
+    op_plus / op_minus
+  end
+
+  rule op_multiplicative
+    op_mul / op_div / op_modulo
+  end
+
+  rule op_mul
+    "*" <QueryOp>
+  end
+
+  rule op_div
+    "/" <QueryOp>
+  end
+
+  rule op_modulo
+    "%" <QueryOp>
+  end
+
+  rule op_plus
+    "+" <QueryOp>
+  end
+
+  rule op_minus
+    "-" <QueryOp>
+  end
+
+  rule op_and
+    "&&" <QueryOp>
+  end
+
+  rule op_or
+    "||" <QueryOp>
+  end
+
+  rule query_term
+    query_function_term / query_expr_subquery / query_field / query_typed_value
+  end
+
+  rule query_function_term
+    query_identifier whitespace? "(" whitespace? query_op_expr ( whitespace? "," whitespace? query_op_expr )* whitespace? ")" whitespace? <QueryFunctionTerm>
+  end
+
+  rule query_typed_value
+    query_typed_string  / query_typed_float / query_typed_integer / query_typed_null
+  end
+
+  rule query_typed_null
+    "null"
+  end
+
+  rule query_typed_string
+    single_quoted_string / double_quoted_string
+  end
+
+  rule single_quoted_string
+    "'" single_quote_escaped_character* "'" <SingleQuotedString>
+  end
+
+  rule double_quoted_string
+    "\"" double_quote_escaped_character* "\"" <DoubleQuotedString>
+  end
+
+  rule single_quote_escaped_character
+    "\\'" / [^']
+  end
+
+  rule double_quote_escaped_character
+    "\\\"" / [^"]
+  end
+
+  rule query_typed_float
+    [+-]? [0-9]+ [.] [0-9]* <TypedFloat>
+  end
+
+  rule query_typed_integer
+    [+-]? [0-9]+ <TypedInteger>
+  end
+
+  rule query_bareword_string
+    [a-zA-Z_] [a-zA-Z0-9_]* <Bareword>
+  end
+
+  rule query_identifier
+    [a-zA-Z_] [a-zA-Z_0-9]+ <QueryIdentifier>
+  end
+
+  rule query_sloppy_value
+    ((" " !(query_part / query_having_filter))
+     / "$" !"{"
+     / ")" !")"
+     / "]" !"]"
+     / "|" !"|"
+     / [^\s)\]$|])+ <SloppyValue>
+  end
+
+  rule word_part
+    [a-zA-Z_] [a-zA-Z.0-9_]*
+  end
+
+  rule query_cmp_op
+    ("<=" / "<" / ">=" / ">" / "===" / "==" / "=~" / "=" / "!==" / "!=" / "~~" / "!~~" / "!~") <QueryOp>
+  end
+end

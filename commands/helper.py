@@ -6,7 +6,7 @@ import yaml
 from datetime import datetime
 import time
 
-CFGFILE = 'commands/crawl-data.yml'
+CFGFILE = 'config/crawl-data.yml'
 CFG = yaml.load(open(CFGFILE).read())
 
 www_rawdatapath = '/var/www/crawl/rawdata/'

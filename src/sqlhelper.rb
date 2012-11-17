@@ -5,8 +5,8 @@ if !ENV['HENZELL_SQL_QUERIES']
 end
 
 DEBUG_HENZELL = ENV['DEBUG_HENZELL']
-LG_CONFIG_FILE = 'commands/crawl-data.yml'
-LG_SERVERS_FILE = 'servers.yml'
+LG_CONFIG_FILE = 'config/crawl-data.yml'
+LG_SERVERS_FILE = 'config/servers.yml'
 
 require 'dbi'
 require 'set'
@@ -14,8 +14,8 @@ require 'yaml'
 
 require 'helper'
 require 'tourney'
-require 'commands/sql_connection'
-require 'commands/henzell_config'
+require 'sql_connection'
+require 'henzell_config'
 
 require 'sql/config'
 require 'sql/field_predicate'

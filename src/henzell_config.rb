@@ -2,8 +2,8 @@ module HenzellConfig
   require 'yaml'
   require 'set'
 
-  CONFIG_FILE = 'commands/crawl-data.yml'
-  SERVER_CONFIG_FILE = 'servers.yml'
+  CONFIG_FILE = 'config/crawl-data.yml'
+  SERVER_CONFIG_FILE = 'config/servers.yml'
 
   CFG = YAML.load_file(CONFIG_FILE)
   SERVER_CFG = YAML.load_file(SERVER_CONFIG_FILE)

@@ -8,7 +8,7 @@ our @EXPORT_OK = qw/canonical_place_name/;
 
 use YAML::Any qw/LoadFile/;
 
-my $CONFIG_FILE = 'commands/crawl-data.yml';
+my $CONFIG_FILE = 'config/crawl-data.yml';
 my $CRAWLDATA = LoadFile($CONFIG_FILE);
 
 my %UNIQUES = map(($_ => 1), @{$$CRAWLDATA{uniques}});
