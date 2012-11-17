@@ -97,7 +97,7 @@ Where:
   field" and shows the grouped field and COUNT(*) for each group.
 
   Not all fields can by used to summarise: fields with too many
-  distinct values (such as score or turn count) are not allowed as
+  distinct values (such as timestamp fields) are not allowed as
   summary fields.
 
   When summarising, results are sorted in descending order of the

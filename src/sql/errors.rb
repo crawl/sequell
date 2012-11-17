@@ -7,7 +7,7 @@ module Sql
 
   class UnknownFunctionError < ParseError
     def initialize(function)
-      super("No function named #{function}")
+      super("No non-aggregate function \`#{function}\`")
     end
   end
 
