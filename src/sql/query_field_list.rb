@@ -14,7 +14,6 @@ module Sql
       @ctx = ctx
       @extra = extra
       fields = extra.gsub(' ', '').split(',').find_all { |f| !f.empty? }
-      STDERR.puts("Fields: #{fields.inspect}")
       fields.each do |f|
         @fields << parse_extra_field(f)
       end
