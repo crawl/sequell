@@ -16,8 +16,8 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       irc_port   => 6667,
                       lock_name  => 'henzell',
 
-                      milestones => 'def.stones',
-                      logs => 'def.logs',
+                      milestones => 'config/def.stones',
+                      logs => 'config/def.logs',
 
                       # Does the bot respond to SQL queries (default: NO)
                       sql_queries => 0,
