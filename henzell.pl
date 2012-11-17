@@ -102,9 +102,6 @@ if ($CONFIG{sql_store}) {
   # And once again, because creating indexes takes time.
   catchup_stonefiles();
   catchup_logfiles();
-} else {
-  # Start the dirserv:
-  system("./commands/dirserv.rb");
 }
 
 my $HENZELL;

@@ -3,16 +3,37 @@
 require 'gserver'
 require 'helper'
 require 'sqlop/tv_view_count'
+require 'fileutils'
 
 module TV
   @@tv_args = nil
   @channel_server = !!ENV['TV_CHANNEL_SERVER']
 
+  TV_QUEUE_DIR = 'tmp/tv'
   TV_QUEUE_FILE = 'tv.queue'
   TV_LOCK_FILE = 'tv.queue.lock'
-  DIRSERV_LOCK_FILE = 'dirserv.queue.lock'
   TV_LOG_FILE = 'tv.queue.log'
-  DIRSERV_LOG_FILE = 'dirserv.queue.log'
+
+  def self.queue_dir
+    TV_QUEUE_DIR
+  end
+
+  def self.queue_dir_file(file)
+    FileUtils.mkdir_p(self.queue_dir)
+    File.join(self.queue_dir, file)
+  end
+
+  def self.queue_file
+    queue_dir_file(TV_QUEUE_FILE)
+  end
+
+  def self.lock_file
+    queue_dir_file(TV_LOCK_FILE)
+  end
+
+  def self.log_file
+    queue_dir_file(TV_LOG_FILE)
+  end
 
   def self.channel_server?
     @channel_server
@@ -28,34 +49,6 @@ module TV
     ensure
       @channel_server = old_channel_server
       ENV['TV_CHANNEL_SERVER'] = old_env
-    end
-  end
-
-  # Serves ttyrec directory listings to whoever asks.
-  class TtyrecDirectoryServ < GServer
-    def initialize(port = 21977, host = "0.0.0.0")
-      puts "Starting ttyrec listing server."
-      super(port, host, Float::MAX, $stderr, true)
-    end
-
-    def serve(sock)
-      while true
-        nick = sock.gets.chomp
-        puts "ttyrec listing requested for '#{nick}'"
-        last unless nick
-        list_ttyrecs(nick, sock)
-      end
-    end
-
-    def list_ttyrecs(nick, sock)
-      if nick =~ /^[a-z0-9_ -]+$/i
-        for ttyrec in Dir[DGL_TTYREC_DIR + "/#{nick}/*.ttyrec*"]
-          if ttyrec =~ %r{.*/(.*)}
-            sock.write("#$1 #{File.size(ttyrec)} ")
-          end
-        end
-      end
-      sock.write("\r\n")
     end
   end
 
@@ -93,7 +86,7 @@ module TV
     def run_monitor
       begin
         while true
-          open(TV_QUEUE_FILE, 'r+') do |af|
+          open(TV.queue_file, 'r+') do |af|
             TV.flock(af, File::LOCK_EX) do |f|
               lines = f.readlines
               f.truncate(0)
@@ -168,32 +161,6 @@ module TV
     nil
   end
 
-  def self.launch_dirserv()
-    return unless File.exist?(DGL_TTYREC_DIR)
-    return if fork()
-
-    begin
-      Process.setsid
-    ensure
-    end
-
-    # Try for a lock, but do not block
-    oflock(DIRSERV_LOCK_FILE, File::LOCK_EX | File::LOCK_NB) do |f|
-      # Be a good citizen:
-      logfile = File.open(DIRSERV_LOG_FILE, 'w')
-      logfile.sync = true
-      STDOUT.reopen(logfile)
-      STDERR.reopen(logfile)
-      STDIN.close()
-
-      # Start the ttyrec listing server.
-      ttyrec_lister = TtyrecDirectoryServ.new
-      ttyrec_lister.start()
-      ttyrec_lister.join()
-    end
-    exit 0
-  end
-
   def self.launch_daemon()
     return if fork()
 
@@ -203,10 +170,10 @@ module TV
     end
 
     # Try for a lock, but do not block
-    oflock(TV_LOCK_FILE, File::LOCK_EX | File::LOCK_NB) do |f|
+    oflock(TV.lock_file, File::LOCK_EX | File::LOCK_NB) do |f|
 
       # Be a good citizen:
-      logfile = File.open(TV_LOG_FILE, 'w')
+      logfile = File.open(TV.log_file, 'w')
       logfile.sync = true
       STDOUT.reopen(logfile)
       STDERR.reopen(logfile)
@@ -295,7 +262,7 @@ module TV
     # parties (i.e. C-SPLAT) to listen in.
     launch_daemon()
 
-    open(TV_QUEUE_FILE, 'a') do |file|
+    open(TV.queue_file, 'a') do |file|
       flock(file, File::LOCK_EX) do |f|
         # Make sure we're really at eof.
         f.seek(0, IO::SEEK_END)

@@ -5,12 +5,19 @@ module PCache
   require 'sqlite3'
 
   DATE_FORMAT = '%Y%m%dT%H%M%S'
+  DB_FILE = 'tmp/pcache.db'
 
   @@db = nil
 
+  def self.pcache_file
+    require 'fileutils'
+    FileUtils.mkdir_p(File.dirname(DB_FILE))
+    DB_FILE
+  end
+
   def self.create
     if not @@db
-      @@db = SQLite3::Database.new("pcache.db")
+      @@db = SQLite3::Database.new(self.pcache_file)
       begin
         @@db.execute(<<SQL)
 CREATE TABLE pcache (key STRING PRIMARY KEY, value STRING, vtstamp STRING);
