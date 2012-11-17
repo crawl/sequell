@@ -18,7 +18,7 @@
 # be echoed to stderr; the command exit code will not be checked.
 
 
-$ rm nicks-test.map
+$ rm dat/nicks-test.map
 !nick cow ::= No nick mapping for cow.
 !nick src a b c ::= Mapping src => a b c
 !nick -rm src ::= Deleted src => a b c

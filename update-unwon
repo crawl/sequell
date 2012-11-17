@@ -1,4 +1,0 @@
-#! /bin/sh
-
-cd /home/henzell/henzell
-mysql -uhenzell --password='' henzell <unwon.sql >unwon.txt

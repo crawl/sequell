@@ -30,7 +30,7 @@ ROLES_ABBR = ROLE_MAP.keys()
 WHERE_DIRS = None
 
 NICK_ALIASES = { }
-NICKMAP_FILE = 'nicks.map'
+NICKMAP_FILE = 'dat/nicks.map'
 nick_aliases_loaded = False
 
 class Tournament (object):

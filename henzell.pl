@@ -15,7 +15,7 @@ END {
 
 my $daemon = 1;
 my $irc = 1;
-my $config_file = 'henzell.rc';
+my $config_file = 'rc/henzell.rc';
 GetOptions("daemon!" => \$daemon,
            "irc!" => \$irc,
            "rc=s" => \$config_file) or die "Invalid options\n";

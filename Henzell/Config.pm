@@ -48,7 +48,7 @@ our %CMDPATH;
 our %PUBLIC_CMD;
 our @LOGS;
 our @MILESTONES;
-our $CONFIG_FILE = 'henzell.rc';
+our $CONFIG_FILE = 'rc/henzell.rc';
 
 my $command_dir = 'commands';
 

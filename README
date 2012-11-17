@@ -31,7 +31,7 @@ Henzell can do several things based on how it's configured:
 
 3. Answer queries for games and milestones (if sql_queries=1).
 
-You configure Henzell by supplying a henzell.rc in the *directory from
+You configure Henzell by supplying an rc/henzell.rc in the *directory from
 which you run Henzell*. You can alternatively specify the rc filename
 as a command-line option with:
 

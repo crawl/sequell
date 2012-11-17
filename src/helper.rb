@@ -4,6 +4,7 @@ require 'set'
 require 'date'
 require 'command_context'
 require 'yaml'
+require 'fileutils'
 
 SERVERS_FILE = 'config/servers.yml'
 SERVER_CFG = YAML.load_file(SERVERS_FILE)
@@ -44,7 +45,7 @@ rescue
 end
 
 NICK_ALIASES = { }
-NICKMAP_FILE = ENV['HENZELL_TEST'] ? 'nicks-test.map' : 'nicks.map'
+NICKMAP_FILE = ENV['HENZELL_TEST'] ? 'dat/nicks-test.map' : 'dat/nicks.map'
 $nicks_loaded = false
 
 def munge_game(game)
@@ -547,6 +548,7 @@ def load_nicks
 end
 
 def save_nicks
+  FileUtils.mkdir_p(File.dirname(NICKMAP_FILE))
   tmp = NICKMAP_FILE + '.tmp'
   File.open(tmp, 'w') do |f|
     for k, v in NICK_ALIASES do

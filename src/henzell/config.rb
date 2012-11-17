@@ -2,7 +2,7 @@ require 'henzell/commands'
 
 module Henzell
   class Config
-    CONFIG_FILE = 'henzell.rc'
+    CONFIG_FILE = 'rc/henzell.rc'
 
     def self.read(cfg=CONFIG_FILE)
       config = self.new(cfg)

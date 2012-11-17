@@ -32,7 +32,7 @@ our %EXPORT_TAGS = (
     gods    => [grep /god/,   @EXPORT_OK],
 );
 
-my $NICKMAP_FILE = 'nicks.map';
+my $NICKMAP_FILE = 'dat/nicks.map';
 my %NICK_ALIASES;
 my $nick_aliases_loaded;
 
