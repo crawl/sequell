@@ -5,13 +5,15 @@ require 'helper'
 require 'sqlhelper'
 require 'query/query_string'
 require 'query/nick_resolver'
+require 'query/nick'
 
 help("Lists the top kills for a player's ghost.")
 
 args = (ARGV[2].split)[1 .. -1] || []
 
 query = Query::QueryString.new(args)
-ghosts = Query::NickResolver.resolve_query_nick(query, ARGV[1])
+nick = Query::NickResolver.extract_nick(query) || ARGV[1]
+ghosts = Query::Nick.aliases(nick)
 
 def ghost_field(ghost)
   if ghost == '*'
