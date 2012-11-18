@@ -5,10 +5,39 @@ require 'grammar/query_term'
 
 module Grammar
   class QueryBody < Parslet::Parser
-    root(:body)
+    root(:body_root)
+
+    rule(:body_root) {
+      body_alternation | body_expressions
+    }
+
+    rule(:body_alternation) {
+      (body_expressions >> (space? >> str("||") >> space? >>
+                     body_expressions).repeat(1)).as(:or)
+    }
+
+    rule(:body_expressions) {
+      (body_expr >> (space >> body_expr).repeat).as(:and)
+    }
+
+    rule(:body_expr) {
+      parenthesized_body | body
+    }
+
+    rule(:parenthesized_body) {
+      (str("!") >> parenthesized_body).as(:negated) |
+        parenthesized_body_unprefixed
+    }
+
+    rule(:parenthesized_body_unprefixed) {
+      str("((") >> space? >> body_root.as(:parentheses) >>
+       space? >> str("))")
+    }
 
     rule(:body) {
-      keywords.maybe >> (space? >> query_expressions).maybe
+      keywords >> space >> query_expressions |
+        keywords |
+        query_expressions
     }
 
     rule(:keywords) {

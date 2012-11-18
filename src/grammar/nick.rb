@@ -1,11 +1,15 @@
 module Grammar
   class Nick < Parslet::Parser
-    root(:nick_expr)
+    root(:nick_root)
 
-    rule(:negated) { str("!").as(:negated) }
+    rule(:nick_root) {
+      nick_expr.as(:nick_expr)
+    }
+
+    rule(:negated) { str("!") }
 
     rule (:nick_expr) {
-      (negated >> (nick_selector | nick_atom_loose)).as(:negated) |
+      (negated >> (nick_expr | nick_selector | nick_atom_loose)).as(:negated) |
         nick_selector
     }
     rule(:nick_selector) {

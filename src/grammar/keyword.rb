@@ -14,7 +14,7 @@ module Grammar
     }
 
     rule(:keyword_term) {
-      (str("!") >> keyword_unprefixed).as(:negated) |
+      str("!") >> keyword_term.as(:negated) |
         keyword_unprefixed
     }
 

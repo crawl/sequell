@@ -6,37 +6,61 @@ module Grammar
     root(:expr)
 
     rule(:expr) {
-      alternation | term
+      body_term | option
     }
 
-    rule(:alternation) {
-      (term >> (space? >> str("|") >> space? >> term).repeat(1)).as(:or)
+    rule(:option) {
+      (str("-") >> option_name >>
+        (str(":") >> option_argument).repeat).as(:option)
+    }
+
+    rule(:option_name) {
+      Atom.new.identifier.as(:option_name)
+    }
+
+    rule(:option_argument) {
+      match["^ :"].repeat(1).as(:argument)
+    }
+
+    rule(:body_expr) {
+      QueryBody.new.parenthesized_body | body_term
+    }
+
+    rule(:body_term) {
+      summary_term | extra_term | term
+    }
+
+    rule(:summary_term) {
+      str("s") >> space? >> match[":="] >> space? >>
+      field_expression_list.as(:summary)
+    }
+
+    rule(:extra_term) {
+      str("x") >> space? >> match[":="] >> space? >>
+      field_expression_list.as(:extra)
+    }
+
+    rule(:field_expression_list) {
+      field_expr >> (space? >> str(",") >> space? >> field_expr).repeat
     }
 
     rule(:term) {
-      (str("!") >> space? >> term_unprefixed).as(:negated) |
-        term_unprefixed
-    }
-
-    rule(:term_unprefixed) {
-      parenthesized_term | simple_term
-    }
-
-    rule(:parenthesized_term) {
-      str("(") >> space? >> expr.as(:parentheses) >> space? >> str(")")
-    }
-
-    rule(:simple_term) {
-      field_expr >> space? >> op >> space? >> field_value
+      field_expr >> space? >> op >> space? >> field_value.as(:value)
     }
 
     rule(:field_expr) {
       function_expr | field
     }
 
+    rule(:field_value_boundary) {
+      str("||") | str("))") | str("/") | str("?:") | body_expr
+    }
+
     rule(:field_value) {
-      ((str(" ") >> (integer | expr)).absent? >> str(" ") |
-        Atom.new.simple_value).repeat.as(:field_value)
+      Atom.new.quoted_string |
+      Atom.new.number |
+      (space >> field_value_boundary.absent? |
+       field_value_boundary.absent? >> Atom.new.safe_value).repeat
     }
 
     rule(:function_expr) {
