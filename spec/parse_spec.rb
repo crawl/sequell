@@ -26,7 +26,8 @@ describe Grammar::Query do
     '!lg * s=name ?: N>10',
     '!lg * s=name / win ?: %>0.5',
     '!lg * s=name / win ?: d:N > 50 num.N > 5',
-    '!lg * s=name x=avg(xl) / win ?: den.avg(xl) > 5 num:N < 3'
+    '!lg * s=name x=avg(xl) / win ?: den.avg(xl) > 5 num:N < 3',
+    '!lg * killer= ktyp=pois'
   ]
 
   QUERIES.each { |query|

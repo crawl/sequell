@@ -32,12 +32,16 @@ module Grammar
 
     rule(:summary_term) {
       str("s") >> space? >> match[":="] >> space? >>
-      field_expression_list.as(:summary)
+      field_expression_list.as(:summary) |
+      str("s") >> space? >> match["("] >> space? >>
+      field_expression_list.as(:summary) >> space? >> match[")"]
     }
 
     rule(:extra_term) {
       str("x") >> space? >> match[":="] >> space? >>
-      field_expression_list.as(:extra)
+      field_expression_list.as(:extra) |
+      str("x") >> space? >> match["("] >> space? >>
+      field_expression_list.as(:extra) >> space? >> match[")"]
     }
 
     rule(:field_expression_list) {
@@ -45,7 +49,9 @@ module Grammar
     }
 
     rule(:term) {
-      field_expr >> space? >> op >> space? >> field_value.as(:value)
+      field_expr >> space? >> op >>
+      (space >> field_value_boundary.absent?).maybe >>
+      field_value.as(:value)
     }
 
     rule(:field_expr) {
@@ -59,7 +65,7 @@ module Grammar
     rule(:field_value) {
       Atom.new.quoted_string |
       Atom.new.number |
-      (space >> field_value_boundary.absent? |
+      (match('\s') >> field_value_boundary.absent? |
        field_value_boundary.absent? >> Atom.new.safe_value).repeat
     }
 

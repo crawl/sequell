@@ -23,7 +23,7 @@ module Grammar
     }
 
     rule(:safe_value) {
-      match["^ "]
+      match('\S')
     }
 
     rule(:integer) {
