@@ -57,5 +57,9 @@ module Query
 
     BOOLEAN_OR = '||'
     BOOLEAN_OR_Q = Regexp.quote(BOOLEAN_OR)
+
+    def self.operators_by_length
+      OPERATORS.keys.sort { |a, b| b.size <=> a.size }
+    end
   end
 end

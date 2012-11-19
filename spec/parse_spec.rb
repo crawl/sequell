@@ -9,8 +9,6 @@ describe Grammar::Query do
     '!lg *',
     '!lm *',
     '!lg @78291',
-    '!lg *',
-    '!lg .',
     '!lg !@Sebi',
     '!lg 4thArraOfDagon',
     '!lg !78291',
@@ -27,6 +25,10 @@ describe Grammar::Query do
     '!lg * s=name / win ?: %>0.5',
     '!lg * s=name / win ?: d:N > 50 num.N > 5',
     '!lg * s=name x=avg(xl) / win ?: den.avg(xl) > 5 num:N < 3',
+    '!lg * win min=turn',
+    '!lg * win max=sc',
+    '!lg * s=name o=.',
+    '!lg * s=name x=max(xl) o=max(xl)',
     '!lg * killer= ktyp=pois'
   ]
 

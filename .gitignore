@@ -34,5 +34,6 @@ Gemfile.lock
 *.el
 henzell-schema.sql
 *.json
+.rvmrc
 graphs
 .rvmrc
