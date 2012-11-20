@@ -49,7 +49,7 @@ module Grammar
     }
 
     rule(:query_expression) {
-      game_number | query_term
+      query_term
     }
 
     rule(:query_term) {

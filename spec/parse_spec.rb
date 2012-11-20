@@ -17,7 +17,8 @@ describe Grammar::Query do
     '!lg @78291 xom !winning',
     '!lg * ((tiles || !@hugeterm)) ((ckiller=pandemonium lord || ikiller=cerebov|gloorx vloq|lom lobon|mnoleg|asmodeus|ereshkigal|dispater|geryon ckiller!=player ghost))',
     '!lg * name="78291"',
-    '!lg bot xl>11 -tv:<T1',
+    '!lg bot xl>11 2 -tv:<T1',
+    '!lg bot cv>0.11-a 2 -tv:<T1',
     '!lg * won ((dur<12600 ((start>20110201 || start<20110101)) || turn<40000)) -tv:<T1',
 
     '!lg * / won',

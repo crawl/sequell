@@ -12,7 +12,7 @@ module Grammar
 
     rule(:option) {
       (str("-") >> option_name >>
-        (str(":") >> option_argument).repeat).as(:option)
+        (str(":") >> option_argument).repeat.as(:arguments)).as(:option)
     }
 
     rule(:option_name) {
@@ -28,7 +28,11 @@ module Grammar
     }
 
     rule(:body_term) {
-      summary_term | extra_term | minmax_term | order_term | term
+      summary_term | extra_term | minmax_term | order_term | game_number | term
+    }
+
+    rule(:game_number) {
+      Atom.new.integer.as(:game_number)
     }
 
     def query_fn(prefix, body)
@@ -91,13 +95,12 @@ module Grammar
     }
 
     rule(:field_value_boundary) {
-      str("||") | str("))") | str("/") | str("?:") | body_expr
+      str("||") | str("))") | str("/") | str("?:")
     }
 
     rule(:field_value) {
       Atom.new.quoted_string |
-      Atom.new.number |
-      (match('\s') >> field_value_boundary.absent? |
+      (space >> (field_value_boundary | body_expr).absent? |
        field_value_boundary.absent? >> Atom.new.safe_value).repeat
     }
 
