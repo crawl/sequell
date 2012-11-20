@@ -35,3 +35,4 @@ Gemfile.lock
 henzell-schema.sql
 *.json
 graphs
+.rvmrc

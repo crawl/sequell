@@ -223,7 +223,7 @@ def game_ttyrec_datetime(e, key=nil)
 end
 
 def binary_search_alien_morgue(url, e)
-  require 'commands/httplist'
+  require 'httplist'
   user_url = url + "/" + e['name'] + "/"
   mtime = morgue_time(e)
   morgues = HttpList::find_files(user_url, /morgue-#{e['name']}.*?[.]txt/,
@@ -399,7 +399,7 @@ def ttyrec_list_string(game, ttyreclist)
 end
 
 def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
-  require 'commands/httplist'
+  require 'httplist'
   user_url = game_user_urls(game, urlbase)
   ttyrecs = HttpList::find_files(user_url, /[.]ttyrec/, tend) || [ ]
 
