@@ -41,7 +41,7 @@ module Grammar
     }
 
     rule(:filter_value) {
-      Atom.new.number
+      Atom.new.number.as(:value)
     }
 
     rule(:filter_expression) {

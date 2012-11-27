@@ -32,7 +32,8 @@ module Grammar
     }
 
     rule(:game_number) {
-      Atom.new.integer.as(:game_number)
+      Atom.new.integer.as(:game_number) >>
+      (space.present? || any.absent? | field_value_boundary.present?)
     }
 
     def query_fn(prefix, body)
@@ -54,7 +55,7 @@ module Grammar
 
     rule(:summary_term) {
       query_fn(str("group") | match['sg'],
-        ordered_field_expression_list.as(:summary))
+        ordered_group_expression_list.as(:summary))
     }
 
     rule(:extra_term) {
@@ -62,19 +63,29 @@ module Grammar
         ordered_field_expression_list.as(:extra))
     }
 
+    def comma_separated(expr)
+      expr >> (space? >> str(",") >> space? >> expr).repeat
+    end
+
     rule(:ordered_field_expression_list) {
-      ordered_field_expr >>
-      (space? >> str(",") >> space? >> ordered_field_expr).repeat
+      comma_separated(ordered_field_expr)
+    }
+
+    rule(:ordered_group_expression_list) {
+      comma_separated(ordered_group_expr)
     }
 
     rule(:ordered_sort_expression_list) {
-      ordered_sort_expr >>
-      (space? >> str(",") >> space? >> ordered_sort_expr).repeat
+      comma_separated(ordered_sort_expr)
     }
 
     def ordered_expr(expr)
       match["+-"].maybe.as(:ordering) >> expr
     end
+
+    rule(:ordered_group_expr) {
+      ordered_expr(field_expr >> str("%").maybe.as(:percentage))
+    }
 
     rule(:ordered_sort_expr) {
       ordered_expr(str(".").as(:sort_group_expr) | field_expr)
@@ -86,7 +97,7 @@ module Grammar
 
     rule(:term) {
       field_expr >> space? >> op >>
-      (space >> field_value_boundary.absent?).maybe >>
+      (space >> (field_value_boundary | body_expr).absent?).maybe >>
       field_value.as(:value)
     }
 
@@ -118,7 +129,7 @@ module Grammar
     }
 
     rule(:field) {
-      (prefix.maybe >> identifier).as(:field)
+      (prefix.maybe >> identifier.as(:identifier)).as(:field)
     }
 
     rule(:prefix) {

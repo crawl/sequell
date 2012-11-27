@@ -61,7 +61,7 @@ module Grammar
     }
 
     rule(:game_number) {
-      Atom.new.integer.as(:game_number)
+      QueryTerm.new.game_number
     }
 
     rule(:space) {

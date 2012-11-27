@@ -30,7 +30,19 @@ describe Grammar::Query do
     '!lg * win max=sc',
     '!lg * s=name o=.',
     '!lg * s=name x=max(xl) o=max(xl)',
-    '!lg * killer= ktyp=pois'
+    '!lg * killer= ktyp=pois',
+    '!lg elliptic win -ttyrec',
+    '!lg * win s=sc',
+    '!lg * s=length(name)',
+    '!lg * x=max(length(name))',
+    '!lg * char=hobe / won',
+    '!lg * cv>=0.10 sc>0 s=log(sc),cv o=-. -graph:area',
+    '!lg * day(end)=20121029 s=day(end) x=sum(sc) / tiles ',
+    '!lg * s=day(end) x=sum(sc) / tiles -graph',
+    '!lg * s=trunc99(sc)',
+    '!lg * won start>=20120101 s=day(end),tiles -graph',
+    '!lg * 0.11-a tiles xl>10 s=god% -graph',
+    '!lg * won cv>=0.5 s=char / end>=20101020 ?:%=1'
   ]
 
   QUERIES.each { |query|
