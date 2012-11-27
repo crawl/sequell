@@ -120,7 +120,7 @@ module Sql
 
     def master_string
       return [counted_keys, percentage_string].find_all { |x|
-        !x.empty?
+        !x.to_s.empty?
       }.join(" ")
     end
 
