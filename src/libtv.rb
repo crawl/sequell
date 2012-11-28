@@ -15,7 +15,7 @@ module TV
   TV_LOG_FILE = 'tv.queue.log'
 
   SPEED_MIN = 0.1
-  SPEED_MAX = 500
+  SPEED_MAX = 100
 
   def self.queue_dir
     TV_QUEUE_DIR
