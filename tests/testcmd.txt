@@ -202,3 +202,5 @@ E !lg * s=trunc99(sc)
 !lg elliptic win -ttyrec
 
 !lg * ogee s=sklev,sk
+
+!lg elliptic x=day(end)

@@ -33,7 +33,7 @@ module Sql
       field_type = Sql::Field.field(field).type
       raise "Unknown field: #{field}" unless field_type
       if !function_type.type_match?(field_type)
-        raise "Cannot apply #{function_name} to #{field}: type mismatch"
+        raise FunctionTypeMismatch.new(function_name, field)
       end
 
       function_def = context.function_def(function_name)

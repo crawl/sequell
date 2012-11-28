@@ -474,13 +474,20 @@ aggregate-functions:
     type: '*'
     expr: "COUNT(DISTINCT %s)"
     return: I
-  avg: I
+  avg:
+    type: I
+    return: F
   median: I
   max: '*'
   min: '*'
   sum: I
-  std: I
-  variance: I
+  std:
+    expr: "STDDEV(%s)"
+    type: I
+    return: F
+  variance:
+    type: I
+    return: F
 
 value-functions:
   length:
