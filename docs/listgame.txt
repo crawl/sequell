@@ -961,7 +961,7 @@ TV options
 -tv:>T[turncount] End playback near the given turncount (rounded up to
                   nearest 100)
 -tv:<T[turncount] Start playback near the given turncount (rounded down to
-                  nearest 100)
+                  nearest 100). <T0 starts from the beginning of the game.
 -tv:T[+-][delta]  Playback to the turn count of the milestone (or end
                   of game) + the delta. i.e. T+3000 => turn count of
                   the milestone + 3000 turns.
@@ -984,9 +984,16 @@ the milestone:
 
 !lm * rune=golden -tv:T+3000
 
-Note: turn-based playback will work only for relatively recent Crawl
-games. Games from very old versions lack the timestamp files that
-FooTV needs to match turn counts to UTC times.
+Turn-based playback will work only for relatively recent Crawl games.
+Games from very old versions lack the timestamp files that FooTV needs
+to match turn counts to UTC times. Using <T0 or <T1 to play back from
+the start of game will still work even without timestamp files.
+
+There is a subtle difference between <T1 and <T0: <T0 starts playback
+from the beginning of the first ttyrec, whereas <T1 starts at the game
+start time recorded by Crawl, i.e. <T1 will skip the character
+selection screens, but <T0 will not.
+
 
 Graphs (Experimental)
 ---------------------
