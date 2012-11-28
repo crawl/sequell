@@ -948,7 +948,13 @@ TV options
                   This is only relevant when used with !lm
 -tv:>$            continues playback to the end of the ttyrec (note: not end
                   of game)
-
+-tv:>>            continues playback to the (known) end of game. If using !lg
+                  this is the end of the last ttyrec associated with the game.
+                  If using !lm, and the milestone has a game associated with it
+                  (i.e. the game is completed), playback will continue until the
+                  end of the game. If using !lm and the milestone belongs to
+                  an incomplete game, FooTV will play the game up to the last
+                  timestamp recorded in the game's .ts file.
 -tv:T[turncount]  Start playback before the given turncount (if not divisible
                   by 100, rounds up to the next highest turn. For milestones,
                   this is the same as >T[turncount], i.e. this is the end of
@@ -958,9 +964,10 @@ TV options
 -tv:<T[turncount] Start playback near the given turncount (rounded down to
                   nearest 100)
 -tv:T[+-][delta]  Playback to the turn count of the milestone (or end
-                  of game)
+                  of game) + the delta. i.e. T+3000 => turn count of
+                  the milestone + 3000 turns.
 -tv:x[N]          Change playback speed. For instance, -tv:x5 plays back the
-                  game at 5x normal speed.
+                  game at 5x normal speed. N may be in the range [0.1,500]
 
 TV seek options may be combined:
 

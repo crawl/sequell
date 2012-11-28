@@ -15,6 +15,19 @@ module Sql
       @query = query
     end
 
+    def milestone?
+      game['milestone']
+    end
+
+    def game_key
+      @game_key ||= game['game_key']
+    end
+
+    def milestone_game
+      raise StandardError, "Not a milestone" unless milestone?
+      @milestone_game ||= self.game_key && sql_game_by_key(self.game_key)
+    end
+
     def qualified_index
       if index < count
         "#{index}/#{count}"

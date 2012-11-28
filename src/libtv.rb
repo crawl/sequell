@@ -14,6 +14,9 @@ module TV
   TV_LOCK_FILE = 'tv.queue.lock'
   TV_LOG_FILE = 'tv.queue.log'
 
+  SPEED_MIN = 0.1
+  SPEED_MAX = 500
+
   def self.queue_dir
     TV_QUEUE_DIR
   end
@@ -203,9 +206,9 @@ module TV
 
   def self.parse_seek_num(seek, num, allow_end=false)
     seekname = seek == '<' ? 'seek-back' : 'seek-after'
-    expected = allow_end ? 'T<turncount>, number or "$"' : 'T<turncount> or number'
+    expected = allow_end ? 'T<turncount>, number, ">" or "$"' : 'T<turncount> or number'
     if (num !~ /^t[+-]?\d+$/i && num !~ /^[-+]?\d+(?:\.\d+)?$/ &&
-        (!allow_end || num != '$'))
+        (!allow_end || (num != '$' && num != '>')))
       raise "Bad seek argument for #{seekname}: #{num} (#{expected} expected)"
     end
     num
@@ -213,8 +216,8 @@ module TV
 
   def self.read_playback_speed(speed_string)
     speed = speed_string.to_f
-    if speed < 0.1 || speed > 10
-      raise "Playback speed must be between 0.1 and 10"
+    if speed < SPEED_MIN || speed > SPEED_MAX
+      raise "Playback speed must be between #{SPEED_MIN} and #{SPEED_MAX}"
     end
     speed
   end
@@ -255,6 +258,10 @@ module TV
     ensure
       @@tv_args = old_args
     end
+  end
+
+  def self.seek_to_game_end?
+    @@tv_args && @@tv_args['seekafter'] == '>'
   end
 
   def self.request_game(g)

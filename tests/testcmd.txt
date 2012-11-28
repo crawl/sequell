@@ -81,6 +81,8 @@ $ rm dat/nicks-test.map
 !lg * win min=turn
 !lg * xl>20 min=turn
 
+!lm * rune ktyp 1 -game
+!lm * rune ktyp 1 -game -log
 !lm * rune s=god
 
 !lg * s=ktyp
@@ -92,6 +94,8 @@ $ rm dat/nicks-test.map
 !lg @78291 Zot 1 -log
 
 !lm * orb min=turn -tv
+!lm * orb min=turn -tv:>$
+!lm * orb min=turn -tv:>>
 
 !lm * rune=golden min=xl -tv
 
