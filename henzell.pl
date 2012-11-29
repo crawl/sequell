@@ -10,7 +10,7 @@ use Henzell::Utils;
 use Getopt::Long;
 
 END {
-  kill 0;
+  kill TERM => -$$;
 }
 
 my $daemon = 1;
