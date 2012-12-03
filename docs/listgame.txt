@@ -415,6 +415,12 @@ Listgame keywords may be one of:
    selects only character combos that are playable on the current
    development version of Crawl.
 
+   playable:good selects only playable unrestricted combos.
+   playable:bad selects only playable restricted combos.
+
+   (good and bad are just labels for unrestricted vs restricted --
+   Sequell makes no value judgments about characters.)
+
    playable:sp and playable:job may also be used to select only
    playable species and jobs respectively.
 
