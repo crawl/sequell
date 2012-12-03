@@ -410,7 +410,15 @@ Listgame keywords may be one of:
 3. Species + Class abbreviation such as 'HuWr' or 'DrFE' :: selects only
    games for that character combination (for instance: HuWr => char=HuWr)
 
-4. Death types:
+4. playable:
+
+   selects only character combos that are playable on the current
+   development version of Crawl.
+
+   playable:sp and playable:job may also be used to select only
+   playable species and jobs respectively.
+
+5. Death types:
    - won / win / winning :: select only winning games.
    - quit                :: select only quitters
    - left / leaving      :: select escapes without the orb.
@@ -420,7 +428,7 @@ Listgame keywords may be one of:
    - starvation          :: deaths by starvation
    - bore/boring         :: quit or left, usually used as !boring
 
-5. Place names:
+6. Place names:
    Recognisable place names such as "D:10", "Temple", etc. will select
    games that ended at that place. If you're looking for a place that
    the listgame parser does not recognise (such as a new portal vault),
@@ -430,37 +438,37 @@ Listgame keywords may be one of:
    select games on that level, or a branch name such as "Snake" to
    select games that ended in that branch.
 
-6. God names:
+7. God names:
 
    Recognisable god name prefixes/abbreviations such as "ely", "nem",
    "tso", "kik", "jiy".
    
-7. Game versions:
+8. Game versions:
    - X.Y where X and Y are numbers finds games of versions X.Y, including
      minor versions (X.Y.0, X.Y.1, etc.)
    - X.Y.Z finds games matching that version number exactly.
 
-8. Public server abbreviation:
+9. Public server abbreviation:
    cao / cdo / cszo (et al.) :: selects games from the corresponding
                                 public server; use !lg * s=src to see
                                 the public servers Sequell is aware of.
 
-9. Player nick or nick alias:
+10. Player nick or nick alias:
    @nick  :: selects games by that player or nick alias. See the section
              on nick aliases below.
 
-10. alpha :: selects games for alpha (unstable/development) versions.
+11. alpha :: selects games for alpha (unstable/development) versions.
 
-11. tiles :: selects games played in webtiles.
+12. tiles :: selects games played in webtiles.
 
-12. Tournament selector:
+13. Tournament selector:
 
     t    :: Select games played in the most recent Crawl tournament
     t<N> :: Select games played in the tournament for year 200<N>.
             For instance t9 selects the 2009 tourney, t8 selects the 2008
             tourney
 
-13. Milestone Types:
+14. Milestone Types:
     In !lm queries ONLY (i.e. not in !lg, !hs, etc.) you may use the
     milestone type as a keyword:
 
@@ -469,7 +477,7 @@ Listgame keywords may be one of:
     Example: "!lm * abyss.enter" (the last milestone for a player
                                   entering the Abyss)
 
-14. Any text field:
+15. Any text field:
     Any text field may be used as a keyword, and will be translated as
     field!=
 
@@ -482,12 +490,12 @@ Listgame keywords may be one of:
              !lm * !ktyp
           => !lm * ktyp=
 
-15. A combination of keywords separated by | to indicate alternatives.
+16. A combination of keywords separated by | to indicate alternatives.
 
     Example: !lg * xom|nemelex (games worshipping Xom or Nemelex)
              !lg * alpha|0.11  (alpha versions or any cv=0.11)
 
-16. A negated parenthesized group of keywords separated by | to indicate
+17. A negated parenthesized group of keywords separated by | to indicate
     none-of-the-alternatives.
 
     Example: !lg * !(xom|nemelex) (games worshipping neither Xom nor Nemelex)
@@ -1076,3 +1084,4 @@ Examples
                                   that ended in Cocytus.
 
 !lg * !boring s=day(end) -graph   Graph games by date completed.
+

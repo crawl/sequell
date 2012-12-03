@@ -11,6 +11,67 @@ module Query
     'char' if is_charabbrev?(arg)
   }
 
+  KeywordMatcher.matcher(:playable_species) {
+    if arg =~ /^playable:(?:sp|race|s|r)$/i
+      require 'crawl/species'
+      QueryStruct.or_clause(!expr.op.equal?,
+        *Crawl::Species.available_species.map { |sp|
+          Sql::FieldPredicate.predicate(sp.name, expr.op, 'sp')
+        })
+    end
+  }
+
+  KeywordMatcher.matcher(:playable_class) {
+    if arg =~ /^playable:(?:job|j|class|cls|c)$/i
+      require 'crawl/job'
+      QueryStruct.or_clause(!expr.op.equal?,
+        *Crawl::Job.available_jobs.map { |job|
+          Sql::FieldPredicate.predicate(job.name, expr.op, 'class')
+        })
+    end
+  }
+
+  KeywordMatcher.matcher(:playable_char) {
+    if arg =~ /^playable(?::(?:char|combo))?$/
+      require 'crawl/combo'
+      QueryStruct.or_clause(!expr.op.equal?,
+        *Crawl::Combo.available_combos.map { |combo|
+          Sql::FieldPredicate.predicate(combo.to_s, expr.op, 'char')
+        })
+    end
+  }
+
+  KeywordMatcher.matcher(:playable_goodchar) {
+    if arg =~ /^playable:good(?:char|combo)?$/
+      require 'crawl/combo'
+      QueryStruct.or_clause(!expr.op.equal?,
+        *Crawl::Combo.good_combos.map { |combo|
+          Sql::FieldPredicate.predicate(combo.to_s, expr.op, 'char')
+        })
+    end
+  }
+
+  KeywordMatcher.matcher(:playable_badchar) {
+    if arg =~ /^playable:bad(?:char|combo)?$/
+      require 'crawl/combo'
+      QueryStruct.or_clause(!expr.op.equal?,
+        *Crawl::Combo.bad_combos.map { |combo|
+          Sql::FieldPredicate.predicate(combo.to_s, expr.op, 'char')
+        })
+    end
+  }
+
+  KeywordMatcher.matcher(:playable_class) {
+    if arg == 'sp_playable'
+      require 'crawl/species'
+      QueryStruct.or_clause(expr.op.equal?,
+        *Crawl::Species.available_species.map { |sp|
+          Sql::FieldPredicate.predicate(sp.name, expr.op, 'sp')
+        })
+    end
+  }
+
+
   KeywordMatcher.matcher(:race_or_class) {
     if arg =~ /^[a-z]{2}$/i then
       cls = is_class?(arg)

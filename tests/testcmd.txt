@@ -204,3 +204,8 @@ E !lg * s=trunc99(sc)
 !lg * ogee s=sklev,sk
 
 !lg elliptic x=day(end)
+!lg * playable s=char
+!lg * playable:good s=char
+!lg * playable:bad s=char
+!lg * playable:sp s=sp
+!lg * playable:job s=job
