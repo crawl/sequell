@@ -16,7 +16,7 @@ module Query
       require 'crawl/species'
       QueryStruct.or_clause(!expr.op.equal?,
         *Crawl::Species.available_species.map { |sp|
-          Sql::FieldPredicate.predicate(sp.name, expr.op, 'sp')
+          Sql::FieldPredicate.predicate(sp.name, expr.op, 'crace')
         })
     end
   }
