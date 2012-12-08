@@ -296,12 +296,14 @@ module Sql
     end
 
     def reverse
-      predicate_copy = @original_pred.dup
-      predicate_copy.reverse_sorts!
-      rq = CrawlQuery.new(predicate_copy, @extra_fields,
-                          @nick, @num, @argstr)
-      rq.table = @table
-      rq
+      with_contexts do
+        predicate_copy = @original_pred.dup
+        predicate_copy.reverse_sorts!
+        rq = CrawlQuery.new(predicate_copy, @extra_fields,
+                            @nick, @num, @argstr)
+        rq.table = @table
+        rq
+      end
     end
   end
 end

@@ -49,12 +49,12 @@ end
 games = nil
 begin
   desc = nick
-  game = Query::GameTypeExtractor.game_type(query)
   if num == 0
-    q, game_count_query = GameContext.with_game(game) do
-      [Query::QueryBuilder.build(nick, query + "ktyp=winning", CTX_LOG).reverse,
-       Query::QueryBuilder.build(nick, query.dup, CTX_LOG)]
-    end
+    winning_query = query + 'ktyp=winning'
+    game_query = query.dup
+    q = Query::QueryBuilder.build(nick, winning_query, CTX_LOG).reverse
+    game_count_query = Query::QueryBuilder.build(nick, game_query, CTX_LOG)
+
     count = sql_count_rows_matching(game_count_query)
     desc = game_count_query.argstr
   else
@@ -62,9 +62,7 @@ begin
       puts "Cannot combine * with win-skip count."
       exit 0
     end
-    q = GameContext.with_game(game) do
-      Query::QueryBuilder.build(nick, query, CTX_LOG).reverse
-    end
+    q = Query::QueryBuilder.build(nick, query, CTX_LOG).reverse
     desc = q.argstr
     count = 0
   end
