@@ -71,15 +71,28 @@ module Query
     end
   }
 
+  KeywordMatcher.matcher(:anchored_race) {
+    if arg =~ /^([a-z]{2})[_-]{2}$/i then
+      sp = $1
+      return expr.parse('crace', sp) if is_race?(sp)
+    end
+  }
+
+  KeywordMatcher.matcher(:anchored_class) {
+    if arg =~ /^[_-]{2}([a-z]{2})$/i then
+      cls = $1
+      return expr.parse('cls', cls) if is_class?(cls)
+    end
+  }
 
   KeywordMatcher.matcher(:race_or_class) {
     if arg =~ /^[a-z]{2}$/i then
       cls = is_class?(arg)
       sp = is_race?(arg)
       return expr.parse('cls', arg) if cls && !sp
-      return expr.parse('race', arg) if sp && !cls
+      return expr.parse('crace', arg) if sp && !cls
       if cls && sp
-        raise "#{arg} is ambiguous -- may be interpreted as species or class"
+        raise "#{arg} is ambiguous: may be species or class, use #{arg}-- (#{RACE_EXPANSIONS[arg.downcase]}) or --#{arg} (#{CLASS_EXPANSIONS[arg.downcase]}) to disambiguate"
       end
     end
   }

@@ -209,3 +209,7 @@ E !lg * s=trunc99(sc)
 !lg * playable:bad s=char
 !lg * playable:sp s=sp
 !lg * playable:job s=job
+
+!lg * fe--
+!lg * --fe
+!lg * __he

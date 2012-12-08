@@ -397,15 +397,21 @@ Listgame keywords may be one of:
 
 1. Species abbreviations such as 'Ke', 'Hu', etc. For any species
    abbreviation XX used as a keyword, the !lg query is restricted as
-   race=XX. NOTE: abbreviations such as 'Hu' that may reasonably be
-   interpreted as both species and class abbreviations will be
-   rejected.
+   race=XX.
+
+   Abbreviations such as 'Hu' that may reasonably be interpreted as
+   both species and class abbreviations will be rejected. You may
+   disambiguate ambiguous species abbreviations using a -- placeholder
+   for the class (eg: "Hu--" => Human)
    
 2. Class abbreviations such as 'He', 'Cr', etc. For any class
    abbreviation XX used as a keyword, the !lg query is restricted as
-   cls=XX. NOTE: abbreviations such as 'Hu' that may reasonably be
-   interpreted as both species and class abbreviations will be
-   rejected.
+   cls=XX.
+
+   Abbreviations such as 'Hu' that may reasonably be interpreted as
+   both species and class abbreviations will be rejected. You may
+   disambiguate such class abbreviations using a -- placeholder for
+   the species (eg: "--FE" => Fire Elementalist)
 
 3. Species + Class abbreviation such as 'HuWr' or 'DrFE' :: selects only
    games for that character combination (for instance: HuWr => char=HuWr)
