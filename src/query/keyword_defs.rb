@@ -92,7 +92,7 @@ module Query
       return expr.parse('cls', arg) if cls && !sp
       return expr.parse('crace', arg) if sp && !cls
       if cls && sp
-        raise "#{arg} is ambiguous: may be species or class, use #{arg}-- (#{RACE_EXPANSIONS[arg.downcase]}) or --#{arg} (#{CLASS_EXPANSIONS[arg.downcase]}) to disambiguate"
+        raise "#{arg} is ambiguous: may be species or class. Use #{arg}-- (#{RACE_EXPANSIONS[arg.downcase]}) or --#{arg} (#{CLASS_EXPANSIONS[arg.downcase]}) to disambiguate"
       end
     end
   }
