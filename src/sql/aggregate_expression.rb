@@ -11,7 +11,6 @@ module Sql
       @table_set = table_set
       @expr = expr
       @column = @expr.column
-      STDERR.puts("column name: #{@column.name}, expr: #{@expr.expr}")
     end
 
     def to_sql
