@@ -30,6 +30,7 @@ require 'query/query_struct'
 require 'query/summary_graph_builder'
 require 'crawl/branch_set'
 require 'crawl/gods'
+require 'string_fixup'
 
 include Tourney
 include HenzellConfig
@@ -43,7 +44,8 @@ Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
 
 include Query::Grammar
 
-BRANCHES = Crawl::BranchSet.new(CFG['branches'])
+PLACE_FIXUPS = StringFixup.new(CFG['place-fixups'])
+BRANCHES = Crawl::BranchSet.new(CFG['branches'], PLACE_FIXUPS)
 UNIQUES = Set.new(CFG['uniques'].map { |u| u.downcase })
 GODS = Crawl::Gods.new(CFG['god'])
 

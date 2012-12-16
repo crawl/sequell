@@ -7,11 +7,13 @@ module Sql
   class Column
     include TypePredicates
 
-    attr_reader :decorated_name
+    attr_reader :decorated_name, :ordered_column_alias
 
-    def initialize(config, decorated_name)
+    def initialize(config, decorated_name, alias_map)
       @config = config
       @decorated_name = decorated_name
+      @ordered_column_alias =
+        alias_map && alias_map['ordered'] && alias_map['ordered'][self.name]
     end
 
     def to_s

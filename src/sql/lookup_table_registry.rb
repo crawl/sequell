@@ -44,7 +44,7 @@ module Sql
 
         return lookup['generated-fields'] &&
           lookup['generated-fields'].map { |f|
-            Sql::Column.new(@cfg, f)
+            Sql::Column.new(@cfg, f, {})
           }.find { |c| c.name == column.name }
       end
     end

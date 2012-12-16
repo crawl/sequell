@@ -2,11 +2,11 @@ require 'sql/column'
 
 module Sql
   class ColumnList
-    def initialize(config, column_list)
+    def initialize(config, column_list, column_alias_map)
       @config = config
       @column_list = column_list || []
       @columns = @column_list.map { |column_config|
-        Sql::Column.new(config, column_config)
+        Sql::Column.new(config, column_config, column_alias_map)
       }
       add_derived_columns
     end

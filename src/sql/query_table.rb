@@ -22,7 +22,8 @@ module Sql
     def column_list
       @column_list ||=
         Sql::ColumnList.new(SQL_CONFIG,
-                            SQL_CONFIG["#{@name}-fields-with-type"])
+                            SQL_CONFIG["#{@name}-fields-with-type"],
+                            SQL_CONFIG.column_substitutes)
     end
 
     def generated_columns

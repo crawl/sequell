@@ -5,6 +5,7 @@ require 'sql/query_tables'
 require 'sql/field_predicate'
 require 'sql/column_resolver'
 require 'sql/field_resolver'
+require 'sql/aggregate_expression'
 
 module Sql
   class CrawlQuery
@@ -261,7 +262,7 @@ module Sql
           raise "Extra fields (#{@extra_fields.extra}) contain non-aggregates"
         end
         extras = @extra_fields.fields.map { |f|
-          f.to_sql
+          Sql::AggregateExpression.aggregate_sql(@summary_tables, f)
         }.join(", ")
       end
       [basefields, extras].find_all { |x| x && !x.empty? }.join(", ")

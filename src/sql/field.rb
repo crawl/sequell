@@ -134,6 +134,12 @@ module Sql
       self.resolve(self.sql_column_name + '_id')
     end
 
+    def bind_ordered_column!
+      if self.column && self.column.ordered_column_alias
+        self.name = self.column.ordered_column_alias
+      end
+    end
+
     def === (name)
       if name.is_a?(Enumerable)
         name.any? { |n| @name == n }

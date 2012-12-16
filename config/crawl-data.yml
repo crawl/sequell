@@ -583,6 +583,11 @@ type-categories:
   D: D
   '!': '!'
 
+column-substitutes:
+  ordered:
+    v: vnum
+    cv: cvnum
+
 ##
 # Field type suffixes:
 # - I (integer)
@@ -697,10 +702,6 @@ milestone-fields-with-type:
   - ntvI?
   - oplace^
   - tiles!
-
-derived-fields:
-  v: vnum
-  cv: cvnum
 
 milestone-verb-mappings:
   unique: uniq

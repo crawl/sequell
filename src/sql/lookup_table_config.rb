@@ -47,7 +47,7 @@ module Sql
     def find_generated_columns
       return [] if !@lookup_cfg || @lookup_cfg.is_a?(Array)
       generated_fields = @lookup_cfg['generated-fields'] || []
-      generated_fields.map { |f| Sql::Column.new(@cfg, f) }
+      generated_fields.map { |f| Sql::Column.new(@cfg, f, {}) }
     end
   end
 end

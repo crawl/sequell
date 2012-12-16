@@ -46,6 +46,7 @@ sub execute_cmd($$) {
   if (!$script) {
     return (1, "Command not found: $cmd", $cmd);
   }
+
   my $executable_command =
     "./commands/$script \Q$target\E \Q$nick\E \Q$cmdline\E ''";
   my $output = qx/$executable_command 2>&1/;

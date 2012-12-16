@@ -171,24 +171,12 @@ module Query
         val = CLASS_EXPANSIONS[val.downcase] || val
       end
 
-      if field === ['place', 'oplace'] && op === ['=', '!=', '=~', '!~'] then
-        place_fixups = CFG['place-fixups']
-        for place_fixup_match in place_fixups.keys do
-          regex = %r/#{place_fixup_match}/i
-          if val =~ regex then
-            replacement = place_fixups[place_fixup_match]
-            replacement = [replacement] unless replacement.is_a?(Array)
-            values = replacement.map { |r|
-              val.sub(regex, r.sub(%r/\$(\d)/, '\\\1'))
-            }
-            inclusive = op.to_s.index('=') == 0
-            clause = QueryStruct.new(inclusive ? 'OR' : 'AND')
-            for value in values do
-              clause << field_pred(value, op, field)
-            end
-            return clause
-          end
-        end
+      if field === ['place', 'oplace'] && op.equality? then
+        fixed_up_places = PLACE_FIXUPS.fixup(val)
+        return QueryStruct.new(op.equal? ? 'OR' : 'AND',
+          *fixed_up_places.map { |place|
+            field_pred(place, op, field)
+          })
       end
 
       if field === 'when'

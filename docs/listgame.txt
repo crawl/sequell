@@ -699,10 +699,10 @@ vmsg:
 Verbose game end message. Usually identical to tmsg.
 
 alpha:
-"y" if the game is an alpha/development version, empty otherwise.
+true if the game is an alpha/development version, false otherwise.
 
 tiles:
-"y" if the game is in webtiles, empty otherwise.
+true if the game is in webtiles, false otherwise.
 
 map:
 The name of the map/vault the player was in at end of game. Example:

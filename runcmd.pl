@@ -15,6 +15,7 @@ Henzell::Cmd::load_all_commands();
 sub runcmd($) {
   chomp(my $cmd = shift);
   my $nick;
+  return unless $cmd =~ /\S/;
   if ($cmd =~ /^(\w+): (.*)/) {
     $nick = $1;
     $cmd = $2;

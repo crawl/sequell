@@ -54,19 +54,27 @@ module Sql
       @cfg['column-aliases']
     end
 
+    def column_substitutes
+      @cfg['column-substitutes']
+    end
+
     def logfields
       @logfields ||=
-        Sql::ColumnList.new(self, @cfg['logrecord-fields-with-type'])
+        Sql::ColumnList.new(self,
+                            @cfg['logrecord-fields-with-type'],
+                            self.column_substitutes)
     end
 
     def milefields
       @milefields ||=
-        Sql::ColumnList.new(self, @cfg['milestone-fields-with-type'])
+        Sql::ColumnList.new(self, @cfg['milestone-fields-with-type'],
+                            self.column_substitutes)
     end
 
     def fakefields
       @fakefields ||=
-        Sql::ColumnList.new(self, @cfg['fake-fields-with-type'])
+        Sql::ColumnList.new(self, @cfg['fake-fields-with-type'],
+                            self.column_substitutes)
     end
 
     def [](name)

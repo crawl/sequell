@@ -12,6 +12,10 @@ module Sql
       field.type
     end
 
+    def bind_ordered_column!
+      self.field.bind_ordered_column!
+    end
+
     def resolve(new_field_name)
       clone = self.dup
       clone.field = self.field.resolve(new_field_name)
