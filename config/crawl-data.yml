@@ -446,6 +446,7 @@ place-fixups:
   '^vaults?\b(.*)': 'Vaults$1'
   '^v\b(.*)': 'Vaults$1'
   '^ice$': 'IceCv'
+  '^labyrinth$': 'Lab'
 
 prefix-field-fixups:
   ktyp:

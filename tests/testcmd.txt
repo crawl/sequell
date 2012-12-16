@@ -218,3 +218,4 @@ E !lg * s=trunc99(sc)
 !lg * s=src x=max(cv),max(v),min(cv),min(v)
 !lg * x=max(trunc500(turn))
 !lg * max=cv
+!lg * labyrinth
