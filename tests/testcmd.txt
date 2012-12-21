@@ -219,3 +219,5 @@ E !lg * s=trunc99(sc)
 !lg * x=max(trunc500(turn))
 !lg * max=cv
 !lg * labyrinth
+
+!lg * win s=tiles,cv ::~ x false
