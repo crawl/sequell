@@ -20,7 +20,7 @@ my $FULL_REDIRECT_PATTERN = qr/^see {([a-z0-9_\[\]!?@ -]+)}$/i;
 sub addlink($$)
 {
     local $_=$_[0];
-    my $dest=$_[1];
+    my $dest=canonical_link($_[1]);
 
     #mixed _ and spaces?
     ${$redir{$dest}}{$_}=1;
@@ -46,7 +46,6 @@ for(split /\n/, `find dat/learndb/ -type f ! -name '*.html*'`)
         if ($val =~ $FULL_REDIRECT_PATTERN)
         {
             my $dest = $1;
-            $dest =~ s/\[1\]$//;
             addlink($key, $dest);
         }
         else
