@@ -122,7 +122,7 @@ for my $key (sort keys %learndb)
     print "<ol>" if $has_multiple;
     print htmlize($learndb{$key}, $has_multiple, ''), "\n";
     my $i=1;
-    while($learndb{$key."[".++$i."]"})
+    while(exists $learndb{$key."[".++$i."]"})
     {
       my $text = $learndb{$key."[$i]"};
       my $prefix = '';
