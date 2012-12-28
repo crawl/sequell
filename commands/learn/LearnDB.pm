@@ -77,7 +77,11 @@ sub check_entry_exists($;$) {
 sub read_entry
 {
   my $term = cleanse_term(shift);
+  my $total = num_entries($term);
   my $entry_num = shift;
+  if ($entry_num < 0) {
+    $entry_num = $total + 1 + $entry_num;
+  }
   my $just_the_entry = shift || 0;
 
   my $file = "$learn_dir$term/$entry_num";
@@ -87,7 +91,7 @@ sub read_entry
 
   $term =~ y/_/ /;
 
-  return sprintf '%s[%d/%d]: %s', $term, $entry_num, num_entries($term), $contents;
+  return sprintf '%s[%d/%d]: %s', $term, $entry_num, $total, $contents;
 }
 
 sub print_to_entry

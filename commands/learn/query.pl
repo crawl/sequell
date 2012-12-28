@@ -63,7 +63,10 @@ sub fetch_entry {
 sub parse_query {
   my $query = shift;
   my $num;
-  $num = $1 if $query =~ s/\[(\d+)\]? *$//;
+  $num = $1 if $query =~ s/\[(-?\d+|\$)\]? *$//;
   $num ||= 1;
+  if ($num eq '$') {
+    $num = -1;
+  }
   return (cleanse_term($query), $num);
 }
