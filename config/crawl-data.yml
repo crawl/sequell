@@ -577,6 +577,7 @@ lookup-tables:
   msg: [tmsg, vmsg]
 
 type-categories:
+  ET: I
   I: I
   F: I
   S: S
@@ -647,7 +648,7 @@ logrecord-fields-with-type:
   - wizI
   - startD*?
   - endD*?
-  - durIB?
+  - durET?
   - turnI?
   - uruneI?
   - nruneI?
@@ -690,7 +691,7 @@ milestone-fields-with-type:
   - intI
   - dexI
   - god?^
-  - durIB
+  - durET
   - turnI?
   - uruneI?
   - nruneI?

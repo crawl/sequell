@@ -221,3 +221,5 @@ E !lg * s=trunc99(sc)
 !lg * labyrinth
 
 !lg * win s=tiles,cv ::~ x false
+!lg * x=max(dur)
+!lg undermind win s=dur

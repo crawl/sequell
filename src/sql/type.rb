@@ -1,4 +1,5 @@
 require 'sql/date'
+require 'sql/duration'
 
 module Sql
   class Type
@@ -43,6 +44,10 @@ module Sql
       self.type == 'D'
     end
 
+    def duration?
+      self.type == 'ET'
+    end
+
     def numeric?
       self.category == 'I'
     end
@@ -60,6 +65,7 @@ module Sql
     end
 
     def display_value(value, display_format=nil)
+      return Sql::Duration.display_value(value) if self.duration?
       return Sql::Date.display_date(value, display_format) if self.date?
       numeric_value = value.is_a?(BigDecimal) || value.is_a?(Float)
       if self.integer?

@@ -14,11 +14,13 @@ my %TYPEMAP = ('' => 'CITEXT',
                'I' => 'INT',
                'REF' => 'INT',
                'IB' => 'BIGINT',
+               'ET' => 'BIGINT',
                'IH' => 'NUMERIC(18)',
                'D' => 'TIMESTAMP',
                '!' => 'BOOLEAN');
 
 my %DEFMAP = ('I' => 'DEFAULT 0',
+              'ET' => 'DEFAULT 0',
               'IB' => 'DEFAULT 0',
               'IH' => 'DEFAULT 0');
 
@@ -206,7 +208,7 @@ sub date {
 
 sub numeric {
   my $self = shift;
-  index($self->type(), 'I') == 0
+  index($self->type(), 'I') == 0 || index($self->type(), 'ET') == 0
 }
 
 sub primary_key {

@@ -358,7 +358,10 @@ def datestr(d)
 end
 
 def duration_str(dur)
-  sprintf "%d:%02d:%02d", dur / 3600, (dur % 3600) / 60, dur % 60
+  days = dur / 3600 / 24
+  day_str = days > 0 ? "#{days}d+" : ""
+  sprintf("%s%d:%02d:%02d", day_str, (dur / 3600) % 24,
+          (dur % 3600) / 60, dur % 60)
 end
 
 def game_user_url(game, urlbase)
