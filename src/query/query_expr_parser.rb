@@ -155,7 +155,7 @@ module Query
 
       if (field === 'place' || field === 'oplace') and !val.index(':') and
           op.equality? and BRANCHES.deep?(val) then
-        val += ':*'
+        val += BRANCHES.deepish?(val) ? '*' : ':*'
         op = Sql::Operator.new(op.equal? ? '=~' : '!~')
       end
 

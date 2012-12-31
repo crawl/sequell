@@ -21,6 +21,12 @@ module Crawl
       branch && branch.deep?
     end
 
+    # A branch that cannot make up its mind
+    def deepish?(name)
+      branch = self[name]
+      branch && branch.deepish?
+    end
+
     def branch?(keyword)
       keyword = @place_fixups.fixup(keyword)[0]
       if keyword =~ /^([a-z]+):/i
