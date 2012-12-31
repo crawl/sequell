@@ -199,10 +199,6 @@ sub milestone_string
 
   my $place = $$g{oplace} || $$g{place};
   my $placestring = " ($place)";
-  if ($g->{milestone} eq "escaped from the Abyss!")
-  {
-    $placestring = "";
-  }
 
   my $ms = $$g{milestone};
   my $turn = $$g{turn};
