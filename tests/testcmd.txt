@@ -223,3 +223,7 @@ E !lg * s=trunc99(sc)
 !lg * win s=tiles,cv ::~ x false
 !lg * x=max(dur)
 !lg undermind win s=dur
+!lg * Abyss:1
+!lg * abyss
+!lg * abyss:
+!lg * abyss:*

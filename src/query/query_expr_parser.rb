@@ -159,6 +159,12 @@ module Query
         op = Sql::Operator.new(op.equal? ? '=~' : '!~')
       end
 
+      if (field === 'place' || field === 'oplace') and val =~ /:\*?$/ and
+          op.equality? and BRANCHES.deep?(val) then
+        val = val + '*' unless val =~ /\*$/
+        op = Sql::Operator.new(op.equal? ? '=~' : '!~')
+      end
+
       if field === 'race' || field === 'crace'
         if val.downcase == 'dr' && op.equality?
           op = Sql::Operator.new(op.equal? ? '=~' : '!~')
