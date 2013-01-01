@@ -6,6 +6,7 @@ require 'sqlhelper'
 require 'query/query_string'
 require 'query/game_type_extractor'
 require 'query/query_builder'
+require 'query/nick_resolver'
 
 help("Shows the number of games won. Usage:" +
      " !won <nick> [<number of wins to skip>]")
@@ -14,8 +15,8 @@ def parse_args
   words = ARGV[2].split(' ')[ 1..-1 ]
   return [ ARGV[1], 0, [] ] if !words || words.empty?
 
-  if words[0] =~ /^(?:[a-zA-Z@]\w+|\*|[.])$/
-    nick = words.slice!(0).sub(/^@/, '')
+  if Query::NickResolver.nick_expr(words[0])
+    nick = words[0].sub(/^@/, '')
   end
 
   num = 0
@@ -52,8 +53,10 @@ begin
   if num == 0
     winning_query = query + 'ktyp=winning'
     game_query = query.dup
-    q = Query::QueryBuilder.build(nick, winning_query, CTX_LOG).reverse
-    game_count_query = Query::QueryBuilder.build(nick, game_query, CTX_LOG)
+    q = Query::QueryBuilder.build(ARGV[1], winning_query,
+                                  CTX_LOG, nil, true).reverse
+    game_count_query =
+      Query::QueryBuilder.build(ARGV[1], game_query, CTX_LOG, nil, true)
 
     count = sql_count_rows_matching(game_count_query)
     desc = game_count_query.argstr
@@ -62,7 +65,7 @@ begin
       puts "Cannot combine * with win-skip count."
       exit 0
     end
-    q = Query::QueryBuilder.build(nick, query, CTX_LOG).reverse
+    q = Query::QueryBuilder.build(ARGV[1], query, CTX_LOG, nil, true).reverse
     desc = q.argstr
     count = 0
   end
