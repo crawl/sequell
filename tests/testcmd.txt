@@ -227,3 +227,4 @@ E !lg * s=trunc99(sc)
 !lg * abyss
 !lg * abyss:
 !lg * abyss:*
+!lg * x=avg(dur),max(dur),min(dur),sum(dur)

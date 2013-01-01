@@ -25,13 +25,19 @@ module Sql
       @type = Type.type(@cfg['type'])
       @summarisable = @cfg['summarisable']
       @display_format = @cfg['display-format']
+      @preserve_dur = @cfg['preserve-dur']
       @expr = @cfg['expr']
       @return_type = Type.type(@cfg['return'] || @type)
     end
 
     def return_type(field)
+      return field.type if preserve_dur? && field.type.duration?
       return @return_type unless @return_type.any?
       field.type
+    end
+
+    def preserve_dur?
+      @preserve_dur
     end
 
     def summarisable?

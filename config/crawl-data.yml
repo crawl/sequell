@@ -479,10 +479,17 @@ aggregate-functions:
   avg:
     type: I
     return: F
-  median: I
+    preserve-dur: true
+  median:
+    type: I
+    return: I
+    preserve-dur: true
   max: '*'
   min: '*'
-  sum: I
+  sum:
+    type: I
+    return: I
+    preserve-dur: true
   std:
     expr: "STDDEV(%s)"
     type: I
