@@ -69,7 +69,7 @@ module Query
     end
 
     def normalize!
-      @args = QueryArgumentNormalizer.normalize(@args)
+      self.args = QueryArgumentNormalizer.normalize(@args)
     end
 
     # Extract option flags from the arguments and return them.

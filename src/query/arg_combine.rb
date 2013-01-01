@@ -26,7 +26,7 @@ module Query
           cargs << arg
           can_combine = true if !can_combine && arg_enables_combine?(arg)
         else
-          cargs.last << " " << arg
+          cargs.last << "_" << arg
         end
       end
       cargs
