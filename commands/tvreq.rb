@@ -2,7 +2,6 @@
 
 # Requests that C-SPLAT play the specified game.
 
-$:.push("src")
 require 'helper'
 require 'sqlhelper'
 require 'libtv'

@@ -8,7 +8,6 @@ use IO::Handle;
 use DBI;
 use Henzell::Crawl;
 use Henzell::DB;
-use Henzell::ServerConfig;
 use Henzell::TableLoader;
 
 do 'game_parser.pl';
@@ -191,20 +190,20 @@ sub open_handles
   my @handles;
 
   for my $file (@files) {
-    my $path = $$file{path};
+    my $path = $file->target_filepath();
     open my $handle, '<', $path or do {
       warn "Unable to open $path for reading: $!";
       next;
     };
 
     seek($handle, 0, SEEK_END); # EOF
-    push @handles, { file   => $$file{path},
+    push @handles, { file   => $file->target_filepath(),
                      fref   => $file,
                      handle => $handle,
                      pos    => tell($handle),
-                     server => $$file{src},
-                     src    => $$file{src},
-                     alpha  => $$file{alpha} };
+                     server => $file->server_name(),
+                     src    => $file->server_name(),
+                     alpha  => $file->alpha()};
   }
   return @handles;
 }
@@ -511,11 +510,7 @@ sub fixup_logfields {
     milestone_mangle($g);
   }
   else {
-    my $src = $g->{src};
-    # Fixup src for interesting_game.
-    $g->{src} = "http://" . Henzell::ServerConfig::source_hostname($src) . "/";
     $g->{splat} = '';
-    $g->{src} = $src;
   }
   $g->{game_key} = "$$g{name}:$$g{src}:$$g{rstart}";
 

@@ -31,7 +31,7 @@ module Henzell
         raise StandardError, "Bad command: #{command_line}"
       end
 
-      command_script = "./commands/" + @commands[command]
+      command_script = File.join(Config.root, "commands", @commands[command])
       target = default_nick
       if command_line =~ /^(\S+)\s+(\S+)/
         target = $2

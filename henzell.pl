@@ -8,6 +8,7 @@ use IPC::Open2;
 use Henzell::Config qw/%CONFIG %CMD %PUBLIC_CMD/;
 use Henzell::Utils;
 use Getopt::Long;
+use Cwd;
 
 END {
   kill TERM => -$$;
@@ -21,7 +22,7 @@ GetOptions("daemon!" => \$daemon,
            "rc=s" => \$config_file) or die "Invalid options\n";
 
 $ENV{LC_ALL} = 'en_US.utf8';
-$ENV{RUBYOPT} = '-rubygems';
+$ENV{RUBYOPT} = "-rubygems -I" . File::Spec->catfile(getcwd(), 'src');
 
 my $SERVER = 'cao';     # Local server.
 my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
@@ -79,8 +80,8 @@ binmode STDOUT, ':utf8';
 Henzell::Utils::lock(verbose => 1,
                      lock_name => $CONFIG{lock_name});
 
-if ($irc && $CONFIG{http_services}) {
-  Henzell::Utils::spawn_service("http_service", "rackup -p 29880 config.ru");
+if ($CONFIG{startup_services}) {
+  Henzell::Utils::spawn_services($CONFIG{startup_services});
 }
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html

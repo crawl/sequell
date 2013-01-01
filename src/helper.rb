@@ -6,9 +6,6 @@ require 'command_context'
 require 'yaml'
 require 'fileutils'
 
-SERVERS_FILE = 'config/servers.yml'
-SERVER_CFG = YAML.load_file(SERVERS_FILE)
-
 # Directory containing player directories that contain morgues.
 DGL_MORGUE_DIR = '/var/www/crawl/rawdata'
 
@@ -25,24 +22,8 @@ def regex_paths(regex_path_mappings)
   }
 end
 
-DGL_ALIEN_MORGUES = regex_paths(SERVER_CFG['morgue-paths'])
-DGL_ALIEN_TTYRECS = regex_paths(SERVER_CFG['ttyrec-paths'])
-
-SERVER_TIMEZONE = SERVER_CFG['server-timezones']
-
 MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S'
 SHORT_DATEFORMAT = '%Y%m%d%H%M%S'
-
-begin
-  # The time (approximate) that Crawl switched from local time to UTC in
-  # logfiles. We'll have lamentable inaccuracy near this time, but that
-  # can't be helped.
-  LOCAL_UTC_EPOCH_DATETIME = DateTime.strptime('200808070330+0000',
-                                               '%Y%m%d%H%M%z')
-rescue
-  # Ruby version differences :(
-  LOCAL_UTC_EPOCH_DATETIME = nil
-end
 
 NICK_ALIASES = { }
 NICKMAP_FILE = ENV['HENZELL_TEST'] ? 'dat/nicks-test.map' : 'dat/nicks.map'
@@ -204,131 +185,16 @@ def morgue_time_dst?(e, key=nil)
   morgue_timestring(e, key) =~ /D$/
 end
 
-def game_ttyrec_datetime(e, key=nil)
-  time = morgue_time(e, key)
-  return nil if time.nil?
-  dt = DateTime.strptime(time + "+0000", MORGUE_DATEFORMAT + '%z')
-  if dt < LOCAL_UTC_EPOCH_DATETIME
-    dst = morgue_time_dst?(e, key)
-    src = e['src']
-    src = src + (dst ? 'D' : 'S')
-
-    tz = SERVER_TIMEZONE[src]
-    if tz
-      # Parse the time as the server's local TZ, and convert it to UTC.
-      dt = DateTime.strptime(time + tz, MORGUE_DATEFORMAT + '%z').new_offset(0)
-    end
-  end
-  dt
-end
-
-def binary_search_alien_morgue(url, e)
-  require 'httplist'
-  user_url = url + "/" + e['name'] + "/"
-  mtime = morgue_time(e)
-  morgues = HttpList::find_files(user_url, /morgue-#{e['name']}.*?[.]txt/,
-                                 DateTime.strptime(mtime, MORGUE_DATEFORMAT))
-  return nil if morgues.nil?
-
-  short_mtime = mtime.sub(/\d{2}$/, '')
-  full_name = "morgue-#{e['name']}-#{mtime}.txt"
-  short_name = "morgue-#{e['name']}-#{short_mtime}.txt"
-
-  # Look for exact match with the full time or short time
-  found = (morgues.find { |m| m == full_name } ||
-           morgues.find { |m| m == short_name } ||
-           binary_search(morgues, full_name))
-  return found.url if found
-
-  return nil
-end
-
-def resolve_alien_morgue(url, e)
-  if Integer(/^0\.([0-9]+)/.match(e['v'])[1]) < 4
-    return binary_search_alien_morgue(url, e)
-  else
-    return morgue_assemble_filename(url, e, morgue_time(e), '.txt')
-  end
-end
-
-def find_alien_morgue(e)
-  for pair in DGL_ALIEN_MORGUES
-    if e['file'] =~ pair[0]
-      if e['cv'] == '0.9' && e['src'] == 'cdo' && e['end'] > '201107191740'
-        return resolve_alien_morgue('http://crawl.develz.org/morgues/0.9', e)
-      else
-        return resolve_alien_morgue(pair[1], e)
-      end
-    end
-  end
-  nil
-end
-
 def find_game_morgue(e)
-  return find_game_morgue_ext(e, ".txt", false) ||
-    find_game_morgue_ext(e, ".txt.bz2", false) ||
-    find_game_morgue_ext(e, ".txt.gz", false) ||
-    find_game_morgue_ext(e, ".txt", true)
-end
-
-def find_game_morgue_ext(e, ext, full_scan)
-  if e['src'] != ENV['HENZELL_HOST']
-    return find_alien_morgue(e)
-  end
-
-  fulltime = morgue_time(e)
-
-  # Look for full timestamp
-  morgue = morgue_assemble_filename(DGL_MORGUE_DIR, e, fulltime, ext)
-  if File.exist?(morgue)
-    return morgue_assemble_filename(DGL_MORGUE_URL, e, fulltime, ext)
-  end
-
-  parttime = fulltime.sub(/\d{2}$/, '')
-  morgue = morgue_assemble_filename(DGL_MORGUE_DIR, e, parttime, ext)
-  if File.exist?(morgue)
-    return morgue_assemble_filename(DGL_MORGUE_URL, e, parttime, ext)
-  end
-
-  if full_scan
-    # We're in El Suck territory. Scan the directory listing.
-    morgue_list = game_morgues(e["name"])
-
-    # morgues are sorted. The morgue date should be greater than the
-    # full timestamp.
-
-    found = binary_search(morgue_list, morgue)
-    if found then
-      found.sub!(/.*morgue-\w+-(.*)/, '\1')
-      return morgue_assemble_filename(DGL_MORGUE_URL, e, found, '')
-    end
-  end
-
-  nil
-end
-
-def crashdump_assemble_filename(urlbase, milestone)
-  (urlbase + '/' + milestone["name"] +
-   '/crash-' + milestone["name"] + '-' +
-   morgue_time(milestone) + ".txt")
+  require 'henzell/sources'
+  Henzell::Sources.instance.morgue_for(e)
 end
 
 def find_milestone_crash_dump(e)
   return nil if e['verb'] != 'crash'
 
-  # Check for cao crashes:
-  if e['src'] == ENV['HENZELL_HOST']
-    return crashdump_assemble_filename(DGL_MORGUE_URL, e)
-  end
-
-  # No cao? Look for alien crashes
-  for pair in DGL_ALIEN_MORGUES
-    if e['file'] =~ pair[0]
-      return crashdump_assemble_filename(pair[1], e)
-    end
-  end
-
-  nil
+  require 'henzell/sources'
+  Henzell::Sources.instance.crash_dump_for(e)
 end
 
 def short_game_summary(g)
@@ -368,18 +234,6 @@ def duration_str(dur)
           (dur % 3600) / 60, dur % 60)
 end
 
-def game_user_url(game, urlbase)
-  urlbase + "/" + game['name'] + "/"
-end
-
-def game_user_urls(game, urlbases)
-  if urlbases.is_a?(Array)
-    urlbases.map { |u| game_user_url(game, u) }
-  else
-    game_user_url(game, urlbases)
-  end
-end
-
 def ttyrec_list_string(game, ttyreclist)
   if !ttyreclist || ttyreclist.empty?
     return nil
@@ -405,51 +259,6 @@ def ttyrec_list_string(game, ttyreclist)
   end
 end
 
-def resolve_alien_ttyrecs_between(urlbase, game, tstart, tend)
-  require 'httplist'
-  user_url = game_user_urls(game, urlbase)
-  ttyrecs = HttpList::find_files(user_url, /[.]ttyrec/, tend) || [ ]
-
-  sstart = tstart.strftime(SHORT_DATEFORMAT)
-  send = tend.strftime(SHORT_DATEFORMAT)
-
-  first_ttyrec_before_start = nil
-  first_ttyrec_is_start = false
-  found = ttyrecs.find_all do |ttyrec|
-    filetime = ttyrec_filename_datetime_string(ttyrec.filename)
-    if (filetime && sstart && filetime < sstart)
-      first_ttyrec_before_start = ttyrec
-    end
-
-    if (!first_ttyrec_is_start && filetime && sstart && filetime == sstart)
-      first_ttyrec_is_start = true
-    end
-
-    filetime && (!sstart || filetime >= sstart) && filetime <= send
-  end
-
-  if first_ttyrec_before_start && !first_ttyrec_is_start
-    found = [ first_ttyrec_before_start ] + found
-  end
-
-  found
-end
-
-def find_alien_ttyrecs(game)
-  tty_start = (game_ttyrec_datetime(game, 'start') ||
-               game_ttyrec_datetime(game, 'rstart'))
-  tty_end   = (game_ttyrec_datetime(game, 'end') ||
-               game_ttyrec_datetime(game, 'time'))
-
-  for pair in DGL_ALIEN_TTYRECS
-    if game['file'] =~ pair[0]
-      betw = resolve_alien_ttyrecs_between(pair[1], game, tty_start, tty_end)
-      return ttyrec_list_string(game, betw)
-    end
-  end
-  nil
-end
-
 def local_time(time)
   match = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})([SD])/.match(time)
   raise "Malformed local time: #{time}" unless match
@@ -468,60 +277,17 @@ def local_time(time)
   time.utc
 end
 
-def ttyrec_filename_datetime_string(filename)
-  if filename =~ /^(\d{4}-\d{2}-\d{2}\.\d{2}:\d{2}:\d{2})\.ttyrec/
-    $1.gsub(/[-.:]/, '')
-  elsif filename =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})[+]00:?00/
-    $1.gsub(/[-:T]/, '')
-  elsif filename =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+]\d{2}:\d{2})/
-    date = DateTime.strptime($1, '%Y-%m-%dT%H:%M:%S%Z')
-    date.new_offset(0).strftime('%Y%m%d%H%M%S')
-  else
-    nil
-  end
-end
-
-def find_ttyrecs_between(game, s, e)
-  prefix = DGL_TTYREC_DIR + "/" + game['name'] + "/"
-  files = Dir[ prefix + "*.ttyrec*" ]
-
-  s = s.strftime(SHORT_DATEFORMAT)
-  e = s.strftime(SHORT_DATEFORMAT)
-  bracketed = files.find_all do |rfile|
-    file = rfile.slice( prefix.length .. -1 )
-    filetime = ttyrec_filename_datetime(file)
-
-    next unless filetime
-    (!s || filetime >= s) and filetime <= e
-  end
-  bracketed.map { |f| f.slice( prefix.length .. -1 ) }.sort
-end
-
-def find_cao_ttyrecs(game)
-  tty_start = game_ttyrec_datetime(game, 'start')
-  tty_end   = game_ttyrec_datetime(game, 'end')
-
-  betw = find_ttyrecs_between(game, tty_start, tty_end)
-
-  unless betw.empty?
-    base_url = DGL_TTYREC_URL + "/" + game['name'] + "/"
-    spc = betw.length == 1 ? "" : " "
-    "#{base_url}#{spc}#{betw.join(" ")}"
-  end
-end
-
 def find_game_ttyrecs(game)
-  if game['src'] != ENV['HENZELL_HOST']
-    find_alien_ttyrecs(game)
-  else
-    find_cao_ttyrecs(game)
-  end
+  require 'henzell/sources'
+  ttyrecs = Henzell::Sources.instance.ttyrecs_for(game)
+  ttyrec_list_string(game, ttyrecs)
 end
 
 def report_game_ttyrecs(n, game)
   puts(game_number_prefix(n) + short_game_summary(game) + ": " +
         (find_game_ttyrecs(game) || "Can't find ttyrec!"))
 rescue
+  raise
   puts(game_number_prefix(n) + short_game_summary(game) + ": " + $!)
   raise
 end

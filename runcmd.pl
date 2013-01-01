@@ -9,7 +9,8 @@ my $DEFAULT_NICK = 'greensnark';
 
 $ENV{IRC_NICK_AUTHENTICATED} = 'y';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
-$ENV{RUBYOPT} = '-rubygems';
+$ENV{RUBYOPT} = '-rubygems -Isrc';
+$ENV{HENZELL_ROOT} = '.';
 Henzell::Cmd::load_all_commands();
 
 sub runcmd($) {

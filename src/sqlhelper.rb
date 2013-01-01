@@ -5,8 +5,6 @@ if !ENV['HENZELL_SQL_QUERIES']
 end
 
 DEBUG_HENZELL = ENV['DEBUG_HENZELL']
-LG_CONFIG_FILE = 'config/crawl-data.yml'
-LG_SERVERS_FILE = 'config/servers.yml'
 
 require 'dbi'
 require 'set'
@@ -16,6 +14,7 @@ require 'helper'
 require 'tourney'
 require 'sql_connection'
 require 'henzell_config'
+require 'henzell/sources'
 
 require 'sql/config'
 require 'sql/field_predicate'
@@ -30,13 +29,13 @@ require 'query/query_struct'
 require 'query/summary_graph_builder'
 require 'crawl/branch_set'
 require 'crawl/gods'
+require 'crawl/config'
 require 'string_fixup'
 
 include Tourney
 include HenzellConfig
 
-CFG = YAML.load_file(LG_CONFIG_FILE)
-LG_SERVER_CFG = YAML.load_file(LG_SERVERS_FILE)
+CFG = Crawl::Config.config
 
 # Don't use more than this much memory (bytes)
 MAX_MEMORY_USED = 768 * 1024 * 1024
@@ -49,7 +48,7 @@ BRANCHES = Crawl::BranchSet.new(CFG['branches'], PLACE_FIXUPS)
 UNIQUES = Set.new(CFG['uniques'].map { |u| u.downcase })
 GODS = Crawl::Gods.new(CFG['god'])
 
-SOURCES = LG_SERVER_CFG['sources'].keys.sort
+SOURCES = Henzell::Sources.instance.source_names
 
 CLASS_EXPANSIONS =
   Hash[CFG['classes'].map { |abbr, cls| [abbr, cls.sub('*', '')] }]
@@ -196,9 +195,9 @@ def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
       if opts[:tv]
         TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1])
       elsif logopts[:log]
-        report_game_log(res.n, res.game)
+        report_game_log(res.qualified_index, res.game)
       elsif logopts[:ttyrec]
-        report_game_ttyrecs(res.n, res.game)
+        report_game_ttyrecs(res.qualified_index, res.game)
       else
         print_game_result(res)
       end

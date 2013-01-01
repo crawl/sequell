@@ -1,7 +1,11 @@
-bot_nick = Sequell
-sql_store = 1
-sql_queries = 1
-commands_file = commands/commands-sequell.txt
-announce_channel =
-seen_update = 0
-http_services = 1
+bot_nick: Sequell
+sql_store: 1
+sql_queries: 1
+commands_file: commands/commands-sequell.txt
+announce_channel:
+seen_update:
+
+startup_services:
+  - name: FooTV HTTP Service
+    command: rackup -p 29880 config.ru
+    directory: services/http-tv

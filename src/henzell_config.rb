@@ -1,12 +1,9 @@
 module HenzellConfig
   require 'yaml'
   require 'set'
+  require 'crawl/config'
 
-  CONFIG_FILE = 'config/crawl-data.yml'
-  SERVER_CONFIG_FILE = 'config/servers.yml'
-
-  CFG = YAML.load_file(CONFIG_FILE)
-  SERVER_CFG = YAML.load_file(SERVER_CONFIG_FILE)
+  CFG = Crawl::Config.config
 
   GAME_PREFIXES = CFG['game-type-prefixes']
   GAME_TYPE_DEFAULT = CFG['default-game-type']

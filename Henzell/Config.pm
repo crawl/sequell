@@ -6,6 +6,8 @@ use warnings;
 use base 'Exporter';
 
 use Henzell::ServerConfig;
+use YAML::Any;
+use Cwd;
 
 our @EXPORT_OK = qw/read get %CONFIG %CMD %CMDPATH %PUBLIC_CMD
                     @LOGS @MILESTONES/;
@@ -15,9 +17,6 @@ my %DEFAULT_CONFIG = (use_pm => 0,
                       irc_server => 'chat.freenode.net',
                       irc_port   => 6667,
                       lock_name  => 'henzell',
-
-                      milestones => 'config/def.stones',
-                      logs => 'config/def.logs',
 
                       # Does the bot respond to SQL queries (default: NO)
                       sql_queries => 0,
@@ -58,113 +57,9 @@ sub get() {
   \%CONFIG
 }
 
-sub abbrev_load() {
-  %ABBRMAP = Henzell::ServerConfig::server_abbreviations();
-  for my $key (keys %CONFIG) {
-    if ($key =~ /^abbr\.(\w+)$/) {
-      $ABBRMAP{$1} = $CONFIG{$key};
-    }
-  }
-}
-
-sub abbrev_expand($) {
-  my $abbr = shift;
-  # Expand if possible, else leave unchanged:
-  $ABBRMAP{$abbr} || "\$$abbr"
-}
-
-sub abbrev_expand_all($) {
-  my $text = shift;
-  return $text unless defined $text;
-  s/\$(\w+)/abbrev_expand($1)/ge for $text;
-  $text
-}
-
-sub parse_header_field($$) {
-  my ($hash, $piece) = @_;
-  my $host = $CONFIG{host} || '';
-  if ($piece =~ /^local:(\w+)$/) {
-    if ($1 eq $host) {
-      $$hash{local} = 1;
-      $$hash{src} = $1;
-    }
-  } elsif ($piece =~ /^remote:(\w+)(?::(.*))?$/) {
-    if ($host ne $1) {
-      $$hash{remote} = 1;
-      $$hash{src} = $1;
-      $$hash{url} = abbrev_expand_all($2);
-    }
-  } elsif ($piece eq 'alpha') {
-    $$hash{alpha} = 1;
-  } else {
-    die "Unknown header field: $piece\n";
-  }
-}
-
-sub log_header_hash($) {
-  my $header = shift;
-  s/^\[//, s/\]$// for $header;
-
-  my %hash;
-  for my $piece (split(/;/, $header)) {
-    s/^\s+//, s/\s+$// for $piece;
-    parse_header_field(\%hash, $piece);
-  }
-
-  # Has to be either local or remote:
-  return undef unless $hash{local} || $hash{remote};
-
-  \%hash
-}
-
-sub resolve_log_path($) {
-  my $path = shift;
-  return $path if $path =~ m{/};
-  "server-xlogs/$path"
-}
-
-sub log_path($$) {
-  my ($header, $path) = @_;
-
-  my $log = log_header_hash($header);
-  return undef unless $log;
-  $$log{path} = resolve_log_path($path);
-  $log
-}
-
-sub load_log_paths($$$) {
-  my ($paths, $file, $name) = @_;
-
-  @$paths = ();
-
-  open my $inf, '<', $file or return;
-
-  my $header;
-
-  while (<$inf>) {
-    chomp;
-    next unless /\S/ && !/^\s*#/;
-
-    s/^\s+//; s/\s+$//;
-
-    if (/^\[.*\]$/) {
-      $header = $_;
-      next;
-    }
-
-    if ($header) {
-      my $path = $_;
-      my $logpath = log_path($header, $path);
-      push @$paths, $logpath if $logpath;
-    }
-  }
-  close $inf;
-}
-
 sub load_file_paths() {
-  abbrev_load();
-  load_log_paths(\@LOGS, $CONFIG{logs}, "logfiles");
-  load_log_paths(\@MILESTONES, $CONFIG{milestones}, "milestones");
+  @LOGS = Henzell::ServerConfig::server_logfiles();
+  @MILESTONES = Henzell::ServerConfig::server_milestones();
 }
 
 sub load_public_commands($) {
@@ -209,6 +104,7 @@ sub load_commands($$) {
 }
 
 sub setup_env() {
+  $ENV{HENZELL_ROOT} = getcwd();
   if ($CONFIG{host}) {
     $ENV{HENZELL_HOST} = $CONFIG{host};
   } else {
@@ -230,18 +126,9 @@ sub read {
   %CONFIG = %DEFAULT_CONFIG;
 
   my $inf;
-  open $inf, '<', ($config || $CONFIG_FILE) or undef $inf;
-  if ($inf) {
-    while (<$inf>) {
-      s/^\s+//; s/\s+$//;
-      next unless /\S/;
-      if (/^([\w.]+)\s*=\s*(.*)/) {
-        $CONFIG{$1} = $2;
-      }
-    }
-    close $inf;
-  }
 
+  my $config_file = $config || $CONFIG_FILE;
+  %CONFIG = (%DEFAULT_CONFIG, %{YAML::Any::LoadFile($config_file)});
   # So that users don't have to check for undef warnings.
   $CONFIG{host} ||= '';
 

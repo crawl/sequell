@@ -1,8 +1,12 @@
 require 'yaml'
+require 'henzell/config'
 
 class IrcAuth
+  AUTH_FILE = 'config/auth.yml'
+
   def self.authorizations
-    @authorizations ||= YAML.load_file('config/auth.yml')
+    @authorizations ||= YAML.load_file(
+      Henzell::Config.file_path(AUTH_FILE))
   end
 
   def self.acting_nick
