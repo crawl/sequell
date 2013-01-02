@@ -388,12 +388,7 @@ sub serialize_time # {{{
 
   if (not $long)
   {
-    my $hours = int($seconds/3600);
-    $seconds %= 3600;
-    my $minutes = int($seconds/60);
-    $seconds %= 60;
-
-    return sprintf "%d:%02d:%02d", $hours, $minutes, $seconds;
+    return short_elapsed_time($seconds);
   }
 
   my $minutes = int($seconds / 60);
@@ -418,6 +413,26 @@ sub serialize_time # {{{
   return join ' ', @fields if @fields;
   return '0s';
 } # }}}
+
+sub short_elapsed_time {
+  my $seconds = shift;
+  my $hours = int($seconds/3600);
+  $seconds %= 3600;
+  my $minutes = int($seconds/60);
+  $seconds %= 60;
+
+  my $days = int($hours / 24);
+  my $years = int($days / 365);
+  $days %= 365;
+  $hours %= 24;
+
+  my @pieces;
+  push @pieces, "${years}y" if $years > 0;
+  push @pieces, "${days}d" if $days > 0;
+  push @pieces, sprintf("%d:%02d:%02d", $hours, $minutes, $seconds);
+  join('+', @pieces)
+}
+
 sub ucfirst_word { # {{{
     join ' ', map { ucfirst } split / /, shift;
 } # }}}
