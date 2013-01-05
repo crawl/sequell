@@ -5,6 +5,7 @@ require 'date'
 require 'command_context'
 require 'yaml'
 require 'fileutils'
+require 'henzell/config'
 
 # Directory containing player directories that contain morgues.
 DGL_MORGUE_DIR = '/var/www/crawl/rawdata'
@@ -26,7 +27,9 @@ MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S'
 SHORT_DATEFORMAT = '%Y%m%d%H%M%S'
 
 NICK_ALIASES = { }
-NICKMAP_FILE = ENV['HENZELL_TEST'] ? 'dat/nicks-test.map' : 'dat/nicks.map'
+NICKMAP_FILE = Henzell::Config.file_path(
+  ENV['HENZELL_TEST'] ? 'dat/nicks-test.map' : 'dat/nicks.map')
+
 $nicks_loaded = false
 
 def munge_game(game)

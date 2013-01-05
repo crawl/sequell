@@ -8,7 +8,7 @@ use Henzell::Cmd;
 
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{HENZELL_TEST} = 'y';
-$ENV{RUBYOPT} = '-rubygems';
+$ENV{RUBYOPT} = '-rubygems -Isrc';
 
 require 'sqllog.pl';
 
