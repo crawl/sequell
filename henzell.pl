@@ -323,7 +323,7 @@ sub sibling_fetch_logs {
   # If we're saving all logfile and milestone entries, update remote
   # logs; else we don't care.
   if ($CONFIG{sql_store}) {
-    print "*** Fetching remote logfiles\n";
+    print "*** Fetching remote logfiles\n" if $ENV{DEBUG_HENZELL};
     system "./remote-fetch-logfile >/dev/null 2>&1 &";
   }
   $sibling_last_fetch_time = time();
