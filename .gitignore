@@ -36,3 +36,4 @@ henzell-schema.sql
 *.json
 graphs
 .rvmrc
+henzell-todo.txt

@@ -56,15 +56,6 @@ module Query
         order = key.max? ? 'DESC' : 'ASC'
         body.sort(Sort.new(selector, order))
       else
-        if selector.integer?
-          if op.textual?
-            raise "Can't use #{op} on numeric field #{selector} in #{rawarg}"
-          end
-          if val !~ /^[+-]?(?:\d+[.]?|[.]\d+|\d+[.]\d+)$/
-            raise "Bad expression: '#{@arg}': #{selector} is numeric, but value '#{val}' is not."
-          end
-          val = val.to_i
-        end
         body.append(query_field(selector, op, val))
       end
 
@@ -88,6 +79,16 @@ module Query
       # regex check instead.
       if op.equality? && val =~ /[()|?]/ then
         op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
+      end
+
+      if field.integer?
+        if op.textual?
+          raise "Can't use #{op} on numeric field #{field} in #{@rawarg}"
+        end
+        if val !~ /^[+-]?(?:\d+[.]?|[.]\d+|\d+[.]\d+)$/
+          raise "Bad expression: '#{@arg}': #{field} is numeric, but value '#{val}' is not."
+        end
+        val = val.to_i
       end
 
       if field === 'name' && val[0, 1] == '@' and op.equality?
