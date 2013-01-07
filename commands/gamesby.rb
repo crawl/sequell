@@ -52,10 +52,26 @@ else
        Query::QueryBuilder.build(ARGV[1], query_string + 'ktyp=winning',
                                  CTX_LOG, nil, true))
 
-  tstart = Sql::Date.display_date(r[2])
-  tend = Sql::Date.display_date(r[3])
-  puts "#{q.argstr} has played #{ngames} game#{plural}, between " +
-      "#{datestr(tstart)} and #{datestr(tend)}, won #{winstr(win_count, ngames)}, " +
-      "high score #{r[4]}, total score #{sqlnumber(r[5])}, total turns #{sqlnumber(r[6])}, " +
-      "total time #{duration_str(r[7].to_i)}."
+  start_date = r[2]
+  end_date = r[3]
+  tstart = Sql::Date.display_date(start_date)
+  tend = Sql::Date.display_date(end_date)
+
+  duration = r[7]
+
+  stats = [
+    "won #{winstr(win_count, ngames)}",
+    "high score #{r[4]}",
+    "total score #{sqlnumber(r[5])}",
+    "total turns #{sqlnumber(r[6])}"
+  ]
+
+  time_span_days = (end_date - start_date).to_f
+  duration_per_day = time_span_days > 0 && duration / time_span_days
+  stats << "play-time/day #{duration_str(duration_per_day)}" if duration_per_day
+
+  stats << "total time #{duration_str(duration.to_i)}"
+
+  puts("#{q.argstr} has played #{ngames} game#{plural}, between " +
+    "#{datestr(tstart)} and #{datestr(tend)}, " + stats.join(", ") + ".")
 end
