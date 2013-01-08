@@ -56,6 +56,9 @@ Where:
   The nick may optionally be prefixed by @. For instance:
      !lg @78291 (78291's last game)
 
+  The nick may be prefixed with : to ignore nick aliases:
+     !lg :hugeterm => !lg * name=hugeterm
+
   This is mainly useful for names that would otherwise be treated as
   game numbers.
 
@@ -468,6 +471,9 @@ Listgame keywords may be one of:
 10. Player nick or nick alias:
    @nick  :: selects games by that player or nick alias. See the section
              on nick aliases below.
+
+   :name  :: selects games by "name", ignoring nick aliases.
+             :xyz is equivalent to name=xyz
 
 11. alpha :: selects games for alpha (unstable/development) versions.
 

@@ -91,8 +91,8 @@ module Query
         val = val.to_i
       end
 
-      if field === 'name' && val[0, 1] == '@' and op.equality?
-        return NickExpr.expr(val[1..-1], op.not_equal?)
+      if field === 'name' && val =~ /^[@:]/ and op.equality?
+        return NickExpr.expr(val, op.not_equal?)
       end
 
       if field === ['v', 'cv'] && op.relational? &&

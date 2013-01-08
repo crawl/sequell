@@ -8,6 +8,7 @@ module Query
         nick = nick.sub(/^!/, '')
         inverted = !inverted
       end
+      nick = nick.sub(/^@/, '')
       aliases = Query::Nick.aliases(nick)
       if aliases.size == 1
         self.single_nick_predicate(aliases[0], inverted)

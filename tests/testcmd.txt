@@ -229,3 +229,8 @@ E !lg * s=trunc99(sc)
 !lg * abyss:*
 !lg * x=avg(dur),max(dur),min(dur),sum(dur)
 !lg . urune=3|4
+
+!lg @:hugeterm
+!lg :hugeterm
+!lg * :hugeterm
+!lg * @hugeterm
