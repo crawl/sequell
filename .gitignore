@@ -32,7 +32,7 @@ utils/*.sql
 password.txt
 Gemfile.lock
 *.el
-henzell-schema.sql
+*.sql
 *.json
 graphs
 .rvmrc

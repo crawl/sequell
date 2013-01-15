@@ -86,26 +86,7 @@ sub index {
 
 sub indexes {
   my ($self, $field) = @_;
-  return $self->index($field) unless $field->date();
-  my $sql_field = $field->sql_ref_name();
-  my $name = $self->name();
-
-  my @expr = $sql_field;
-  my %functions = Henzell::Crawl::config_hash('value-functions');
-  for my $fname (keys(%functions)) {
-    my $fdef = $functions{$fname};
-    if ($$fdef{type} eq 'D') {
-      push @expr, sprintf($$fdef{expr}, $sql_field);
-    }
-  }
-
-  my @indexes;
-  for my $expr (@expr) {
-    (my $ind_suffix = $expr) =~ tr/a-zA-Z/_/cd;
-    my $index_name = "ind_${name}_${ind_suffix}";
-    push @indexes, "CREATE INDEX $index_name ON $name ($expr)"
-  }
-  @indexes
+  $self->index($field)
 }
 
 sub index_defs {

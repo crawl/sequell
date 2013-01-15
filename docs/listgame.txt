@@ -710,6 +710,11 @@ true if the game is an alpha/development version, false otherwise.
 tiles:
 true if the game is in webtiles, false otherwise.
 
+killermap/kmap:
+The name of the map (vault) in which the monster that killed the player was
+placed, if the monster was placed in a vault and the player did not die in
+that vault (i.e. if killermap is not empty and not equal to map).
+
 map:
 The name of the map/vault the player was in at end of game. Example:
 "hall of Zot". NOTE: underscores in map names will be replaced by spaces

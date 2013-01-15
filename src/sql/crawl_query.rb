@@ -49,7 +49,7 @@ module Sql
       (0 ... row.size).each do |i|
         field = @query_fields[i]
         if i < base_size
-          map[field.to_s] = field.log_value(row[i])
+          map[field.full_name] = field.log_value(row[i])
         else
           extras[field.to_s] = field.log_value(row[i])
         end

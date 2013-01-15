@@ -435,6 +435,7 @@ column-aliases:
   turns: turn
   skill: sk
   ch: char
+  kmap: killermap
   c: cls
   cl: xl
   clev: xl
@@ -581,6 +582,7 @@ lookup-tables:
     generated-fields:
       - cvnumIH?^
   killer: [killer, ckiller, ikiller]
+  map: [map, killermap]
   kaux: [kaux, ckaux]
   msg: [tmsg, vmsg]
 
@@ -667,6 +669,7 @@ logrecord-fields-with-type:
   - rend*?
   - ntvI?
   - map?^
+  - killermap?^
   - mapdesc^
   - tiles!
 

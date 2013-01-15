@@ -424,6 +424,12 @@ sub fixup_logfields {
   unless ($milestone) {
     $g->{vmsg} ||= $g->{tmsg};
     $g->{map} ||= '';
+    $g->{killermap} ||= '';
+
+    for my $map ($g->{map}, $g->{killermap}) {
+      $map =~ tr/,/;/;
+    }
+
     $g->{mapdesc} ||= '';
     $g->{ikiller} ||= $g->{killer};
     $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
