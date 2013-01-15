@@ -17,7 +17,7 @@ module Sql
 
     include FieldPredicates
 
-    attr_reader :prefix, :aliased_name, :full_name
+    attr_reader :prefix, :aliased_name, :full_name, :canonical_name
     attr_accessor :table
     attr_accessor :name
 
@@ -31,6 +31,7 @@ module Sql
         @prefix, @aliased_name = $1, $2
       end
       @name = SQL_CONFIG.column_aliases[@aliased_name] || @aliased_name
+      @canonical_name = @name
       @oname = @name.dup
     end
 

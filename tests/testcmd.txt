@@ -234,3 +234,6 @@ E !lg * s=trunc99(sc)
 !lg :hugeterm
 !lg * :hugeterm
 !lg * @hugeterm
+
+!lg * map|kmap!=
+!lg * map&kmap!=

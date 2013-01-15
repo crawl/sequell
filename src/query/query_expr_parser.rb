@@ -42,6 +42,14 @@ module Query
       @arg =~ ARGSPLITTER
       raw_key, op, val = $1, $2, $3
 
+      if raw_key =~ /[|]/
+        return split_clause(:or_clause, raw_key.split(/\|/), op, val)
+      end
+
+      if raw_key =~ /&/
+        return split_clause(:and_clause, raw_key.split(/&/), op, val)
+      end
+
       key = Sql::FieldExprParser.expr(raw_key)
       op = Sql::Operator.new(op)
       selector = key.sort? ? Sql::FieldExprParser.expr(val) : key
@@ -221,6 +229,13 @@ module Query
       end
 
       field_pred(val, op, field)
+    end
+
+    def split_clause(clause, keys, op, val)
+      QueryStruct.send(clause, false,
+        *keys.map { |split_key|
+          QueryExprParser.parse("#{split_key}#{op}#{val}")
+        })
     end
   end
 end

@@ -85,6 +85,15 @@ Where:
   A simple function call may be used on a field, such as day(end).
   See "Non-Aggregate Functions" for a list of functions.
 
+  If you have a value that should be tested against multiple fields,
+  you can use an expression of the form x|y<op>val. For instance:
+ 
+    killer|ikiller=uniq => ((killer=uniq || ikiller=uniq))
+    map|kmap!=          => ((map!= || kmap!= ))
+
+  If both tests must match, use the x&y<op><val> form:
+    map&kmap!=          => map!= kmap!=
+
 - s=<field1>[%],<field2>... or s=-<field>[%]
 
   Mnemonic: s = Summarise by field

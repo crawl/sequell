@@ -43,6 +43,7 @@ module Sql
     end
 
     def condition_match?(predicate)
+      matched = @field_expr == predicate.field_expr
       @field_expr == predicate.field_expr && @operator == predicate.operator
     end
 

@@ -95,7 +95,7 @@ module Sql
     end
 
     def == (other)
-      @field.name == other.field.name &&
+      @field.canonical_name == other.field.canonical_name &&
         @field.prefix == other.field.prefix &&
         @expr == other.expr
     end

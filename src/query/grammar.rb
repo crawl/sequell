@@ -31,9 +31,13 @@ module Query
     FIELD = Regexp.new('[a-z.:_]+', Regexp::IGNORECASE)
     FUNCTION = Regexp.new('[a-z]\w+', Regexp::IGNORECASE)
     FUNCTION_CALL = Regexp.new("#{FUNCTION}\\(#{FIELD}\\)", Regexp::IGNORECASE)
-    ARGSPLITTER = Regexp.new("^-?(#{FUNCTION_CALL}|#{FIELD})\\s*(" +
-                             SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
-                             ')\s*(.*)$', Regexp::IGNORECASE)
+
+    EXPR_KEY = "#{FUNCTION_CALL}|#{FIELD}"
+    ALT_EXPR_KEYS = "(?:#{EXPR_KEY})(?:\\|(?:#{EXPR_KEY})|&(?:#{EXPR_KEY}))*"
+    ARGSPLITTER =
+      Regexp.new("^-?(#{ALT_EXPR_KEYS})\\s*(" +
+      SORTEDOPS.map { |o| Regexp.quote(o) }.join("|") +
+      ')\s*(.*)$', Regexp::IGNORECASE)
 
 
     FILTER_OPS = {

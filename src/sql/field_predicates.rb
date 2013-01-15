@@ -12,6 +12,10 @@ module Sql
       field.type
     end
 
+    def canonical_name
+      field.canonical_name
+    end
+
     def bind_ordered_column!
       self.field.bind_ordered_column!
     end
