@@ -237,3 +237,5 @@ E !lg * s=trunc99(sc)
 
 !lg * map|kmap!=
 !lg * map&kmap!=
+!lg * sprint map=pitsprint
+!lg * map=pitsprint s=vault(map)

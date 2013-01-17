@@ -822,6 +822,19 @@ filters to filter out old orphan milestones.
 
 You may also express this as !ktyp
 
+killermap/map:
+~~~~~~~~~~~~~
+Queries of the form map=X are translated as map~~^X to handle vaults that
+use subvaults. If a map X uses a subvault S, then map==X; S, but you can
+use map=X to match it anyway.
+
+If you're summarising by maps and want to summarise by the primary vault and
+ignore subvaults, you can apply the function vault(). As an example, to see
+kills in HangedMan's vaults:
+
+  !lg * map=~hangedman s=vault(map)
+
+
 killer/ckiller/index:
 ~~~~~~~~~~~~~~~~~~~~~
 Queries of the form killer=X (Example: killer=hobgoblin) are
@@ -915,6 +928,10 @@ grouping clauses (s=X) and extra-field info (x=X).
                        zero or negative values exploding the log() function.
 - trunc<X>(<number>)   Truncates the numeric field to <X>. For instance:
                        trunc500(turn), trunc1000(sc).
+- vault(<map>)         Truncates strings of the form 'x; y; z' to 'x', i.e.
+                       discarding anything after the first '; '. This is handy
+                       to summarize by maps without subvaults affecting
+                       summary counts.
 
 
 Nick Aliases

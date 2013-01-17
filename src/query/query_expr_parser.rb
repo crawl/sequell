@@ -110,6 +110,12 @@ module Query
                           field.resolve(field.name + 'num'))
       end
 
+      if (field === ['map', 'killermap'] && op.equality? &&
+          val =~ /^[\w -]+$/)
+        op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
+        val = "^#{Regexp.quote(val)}($|;)"
+      end
+
       if field === ['kaux', 'ckaux', 'killer', 'ktyp'] && op.equality? then
         if ['poison', 'poisoning'].index(val)
           field = field.resolve('ktyp')

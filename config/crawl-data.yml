@@ -551,6 +551,11 @@ value-functions:
     expr: "date_trunc('year', %s)"
     summarisable: true
     display-format: '%Y'
+  vault:
+    type: 'S'
+    return: 'S'
+    expr: "split_part(%s, '; ', 1)"
+    summarisable: true
 
 query-tables:
   - logrecord
