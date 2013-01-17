@@ -56,11 +56,11 @@ Where:
   The nick may optionally be prefixed by @. For instance:
      !lg @78291 (78291's last game)
 
-  The nick may be prefixed with : to ignore nick aliases:
-     !lg :hugeterm => !lg * name=hugeterm
-
   This is mainly useful for names that would otherwise be treated as
   game numbers.
+
+  The nick may be prefixed with : to ignore nick aliases:
+     !lg :hugeterm => !lg * name=hugeterm
 
 - <keyword> is a word that the listgame parser recognises as a filter
   condition of some kind.
