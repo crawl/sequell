@@ -239,3 +239,4 @@ E !lg * s=trunc99(sc)
 !lg * map&kmap!=
 !lg * sprint map=pitsprint
 !lg * map=pitsprint s=vault(map)
+!lm elliptic !ktyp s=gid x=max(src)

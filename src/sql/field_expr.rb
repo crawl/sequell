@@ -95,6 +95,9 @@ module Sql
     end
 
     def == (other)
+      if other.is_a?(String)
+        return @field.canonical_name == other || @field.full_name == other
+      end
       @field.canonical_name == other.field.canonical_name &&
         @field.prefix == other.field.prefix &&
         @expr == other.expr

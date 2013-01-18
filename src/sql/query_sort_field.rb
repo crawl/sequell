@@ -82,7 +82,7 @@ module Sql
     end
 
     def parse_field_spec
-      field = @field
+      field = @field.to_s
       if field == '.'
         @value = true
       else
