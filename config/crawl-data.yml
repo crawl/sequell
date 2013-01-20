@@ -559,7 +559,7 @@ value-functions:
   subvault:
     type: 'S'
     return: 'S'
-    expr: "split_part(%s, '; ', 2)"
+    expr: "regexp_replace(%s, '^.*?; ', '')"
     summarisable: true
 
 query-tables:
