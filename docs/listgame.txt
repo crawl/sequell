@@ -932,6 +932,9 @@ grouping clauses (s=X) and extra-field info (x=X).
                        discarding anything after the first '; '. This is handy
                        to summarize by maps without subvaults affecting
                        summary counts.
+- subvault(<map>)      Truncates strings of the form 'x; y; z' to 'y; z', i.e.
+                       discarding everything before (and including) the
+                       first '; '.
 
 
 Nick Aliases

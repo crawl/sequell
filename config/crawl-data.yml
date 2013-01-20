@@ -556,6 +556,11 @@ value-functions:
     return: 'S'
     expr: "split_part(%s, '; ', 1)"
     summarisable: true
+  subvault:
+    type: 'S'
+    return: 'S'
+    expr: "split_part(%s, '; ', 2)"
+    summarisable: true
 
 query-tables:
   - logrecord
