@@ -40,6 +40,10 @@ def sqlnumber(num)
   sprintf("%.0f", num)
 end
 
+def midnight(date)
+  DateTime.new(date.year, date.month, date.day)
+end
+
 if rows.empty? || rows[0][1].to_i == 0
   puts "No games for #{q.argstr}."
 else
@@ -54,6 +58,9 @@ else
 
   start_date = r[2]
   end_date = r[3]
+
+  start_time_bracket = midnight(start_date)
+  end_time_bracket = midnight(end_date) + 1
   tstart = Sql::Date.display_date(start_date)
   tend = Sql::Date.display_date(end_date)
 
@@ -66,7 +73,7 @@ else
     "total turns #{sqlnumber(r[6])}"
   ]
 
-  time_span_days = (end_date - start_date).to_f
+  time_span_days = (end_time_bracket - start_time_bracket).to_f
   duration_per_day = time_span_days > 0 && duration / time_span_days
   stats << "play-time/day #{duration_str(duration_per_day)}" if duration_per_day
 
