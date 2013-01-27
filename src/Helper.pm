@@ -139,11 +139,9 @@ sub species_flavours($) {
   }
 }
 
-our %dead_species = map((lc($CFG->{species}{$_}), 1), @{$$CFG{'dead-species'}});
-
 sub find_species_list() {
   my @species = values %{$CFG->{species}};
-  map(species_flavours($_), grep(!$dead_species{$_}, map(lc, @species)))
+  map(species_flavours($_), grep($_ !~ /\*$/, map(lc, @species)))
 }
 
 our @races = find_species_list();
@@ -185,7 +183,7 @@ my %code_races = map {
 # short race names {{{
 
 my %race_map = %{$CFG->{species}};
-delete @race_map{@{$$CFG{'dead-species'}}};
+delete @race_map{grep($CFG->{species}{$_} =~ /\*$/, keys %{$CFG->{species}})};
 
 my %short_races;
 @short_races{map(lc, values %race_map)} = keys %race_map;
@@ -240,9 +238,7 @@ sub display_race { # {{{
 # }}}
 # roles {{{
 # role list {{{
-our %dead_class_abbrs = map(($_, 1), @{$$CFG{'dead-classes'}});
-our %dead_classes = map((lc($$CFG{classes}{$_}), 1), keys %dead_class_abbrs);
-our @roles = grep(!$dead_classes{$_}, map(lc, values(%{$CFG->{classes}})));
+our @roles = grep($_ !~ /\*$/, map(lc, values(%{$CFG->{classes}})));
 
 # }}}
 # role names used by the code {{{
@@ -255,7 +251,7 @@ my %code_roles = map {
 # short role names {{{
 
 my %short_roles;
-@short_roles{@roles} = grep(!$dead_class_abbrs{$_}, keys %{$CFG->{classes}});
+@short_roles{@roles} = grep($CFG->{classes}{$_} !~ /\*$/, keys %{$CFG->{classes}});
 # }}}
 # role normalization {{{
 my %normalize_role = (
