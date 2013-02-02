@@ -36,8 +36,8 @@ sub clear_commands() {
   %CMD = ();
 }
 
-sub execute_cmd($$) {
-  my ($nick, $cmdline) = @_;
+sub execute_cmd($$;$) {
+  my ($nick, $cmdline, $ignore_stderr) = @_;
   $cmdline =~ s/^[?][?]/!learn query /;
   my ($cmd) = $cmdline =~ /^(\S+)/;
   my ($target) = $cmdline =~ /^\S+ (\S+)/;
@@ -49,7 +49,8 @@ sub execute_cmd($$) {
 
   my $executable_command =
     "./commands/$script \Q$target\E \Q$nick\E \Q$cmdline\E ''";
-  my $output = qx/$executable_command 2>&1/;
+  my $redirect = $ignore_stderr ? '' : '2>&1';
+  my $output = qx/$executable_command $redirect/;
   my $exitcode = ($? >> 8);
   ($exitcode, $output, $executable_command)
 }

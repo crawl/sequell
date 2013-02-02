@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Henzell::Cmd qw/load_all_commands execute_cmd/;
+do 'sqllog.pl';
 
 my $DEFAULT_NICK = 'greensnark';
 
@@ -21,9 +22,9 @@ sub runcmd($) {
     $nick = $1;
     $cmd = $2;
   }
-  my ($exit, $result) = Henzell::Cmd::execute_cmd($nick || $DEFAULT_NICK, $cmd);
-  chomp $result;
-  print "$result\n";
+  my ($exit, $result) =
+    Henzell::Cmd::execute_cmd($nick || $DEFAULT_NICK, $cmd, 1);
+  print handle_output($result, 1), "\n";
 }
 
 if (@ARGV > 0) {
