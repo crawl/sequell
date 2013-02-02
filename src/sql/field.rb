@@ -91,9 +91,6 @@ module Sql
     end
 
     def comparison_value(raw_value)
-      if self.version_number?
-        return Sql::VersionNumber.version_numberize(raw_value)
-      end
       self.type.comparison_value(raw_value)
     end
 

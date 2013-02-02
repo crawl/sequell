@@ -600,6 +600,7 @@ lookup-tables:
 
 type-categories:
   ET: I
+  VER: S
   I: I
   F: I
   S: S
@@ -632,8 +633,8 @@ logrecord-fields-with-type:
   - file?^
   - alpha!
   - src?^
-  - v?^
-  - cv?^
+  - vVER?^
+  - cvVER?^
   - lv^
   - scIB?
   - nameS?^
@@ -692,8 +693,8 @@ milestone-fields-with-type:
   - file?^
   - alpha!
   - src?^
-  - v?^
-  - cv?^
+  - vVER?^
+  - cvVER?^
   - nameS?^
   - race?^
   - crace?^

@@ -1,5 +1,6 @@
 require 'sql/date'
 require 'sql/duration'
+require 'sql/version_number'
 
 module Sql
   class Type
@@ -48,6 +49,10 @@ module Sql
       self.type == 'ET'
     end
 
+    def version?
+      self.type == 'VER'
+    end
+
     def numeric?
       self.category == 'I'
     end
@@ -91,6 +96,7 @@ module Sql
     end
 
     def comparison_value(raw_value)
+      return Sql::VersionNumber.version_numberize(raw_value) if self.version?
       return raw_value.to_f if self.real?
       return raw_value.to_i if self.integer?
       return (raw_value || '').downcase if self.text?

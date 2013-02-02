@@ -76,7 +76,12 @@ module Sql
           @binder = Proc.new { |r| extractor.call(r.counts) }
         else
           index = @index - 2
-          @binder = Proc.new { |r| extractor.call(r.extra_values[index]) }
+          extra_field = @extra.fields[index]
+          @binder = Proc.new { |r|
+            cv = extra_field.comparison_value(
+              extractor.call(r.extra_values[index]))
+            cv
+          }
         end
       end
     end

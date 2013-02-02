@@ -15,6 +15,7 @@ my %TYPEMAP = ('' => 'CITEXT',
                'REF' => 'INT',
                'IB' => 'BIGINT',
                'ET' => 'BIGINT',
+               'VER' => 'CITEXT',
                'IH' => 'NUMERIC(18)',
                'D' => 'TIMESTAMP',
                '!' => 'BOOLEAN');
