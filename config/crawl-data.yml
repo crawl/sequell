@@ -482,17 +482,17 @@ aggregate-functions:
   avg:
     type: I
     return: F
-    preserve-dur: true
+    preserve-field-type: true
   median:
     type: I
     return: I
-    preserve-dur: true
+    preserve-field-type: true
   max: '*'
   min: '*'
   sum:
     type: I
     return: I
-    preserve-dur: true
+    preserve-field-type: true
   std:
     expr: "STDDEV(%s)"
     type: I
@@ -555,12 +555,10 @@ value-functions:
     display-format: '%Y'
   vault:
     type: 'S'
-    return: 'S'
     expr: "split_part(%s, '; ', 1)"
     summarisable: true
   subvault:
     type: 'S'
-    return: 'S'
     expr: "regexp_replace(%s, '^.*?; ', '')"
     summarisable: true
 
@@ -601,6 +599,7 @@ lookup-tables:
 type-categories:
   ET: I
   VER: S
+  MAP: S
   I: I
   F: I
   S: S
@@ -681,8 +680,8 @@ logrecord-fields-with-type:
   - rstart*?
   - rend*?
   - ntvI?
-  - map?^
-  - killermap?^
+  - mapMAP?^
+  - killermapMAP?^
   - mapdesc^
   - tiles!
 
@@ -810,3 +809,4 @@ wtf-lookup:
   greensnark: The completely awesome variety of snark.
   tgwi: The Good Wife (according to Wikipedia)
   cang: cang
+  hangedman: http://fc09.deviantart.net/fs71/i/2010/127/f/0/The_Hanged_Man_by_Luktarig.jpg

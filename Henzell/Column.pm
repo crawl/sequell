@@ -9,6 +9,7 @@ use Henzell::LookupTable;
 my %SQL_NAME_MAP = Henzell::Crawl::config_hash('sql-field-names');
 
 my %TYPEMAP = ('' => 'CITEXT',
+               'MAP' => 'CITEXT',
                'S' => 'TEXT',
                'PK' => 'SERIAL',
                'I' => 'INT',

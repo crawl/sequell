@@ -25,19 +25,20 @@ module Sql
       @type = Type.type(@cfg['type'])
       @summarisable = @cfg['summarisable']
       @display_format = @cfg['display-format']
-      @preserve_dur = @cfg['preserve-dur']
+      @preserve_field_type = @cfg['preserve-field-type']
       @expr = @cfg['expr']
-      @return_type = Type.type(@cfg['return'] || @type)
+      @return_type = Type.type(@cfg['return'] || '*')
     end
 
     def return_type(field)
-      return field.type if preserve_dur? && field.type.duration?
+      field = Sql::Field.field(field)
+      return field.type if preserve_field_type?
       return @return_type unless @return_type.any?
       field.type
     end
 
-    def preserve_dur?
-      @preserve_dur
+    def preserve_field_type?
+      @preserve_field_type
     end
 
     def summarisable?

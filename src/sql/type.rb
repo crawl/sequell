@@ -53,6 +53,10 @@ module Sql
       self.type == 'VER'
     end
 
+    def vault?
+      self.type == 'MAP'
+    end
+
     def numeric?
       self.category == 'I'
     end
@@ -70,6 +74,7 @@ module Sql
     end
 
     def display_value(value, display_format=nil)
+      return vault_name(value) if self.vault?
       return Sql::Duration.display_value(value) if self.duration?
       return Sql::Date.display_date(value, display_format) if self.date?
       numeric_value = value.is_a?(BigDecimal) || value.is_a?(Float)
@@ -146,6 +151,10 @@ module Sql
 
     def strip_padding_zeros(value)
       value.sub(/([.]\d*?)0+$/, '\1').sub(/[.]$/, '')
+    end
+
+    def vault_name(value)
+      value.gsub(/(?<!;) /, '_')
     end
   end
 end
