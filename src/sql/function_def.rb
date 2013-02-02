@@ -31,10 +31,10 @@ module Sql
     end
 
     def return_type(field)
-      field = Sql::Field.field(field)
-      return field.type if preserve_field_type?
+      expr = Sql::FieldExpr.expr(field)
+      return expr.type if preserve_field_type?
       return @return_type unless @return_type.any?
-      field.type
+      expr.type
     end
 
     def preserve_field_type?
