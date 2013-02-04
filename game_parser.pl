@@ -110,7 +110,11 @@ sub format_date {
 
 sub formatted_game_field {
   my ($g, $field) = @_;
-  if (grep($_ eq $field, 'end', 'start', 'rend', 'rstart', 'time') ||
+  if ($field =~ /\bk?map\b/) {
+    my $val = $$g{$field};
+    $val =~ s/(?<!;) /_/g;
+    $val
+  } elsif (grep($_ eq $field, 'end', 'start', 'rend', 'rstart', 'time') ||
       $field =~ /^(?:day|year|month)\(/)
   {
     return format_date($$g{$field}) . " [$$g{$field}]";
