@@ -1,7 +1,6 @@
 !cmdinfo cmdinfo.pl
 !help help.pl
 !chars chars.rb
-!deathsby deathsby.rb
 !deathsin deathsin.rb
 !gamesby gamesby.rb
 !gkills gkills.rb
