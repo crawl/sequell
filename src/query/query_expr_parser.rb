@@ -110,6 +110,10 @@ module Query
                           field.resolve(field.name + 'num'))
       end
 
+      if field === 'god'
+        val = GODS.god_resolve_name(val) || val
+      end
+
       if (field === ['map', 'killermap'] && op.equality? &&
           val =~ /^[\w -]+$/)
         op = Sql::Operator.op(op.equal? ? '~~' : '!~~')

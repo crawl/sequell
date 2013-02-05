@@ -812,15 +812,24 @@ The = operator is *not* an exact equality operator; it uses several
 heuristics to fix common broken queries. These heuristics depend on
 the field used in the comparison:
 
-lg:ktyp:
+ktyp:
 ~~~~~~~
 For !lm queries only, using the form
-  lg:ktyp=
+  ktyp=
 will query milestones with no matching game. These milestones are not
 necessarily only from ongoing games, so you may need additional
 filters to filter out old orphan milestones.
 
 You may also express this as !ktyp
+
+god:
+~~~~
+Queries of the form god=<god-abbr> are transformed to god=<god-full-name>,
+so for instance:
+
+ god=nemelex => god=Nemelex Xobeh
+ god=oka     => god=Okawaru
+ 
 
 killermap/map:
 ~~~~~~~~~~~~~
