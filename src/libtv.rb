@@ -4,6 +4,7 @@ require 'gserver'
 require 'helper'
 require 'sqlop/tv_view_count'
 require 'fileutils'
+require 'termcast_config'
 
 module TV
   @@tv_args = nil
@@ -279,6 +280,10 @@ module TV
     end
   end
 
+  def self.tv_description(tv)
+    "#{tv} (#{TermcastConfig.client_urls.join(' or ')})"
+  end
+
   def self.request_game_verbosely(n, g, who)
     summary = short_game_summary(g)
     tv = 'FooTV'
@@ -288,7 +293,7 @@ module TV
         puts "FooTV playlist clear requested by #{who}."
       else
         suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
-        puts "#{n}. #{summary}#{suffix} requested for #{tv}."
+        puts "#{n}. #{summary}#{suffix} requested for #{tv_description(tv)}."
       end
 
       Sqlop::TVViewCount.increment(g)

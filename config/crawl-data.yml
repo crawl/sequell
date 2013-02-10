@@ -3,6 +3,12 @@
 
 memory-use-limit-megabytes: 768
 
+termcast:
+  server: termcast.develz.org
+  client-protocols:
+    - telnet
+    - http
+
 ##
 # Maps query context names to table names. Thus !lg will query the `logrecord`
 # table while !lm will query the `milestone` table. Note that each table
