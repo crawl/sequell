@@ -1,8 +1,10 @@
 #!/usr/bin/perl
-do 'src/helper.pl';
+
+use lib 'src';
+use Helper;
 use Henzell::Config qw/%CMDPATH/;
 
-help("Displays help on a command. For a list of commands, see !cmdinfo.");
+Helper::help("Displays help on a command. For a list of commands, see !cmdinfo.");
 
 Henzell::Config::read();
 
