@@ -56,7 +56,7 @@ sub num_entries
 {
   my $term = cleanse_term(shift);
 
-  opendir(my $dir, term_directory($term)) or 0;
+  opendir(my $dir, term_directory($term)) or return 0;
   my @files = grep {$_ ne "." and $_ ne ".." and $_ ne "contrib"}
               readdir $dir;
   return scalar @files;
