@@ -53,8 +53,12 @@ module Sql
       @config.functions.function_expr(function)
     end
 
+    def canonical_value_key(field)
+      @value_keys && @value_keys.canonicalize(field.to_s)
+    end
+
     def value_key?(field)
-      @value_keys && @value_keys.include?(field.to_s)
+      self.canonical_value_key(field)
     end
 
     def local_field_def(field)

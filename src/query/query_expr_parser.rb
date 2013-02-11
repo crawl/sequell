@@ -137,6 +137,10 @@ module Query
         val = 'quitting' if val =~ /^quit/
       end
 
+      if field === 'verb' && op.equality?
+        val = Crawl::MilestoneType.canonicalize(val)
+      end
+
       if field === ['killer', 'ckiller', 'ikiller']
         if op.equality? && val !~ /^an? /i && !UNIQUES.include?(val) then
           if val.downcase == 'uniq' and field === ['killer', 'ikiller']
@@ -168,7 +172,8 @@ module Query
 
       if field.value_key?
         return QueryStruct.new('AND',
-          field_pred(field.to_s, '=', context.key_field),
+          field_pred(context.canonical_value_key(field.to_s), '=',
+                     context.key_field),
           field_pred(val, op, context.value_field))
       end
 

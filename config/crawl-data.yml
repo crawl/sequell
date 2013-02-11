@@ -774,6 +774,9 @@ milestone-types:
   - zig.exit
   - death
 
+milestone-aliases:
+  god.abandon: god.renounce
+
 tournament-prefixes:
   - t
   - tourney

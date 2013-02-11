@@ -1,6 +1,7 @@
 require 'sql/column_list'
 require 'sql/lookup_table_registry'
 require 'sql/function_defs'
+require 'crawl/milestone_type'
 
 module Sql
   class Config
@@ -43,7 +44,7 @@ module Sql
     end
 
     def milestone_types
-      @milestone_types ||= @cfg['milestone-types']
+      @milestone_types ||= Crawl::MilestoneType
     end
 
     def sql_field_name_map

@@ -241,3 +241,7 @@ E !lg * s=trunc99(sc)
 !lg * map=pitsprint s=vault(map)
 !lg * map=pitsprint s=subvault(map)
 !lm elliptic !ktyp s=gid x=max(src)
+
+!lm * god.abandon
+!lm * uniq.pacify=Kirke
+!lm * god.wor=Xom
