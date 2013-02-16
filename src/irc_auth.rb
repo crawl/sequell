@@ -31,6 +31,7 @@ class IrcAuth
   end
 
   def self.authorize!(auth_context)
+    forbid_proxying!
     if ENV['PRIVMSG'] == 'y'
       puts "This command may not be used on PM."
       exit

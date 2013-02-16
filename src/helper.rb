@@ -36,6 +36,18 @@ def munge_game(game)
   game.to_a.map { |x,y| "#{x}=#{y.to_s.gsub(':', '::')}" }.join(':')
 end
 
+def forbid_private_messaging!(msg=nil)
+  forbid_proxying!
+  if ENV['PRIVMSG'] == 'y'
+    puts(msg) if msg
+    exit 1
+  end
+end
+
+def forbid_proxying!
+  raise StandardError, "Proxying forbidden" if ENV['HENZELL_PROXIED'] == 'y'
+end
+
 def die(msg)
   if msg =~ /%CMD%/
     arg = ARGV[2].split()[0]

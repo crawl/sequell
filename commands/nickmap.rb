@@ -4,10 +4,7 @@ require 'helper'
 
 require 'set'
 
-if ENV['PRIVMSG'] == 'y'
-  puts "Cannot map nicks on PM."
-  exit 1
-end
+forbid_private_messaging! "Cannot map nicks on PM."
 
 help("Maps a nick to name(s) used on cao. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm <src> <dest>")
 

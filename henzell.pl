@@ -21,7 +21,7 @@ GetOptions("daemon!" => \$daemon,
            "irc!" => \$irc,
            "rc=s" => \$config_file) or die "Invalid options\n";
 
-$ENV{LC_ALL} = 'en_US.utf8';
+$ENV{LC_ALL} = 'en_US.UTF-8';
 $ENV{RUBYOPT} = "-rubygems -I" . File::Spec->catfile(getcwd(), 'src');
 
 my $SERVER = 'cao';     # Local server.
@@ -112,6 +112,7 @@ my %AUTHENTICATED_USERS;
 my %PENDING_AUTH;
 
 if ($irc) {
+  print "Connecting to $ircserver as $nickname, channels: @CHANNELS\n";
   $HENZELL = Henzell->new(nick     => $nickname,
                           server   => $ircserver,
                           port     => $port,
@@ -495,9 +496,38 @@ sub process_authentication {
   }
 }
 
-sub process_message {
-  my ($m) = @_;
+sub nick_rule_match {
+  my ($rule, $nick) = @_;
+  ($$rule{nick} || '') eq $nick
+}
 
+sub rule_pattern_match {
+  my ($rule, $verbatim) = @_;
+  $verbatim =~ qr/$$rule{pattern}/ && $1
+}
+
+sub handle_special_command {
+  my ($m, $private, $nick, $verbatim) = @_;
+  return if $private;
+  my $respond_to = $CONFIG{respond_to};
+  return unless $respond_to && ref($respond_to) eq 'ARRAY';
+  for my $rule (@{$CONFIG{respond_to}}) {
+    next unless ref($rule) eq 'HASH';
+    next unless nick_rule_match($rule, $nick);
+    next unless $$rule{executor} eq 'command';
+
+    my $body = rule_pattern_match($rule, $verbatim);
+    next unless $body;
+    $$m{body} = $body;
+    $$m{proxied} = 1;
+    process_command($m);
+    return 1;
+  }
+  undef
+}
+
+sub message_metadata {
+  my $m = shift;
   my $reprocessed_command = $$m{reproc};
   my $nick = $$m{who};
   my $channel = $$m{channel};
@@ -506,34 +536,80 @@ sub process_message {
   my $verbatim = $$m{body};
   my $target = $verbatim;
   $nick     =~ y/'//d;
-
   my $sibling = nick_is_sibling($nick);
-  unless ($sibling || $reprocessed_command) {
-    seen_update($m, "saying '$verbatim' on $channel");
-    respond_to_any_msg($m);
-  }
-
-  unless ($private || $reprocessed_command) {
-    check_sibling_announcements($nick, $verbatim);
-  }
-  return if $sibling;
 
   $target =~ s/^\?[?>]/!learn query /;
   $target =~ s/^!>/!/;
-  $target =~ s/^([!@]\w+) ?// or return;
-  my $command = lc $1;
+  $target =~ s/^([!@]\w+) ?// or undef($target);
 
-  $target   =~ s/ .*$//;
-  $target   =~ y/a-zA-Z0-9_-//cd;
-  $target = $nick unless $target =~ /\S/;
-  $target   =~ y/a-zA-Z0-9_-//cd;
+  my $command;
+  if (defined $target) {
+    $command = lc $1;
+
+    $target   =~ s/ .*$//;
+    $target   =~ y/a-zA-Z0-9_-//cd;
+    $target   = $nick unless $target =~ /\S/;
+    $target   =~ y/a-zA-Z0-9_-//cd;
+  }
 
   if (force_private($verbatim) && !is_always_public($verbatim)) {
     $private = 1;
     $$m{channel} = 'msg';
   }
 
-  if ($command eq '!load' && exists $admins{$nick})
+  {
+    m => $m,
+    reprocessed_command => $reprocessed_command,
+    nick => $nick,
+    channel => $channel,
+    private => $private,
+    verbatim => $verbatim,
+    target => $target,
+    sibling => $sibling,
+    command => $command,
+    target => $target,
+    proxied => $$m{proxied}
+  }
+}
+
+sub process_message {
+  my ($m) = @_;
+  my $meta = message_metadata($m);
+  unless ($$meta{sibling} || $$meta{reprocessed_command}) {
+    seen_update($m, "saying '$$meta{verbatim}' on $$meta{channel}");
+    respond_to_any_msg($m);
+  }
+
+  unless ($$meta{private} || $$meta{reprocessed_command}) {
+    check_sibling_announcements($$meta{nick}, $$meta{verbatim});
+  }
+
+  if (!$$meta{reprocessed_command} &&
+      handle_special_command($m, $$meta{private}, $$meta{nick},
+                             $$meta{verbatim}))
+  {
+    return;
+  }
+  return if $$meta{sibling};
+  process_command($m);
+}
+
+sub process_command {
+  my ($m) = @_;
+
+  my $meta = message_metadata($m);
+  my $command = $$meta{command};
+  return unless $command;
+
+  my $target = $$meta{target};
+  my $nick = $$meta{nick};
+  my $verbatim = $$meta{verbatim};
+  my $channel = $$meta{channel};
+  my $private = $$meta{private};
+  my $reprocessed_command = $$meta{reprocessed_command};
+  my $proxied = $$meta{proxied};
+
+  if (!$proxied && $command eq '!load' && exists $admins{$nick})
   {
     print "LOAD: $nick: $verbatim\n";
     $HENZELL->say(channel => $channel,
@@ -546,13 +622,15 @@ sub process_message {
     # Log all commands to Henzell.
     print "CMD($private): $nick: $verbatim\n";
     $ENV{PRIVMSG} = $private ? 'y' : '';
+    $ENV{HENZELL_PROXIED} = $proxied ? 'y' : '';
     $ENV{IRC_NICK_AUTHENTICATED} = nick_identified($nick) ? 'y' : '';
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
     my $output =
       $CMD{$command}->(pack_args($target, $nick, $verbatim, '', ''));
 
     if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
-      if ($reprocessed_command || nick_identified($nick, 'any_auth')) {
+      if ($reprocessed_command || $proxied ||
+          nick_identified($nick, 'any_auth')) {
         respond_with_message($m,
               "Cannot authenticate $nick with services, ignoring $verbatim");
       } else {
