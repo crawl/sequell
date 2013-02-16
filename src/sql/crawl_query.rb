@@ -38,7 +38,7 @@ module Sql
       @count_tables = @tables.dup
       @summary_tables = @tables.dup
 
-      resolve_sort_fields
+      resolve_sort_fields(@pred, @tables)
       @query_fields = resolve_query_fields
     end
 
@@ -61,9 +61,9 @@ module Sql
       map
     end
 
-    def resolve_sort_fields
-      @pred.sorts.each { |sort|
-        resolve_field(sort.field, @tables)
+    def resolve_sort_fields(pred, tables)
+      pred.sorts.each { |sort|
+        resolve_field(sort.field, tables)
       }
     end
 
@@ -191,21 +191,36 @@ module Sql
       }
     end
 
-    def select_all(with_sorts=true)
+    def select_all(with_sorts=true, single_record_index=0)
+      if single_record_index > 0
+        resolve_sort_fields(@count_pred, @count_tables)
+        id_subquery = self.select_id(with_sorts, single_record_index)
+        id_field = Sql::Field.field('id')
+        id_sql = resolve_field(id_field, @tables).to_sql
+        return ("SELECT #{query_columns.join(", ")} " +
+                "FROM #{@tables.to_sql} WHERE #{id_sql} = (#{id_subquery})")
+      end
+
       "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " +
          where(@pred, with_sorts)
     end
 
-    def select_id(with_sorts=false)
+    def select_id(with_sorts=false, single_record_index=0)
       id_field = Sql::Field.field('id')
       id_sql = resolve_field(id_field, @count_tables).to_sql
       "SELECT #{id_sql} FROM #{@count_tables.to_sql} " +
-        "#{where(@count_pred, with_sorts)}"
+        "#{where(@count_pred, with_sorts)} #{limit_clause(single_record_index)}"
     end
 
     def select_count
       "SELECT COUNT(*) FROM #{@count_tables.to_sql} " +
         where(@count_pred, false)
+    end
+
+    def limit_clause(limit)
+      return '' unless limit > 0
+      return "LIMIT #{limit}" if limit == 1
+      "LIMIT 1 OFFSET #{limit - 1}"
     end
 
     def resolve_summary_fields

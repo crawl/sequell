@@ -273,14 +273,7 @@ QUERY
 end
 
 def sql_each_row_matching(q, limit=0)
-  query = q.select_all
-  if limit > 0
-    if limit > 1
-      query += " LIMIT 1 OFFSET #{limit - 1}"
-    else
-      query += " LIMIT #{limit}"
-    end
-  end
+  query = q.select_all(true, limit=limit)
   if DEBUG_HENZELL
     STDERR.puts("SELECT query: #{query}, values: #{q.values.inspect}")
   end
