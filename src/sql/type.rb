@@ -13,6 +13,8 @@ module Sql
       @type_categories ||= SQL_CONFIG['type-categories']
     end
 
+    attr_accessor :unit
+
     def initialize(type_string)
       @type_string = type_string.sub(/(?:.*?)([A-Z]*[\W]*)$/, '\1')
     end
@@ -27,6 +29,18 @@ module Sql
 
     def category
       @category ||= (Type.type_categories[self.type] || 'S')
+    end
+
+    def with_unit(unit)
+      clone = self.dup
+      clone.unit = unit
+      clone
+    end
+
+    def unit
+      return @unit if @unit
+      return 'seconds' if self.duration_type?
+      nil
     end
 
     def any?
@@ -45,8 +59,12 @@ module Sql
       self.type == 'D'
     end
 
-    def duration?
+    def duration_type?
       self.type == 'ET'
+    end
+
+    def duration?
+      self.unit == 'seconds'
     end
 
     def version?

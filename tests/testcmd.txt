@@ -245,3 +245,6 @@ E !lg * s=trunc99(sc)
 !lm * god.abandon
 !lm * uniq.pacify=Kirke
 !lm * god.wor=Xom
+
+!lg * s=char x=avg(turn) ::~ \d[.]\d
+!lg * s=char x=avg(dur) ::~ \d{1,2}:\d{2}:\d{2}

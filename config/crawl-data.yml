@@ -488,17 +488,17 @@ aggregate-functions:
   avg:
     type: I
     return: F
-    preserve-field-type: true
+    preserve-unit: true
   median:
     type: I
     return: I
-    preserve-field-type: true
+    preserve-unit: true
   max: '*'
   min: '*'
   sum:
     type: I
     return: I
-    preserve-field-type: true
+    preserve-unit: true
   std:
     expr: "STDDEV(%s)"
     type: I
