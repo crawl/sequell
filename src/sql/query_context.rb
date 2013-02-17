@@ -16,7 +16,6 @@ module Sql
     attr_accessor :fields, :synthetic, :defsort
     attr_accessor :table_alias
     attr_reader   :raw_time_field
-    attr_reader   :key_field, :value_field
     attr_reader   :alt
 
     def with
@@ -131,6 +130,14 @@ module Sql
 
     def join_field
       'game_key_id'
+    end
+
+    def key_field
+      @key_field.dup
+    end
+
+    def value_field
+      @value_field.dup
     end
 
     def initialize(config, table, entity_name, alt_context, options)

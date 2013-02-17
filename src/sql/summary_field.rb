@@ -33,5 +33,9 @@ module Sql
     def sort_field
       "#{order}#{field}"
     end
+
+    def to_s
+      "SummaryField[#{order || ''}#{field}#{percentage ? '%' : ''}]"
+    end
   end
 end
