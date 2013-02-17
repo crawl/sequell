@@ -323,7 +323,7 @@ def sql_game_by_key(key)
 end
 
 def is_charabbrev? (arg)
-  arg =~ /^([a-z]{2})([a-z]{2})/i && RACE_EXPANSIONS[$1.downcase] &&
+  arg =~ /^([a-z]{2})([a-z]{2})$/i && RACE_EXPANSIONS[$1.downcase] &&
     CLASS_EXPANSIONS[$2.downcase]
 end
 
