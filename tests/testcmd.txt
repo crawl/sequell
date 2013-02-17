@@ -248,3 +248,5 @@ E !lg * s=trunc99(sc)
 
 !lg * s=char x=avg(turn) ::~ \d[.]\d
 !lg * s=char x=avg(dur) ::~ \d{1,2}:\d{2}:\d{2}
+
+!lg * ((cv=0.10 || cv=0.11-a)) ikiller!~'s ghost killer~~Duvessa s=ckiller
