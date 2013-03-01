@@ -18,6 +18,12 @@ module Sql
       @order = ''
     end
 
+    def dup
+      self.class.new(@field_list, @expr, @field && @field.dup,
+                     @display && @display.dup, @calias,
+                     @special)
+    end
+
     def type
       case
       when aggregate? && self.function

@@ -24,6 +24,14 @@ module Sql
       @aggregate = !@fields.empty?() && @fields[0].aggregate?()
     end
 
+    def dup
+      clone = self.class.new('', @ctx)
+      clone.fields = self.fields.map { |f| f.dup }
+      clone.instance_variable_set(:@extra, @extra.dup)
+      clone.instance_variable_set(:@aggregate, @aggregate)
+      clone
+    end
+
     def to_s
       "QueryFields:#{@fields.inspect}"
     end

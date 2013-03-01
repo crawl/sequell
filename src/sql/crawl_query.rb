@@ -19,7 +19,7 @@ module Sql
       @pred = predicates.dup
       @nick = nick
       @num = num
-      @extra_fields = extra_fields
+      @extra_fields = extra_fields && extra_fields.dup
       @argstr = argstr
       @values = nil
       @summarise = nil
