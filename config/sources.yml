@@ -56,6 +56,7 @@ sources:
 
   - name: cdo
     base: http://crawl.develz.org
+    utc-epoch: '200808070330+0000'
     timezones:
       D: '+0200'
       S: '+0100'
@@ -91,7 +92,6 @@ sources:
 
   - name: cszo
     base: http://dobrazupa.org
-    utc-epoch: '200808070330+0000'
     logfiles:
       - meta/git/logfile{,-sprint,-zotdef}*
       - meta/0.11/logfile{,-sprint,-zotdef}*
