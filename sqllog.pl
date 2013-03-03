@@ -190,7 +190,7 @@ sub open_handles
   my @handles;
 
   for my $file (@files) {
-    my $path = $file->target_filepath();
+    my $path = $file->read_filepath() or next;
     open my $handle, '<', $path or do {
       warn "Unable to open $path for reading: $!";
       next;

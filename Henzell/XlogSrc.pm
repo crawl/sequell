@@ -106,6 +106,14 @@ sub target_filepath {
   File::Spec->catfile($TARGET_BASE, $self->canonical_name())
 }
 
+# Returns the local path to read the file from, preferring the target
+# file path and falling back to the local filepath.
+sub read_filepath {
+  my $self = shift;
+  $self->target_exists() ? $self->target_filepath() :
+    $self->local_source_exists() ? $self->local_filepath() : undef
+}
+
 # Returns true if we can expect this file to be actively updated on the server
 sub is_live {
   my $self = shift;
