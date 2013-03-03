@@ -12,5 +12,5 @@ startup_services:
 
 respond_to:
   - nick: Henzell
-    pattern: '(?i)^[^\[]+\[[^\]]+\]: see \{(!(?:lg|lm|tv).*)\}$'
+    pattern: '(?i)^[^\[]+\[[^\]]+\]: see \{(!(?:lg|lm|tv|hs).*)\}$'
     executor: command
