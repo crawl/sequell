@@ -5,7 +5,7 @@ use warnings;
 use lib 'src';
 use Helper;
 
-our $message_dir = '/home/henzell/henzell/dat/messages';
+our $message_dir = 'dat/messages';
 
 sub cleanse_nick
 {

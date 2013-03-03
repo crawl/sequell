@@ -48,7 +48,7 @@ my $sibling_logs_need_fetch;
 # The most recent explicit fetch of logfile records from sibling servers.
 my $sibling_last_fetch_time;
 
-my $seen_dir       = '/home/henzell/henzell/dat/seendb';
+my $seen_dir       = 'dat/seendb';
 my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
                                       greensnark cbus doy/;
 
