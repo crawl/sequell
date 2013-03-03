@@ -1,5 +1,3 @@
-require 'rest-client'
-
 module LearnDB
   DB_URL = 'http://crawl.akrasiac.org/learndb'
 
@@ -18,6 +16,8 @@ module LearnDB
 
   class Entry
     def initialize(name)
+      require 'rest-client'
+
       @name = name
       @entries = { }
       @size = nil
