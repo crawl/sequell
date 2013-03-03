@@ -23,7 +23,7 @@ our @EXPORT_OK = qw/$logfile demunge_logline demunge_xlogline munge_game
                     @roles normalize_role short_role code_role display_role
                     @gods normalize_god short_god code_god display_god
                     ntimes once serialize_time ucfirst_word
-                    nick_alias unwon_combos/;
+                    nick_alias unwon_combos cleanse_nick/;
 our %EXPORT_TAGS = (
     logfile => [qw/demunge_logline demunge_xlogline munge_game games_for/],
     skills  => [grep /skill/, @EXPORT_OK],
@@ -457,5 +457,12 @@ sub nick_alias {
 
   $aliases && $aliases =~ /^(\S+)/ ? $1 : $nick
 }
+
+sub cleanse_nick {
+  my $nick = lc(shift);
+  $nick =~ y/a-z0-9_//cd;
+  return $nick;
+}
+
 
 1;

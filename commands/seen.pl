@@ -1,12 +1,14 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-do 'commands/message/helper.pl';
+
+use lib 'src';
+use Helper qw/demunge_xlogline cleanse_nick serialize_time/;
 
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
 
-my $seen_dir = '/home/henzell/henzell/dat/seendb';
+my $seen_dir = 'dat/seendb';
 
 if (lc($ARGV[0]) eq lc($ARGV[1]))
 {

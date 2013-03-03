@@ -1,7 +1,10 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+
 do 'commands/message/helper.pl';
+use lib 'src';
+use Helper qw/demunge_xlogline/;
 
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
