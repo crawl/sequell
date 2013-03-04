@@ -38,3 +38,8 @@ graphs
 .rvmrc
 henzell-todo.txt
 crawl-repository
+banned_words.txt
+dirserv.queue.log
+*.lock
+henzell.out
+henzell.out.*
