@@ -2,3 +2,4 @@ sql_queries: 0
 sql_store: 0
 host: cao
 announce: 1
+announcements_file: '/home/crawl-dev/logs/announcements.log'

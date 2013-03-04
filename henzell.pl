@@ -67,7 +67,7 @@ my @CHANNELS         = Henzell::Config::array('channels');
 my $ANNOUNCE_CHANNEL = $CONFIG{announce_channel};
 my $DEV_CHANNEL      = $CONFIG{dev_channel};
 
-my $ANNOUNCEMENTS_FILE = '/var/lib/dgamelaunch/logs/announcements.log';
+my $ANNOUNCEMENTS_FILE = $CONFIG{announcements_file};
 
 my @BORING_UNIQUES = qw/Jessica Ijyb Blork Terence Edmund Psyche
                         Joseph Josephine Harold Norbert Jozef
