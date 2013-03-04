@@ -6,7 +6,7 @@ use warnings;
 use Henzell::Cmd qw/load_all_commands execute_cmd/;
 do 'sqllog.pl';
 
-my $DEFAULT_NICK = 'greensnark';
+my $DEFAULT_NICK = $ENV{NICK} || 'greensnark';
 
 $ENV{IRC_NICK_AUTHENTICATED} = 'y';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
