@@ -311,7 +311,7 @@ sub tail_logfile
     {
       if (!suppress_game($game_ref)) {
         my $output = pretty_print($game_ref);
-        $output =~ s/ on \d{4}-\d{2}-\d{2}//;
+        $output =~ s/ on \d{4}-\d{2}-\d{2} (?:\d{2}:\d{2}:\d{2})?//;
         unless (contains_banned_word($output)) {
           raw_message_post({ channel => $ANNOUNCE_CHANNEL }, $output);
         }
