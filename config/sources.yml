@@ -108,11 +108,11 @@ sources:
   - name: csn
     base: http://crawlus.somatika.net
     logfiles:
-      - scoring/crawl-trunk/logfile{,-sprint,-zotdef}*
-      - scoring/crawl-0.11/logfile{,-sprint,-zotdef}*
+      - scoring/crawl-trunk/logfile{,-sprint,-zotdef}
+      - scoring/crawl-0.11/logfile{,-sprint,-zotdef}
     milestones:
-      - scoring/crawl-trunk/milestones{,-sprint,-zotdef}*
-      - scoring/crawl-0.11/milestones{,-sprint,-zotdef}*
+      - scoring/crawl-trunk/milestones{,-sprint,-zotdef}
+      - scoring/crawl-0.11/milestones{,-sprint,-zotdef}
     morgues:
       - http://crawlus.somatika.net/dumps
 

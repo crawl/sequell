@@ -45,7 +45,11 @@ sub fetch_file($) {
 
   my $url = $file->http_url();
   print "Fetching $url -> $path\n" if $verbose;
-  system(qq{wget --timeout=15 -q -c $url -O $path >/dev/null 2>&1});
+
+  my $limit_time = $target_exists ? '--max-time 15' : '';
+  my $cmd = qq{curl -s $limit_time -C- $url -o $path >/dev/null 2>&1};
+  print "[CMD] $cmd\n" if $verbose;
+  system($cmd);
 }
 
 sub main() {
