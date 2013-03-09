@@ -12,8 +12,8 @@ sub statements {
 }
 
 sub new {
-  my $self = shift;
-  bless { }, $self
+  my ($self, %options) = @_;
+  bless { %options }, $self
 }
 
 sub _load {
@@ -26,10 +26,14 @@ sub _load {
 
 sub sql {
   my $self = shift;
-  join("\n\n",
-       $self->cleanup_sql(),
-       $self->table_ddl(),
-       $self->canary_ddl())
+  if (!$self->{indexes_only}) {
+    join("\n\n",
+         $self->cleanup_sql(),
+         $self->table_ddl(),
+         $self->canary_ddl())
+  } else {
+    join("\n\n", $self->index_ddl());
+  }
 }
 
 sub _find_tables {
@@ -92,11 +96,24 @@ sub each_table_statements {
 sub table_ddl {
   my $self = shift;
 
-  statements(map($_->ddl(), $self->lookup_tables()),
-             $self->each_table_statements(sub {
-                                            my ($table, $base_name) = @_;
-                                            $self->table_def($table, $base_name)
-                                          }))
+  statements(
+    map($_->ddl(), $self->lookup_tables()),
+    $self->each_table_statements(
+      sub {
+        my ($table, $base_name) = @_;
+        $self->table_def($table, $base_name)
+      }))
+}
+
+sub index_ddl {
+  my $self = shift;
+  $self->lookup_tables();
+  statements(
+    $self->each_table_statements(
+      sub {
+        my ($table, $base_name) = @_;
+        $self->table_def($table, $base_name)
+      }))
 }
 
 sub table {
@@ -108,11 +125,15 @@ sub table_def {
   my ($self, $table_name, $base) = @_;
 
   my $table = $self->table($table_name, $base);
-  $table->sql()
+  $table->sql(tables_only => $self->{tables_only},
+              indexes_only => $self->{indexes_only})
 }
 
 sub canary_ddl {
-  ''
+  <<CANARY
+DROP TABLE IF EXISTS canary;
+CREATE TABLE canary (last_update TIMESTAMP);
+CANARY
 }
 
 1

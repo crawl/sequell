@@ -57,10 +57,12 @@ sub constraints {
 }
 
 sub sql {
-  my $self = shift;
+  my ($self, %opt) = @_;
 
-  my @statements = ($self->table_def(),
-                    $self->index_defs());
+  my @statements =
+    $opt{tables_only} ? ($self->table_def()) :
+    $opt{indexes_only} ? ($self->index_defs()) :
+      ($self->table_def(), $self->index_defs());
   join(";\n", @statements)
 }
 

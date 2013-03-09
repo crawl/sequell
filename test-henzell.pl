@@ -27,6 +27,7 @@ $ENV{'HENZELL_DBPASS'} = $DBPASS;
 new_db_handle($DBNAME, $DBUSER, $DBPASS) && initialize_sqllog();
 
 my $SCHEMAFILE = 'henzell-schema.sql';
+my $INDEXFILE  = 'henzell-indexes.sql';
 my $TESTFILE = 'testcmd.txt';
 
 my $TESTLOG = 'test.log';
@@ -163,11 +164,12 @@ sub db_timestamp_stale {
   !$canary_time || $datafiles_newest_time gt $canary_time
 }
 
-sub db_load_schema() {
-  announce "Rebuilding schema from $SCHEMAFILE";
+sub db_load_schema($) {
+  my $file = shift;
+  announce "Rebuilding schema from $file";
   with_db {
     my $dbh = shift;
-    my $sql_ddl = do { local (@ARGV, $/) = $SCHEMAFILE; <> };
+    my $sql_ddl = do { local (@ARGV, $/) = $file; <> };
     my @ddl_statements = split(/;/, $sql_ddl);
     for my $statement (@ddl_statements) {
       if ($statement =~ /\S/) {
@@ -175,9 +177,6 @@ sub db_load_schema() {
           or die "Failed to load schema: error $! on $statement\n";
       }
     }
-
-    my $canary_sql = do { local (@ARGV, $/) = 'tests/data/canary.sql'; <> };
-    $dbh->do($canary_sql);
   };
 }
 
@@ -220,9 +219,10 @@ sub build_test_db() {
   $DB_DIRTY = db_schema_missing() || db_timestamp_stale();
   if ($DB_DIRTY) {
     announce "Database needs update";
-    db_load_schema();
+    db_load_schema($SCHEMAFILE);
     db_load_data();
     db_canary_set_time();
+    db_load_schema($INDEXFILE);
   }
 }
 
