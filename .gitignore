@@ -43,3 +43,4 @@ dirserv.queue.log
 *.lock
 henzell.out
 henzell.out.*
+.rvmrc.*

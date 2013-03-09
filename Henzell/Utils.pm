@@ -55,6 +55,7 @@ sub spawn_service {
 # (presumably at EOF).
 sub tailed_handle {
   my $file = shift;
+  return unless $file;
   open my $handle, '<', $file or return;
 
   # Go to the very end and see if we have a newline there:

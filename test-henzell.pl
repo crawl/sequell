@@ -5,7 +5,10 @@ use warnings;
 use Time::localtime;
 use File::stat;
 use Henzell::Cmd;
+use Henzell::SourceServer;
+use Henzell::XlogSrc;
 
+$Henzell::XlogSrc::TARGET_BASE = 'tests/data';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{HENZELL_TEST} = 'y';
 $ENV{RUBYOPT} = '-rubygems -Isrc';
@@ -79,9 +82,13 @@ sub datafile_path($) {
 }
 
 sub datafile_hashrefs(@) {
-  map({ file => datafile_path($_),
-        path => datafile_path($_),
-        src => 'cdo' },
+  map(Henzell::XlogSrc->new($_, scalar(/logfile/i),
+                            Henzell::SourceServer->new({
+                              name => 'cdo',
+                              local => $DATADIR,
+                              logfiles => [],
+                              milestones => []
+                            })),
       @_)
 }
 
@@ -168,6 +175,9 @@ sub db_load_schema() {
           or die "Failed to load schema: error $! on $statement\n";
       }
     }
+
+    my $canary_sql = do { local (@ARGV, $/) = 'tests/data/canary.sql'; <> };
+    $dbh->do($canary_sql);
   };
 }
 
@@ -175,12 +185,15 @@ sub db_load_data() {
   with_db {
     my $dbh = shift;
     my $timestamp = localtime();
-    for my $logfile (open_handles(datafile_hashrefs(datafile_logs()))) {
-      announce "Loading logfile data from $$logfile{file}";
+
+    my @logfiles = open_handles(datafile_hashrefs(datafile_logs()));
+    my @milestones = open_handles(datafile_hashrefs(datafile_milestones()));
+    for my $logfile (@logfiles) {
+      announce "Loading logfile data from $$logfile{readfile}";
       cat_logfile($logfile);
     }
-    for my $milestone (open_handles(datafile_hashrefs(datafile_milestones()))) {
-      announce "Loading milestone data from $$milestone{file}";
+    for my $milestone (@milestones) {
+      announce "Loading milestone data from $$milestone{readfile}";
       cat_stonefile($milestone);
     }
   };

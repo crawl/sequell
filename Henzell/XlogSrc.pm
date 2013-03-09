@@ -23,6 +23,8 @@ sub new {
     $name = $real_name;
   }
 
+  die "No server config" unless $server;
+
   bless { name => $name,
           tag => $tag,
           logfile => $logfile,

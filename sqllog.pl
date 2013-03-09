@@ -198,6 +198,7 @@ sub open_handles
 
     seek($handle, 0, SEEK_END); # EOF
     push @handles, { file   => $file->target_filepath(),
+                     readfile => $path,
                      fref   => $file,
                      handle => $handle,
                      pos    => tell($handle),
@@ -273,10 +274,11 @@ sub cat_xlog {
 
   my $loghandle = $lf->{handle};
   my $lfile = $lf->{file};
+  my $readfile = $lf->{readfile};
   $offset = find_start_offset_in($table, $lfile) unless defined $offset;
   die "No offset into $lfile ($table)" unless defined $offset;
 
-  my $size = -s($lfile);
+  my $size = -s($readfile);
   my $outstanding_size = $size - $offset;
 
   eval {
@@ -299,7 +301,7 @@ sub cat_xlog {
     if (!($rows % $COMMIT_INTERVAL)) {
       $dbh->commit;
       $dbh->begin_work;
-      print "\rCommitted $rows records from $lfile.";
+      print "\rCommitted $rows records from $readfile.";
       STDOUT->flush;
     }
   }
