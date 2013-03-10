@@ -1,3 +1,5 @@
+require 'query/grammar'
+
 module Query
   class OperatorBackCombine
     # First combination: if we have args that start with an operator,
@@ -6,7 +8,7 @@ module Query
     # ['killer=', 'steam', 'dragon']
     def self.apply(args)
       cargs = []
-      opstart = %r!^(#{OPERATORS.keys.map { |o| Regexp.quote(o) }.join('|')})!;
+      opstart = %r!^(#{operators.keys.map { |o| Regexp.quote(o) }.join('|')})!;
       for arg in args do
         if !cargs.empty? && arg =~ opstart
           cargs.last << arg
@@ -15,6 +17,10 @@ module Query
         end
       end
       cargs
+    end
+
+    def self.operators
+      Query::Grammar::OPERATORS
     end
   end
 end

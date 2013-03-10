@@ -25,6 +25,8 @@ sub runcmd($) {
   my ($exit, $result) =
     Henzell::Cmd::execute_cmd($nick || $DEFAULT_NICK, $cmd, 1);
   print handle_output($result, 1), "\n";
+
+  Henzell::Cmd::load_all_commands();
 }
 
 if (@ARGV > 0) {

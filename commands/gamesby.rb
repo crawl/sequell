@@ -9,7 +9,7 @@ require 'sql/date'
 
 help("Summarizes a player's public server career.")
 
-query_string = Query::QueryString.new(ARGV[2].split()[1..-1])
+query_string = Query::QueryString.new(ARGV[2].split()[1..-1]).with_extra
 q = Query::QueryBuilder.build(ARGV[1], query_string.dup, CTX_LOG, nil, true)
 
 full_query =

@@ -1,0 +1,23 @@
+# Defaults, affect all configs unless overridden in the config.
+
+use_pm:
+
+irc_server: chat.freenode.net
+irc_port: 6667
+lock_name: henzell
+
+sql_queries:
+sql_store:
+
+bot_nick: Henzell
+
+announce:
+
+seen_update: true
+
+channels: "##crawl ##crawl-dev"
+announce_channel: "##crawl"
+dev_channel: "##crawl-dev"
+
+commands_file: "commands/commands-henzell.txt"
+public_commands_file: "commands/public_commands.txt"

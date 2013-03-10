@@ -44,3 +44,4 @@ dirserv.queue.log
 henzell.out
 henzell.out.*
 .rvmrc.*
+*.cow

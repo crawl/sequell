@@ -8,41 +8,17 @@ use base 'Exporter';
 use Henzell::ServerConfig;
 use YAML::Any;
 use Cwd;
+use Henzell::UserCommandDb;
 
-our @EXPORT_OK = qw/read get %CONFIG %CMD %CMDPATH %PUBLIC_CMD
+our @EXPORT_OK = qw/read get %CONFIG %CMD %USER_CMD %CMDPATH %PUBLIC_CMD
                     @LOGS @MILESTONES/;
 
-my %DEFAULT_CONFIG = (use_pm => 0,
+my $DEFAULTS_FILE = 'rc/henzell.defaults';
 
-                      irc_server => 'chat.freenode.net',
-                      irc_port   => 6667,
-                      lock_name  => 'henzell',
-
-                      # Does the bot respond to SQL queries (default: NO)
-                      sql_queries => 0,
-                      # Does the bot store logfiles and milestones in
-                      # a SQL db (default: NO)
-                      sql_store => 0,
-
-                      # IRC nick
-                      bot_nick => 'Henzell',
-
-                      # Make announcements?
-                      announce => 0,
-
-                      # Update seen-db
-                      seen_update => 1,
-
-                      channels => qq/##crawl ##crawl-dev/,
-                      announce_channel => '##crawl',
-                      dev_channel => '##crawl-dev',
-
-                      commands_file => 'commands/commands-henzell.txt',
-                      public_commands_file => 'commands/public-commands.txt'
-                      );
-
+my %DEFAULT_CONFIG = %{YAML::Any::LoadFile($DEFAULTS_FILE)};
 our %CONFIG = %DEFAULT_CONFIG;
 our %CMD;
+our %USER_CMD;
 our %CMDPATH;
 our %PUBLIC_CMD;
 our @LOGS;
@@ -50,11 +26,21 @@ our @MILESTONES;
 our $CONFIG_FILE = 'rc/henzell.rc';
 
 my $command_dir = 'commands';
+my $user_command_loaded_at;
 
 my %ABBRMAP;
 
 sub get() {
   \%CONFIG
+}
+
+sub sigils {
+  $CONFIG{sigils}
+}
+
+sub command_exists {
+  my $command = shift;
+  $CMD{$command} || $USER_CMD{$command}
 }
 
 sub load_file_paths() {
@@ -79,6 +65,17 @@ sub load_public_commands($) {
   close $inf;
 }
 
+sub load_user_commands {
+  return unless -f Henzell::UserCommandDb::db_file();
+  if ($user_command_loaded_at &&
+      $user_command_loaded_at < -M(Henzell::UserCommandDb::db_file()))
+  {
+    return;
+  }
+  %USER_CMD = Henzell::UserCommandDb::user_commands();
+  $user_command_loaded_at = -M Henzell::UserCommandDb::db_file();
+}
+
 sub load_commands($$) {
   my ($commands_file, $procmaker) = @_;
 
@@ -100,6 +97,10 @@ sub load_commands($$) {
 
     #print "Loaded $command.\n";
     ++$loaded;
+  }
+  if ($procmaker) {
+    $CMD{custom} = $procmaker->($command_dir, 'user_command.rb');
+    $CMDPATH{custom} = "$command_dir/user_command.rb";
   }
 }
 
@@ -137,6 +138,7 @@ sub read {
   load_file_paths();
   load_public_commands($CONFIG{public_commands_file});
   load_commands($CONFIG{commands_file}, $procmaker);
+  load_user_commands();
 
   "Loaded " . scalar(keys(%CMD)) . " commands"
 }

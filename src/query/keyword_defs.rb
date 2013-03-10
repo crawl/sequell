@@ -1,4 +1,5 @@
 require 'query/keyword_matcher'
+require 'cmd/user_keyword'
 
 module Query
   # These matches are applied in sequence, order is significant.
@@ -143,6 +144,22 @@ module Query
     end
     if value_field.text?
       return expr.parse(value.downcase, '', expr.op.negate)
+    end
+  }
+
+  KeywordMatcher.matcher(:game_type) {
+    game = arg.downcase
+    if SQL_CONFIG.games.index(game)
+      GameContext.game = game
+      return true
+    end
+  }
+
+  KeywordMatcher.matcher(:user_keyword) {
+    user_keyword = Cmd::UserKeyword.keyword(arg)
+    if user_keyword
+      return Query::QueryParamParser.parse(
+        Query::QueryString.new(user_keyword.definition))
     end
   }
 end

@@ -2,6 +2,7 @@ require 'henzell/commands'
 
 module Henzell
   class Config
+    DEFAULTS_FILEPATH = 'rc/henzell.defaults'
     CONFIG_FILEPATH = 'rc/henzell.rc'
 
     def self.root
@@ -14,6 +15,10 @@ module Henzell
 
     def self.config_file
       file_path(CONFIG_FILEPATH)
+    end
+
+    def self.default
+      @default ||= self.read
     end
 
     def self.read(cfg=self.config_file)
@@ -37,7 +42,8 @@ module Henzell
     end
 
     def load
-      @config = YAML.load_file(@config_file)
+      @defaults = YAML.load_file(DEFAULTS_FILEPATH)
+      @config = @defaults.merge(YAML.load_file(@config_file))
     end
   end
 end

@@ -18,7 +18,7 @@ module Query
       for arg in @args do
         if (!can_combine ||
             cargs.empty? ||
-            arg =~ ARGSPLITTER ||
+            arg =~ Query::Grammar::ARGSPLITTER ||
             arg_keyword?(arg) ||
             arg_is_grouper?(arg) ||
             arg_is_grouper?(cargs.last) ||
@@ -36,11 +36,12 @@ module Query
     end
 
     def arg_enables_combine?(arg)
-      arg =~ ARGSPLITTER
+      arg =~ Query::Grammar::ARGSPLITTER
     end
 
     def arg_is_grouper?(arg)
-      [OPEN_PAREN, CLOSE_PAREN, BOOLEAN_OR].index(arg)
+      [Query::Grammar::OPEN_PAREN, Query::Grammar::CLOSE_PAREN,
+       Query::Grammar::BOOLEAN_OR].index(arg)
     end
 
     def args_uncombinable?(a, b)

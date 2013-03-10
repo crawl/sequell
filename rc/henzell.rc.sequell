@@ -5,6 +5,9 @@ commands_file: commands/commands-sequell.txt
 announce_channel:
 seen_update:
 
+sigils: "!@#$%&="
+preferred_sigil: "!"
+
 startup_services:
   - name: FooTV HTTP Service
     command: rackup -p 29880 config.ru

@@ -5,7 +5,7 @@ use POSIX qw(setsid); # For daemonization.
 use Fcntl qw/:flock SEEK_END/;
 use IPC::Open2;
 
-use Henzell::Config qw/%CONFIG %CMD %PUBLIC_CMD/;
+use Henzell::Config qw/%CONFIG %CMD %USER_CMD %PUBLIC_CMD/;
 use Henzell::Utils;
 use Getopt::Long;
 use Cwd;
@@ -541,7 +541,9 @@ sub message_metadata {
 
   $target =~ s/^\?[?>]/!learn query /;
   $target =~ s/^!>/!/;
-  $target =~ s/^([!@]\w+) ?// or undef($target);
+
+  my $sigils = Henzell::Config::sigils();
+  $target =~ s/^([$sigils]\S+) ?// or undef($target);
 
   my $command;
   if (defined $target) {
@@ -617,7 +619,7 @@ sub process_command {
                   who => $$m{who},
                   body => load_commands());
   }
-  elsif (exists $CMD{$command} &&
+  elsif (Henzell::Config::command_exists($command) &&
          (!$private || !is_always_public($verbatim)))
   {
     # Log all commands to Henzell.
@@ -626,8 +628,10 @@ sub process_command {
     $ENV{HENZELL_PROXIED} = $proxied ? 'y' : '';
     $ENV{IRC_NICK_AUTHENTICATED} = nick_identified($nick) ? 'y' : '';
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
+
+    my $processor = $CMD{$command} || $CMD{custom};
     my $output =
-      $CMD{$command}->(pack_args($target, $nick, $verbatim, '', ''));
+      $processor->(pack_args($target, $nick, $verbatim, '', ''));
 
     if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
       if ($reprocessed_command || $proxied ||
@@ -797,6 +801,7 @@ sub tick {
   main::check_stonefiles();
   main::check_all_logfiles();
   main::make_announcements();
+  Henzell::Config::load_user_commands();
   return 1;
 }
 

@@ -945,6 +945,41 @@ grouping clauses (s=X) and extra-field info (x=X).
                        discarding everything before (and including) the
                        first '; '.
 
+User-Defined Commands
+---------------------
+
+You can define shortcut commands for !lg/!lm commands that you use frequently:
+
+Examples:
+  !querydef !lgs !lg * sprint
+  !querydef !lgz !lg * zotdef
+
+These shortcut commands can be used as:
+  !lgs
+  !lgz
+  !lgs @person
+  !lgz s=char x=avg(xl)
+
+Note that the usual !lg rule of the first argument being treated as a
+nick does not apply to custom commands.
+
+To get a list of user-defined commands, use !querydef -list. To delete
+a command, use !querydef -rm as:
+
+  !querydef -rm !lgz
+
+You can query the existing definition of a command using:
+
+  !querydef !lgz
+
+
+You may also define new keywords for common listgame filters:
+
+  !keyworddef dying !(boring|winning)
+  !keyworddef meatsprint sprint map=meatsprint
+
+!keyworddef also accepts -list and -rm switches.
+  
 
 Nick Aliases
 ------------

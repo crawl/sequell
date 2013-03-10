@@ -14,7 +14,7 @@ TV.with_tv_opts(ctx.arguments) do |args, tvopt|
   ctx.arguments = args
   ctx.extract_options!('game', 'log', 'ttyrec')
 
-  query = Query::QueryString.new(ctx.arguments)
+  query = Query::QueryString.new(ctx.arguments).with_extra
   extra = Query::ExtraFieldParser.parse(query.dup, CTX_STONE)
 
   tv = tvopt[:tv]

@@ -1,8 +1,8 @@
 module Sql
   class Operator
-    def self.op(op)
-      return op if !op || op.is_a?(self)
-      self.new(op)
+    def self.op(op_str)
+      return op_str if !op_str || op_str.is_a?(self)
+      self.new(op_str)
     end
 
     def self.operator(o)

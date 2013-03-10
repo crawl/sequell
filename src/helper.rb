@@ -309,6 +309,7 @@ end
 
 def help(helpstring, force=false)
   if force || ARGV[3] == '1'
+    helpstring = helpstring.gsub(/[\n\t]/, ' ').gsub(/ +/, ' ')
     cmd = ARGV[2].split()[0]
     if helpstring =~ /%CMD%/
       helpstring = helpstring.gsub('%CMD%', cmd)

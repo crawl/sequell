@@ -1,6 +1,8 @@
 require 'cmd/option_parser'
 require 'query/listgame_arglist_combine'
 require 'query/operator_back_combine'
+require 'query/compact_parens'
+require 'command_context'
 
 module Query
   class QueryString
@@ -28,6 +30,10 @@ module Query
       @original_string = argument_string.dup
       @original_args = @args.dup
       @context_word = context_word
+    end
+
+    def empty?
+      @original_string.nil? || @original_string.empty?
     end
 
     def dup
@@ -65,6 +71,7 @@ module Query
     # arguments. i.e. to convert ['foo', '=', 'bar'] into ['foo=', 'bar'] and
     # prevent a keyword argument check for 'foo' from matching 'foo='.
     def operator_back_combine!
+      @args = CompactParens.apply(@args)
       @args = OperatorBackCombine.apply(@args)
     end
 
@@ -99,6 +106,10 @@ module Query
       @args[index]
     end
 
+    def command_line
+      context_word + " " + argument_string
+    end
+
     def to_a
       @args
     end
@@ -130,9 +141,15 @@ module Query
     end
 
     def + (other)
+      return self.dup unless other && !other.empty?
+
       other = QueryString.query(other)
       combined_args = ListgameArglistCombine.apply(@args, other.args)
       QueryString.new(combined_args.join(' '), self.context_word)
+    end
+
+    def with_extra
+      self + CommandContext.extra_args_parenthesized
     end
   end
 end

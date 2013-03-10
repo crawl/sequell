@@ -246,8 +246,6 @@ sub parse_test($) {
   }
   die "Malformed test line\n" unless $text =~ /\S/;
   my ($cmd) = $text =~ /^(\S+)/;
-  die "Unknown command $cmd in test '$text'\n"
-    unless Henzell::Cmd::command_exists($cmd);
   $test{cmd} = $cmd;
 
   if ($text =~ /::(!?)~(.*)/) {
@@ -279,6 +277,7 @@ sub read_tests() {
 }
 
 sub execute_cmd($) {
+  Henzell::Cmd::load_all_commands();
   Henzell::Cmd::execute_cmd($TESTNICK, shift)
 }
 

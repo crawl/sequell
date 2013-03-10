@@ -10,7 +10,7 @@ help("Lists the top kills for a player's ghost.")
 
 args = (ARGV[2].split)[1 .. -1] || []
 
-query = Query::QueryString.new(args)
+query = Query::QueryString.new(args).with_extra
 nick = Query::NickResolver.extract_nick(query) || ARGV[1]
 ghosts = Query::Nick.aliases(nick)
 
