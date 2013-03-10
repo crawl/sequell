@@ -951,8 +951,8 @@ User-Defined Commands
 You can define shortcut commands for !lg/!lm commands that you use frequently:
 
 Examples:
-  !querydef !lgs !lg * sprint
-  !querydef !lgz !lg * zotdef
+  !cmd !lgs !lg * sprint
+  !cmd !lgz !lg * zotdef
 
 These shortcut commands can be used as:
   !lgs
@@ -963,20 +963,23 @@ These shortcut commands can be used as:
 Note that the usual !lg rule of the first argument being treated as a
 nick does not apply to custom commands.
 
-To get a list of user-defined commands, use !querydef -list. To delete
-a command, use !querydef -rm as:
+To get a list of user-defined commands, use !cmd -list. To delete
+a command, use !cmd -rm as:
 
-  !querydef -rm !lgz
+  !cmd -rm !lgz
 
 You can query the existing definition of a command using:
 
-  !querydef !lgz
+  !cmd !lgz
 
 
 You may also define new keywords for common listgame filters:
 
   !keyworddef dying !(boring|winning)
   !keyworddef meatsprint sprint map=meatsprint
+
+Note that keywords cannot include options that modify the behavior of
+the !lg command, such as -tv, -ttyrec, etc.
 
 !keyworddef also accepts -list and -rm switches.
   

@@ -17,6 +17,7 @@
 !tv tvreq.rb
 !tvdef tvdef.rb
 !won won.rb
+!cmd querydef.rb
 !querydef querydef.rb
 !keyworddef keyworddef.rb
 !kwdef keyworddef.rb
