@@ -7,6 +7,7 @@ use IPC::Open2;
 
 use Henzell::Config qw/%CONFIG %CMD %USER_CMD %PUBLIC_CMD/;
 use Henzell::Utils;
+use Henzell::IRC;
 use Getopt::Long;
 use Cwd;
 
@@ -369,8 +370,7 @@ sub respond_to_any_msg {
   my $nick = $$m{who};
   my $verbatim = $$m{body};
   $nick =~ tr/'//d;
-  $verbatim =~ tr/'//d;
-  my $output = qx!./commands/message/all_input.pl '$nick' '$verbatim'!;
+  my $output = qx!./commands/message/all_input.pl '$nick' \Q$verbatim\E!;
   if ($output) {
     $HENZELL->say(channel => $$m{channel},
                   who => $$m{who},
@@ -543,16 +543,16 @@ sub message_metadata {
   $target =~ s/^!>/!/;
 
   my $sigils = Henzell::Config::sigils();
-  $target =~ s/^([$sigils]\S+) ?// or undef($target);
+  $target =~ s/^([$sigils]\S+) *// or undef($target);
 
   my $command;
   if (defined $target) {
     $command = lc $1;
 
     $target   =~ s/ .*$//;
-    $target   =~ y/a-zA-Z0-9_-//cd;
+    $target   = Henzell::IRC::cleanse_nick($target);
     $target   = $nick unless $target =~ /\S/;
-    $target   =~ y/a-zA-Z0-9_-//cd;
+    $target   = Henzell::IRC::cleanse_nick($target);
   }
 
   if (force_private($verbatim) && !is_always_public($verbatim)) {
@@ -708,7 +708,6 @@ sub seen_update {
   my $nick = $$e{who};
 
   $nick =~ y/'//d;
-  $doing =~ y/'//d;
 
   my %seen =
   (

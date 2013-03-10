@@ -5,16 +5,19 @@ do 'commands/message/helper.pl';
 
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
+
 chomp(my @args = <STDIN>);
-my $message = $args[2];
-$message =~ s/^!tell +//i;
-$message =~ /^([a-zA-Z0-9_-]+) +(.+)$/ or do
-{
+
+sub fail() {
   print "I don't grok. Syntax is !tell PERSON MESSAGE.\n";
   exit;
-};
+}
 
-my $to = $1;
+my $message = $args[2];
+$message =~ s/^!tell +//i;
+$message =~ /^(\S+) +(.+)$/ or fail();
+
+my $to = cleanse_nick($1) or fail;
 $message = $2;
 
 if (length $message > 300)
