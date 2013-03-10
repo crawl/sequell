@@ -60,7 +60,7 @@ end
 def show_help(force=false)
   help(<<HELP, force)
 Define keyword: `#{$ctx.command} <keyword> <definition>` to define,
-`#{$ctx.command} -rm <keyword> to delete, `#{$ctx.command} <keyword>` to query,
+`#{$ctx.command} -rm <keyword>` to delete, `#{$ctx.command} <keyword>` to query,
 `#{$ctx.command} -list` to list.
 HELP
 end

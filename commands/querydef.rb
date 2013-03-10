@@ -59,7 +59,7 @@ end
 def show_help(force=false)
   help(<<HELP, force)
 Define custom command: `#{$ctx.command} <name> <command-line>` to define,
-`#{$ctx.command} -rm <name> to delete, `#{$ctx.command} <name>` to query,
+`#{$ctx.command} -rm <name>` to delete, `#{$ctx.command} <name>` to query,
 `#{$ctx.command} -list` to list.
 HELP
 end
