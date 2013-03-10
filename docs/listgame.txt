@@ -960,10 +960,10 @@ These shortcut commands can be used as:
   !lgs @person
   !lgz s=char x=avg(xl)
 
-Note that the usual !lg rule of the first argument being treated as a
-nick does not apply to custom commands.
+The usual !lg rule of the first argument being treated as a nick does
+not necessarily apply to custom commands.
 
-To get a list of user-defined commands, use !cmd -list. To delete
+To get a list of user-defined commands, use !cmd -ls. To delete
 a command, use !cmd -rm as:
 
   !cmd -rm !lgz
@@ -981,7 +981,7 @@ You may also define new keywords for common listgame filters:
 Note that keywords cannot include options that modify the behavior of
 the !lg command, such as -tv, -ttyrec, etc.
 
-!keyworddef also accepts -list and -rm switches.
+!keyworddef also accepts -ls and -rm switches.
   
 
 Nick Aliases

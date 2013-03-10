@@ -5,7 +5,7 @@ require 'sqlhelper'
 require 'cmd/user_keyword'
 
 $ctx = CommandContext.new
-$ctx.extract_options!('rm', 'list')
+$ctx.extract_options!('rm', 'ls')
 
 def main
   show_help
@@ -13,7 +13,7 @@ def main
   name = $ctx.shift!
   expansion = $ctx.argument_string
 
-  if $ctx[:list]
+  if $ctx[:ls]
     list_keywords
   elsif $ctx[:rm] && name
     delete_keyword(name)

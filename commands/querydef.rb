@@ -4,7 +4,7 @@ require 'helper'
 require 'cmd/user_defined_command'
 
 $ctx = CommandContext.new
-$ctx.extract_options!('rm', 'list')
+$ctx.extract_options!('rm', 'ls')
 
 def main
   show_help
@@ -12,7 +12,7 @@ def main
   name = $ctx.shift!
   command = $ctx.argument_string
 
-  if $ctx[:list]
+  if $ctx[:ls]
     list_user_commands
   elsif $ctx[:rm] && name
     delete_user_command(name)
