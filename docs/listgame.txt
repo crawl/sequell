@@ -975,13 +975,15 @@ You can query the existing definition of a command using:
 
 You may also define new keywords for common listgame filters:
 
-  !keyworddef dying !(boring|winning)
-  !keyworddef meatsprint sprint map=meatsprint
+  !kw dying !(boring|winning)
+  !kw meatsprint sprint map=meatsprint
 
-Note that keywords cannot include options that modify the behavior of
-the !lg command, such as -tv, -ttyrec, etc.
+Keywords can only include filter conditions, and cannot include
+options that modify the behavior of the !lg command, such as -tv,
+-ttyrec, etc., or grouping and non-filter conditions such as s=...,
+x=..., max=... expressions.
 
-!keyworddef also accepts -ls and -rm switches.
+!kw accepts -ls and -rm switches to list and delete entries.
   
 
 Nick Aliases
