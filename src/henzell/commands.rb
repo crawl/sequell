@@ -36,7 +36,7 @@ module Henzell
       arguments = $2 || ''
 
       if command == '??'
-        return learndb_query(arguments.split(' ')[1..-1].join(' '))
+        return learndb_query(arguments)
       end
 
       execute_command(command, arguments, default_nick)
