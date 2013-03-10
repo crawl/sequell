@@ -5,7 +5,7 @@ module Cmd
     COMMAND_DB = 'dat/user_commands.db'
 
     def self.db
-      @db ||= self.new(COMMAND_DB)
+      @db ||= self.new(Henzell::Config.file_path(COMMAND_DB))
     end
 
     def initialize(db_file)

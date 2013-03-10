@@ -13,6 +13,10 @@ module Henzell
       File.join(self.root, name)
     end
 
+    def self.defaults_file
+      file_path(DEFAULTS_FILEPATH)
+    end
+
     def self.config_file
       file_path(CONFIG_FILEPATH)
     end
@@ -42,7 +46,7 @@ module Henzell
     end
 
     def load
-      @defaults = YAML.load_file(DEFAULTS_FILEPATH)
+      @defaults = YAML.load_file(self.class.defaults_file)
       @config = @defaults.merge(YAML.load_file(@config_file))
     end
   end
