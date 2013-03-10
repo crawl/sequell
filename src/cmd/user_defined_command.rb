@@ -51,7 +51,7 @@ module Cmd
 
     def self.canonicalize_name(name)
       name = name.downcase
-      if name !~ /^[#{sigils}]/
+      if name !~ /^[#{Regexp.quote(sigils)}]/
         name = "#{preferred_sigil}#{name}"
       end
       name

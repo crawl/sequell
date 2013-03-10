@@ -5,7 +5,7 @@ commands_file: commands/commands-sequell.txt
 announce_channel:
 seen_update:
 
-sigils: "!@#$%&="
+sigils: "!@#$%&=;.,\\"
 preferred_sigil: "!"
 
 startup_services:
