@@ -8,6 +8,7 @@ use base 'Exporter';
 
 use YAML::Any qw/LoadFile/;
 use Data::Dumper;
+use Henzell::IRC;
 
 my $CONFIG_FILE = 'config/crawl-data.yml';
 
@@ -459,9 +460,7 @@ sub nick_alias {
 }
 
 sub cleanse_nick {
-  my $nick = lc(shift);
-  $nick =~ y/a-z0-9_//cd;
-  return $nick;
+  Henzell::IRC::cleanse_nick(shift)
 }
 
 
