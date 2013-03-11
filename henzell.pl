@@ -434,7 +434,6 @@ sub is_always_public {
   my $command = shift;
   # Every !learn command apart from !learn query has to be public, always.
   return 1 if $command =~ /^!learn/i && $command !~ /^!learn\s+query/i;
-  return 1 unless $command =~ /^\W+(\w+)/;
   return $PUBLIC_CMD{lc($1)};
 }
 
