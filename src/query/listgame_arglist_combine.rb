@@ -7,9 +7,11 @@ module Query
     # Example:  [ '*', 'killer=orc' ], [ 'xom' ]
     #        => [ '*', 'killer=orc', '((', 'xom', '))' ]
     def self.apply(arguments_a, arguments_b)
-      res = arguments_a.join(" ") + " " + Query::Grammar::OPEN_PAREN + " " +
-        arguments_b.join(" ") + " " + Query::Grammar::CLOSE_PAREN
-      res.split(' ')
+      a_string = arguments_a.join(' ')
+      b_string = arguments_b.join(' ')
+      a_tail = a_string.index('?:') ? a_string.sub(/^.*\?:/, '?:') : ''
+      a_string = a_string.sub(/^(.*)\?:.*/, '\1')
+      (a_string + ' ' + b_string + ' ' + a_tail).split(' ')
     end
   end
 end

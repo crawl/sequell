@@ -52,8 +52,7 @@ def display_user_command(name)
 end
 
 def define_user_command(name, definition)
-  command = Cmd::UserDefinedCommand.define(name, definition)
-  puts("Defined command: #{command}")
+  Cmd::UserDefinedCommand.define(name, definition)
 end
 
 def show_help(force=false)

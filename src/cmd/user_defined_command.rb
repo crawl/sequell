@@ -11,11 +11,14 @@ module Cmd
         raise "Cannot redefine built-in command #{cname}"
       end
       existing_command = self.command(cname)
-      if existing_command
-        raise "Command already exists: #{existing_command}"
-      end
       UserCommandDb.db.define_command(canonicalize_name(name), definition)
-      self.command(name)
+      res = self.command(name)
+      if existing_command
+        puts("Redefined command: #{res}")
+      else
+        puts("Defined command: #{res}")
+      end
+      res
     end
 
     def self.commands

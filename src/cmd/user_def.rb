@@ -2,8 +2,8 @@ module Cmd
   class UserDef
     attr_reader :name, :definition
     def initialize(name, definition)
-      @name = name.downcase
-      @definition = definition
+      @name = name.to_s.downcase
+      @definition = definition.to_s
     end
 
     def to_s

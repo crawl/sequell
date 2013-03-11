@@ -13,8 +13,15 @@ module Cmd
       assert_name_valid!(name)
       assert_definition_parseable!(definition)
 
+      existing_keyword = self.keyword(name)
       UserCommandDb.db.define_keyword(name, definition)
-      self.keyword(name)
+      final_keyword = self.keyword(name)
+      if existing_keyword
+        puts("Redefined keyword: #{final_keyword}")
+      else
+        puts("Defined keyword: #{final_keyword}")
+      end
+      final_keyword
     end
 
     def self.keywords
@@ -63,7 +70,9 @@ module Cmd
         CTX_STONE.with do
           Query::QueryKeywordParser.parse(name)
         end
-        raise "'#{name}' is already a valid keyword definition."
+        unless self.keyword(name)
+          raise "'#{name}' is already a valid keyword definition."
+        end
       rescue Query::KeywordParseError
       end
     end

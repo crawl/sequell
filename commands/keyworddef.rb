@@ -53,8 +53,7 @@ def display_keyword(name)
 end
 
 def define_keyword(name, definition)
-  keyword = Cmd::UserKeyword.define(name, definition)
-  puts("Defined keyword: #{keyword}")
+  Cmd::UserKeyword.define(name, definition)
 end
 
 def show_help(force=false)

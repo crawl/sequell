@@ -195,10 +195,7 @@ end
 # also recognising -tv and -log options.
 def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
   combined_args = other_args_string.split()[1 .. -1] + extra_args
-  parenthesized_extra_args = ENV['EXTRA_ARGS_PARENTHESIZED']
-  if parenthesized_extra_args
-    combined_args += parenthesized_extra_args.split(' ')
-  end
+  combined_args = Query::QueryString.new(combined_args).with_extra.args
   TV.with_tv_opts(combined_args) do |args, opts|
     args, logopts = extract_options(args, 'log', 'ttyrec')
     sql_show_game(ARGV[1], args) do |res|

@@ -543,7 +543,7 @@ sub message_metadata {
   $target =~ s/^!>/!/;
 
   my $sigils = Henzell::Config::sigils();
-  $target =~ s/^([\Q$sigils\E]\S+) *// or undef($target);
+  $target =~ s/^([\Q$sigils\E]\S*) *// or undef($target);
 
   my $command;
   if (defined $target) {
