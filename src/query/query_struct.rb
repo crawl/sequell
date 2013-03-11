@@ -107,6 +107,12 @@ module Query
       self.atom || self
     end
 
+    def without_sorts
+      copy = self.dup
+      copy.sorts = []
+      copy
+    end
+
     def sort(sort)
       @sorts << sort
       check_sorts!

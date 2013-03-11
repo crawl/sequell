@@ -159,7 +159,7 @@ module Query
     user_keyword = Cmd::UserKeyword.keyword(arg)
     if user_keyword
       return Query::QueryParamParser.parse(
-        Query::QueryString.new(user_keyword.definition))
+        Query::QueryString.new(user_keyword.definition)).without_sorts
     end
   }
 end
