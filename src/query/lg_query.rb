@@ -16,7 +16,9 @@ module Query
       @query_string = QueryString.new(argument_string)
       @options = @query_string.extract_options!('log', 'ttyrec')
       @context = context
-      self.parse_query
+      NickExpr.with_default_nick(@default_nick) {
+        self.parse_query
+      }
     end
 
     # Is this a ratio X / Y query?

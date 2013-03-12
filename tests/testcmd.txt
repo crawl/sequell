@@ -271,3 +271,4 @@ E !lg * s=trunc99(sc)
 
 !kw dying !(boring|winning)
 !lg * dying
+!lg * name=. ::~ hyperbolic
