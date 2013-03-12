@@ -1,5 +1,3 @@
-require 'henzell/commands'
-
 module Henzell
   class Config
     DEFAULTS_FILEPATH = 'rc/henzell.defaults'
@@ -41,6 +39,8 @@ module Henzell
     end
 
     def commands
+      require 'henzell/commands'
+
       @commands ||= Henzell::Commands.new(
         Henzell::Config.file_path(self[:commands_file]))
     end
