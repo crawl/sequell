@@ -109,12 +109,6 @@ module Query
     return expr.parse('ktyp', ktyp_matches[match]) if match
   }
 
-  KeywordMatcher.matcher(:boring) {
-    if %w/boring bore/.include?(arg.downcase)
-      return expr.parse('ktyp', 'leaving|quitting')
-    end
-  }
-
   KeywordMatcher.matcher(:version) {
     if arg =~ /^\d+[.]\d+([.]\d+)*(?:-\w+\d*)?$/
       return arg =~ /^\d+[.]\d+(?:$|-)/ ? 'cv' : 'v'

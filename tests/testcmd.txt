@@ -156,6 +156,8 @@ E !lg * won god=xom urune=15 sp -2
 
 !chars elliptic
 
+!kw boring quitting|leaving
+!kw bore boring
 !lg * !boring
 !lg * !bore
 
