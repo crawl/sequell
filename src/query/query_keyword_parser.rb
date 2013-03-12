@@ -47,18 +47,23 @@ module Query
       arg = @arg.dup
       negated = arg =~ /^!/
       arg.sub!(/^!/, '')
-      @equal_op = negated ? '!=' : '='
+      @equal_op = '='
 
       expr_candidate = QueryExprCandidate.new(@equal_op)
       KeywordMatcher.each do |matcher|
         res = matcher.match(arg, expr_candidate)
         if res
-          return body if res == true
-          return parse_expr(res, arg) if res.is_a?(String)
-          return res
+          return negate(body, negated) if res == true
+          return negate(parse_expr(res, arg), negated) if res.is_a?(String)
+          return negate(res, negated)
         end
       end
       raise KeywordParseError.new(arg)
+    end
+
+    def negate(expr, negated)
+      return expr.negate if negated
+      expr
     end
 
     def parse_expr(field, value)

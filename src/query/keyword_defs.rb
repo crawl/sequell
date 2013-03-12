@@ -158,8 +158,9 @@ module Query
   KeywordMatcher.matcher(:user_keyword) {
     user_keyword = Cmd::UserKeyword.keyword(arg)
     if user_keyword
-      return Query::QueryParamParser.parse(
-        Query::QueryString.new(user_keyword.definition)).without_sorts
+      qs = Query::QueryString.new(user_keyword.definition)
+      qs.normalize!
+      return Query::QueryParamParser.parse(qs).without_sorts
     end
   }
 end

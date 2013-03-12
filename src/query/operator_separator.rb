@@ -4,12 +4,14 @@ module Query
     def self.apply(args)
       cargs = []
       for arg in args do
-        if arg =~ %r/#{Regexp.quote(Query::Grammar::OPEN_PAREN)}(\S+)/ then
-          cargs << Query::Grammar::OPEN_PAREN
-          cargs << $1
-        elsif arg =~ %r/^(\S+)#{Regexp.quote(Query::Grammar::CLOSE_PAREN)}$/ then
+        if arg =~ %r/^(\S*)(!?#{QUOTED_OPEN_PAREN})(\S+)/ then
+          cargs << $1 unless $1.empty?
+          cargs << $2
+          cargs << $3
+        elsif arg =~ %r/^(\S+)#{QUOTED_CLOSE_PAREN}(\S*)$/ then
           cargs << $1
           cargs << Query::Grammar::CLOSE_PAREN
+          cargs << $2 unless $2.empty?
         elsif arg =~ %r/^(\S*)#{Query::Grammar::BOOLEAN_OR_Q}(\S*)$/ then
           cargs << $1 unless $1.empty?
           cargs << Query::Grammar::BOOLEAN_OR

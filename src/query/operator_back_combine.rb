@@ -16,7 +16,12 @@ module Query
           cargs << arg
         end
       end
-      cargs
+      merge_negated_parens(cargs)
+    end
+
+    def self.merge_negated_parens(args)
+      str = args.join(' ').gsub(/! #{Query::Grammar::QUOTED_OPEN_PAREN}/,
+        "!#{Query::Grammar::OPEN_PAREN}").split(' ')
     end
 
     def self.operators

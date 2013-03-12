@@ -255,11 +255,17 @@ E !lg * s=trunc99(sc)
 
 !lg * !boring rstart>=2013 s=src x=cdist(name) / tiles
 
-!querydef !lg* !lg *
+!cmd !lg* !lg *
 !lg* @elliptic
 
-!querydef !lgs !lg* sprint
+!cmd !lgs !lg* sprint
 !lgs @elliptic
 
-!kwdef dying !(boring|winning)
+!kw tmons killer=tentacled monstrosity
+!lg * tmons ::~ a tentacled monstrosity
+!lg * !tmons ::!~ a tentacled monstrosity
+
+!lg * !((killer=tentacled monstrosity)) ::!~ a tentacled monstrosity
+
+!kw dying !(boring|winning)
 !lg * dying

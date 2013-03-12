@@ -59,6 +59,9 @@ module Query
     OPEN_PAREN = '(('
     CLOSE_PAREN = '))'
 
+    QUOTED_OPEN_PAREN = Regexp.quote(OPEN_PAREN)
+    QUOTED_CLOSE_PAREN = Regexp.quote(CLOSE_PAREN)
+
     BOOLEAN_OR = '||'
     BOOLEAN_OR_Q = Regexp.quote(BOOLEAN_OR)
   end
