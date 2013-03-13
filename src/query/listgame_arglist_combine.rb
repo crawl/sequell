@@ -2,6 +2,8 @@ require 'query/grammar'
 
 module Query
   class ListgameArglistCombine
+    include Grammar
+
     # Combines two arrays of listgame arguments into one, correctly
     # handling keyword-style arguments at the head of the secondary list.
     # Example:  [ '*', 'killer=orc' ], [ 'xom' ]
@@ -11,7 +13,7 @@ module Query
       b_string = arguments_b.join(' ')
       a_tail = a_string.index('?:') ? a_string.sub(/^.*\?:/, '?:') : ''
       a_string = a_string.sub(/^(.*)\?:.*/, '\1')
-      (a_string + ' ' + b_string + ' ' + a_tail).split(' ')
+      [a_string, OPEN_PAREN, b_string, CLOSE_PAREN, a_tail].join(' ').split(' ')
     end
   end
 end

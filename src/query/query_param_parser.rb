@@ -2,6 +2,7 @@ require 'query/query_struct'
 require 'query/sort'
 require 'query/query_expr_parser'
 require 'sql/query_context'
+require 'sql/errors'
 
 module Query
   class QueryParamParser
@@ -77,7 +78,10 @@ module Query
         if arg =~ /^(!?)#{QUOTED_OPEN_PAREN}$/
           negated = !$1.empty?
           subpreds = QueryStruct.new
-          i = parse_groups(subpreds, args[i .. -1]) + i
+
+          group_end = parse_groups(subpreds, args[i .. -1])
+          raise Sql::ParseError, "Mismatched parentheses" if group_end.nil?
+          i = group_end + i
           predicates << (negated ? subpreds.negate : subpreds)
           next
         end

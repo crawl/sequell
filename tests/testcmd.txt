@@ -272,3 +272,5 @@ E !lg * s=trunc99(sc)
 !kw dying !(boring|winning)
 !lg * dying
 !lg * name=. ::~ hyperbolic
+
+!lg * s=cls start>=20130101 / tiles
