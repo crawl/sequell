@@ -274,3 +274,5 @@ E !lg * s=trunc99(sc)
 !lg * name=. ::~ hyperbolic
 
 !lg * s=cls start>=20130101 / tiles
+
+!lm * !ktyp ::~ nyaakitty

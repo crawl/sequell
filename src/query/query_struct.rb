@@ -25,7 +25,11 @@ module Query
     end
 
     def negate
-      QueryStruct.new('AND', QueryStruct.new('NOT', self))
+      if self.predicates.size == 1
+        QueryStruct.new(self.operator, self.predicates[0].negate)
+      else
+        QueryStruct.new('AND', QueryStruct.new('NOT', self))
+      end
     end
 
     def dup
