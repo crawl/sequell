@@ -17,6 +17,7 @@ my %GAME_TYPE_PREFIXES = Henzell::Crawl::game_type_prefixes();
 
 my %LOG2SQL = Henzell::Crawl::config_hash('sql-field-names');
 my %TABLE_LOADERS;
+my %FIELD_TRANSFORMS = Henzell::Crawl::config_hash('field-input-transforms');
 
 sub strip_suffix {
   my $val = shift;
@@ -380,6 +381,19 @@ sub execute_st {
   }
 }
 
+sub canonicalize_fields {
+  my $g = shift;
+  for my $field (keys %FIELD_TRANSFORMS) {
+    next unless $$g{$field};
+
+    my %subst = %{$FIELD_TRANSFORMS{$field}};
+    my ($key, $value);
+    while (($key, $value) = each %subst) {
+      $$g{$field} =~ s/\Q$key\E\b/$value/i;
+    }
+  }
+}
+
 =head2 fixup_logfields
 
 Cleans up xlog dictionary for milestones and logfile entries.
@@ -521,6 +535,7 @@ sub fixup_logfields {
     $g->{splat} = '';
   }
   $g->{game_key} = "$$g{name}:$$g{src}:$$g{rstart}";
+  canonicalize_fields($g);
 
   $g
 }

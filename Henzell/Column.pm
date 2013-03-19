@@ -3,6 +3,7 @@ package Henzell::Column;
 use strict;
 use warnings;
 
+use lib '..';
 use Henzell::Crawl;
 use Henzell::LookupTable;
 
@@ -50,7 +51,7 @@ sub lookup_table_for_column {
 
 sub _create_lookup_table_for_column {
   my ($column) = @_;
-  return undef unless $column->foreign_key();
+  return undef unless $column->needs_lookup_table();
 
   my %lookups = Henzell::Crawl::config_hash('lookup-tables');
   my $column_name = $column->name();
@@ -144,7 +145,7 @@ sub lookup_table {
 
 sub lookup_table_name {
   my $self = shift;
-  if ($self->foreign_key()) {
+  if ($self->needs_lookup_table()) {
     return $self->lookup_table()->name();
   }
   return undef;
@@ -221,6 +222,31 @@ sub primary_key {
 sub foreign_key {
   my $self = shift;
   $self->has_qualifier('^')
+}
+
+sub multivalued {
+  shift()->has_qualifier('+')
+}
+
+# A column that can have many values, each value possibly belonging to
+# many rows; these are virtual columns that shouldn't be part of the
+# parent table at all.
+sub join_table_column {
+  my $self = shift;
+  $self->has_qualifier('@')
+}
+
+sub virtual_column {
+  shift()->join_table_column()
+}
+
+sub value_delimiter {
+  ','
+}
+
+sub needs_lookup_table {
+  my $self = shift;
+  $self->foreign_key() || $self->join_table_column()
 }
 
 sub boolean {

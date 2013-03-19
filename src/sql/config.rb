@@ -1,6 +1,7 @@
 require 'sql/column_list'
 require 'sql/lookup_table_registry'
 require 'sql/function_defs'
+require 'sql/field_value_transformer'
 require 'crawl/milestone_type'
 
 module Sql
@@ -57,6 +58,15 @@ module Sql
 
     def column_substitutes
       @cfg['column-substitutes']
+    end
+
+    def field_value_transformer
+      @field_value_transformer ||=
+        Sql::FieldValueTransformer.new(self['field-transforms'])
+    end
+
+    def transform_value(value, field)
+      field_value_transformer.transform(value, field)
     end
 
     def logfields

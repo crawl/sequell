@@ -432,6 +432,8 @@ classes:
   Sk: Skald
 
 column-aliases:
+  maxsk: maxskills
+  stat: status
   role: cls
   class: cls
   job: cls
@@ -567,6 +569,10 @@ value-functions:
     type: 'S'
     expr: "regexp_replace(%s, '^.*?; ', '')"
     summarisable: true
+  asize:
+    type: 'S'
+    return: 'I'
+    expr: "length(regexp_replace(%s, '[^,]+', '', 'g')) + 1"
 
 query-tables:
   - logrecord
@@ -631,6 +637,7 @@ column-substitutes:
 # - % (autoincrementing primary key)
 # - ^ (foreign key into a table)
 # - ! (negatable, aka boolean)
+# - + (multi-valued)
 logrecord-fields-with-type:
   - idIB%*
   - offsetIB*?
@@ -662,11 +669,14 @@ logrecord-fields-with-type:
   - place?^
   - br^
   - lvlI
+  - absdepthI
   - ltyp^
   - hpI?
   - mhpI?
   - mmhpI
   - damI
+  - sdamI
+  - tdamI
   - strI
   - intI
   - dexI
@@ -690,6 +700,16 @@ logrecord-fields-with-type:
   - killermapMAP?^
   - mapdesc^
   - tiles!
+  - goldI
+  - goldfoundI
+  - goldspentI
+  - killsI
+  - acI
+  - evI
+  - shI
+  - autI
+  - maxskills^+
+  - status^+
 
 milestone-fields-with-type:
   - idI%
@@ -712,6 +732,7 @@ milestone-fields-with-type:
   - place?^
   - br^
   - lvlI
+  - absdepthI
   - ltyp^
   - hpI?
   - mhpI?
@@ -733,11 +754,87 @@ milestone-fields-with-type:
   - ntvI?
   - oplace^
   - tiles!
+  - goldI
+  - goldfoundI
+  - goldspentI
+  - killsI
+  - acI
+  - evI
+  - shI
+  - autI
+  - maxskills^
+  - status^
 
 milestone-verb-mappings:
   unique: uniq
   enter: br.enter
   branch-finale: br.end
+
+field-input-transforms: &inputtransforms
+  sk:
+    Translocation: Translocations
+    Transmutation: Transmutations
+    Transmigration: Transmutations
+
+field-transforms:
+  status:
+    berserk: berserking
+    haste: hasted
+    para: paralysed
+    slow: slowed
+    pois: ~poisoned
+    regen: regenerating
+    conf: confused
+    noregen: non-regenerating
+    inv: invisible
+    defl: deflect missiles
+    tel: about to teleport
+  sk: &sk
+    fi: Fighting
+    nec: Necromancy
+    evo: Evocations
+    sho: Short Blades
+    sbl: Short Blades
+    ear: Earth Magic
+    thr: Throwing
+    dod: Dodging
+    inv: invocations
+    enc: Enchantments
+    bow: Bows
+    poi: Poison Magic
+    t&d: Traps & Doors
+    stav: Staves
+    stab: Stabbing
+    div: Divinations
+    sli: Slings
+    cross: Crossbows
+    cbow: Crossbows
+    hex: Hexes
+    cha: Charms
+    tloc: Translocations
+    tmut: Transmutations
+    tmig: Transmutations
+    mace: Maces & Flails
+    flai: Maces & Flails
+    ice: Ice Magic
+    fire: Fire Magic
+    conj: Conjurations
+    cj: Conjurations
+    spc: Spellcasting
+    spell: Spellcasting
+    arm: Armour
+    pole: Polearms
+    pla: Polearms
+    unar: Unarmed Combat
+    summ: Summonings
+    lbl: Long Blades
+    long: Long Blades
+    sh: Shields
+    air: Air Magic
+
+  maxskills:
+    <<: *sk
+
 
 ##
 # Fake query fields that are transformed into a real query field by code in

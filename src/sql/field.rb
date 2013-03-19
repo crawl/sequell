@@ -45,10 +45,6 @@ module Sql
       context.table_qualified(self)
     end
 
-    def column_prop(prop)
-      self.column && self.column.send(prop)
-    end
-
     def unique_valued?
       column_prop(:unique?)
     end

@@ -7,8 +7,13 @@ use base 'Exporter';
 our @EXPORT_OK = qw/canonical_place_name/;
 
 use YAML::Any qw/LoadFile/;
+use File::Spec;
+use File::Basename;
 
-my $CONFIG_FILE = 'config/crawl-data.yml';
+my $HENZELL_ROOT = File::Spec->catfile(File::Basename::dirname(__FILE__), '..');
+my $CONFIG_FILE =
+  File::Spec->catfile($HENZELL_ROOT, 'config/crawl-data.yml');
+
 my $CRAWLDATA = LoadFile($CONFIG_FILE);
 
 my %UNIQUES = map(($_ => 1), @{$$CRAWLDATA{uniques}});

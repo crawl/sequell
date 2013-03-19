@@ -94,8 +94,16 @@ module Sql
       field.summarisable?
     end
 
+    def multivalue?
+      column_prop(:multivalue?)
+    end
+
     def column
       field.column
+    end
+
+    def column_prop(prop)
+      self.column && self.column.send(prop)
     end
 
     def known?

@@ -99,6 +99,8 @@ module Query
         val = val.to_i
       end
 
+      val, op = expand_field_value(val, field, op) if op.equality?
+
       if field === 'name' && op.equality?
         val = "@" + (NickExpr.default_nick || val) if val == '.'
         return NickExpr.expr(val, op.not_equal?) if val =~ /^[@:]/
@@ -210,6 +212,19 @@ module Query
           })
       end
 
+      if field.multivalue? && op.equality? && !val.empty?
+        if val.index(',')
+          values = val.split(',').map { |s| s.strip }
+          operator = op.equal? ? 'AND' : 'OR'
+          return QueryStruct.new(operator, *values.map { |v|
+              query_field(field, op, v)
+            })
+        end
+
+        op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
+        val = "(?:^|,)" + Regexp.quote(val) + '\y'
+      end
+
       if field === 'when'
         tourney = tourney_info(val, GameContext.game)
 
@@ -252,6 +267,15 @@ module Query
         *keys.map { |split_key|
           QueryExprParser.parse("#{split_key}#{op}#{val}")
         })
+    end
+
+    def expand_field_value(val, field, op)
+      transformed_value = SQL_CONFIG.transform_value(val.to_s, field)
+      if transformed_value.to_s.index('~') == 0
+        transformed_value = transformed_value[1..-1]
+        op = Sql::Operator.op(op.equal? ? '=~' : '!~')
+      end
+      [transformed_value, op]
     end
   end
 end

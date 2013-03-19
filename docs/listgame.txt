@@ -649,6 +649,25 @@ lvl:
 The depth in the player's most recent dungeon branch (integer).
 Example: place=D:6 => br=D and lvl=6
 
+absdepth:
+The depth in the dungeon the character was at. Note that absdepth may be zero
+if unknown (before absdepth was recorded).
+
+gold:
+The amount of gold held by the character.
+
+goldfound:
+The total gold found in the dungeon.
+
+goldspent:
+Gold spent.
+
+kills:
+The number of monsters slain.
+
+ac/ev/sh:
+The character's AC/EV/SH.
+
 ltyp:
 The level area type the player was in.
 Example: "D", "Abyss", "Pan", "Lab", "Port"
@@ -667,6 +686,13 @@ Player's unrotted max hp at end of game (integer)
 
 dam:
 Damage of the killing blow (integer)
+
+sdam:
+Total damage done by the source of death, uninterrupted by other
+sources of damage.
+
+tdam:
+Total damage the player sustained in their last turn.
 
 str, int, dex:
 Player's strength, intelligence, dexterity at end of game (integer)
@@ -700,6 +726,16 @@ Game duration in seconds (integer). Note that idle times are clamped.
 
 turn/turns:
 Game turn count (integer)
+
+aut:
+Game time in arbitrary units of time.
+
+maxskills/maxsk:
+All level-27 skills.
+
+status/stat:
+Character statuses such as berserk, confused, etc., as a
+comma-separated string.
 
 urune:
 Number of unique runes in player inventory at end of game (integer).
@@ -742,7 +778,8 @@ milestone was generated, not at end of game.
 Fields in common with logfile:
 alpha, v, cv, name, race, crace, cls, char, xl, sk, sklev, title,
 place, br, lvl, ltyp, hp, mhp, mmhp, str, int, dex, god, dur, turn,
-urune, nrune, rstart, tiles
+urune, nrune, rstart, tiles, maxskills, status, gold, goldfound,
+goldspent, kills, ac, ev, sh, aut.
 
 These fields are unique to milestones:
 
@@ -821,6 +858,34 @@ necessarily only from ongoing games, so you may need additional
 filters to filter out old orphan milestones.
 
 You may also express this as !ktyp
+
+maxskills:
+~~~~~~~~~~
+
+An expression of the form maxskills=X will be converted into a search for
+that maxed skill as:
+
+  maxskills=fighting  =>  maxskills~~(?:^|,)fighting\y
+
+(where \y is a word boundary regex match)
+
+Multiple statuses can be matched using commas:
+
+  maxskills=fighting,ice magic
+  => maxskills~~(?:^|,)fighting\y maxskills~~(?:^|,)ice magic\y
+
+In addition, common skill abbreviations such as "fi" for "Fighting" will be
+expanded to their full forms:
+
+  maxskills=fi,nec
+  => maxskills=Fighting maxskills=Necromancy
+  => maxskills~~(?:^|,)Fighting\y maxskills~~(?:^|,)Necromancy\y
+
+status:
+~~~~~~~
+
+status behaves similarly to maxskills when searching for individual
+terms. Common status abbreviations will also be expanded.
 
 god:
 ~~~~

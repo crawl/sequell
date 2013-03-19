@@ -37,6 +37,10 @@ module Sql
       @decorated_name =~ /\^/
     end
 
+    def multivalue?
+      @decorated_name =~ /\+/
+    end
+
     def lookup_table
       self.reference? && @config.lookup_table(self)
     end

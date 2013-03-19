@@ -36,6 +36,14 @@ sub sql {
   }
 }
 
+sub list_tables {
+  my ($self, $action) = @_;
+  map {
+    my $type = $self->{_game_types}{$_};
+    map($action->("$type$_", $_), @{$self->{_query_tables}})
+  } (sort keys %{$self->{_game_types}});
+}
+
 sub _find_tables {
   my $self = shift;
   map {
@@ -53,7 +61,21 @@ sub base_tables {
 sub tables {
   my $self = shift;
   $self->_load();
+  $self->list_tables(sub {
+                       my ($fullname, $basename) = @_;
+                       Henzell::Table->new($fullname, $basename)
+                     })
+}
+
+sub table_names {
+  my $self = shift;
+  $self->_load();
   @{$self->{_tables} ||= [$self->_find_tables()]}
+}
+
+sub join_table_names {
+  my $self = shift;
+  map($_->join_table_names(), $self->tables())
 }
 
 sub lookup_tables_for {
@@ -77,7 +99,8 @@ sub lookup_tables {
 
 sub all_tables {
   my $self = shift;
-  ($self->tables(), map($_->name(), $self->lookup_tables()))
+  ($self->join_table_names(), $self->table_names(),
+   map($_->name(), $self->lookup_tables()))
 }
 
 sub cleanup_sql {
