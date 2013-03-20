@@ -569,7 +569,7 @@ value-functions:
     type: 'S'
     expr: "regexp_replace(%s, '^.*?; ', '')"
     summarisable: true
-  asize:
+  size:
     type: 'S'
     return: 'I'
     expr: "length(regexp_replace(%s, '[^,]+', '', 'g')) + 1"

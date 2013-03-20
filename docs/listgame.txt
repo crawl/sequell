@@ -1009,6 +1009,8 @@ grouping clauses (s=X) and extra-field info (x=X).
 - subvault(<map>)      Truncates strings of the form 'x; y; z' to 'y; z', i.e.
                        discarding everything before (and including) the
                        first '; '.
+- size(<field>)       For comma-separated values, counts the number of values.
+
 
 User-Defined Commands
 ---------------------
