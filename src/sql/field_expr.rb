@@ -94,6 +94,10 @@ module Sql
       sql_expr
     end
 
+    def multivalue?
+      false
+    end
+
     def == (other)
       if other.is_a?(String)
         return @field.canonical_name == other || @field.full_name == other
