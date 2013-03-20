@@ -115,7 +115,7 @@ module Sql
 
   private
     def build_expr(expr, field)
-      return sprintf(expr, field.to_s) if expr =~ /%/
+      return expr.gsub('%s', field.to_s) if expr =~ /%/
       "#{expr}(#{field})"
     end
   end

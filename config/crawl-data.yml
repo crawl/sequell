@@ -573,7 +573,7 @@ value-functions:
     type: 'S'
     summarisable: true
     return: 'I'
-    expr: "length(regexp_replace(%s, '[^,]+', '', 'g')) + 1"
+    expr: "case when %s = '' then 0 else length(regexp_replace(%s, '[^,]+', '', 'g')) + 1 end"
 
 query-tables:
   - logrecord
