@@ -79,7 +79,7 @@ my @BORING_UNIQUES = qw/Jessica Ijyb Blork Terence Edmund Psyche
 binmode STDOUT, ':utf8';
 
 Henzell::Utils::lock(verbose => 1,
-                     lock_name => $CONFIG{lock_name});
+                     lock_name => $ENV{HENZELL_LOCK} || $CONFIG{lock_name});
 
 if ($CONFIG{startup_services}) {
   Henzell::Utils::spawn_services($CONFIG{startup_services});
