@@ -394,6 +394,16 @@ sub canonicalize_fields {
   }
 }
 
+sub sanitize_gold {
+  my $g = shift;
+  my $gold = $g->{gold} || 0;
+  my $goldfound = $g->{goldfound} || 0;
+  my $goldspent = $g->{goldspent} || 0;
+  if ($gold < 0 || $goldfound < 0 || $goldspent < 0) {
+    $g->{gold} = $g->{goldfound} = $g->{goldspent} = 0;
+  }
+}
+
 =head2 fixup_logfields
 
 Cleans up xlog dictionary for milestones and logfile entries.
@@ -536,6 +546,7 @@ sub fixup_logfields {
   }
   $g->{game_key} = "$$g{name}:$$g{src}:$$g{rstart}";
   canonicalize_fields($g);
+  sanitize_gold($g);
 
   $g
 }
