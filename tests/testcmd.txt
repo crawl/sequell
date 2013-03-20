@@ -277,3 +277,6 @@ E !lg * s=trunc99(sc)
 
 !lm * !ktyp ::~ buki
 !lg * status=berserk|hasted
+
+!lg * size(maxsk)=1
+!lg * win s=size(maxsk)

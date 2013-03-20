@@ -571,6 +571,7 @@ value-functions:
     summarisable: true
   size:
     type: 'S'
+    summarisable: true
     return: 'I'
     expr: "length(regexp_replace(%s, '[^,]+', '', 'g')) + 1"
 
