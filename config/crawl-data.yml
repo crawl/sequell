@@ -747,6 +747,7 @@ milestone-fields-with-type:
   - nruneI?
   - timeD*?
   - rtime*?
+  - startD*?
   - rstart*?
   - verb?^
   - nounS?^

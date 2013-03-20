@@ -1,0 +1,2 @@
+#! /bin/bash
+exec pg_dump -U henzell -x -t 'tmp_*logrecord_tv' -t 'tmp_*milestone_tv' henzell

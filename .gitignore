@@ -28,11 +28,10 @@ lg.rb
 nicks-test.map
 *.rbc
 henzell.rc
-utils/*.sql
 password.txt
 Gemfile.lock
 *.el
-*.sql
+/*.sql
 *.json
 graphs
 .rvmrc
