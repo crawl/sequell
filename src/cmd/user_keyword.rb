@@ -56,7 +56,9 @@ module Cmd
     def self.assert_definition_parseable!(definition)
       # Verify that the definition parses:
       CTX_STONE.with do
-        Query::QueryParamParser.parse(Query::QueryString.new(definition))
+        qs = Query::QueryString.new(definition)
+        qs.normalize!
+        Query::QueryParamParser.parse(qs)
       end
     end
 

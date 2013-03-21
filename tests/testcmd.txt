@@ -280,3 +280,4 @@ E !lg * s=trunc99(sc)
 
 !lg * size(maxsk)=1
 !lg * win s=size(maxsk)
+!kw nondead ((boring || winning))
