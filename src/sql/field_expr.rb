@@ -95,7 +95,8 @@ module Sql
     end
 
     def multivalue?
-      false
+      return false unless simple_field?
+      @field.multivalue?
     end
 
     def == (other)
