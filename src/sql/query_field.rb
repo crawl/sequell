@@ -19,9 +19,12 @@ module Sql
     end
 
     def dup
-      self.class.new(@field_list, @expr, @field && @field.dup,
-                     @display && @display.dup, @calias,
-                     @special)
+      copy = self.class.new(@field_list, @expr, @field,
+                            @display && @display.dup, @calias,
+                            @special)
+      copy.field = @field && @field.dup
+      copy.function = @function && @function.dup
+      copy
     end
 
     def type
@@ -66,8 +69,8 @@ module Sql
     end
 
     def to_s
-      return @expr unless @field
-      @field.to_s
+      field_expr = @field.to_s if @field
+      @expr ? @expr.sub('%s', field_expr) : field_expr
     end
 
     def aggregate?

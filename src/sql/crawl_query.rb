@@ -42,6 +42,10 @@ module Sql
       @query_fields = resolve_query_fields
     end
 
+    def extra_fields=(extra)
+      @extra_fields = extra && extra.dup
+    end
+
     def row_to_fieldmap(row)
       base_size = @ctx.db_columns.size
       extras = { }

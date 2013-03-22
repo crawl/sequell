@@ -282,3 +282,5 @@ E !lg * s=trunc99(sc)
 !lg * win s=size(maxsk)
 !lg * maxsk=fi maxsk=~, ::~ jeanjacques
 !kw nondead ((boring || winning))
+
+!lg * x=cdist(name) / won
