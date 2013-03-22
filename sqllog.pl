@@ -383,6 +383,7 @@ sub execute_st {
 
 sub canonicalize_fields {
   my $g = shift;
+  $g->{char} = Henzell::Crawl::canonical_charabbrev($g->{char});
   for my $field (keys %FIELD_TRANSFORMS) {
     next unless $$g{$field};
 

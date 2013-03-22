@@ -19,6 +19,8 @@ my $CRAWLDATA = LoadFile($CONFIG_FILE);
 my %UNIQUES = map(($_ => 1), @{$$CRAWLDATA{uniques}});
 my %ORCS = map(($_ => 1), @{$$CRAWLDATA{orcs}});
 my %GOD_ALIASES = %{$$CRAWLDATA{'god-aliases'}};
+my %SPECIES_ABBR = map((lc($_) => $_), keys %{$CRAWLDATA->{species}});
+my %CLASS_ABBR = map((lc($_) => $_), keys %{$CRAWLDATA->{classes}});
 
 sub version_qualifier_numberize {
   my $qualifier = shift;
@@ -134,6 +136,13 @@ sub canonical_place_name {
   $place =~ s/^Vault\b/Vaults/i;
   $place =~ s/^Shoal\b/Shoals/;
   $place
+}
+
+sub canonical_charabbrev {
+  my $abbr = shift;
+  return $abbr unless $abbr;
+  my ($race, $cls) = $abbr =~ /^(.{2})(.{2})$/;
+  ($SPECIES_ABBR{lc $race} || $race) . ($CLASS_ABBR{lc $cls} || $cls)
 }
 
 1
