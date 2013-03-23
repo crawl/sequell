@@ -2,6 +2,7 @@ require 'query/query_struct'
 require 'query/sort'
 require 'query/query_expr_parser'
 require 'sql/query_context'
+require 'sql/errors'
 
 module Query
   class QueryParamParser
@@ -37,7 +38,7 @@ module Query
         if arg == BOOLEAN_OR && level == 0
           or_positions << i
         end
-        if arg == OPEN_PAREN
+        if arg =~ /^!?#{QUOTED_OPEN_PAREN}$/
           level += 1
         elsif arg == CLOSE_PAREN
           level -= 1
@@ -74,10 +75,14 @@ module Query
         arg = args[i]
         i += 1
         return i if arg == CLOSE_PAREN
-        if arg == OPEN_PAREN
+        if arg =~ /^(!?)#{QUOTED_OPEN_PAREN}$/
+          negated = !$1.empty?
           subpreds = QueryStruct.new
-          i = parse_groups(subpreds, args[i .. -1]) + i
-          predicates << subpreds
+
+          group_end = parse_groups(subpreds, args[i .. -1])
+          raise Sql::ParseError, "Mismatched parentheses" if group_end.nil?
+          i = group_end + i
+          predicates << (negated ? subpreds.negate : subpreds)
           next
         end
         predicates << parse_param(arg)

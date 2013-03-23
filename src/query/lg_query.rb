@@ -16,7 +16,9 @@ module Query
       @query_string = QueryString.new(argument_string)
       @options = @query_string.extract_options!('log', 'ttyrec')
       @context = context
-      self.parse_query
+      NickExpr.with_default_nick(@default_nick) {
+        self.parse_query
+      }
     end
 
     # Is this a ratio X / Y query?
@@ -108,7 +110,6 @@ module Query
 
       # If we have multiple queries, all must be summary queries:
       if query_list.size > 1 and !query_list.all? { |q| q.summarise? }
-        STDERR.puts("First: #{query_list[0].extra_fields}, Second: #{query_list[1].extra_fields}")
         raise ("Bad input: #{@query_string.original_string}; when using /, " +
                "all query pieces must be summary queries")
       end

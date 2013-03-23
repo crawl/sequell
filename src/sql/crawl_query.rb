@@ -5,6 +5,7 @@ require 'sql/query_tables'
 require 'sql/field_predicate'
 require 'sql/column_resolver'
 require 'sql/field_resolver'
+require 'sql/aggregate_expression'
 
 module Sql
   class CrawlQuery
@@ -18,7 +19,7 @@ module Sql
       @pred = predicates.dup
       @nick = nick
       @num = num
-      @extra_fields = extra_fields
+      @extra_fields = extra_fields && extra_fields.dup
       @argstr = argstr
       @values = nil
       @summarise = nil
@@ -37,8 +38,12 @@ module Sql
       @count_tables = @tables.dup
       @summary_tables = @tables.dup
 
-      resolve_sort_fields
+      resolve_sort_fields(@pred, @tables)
       @query_fields = resolve_query_fields
+    end
+
+    def extra_fields=(extra)
+      @extra_fields = extra && extra.dup
     end
 
     def row_to_fieldmap(row)
@@ -48,7 +53,7 @@ module Sql
       (0 ... row.size).each do |i|
         field = @query_fields[i]
         if i < base_size
-          map[field.to_s] = field.log_value(row[i])
+          map[field.full_name] = field.log_value(row[i])
         else
           extras[field.to_s] = field.log_value(row[i])
         end
@@ -60,9 +65,9 @@ module Sql
       map
     end
 
-    def resolve_sort_fields
-      @pred.sorts.each { |sort|
-        resolve_field(sort.field, @tables)
+    def resolve_sort_fields(pred, tables)
+      pred.sorts.each { |sort|
+        resolve_field(sort.field, tables)
       }
     end
 
@@ -190,21 +195,36 @@ module Sql
       }
     end
 
-    def select_all(with_sorts=true)
+    def select_all(with_sorts=true, single_record_index=0)
+      if single_record_index > 0
+        resolve_sort_fields(@count_pred, @count_tables)
+        id_subquery = self.select_id(with_sorts, single_record_index)
+        id_field = Sql::Field.field('id')
+        id_sql = resolve_field(id_field, @tables).to_sql
+        return ("SELECT #{query_columns.join(", ")} " +
+                "FROM #{@tables.to_sql} WHERE #{id_sql} = (#{id_subquery})")
+      end
+
       "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " +
          where(@pred, with_sorts)
     end
 
-    def select_id(with_sorts=false)
+    def select_id(with_sorts=false, single_record_index=0)
       id_field = Sql::Field.field('id')
       id_sql = resolve_field(id_field, @count_tables).to_sql
       "SELECT #{id_sql} FROM #{@count_tables.to_sql} " +
-        "#{where(@count_pred, with_sorts)}"
+        "#{where(@count_pred, with_sorts)} #{limit_clause(single_record_index)}"
     end
 
     def select_count
       "SELECT COUNT(*) FROM #{@count_tables.to_sql} " +
         where(@count_pred, false)
+    end
+
+    def limit_clause(limit)
+      return '' unless limit > 0
+      return "LIMIT #{limit}" if limit == 1
+      "LIMIT 1 OFFSET #{limit - 1}"
     end
 
     def resolve_summary_fields
@@ -261,7 +281,7 @@ module Sql
           raise "Extra fields (#{@extra_fields.extra}) contain non-aggregates"
         end
         extras = @extra_fields.fields.map { |f|
-          f.to_sql
+          Sql::AggregateExpression.aggregate_sql(@summary_tables, f)
         }.join(", ")
       end
       [basefields, extras].find_all { |x| x && !x.empty? }.join(", ")
@@ -296,12 +316,14 @@ module Sql
     end
 
     def reverse
-      predicate_copy = @original_pred.dup
-      predicate_copy.reverse_sorts!
-      rq = CrawlQuery.new(predicate_copy, @extra_fields,
-                          @nick, @num, @argstr)
-      rq.table = @table
-      rq
+      with_contexts do
+        predicate_copy = @original_pred.dup
+        predicate_copy.reverse_sorts!
+        rq = CrawlQuery.new(predicate_copy, @extra_fields,
+                            @nick, @num, @argstr)
+        rq.table = @table
+        rq
+      end
     end
   end
 end

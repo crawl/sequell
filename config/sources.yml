@@ -1,0 +1,132 @@
+sources:
+  - name: cao
+    base: http://crawl.akrasiac.org
+
+    # If the file exists in this path, it will be linked into the data
+    # directory from the local path; otherwise it will be fetched
+    # using http.
+    local: /var/www
+
+    # Timezones are used if this server had games prior to Crawl using
+    # only UTC in the logfile.
+    timezones:
+      D: '-0400'
+      S: '-0500'
+
+    utc-epoch: '200808070330+0000'
+
+    # Annotations: standard glob {} expansion is applied. Files
+    # flagged * are assumed to be logfiles that are currently being
+    # updated and will be refetched, always. Files without * are
+    # assumed to be dead versions, and will be fetched only if the
+    # local copy is missing.
+    logfiles:
+      - allgames.txt
+      - logfile04
+      - logfile05
+      - logfile06
+      - logfile07{,-sprint}
+      - logfile08{,-sprint}
+      - logfile09
+      - logfile10*
+      - logfile11{,-sprint,-zotdef}*
+      - logfile-git{,-sprint,-zotdef}*
+      - logfile-lorcs: lorcs
+    milestones:
+      - milestones02
+      - milestones03
+      - milestones04
+      - milestones05
+      - milestones06
+      - milestones07{,-sprint}
+      - milestones08{,-sprint}
+      - milestones09
+      - milestones10*
+      - milestones11{,-sprint,-zotdef}*
+      - milestones-git{,-sprint,-zotdef}*
+      - milestones-lorcs: lorcs
+
+    # Regex -> location; player name is automatically appended.
+    morgues:
+      - http://crawl.akrasiac.org/rawdata
+
+    ttyrecs:
+      - http://termcast.develz.org/cao/ttyrecs
+      - http://crawl.akrasiac.org/rawdata
+
+  - name: cdo
+    base: http://crawl.develz.org
+    utc-epoch: '200808070330+0000'
+    timezones:
+      D: '+0200'
+      S: '+0100'
+    logfiles:
+      - allgames-0.3.txt
+      - allgames-0.4.txt
+      - allgames-0.5.txt
+      - allgames-0.6.txt
+      - allgames{,-spr}-0.7.txt
+      - allgames{,-spr,-zd}-0.8.txt*
+      - allgames{,-spr,-zd}-0.10.txt*
+      - allgames{,-spr,-zd}-0.11.txt*
+      - allgames{,-spr,-zd}-svn.txt*
+    milestones:
+      - milestones-0.3.txt
+      - milestones-0.4.txt
+      - milestones-0.5.txt
+      - milestones-0.6.txt
+      - milestones{,-spr}-0.7.txt
+      - milestones{,-spr,-zd}-0.8.txt*
+      - milestones{,-spr,-zd}-0.10.txt*
+      - milestones{,-spr,-zd}-0.11.txt*
+      - milestones{,-spr,-zd}-svn.txt*
+    morgues:
+      - - time_gt: '20110819-1740'
+          version_match: '0.9'
+        - http://crawl.develz.org/morgues/0.9
+      - ['cdo.*-(?:svn|git)', 'http://crawl.develz.org/morgues/trunk']
+      - ['cdo.*-(\d+[.]\d+)$', 'http://crawl.develz.org/morgues/$1']
+    ttyrecs:
+      - http://termcast.develz.org/ttyrecs
+      - http://crawl.develz.org/ttyrecs
+
+  - name: cszo
+    base: http://dobrazupa.org
+    logfiles:
+      - meta/git/logfile{,-sprint,-zotdef}*
+      - meta/0.11/logfile{,-sprint,-zotdef}*
+      - meta/0.10/logfile{,-sprint,-zotdef}*
+    milestones:
+      - meta/git/milestones{,-sprint,-zotdef}*
+      - meta/0.11/milestones{,-sprint,-zotdef}*
+      - meta/0.10/milestones{,-sprint,-zotdef}*
+    morgues:
+      - http://dobrazupa.org/morgue
+    ttyrecs:
+      - http://dobrazupa.org/ttyrec
+
+  - name: csn
+    base: http://crawlus.somatika.net
+    logfiles:
+      - scoring/crawl-trunk/logfile{,-sprint,-zotdef}
+      - scoring/crawl-0.11/logfile{,-sprint,-zotdef}
+    milestones:
+      - scoring/crawl-trunk/milestones{,-sprint,-zotdef}
+      - scoring/crawl-0.11/milestones{,-sprint,-zotdef}
+    morgues:
+      - http://crawlus.somatika.net/dumps
+
+  - name: rhf
+    local-only: true
+    logfiles:
+      - remote.rhf-logfile-0.5
+      - remote.rhf-logfile-0.6
+      - remote.rhf-logfile-0.7
+      - remote.rhf-logfile-trunk
+      - remote.rhf-logfile-spr
+    milestones:
+      - remote.rhf-milestones-0.5
+      - remote.rhf-milestones-0.6
+      - remote.rhf-milestones-0.7
+      - remote.rhf-milestones-spr
+      - remote.rhf-milestones-trunk

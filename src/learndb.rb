@@ -1,7 +1,5 @@
-require 'rest-client'
-
 module LearnDB
-  DB_URL = 'http://crawl.akrasiac.org/henzell/src/henzell/dat/learndb'
+  DB_URL = 'http://crawl.akrasiac.org/learndb'
 
   def self.valid_entry_name?(name)
     canonical_name = canonical_entry_name(name)
@@ -18,6 +16,8 @@ module LearnDB
 
   class Entry
     def initialize(name)
+      require 'rest-client'
+
       @name = name
       @entries = { }
       @size = nil

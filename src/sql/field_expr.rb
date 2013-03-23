@@ -94,8 +94,16 @@ module Sql
       sql_expr
     end
 
+    def multivalue?
+      return false unless simple_field?
+      @field.multivalue?
+    end
+
     def == (other)
-      @field.name == other.field.name &&
+      if other.is_a?(String)
+        return @field.canonical_name == other || @field.full_name == other
+      end
+      @field.canonical_name == other.field.canonical_name &&
         @field.prefix == other.field.prefix &&
         @expr == other.expr
     end
@@ -108,7 +116,7 @@ module Sql
 
   private
     def build_expr(expr, field)
-      return sprintf(expr, field.to_s) if expr =~ /%/
+      return expr.gsub('%s', field.to_s) if expr =~ /%/
       "#{expr}(#{field})"
     end
   end

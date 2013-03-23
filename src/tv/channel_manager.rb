@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'libtv'
+require 'henzell/config'
 
 module TV
   CHANNEL_DIR  = 'dat/tv'
@@ -61,11 +62,15 @@ module TV
 
   private
     def create_directory
-      FileUtils.mkdir_p(CHANNEL_DIR)
+      FileUtils.mkdir_p(channel_dir)
+    end
+
+    def channel_dir
+      Henzell::Config.file_path(CHANNEL_DIR)
     end
 
     def channel_file
-      CHANNEL_FILE
+      Henzell::Config.file_path(CHANNEL_FILE)
     end
 
     def with_file(mode='a+')

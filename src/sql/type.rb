@@ -1,4 +1,6 @@
 require 'sql/date'
+require 'sql/duration'
+require 'sql/version_number'
 
 module Sql
   class Type
@@ -10,6 +12,8 @@ module Sql
     def self.type_categories
       @type_categories ||= SQL_CONFIG['type-categories']
     end
+
+    attr_accessor :unit
 
     def initialize(type_string)
       @type_string = type_string.sub(/(?:.*?)([A-Z]*[\W]*)$/, '\1')
@@ -27,6 +31,18 @@ module Sql
       @category ||= (Type.type_categories[self.type] || 'S')
     end
 
+    def with_unit(unit)
+      clone = self.dup
+      clone.unit = unit
+      clone
+    end
+
+    def unit
+      return @unit if @unit
+      return 'seconds' if self.duration_type?
+      nil
+    end
+
     def any?
       self.type == '*'
     end
@@ -41,6 +57,22 @@ module Sql
 
     def date?
       self.type == 'D'
+    end
+
+    def duration_type?
+      self.type == 'ET'
+    end
+
+    def duration?
+      self.unit == 'seconds'
+    end
+
+    def version?
+      self.type == 'VER'
+    end
+
+    def vault?
+      self.type == 'MAP'
     end
 
     def numeric?
@@ -60,6 +92,8 @@ module Sql
     end
 
     def display_value(value, display_format=nil)
+      return vault_name(value) if self.vault?
+      return Sql::Duration.display_value(value) if self.duration?
       return Sql::Date.display_date(value, display_format) if self.date?
       numeric_value = value.is_a?(BigDecimal) || value.is_a?(Float)
       if self.integer?
@@ -85,6 +119,7 @@ module Sql
     end
 
     def comparison_value(raw_value)
+      return Sql::VersionNumber.version_numberize(raw_value) if self.version?
       return raw_value.to_f if self.real?
       return raw_value.to_i if self.integer?
       return (raw_value || '').downcase if self.text?
@@ -134,6 +169,10 @@ module Sql
 
     def strip_padding_zeros(value)
       value.sub(/([.]\d*?)0+$/, '\1').sub(/[.]$/, '')
+    end
+
+    def vault_name(value)
+      value.gsub(/(?<!;) /, '_')
     end
   end
 end

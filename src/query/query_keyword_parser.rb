@@ -3,6 +3,7 @@ require 'query/compound_keyword_parser'
 require 'query/keyword_matcher'
 require 'query/keyword_defs'
 require 'sql/operator'
+require 'sql/errors'
 
 module Query
   class QueryExprCandidate
@@ -14,6 +15,12 @@ module Query
 
     def parse(field, value, op=@op)
       QueryExprParser.parse("#{field}#{op}#{value}")
+    end
+  end
+
+  class KeywordParseError < Sql::ParseError
+    def initialize(kw)
+      super("Malformed argument: #{kw}")
     end
   end
 
@@ -40,18 +47,23 @@ module Query
       arg = @arg.dup
       negated = arg =~ /^!/
       arg.sub!(/^!/, '')
-      @equal_op = negated ? '!=' : '='
+      @equal_op = '='
 
       expr_candidate = QueryExprCandidate.new(@equal_op)
       KeywordMatcher.each do |matcher|
         res = matcher.match(arg, expr_candidate)
         if res
-          return parse_expr(res, arg) if res.is_a?(String)
-          return res
+          return negate(body, negated) if res == true
+          return negate(parse_expr(res, arg), negated) if res.is_a?(String)
+          return negate(res, negated)
         end
       end
+      raise KeywordParseError.new(arg)
+    end
 
-      raise "Malformed argument: #{arg}"
+    def negate(expr, negated)
+      return expr.negate if negated
+      expr
     end
 
     def parse_expr(field, value)

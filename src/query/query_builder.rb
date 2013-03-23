@@ -18,7 +18,7 @@ module Query
                    extract_nick_from_query)
       @default_nick = nick
       @nick = @default_nick
-      @query_string = query_string
+      @query_string = query_string.dup
       @context = context
       @extra_fields = extra_fields
       @extract_nick_from_query = extract_nick_from_query

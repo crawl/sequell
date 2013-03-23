@@ -1,6 +1,5 @@
 #! /usr/bin/env ruby
 
-$:.push("src")
 require 'helper.rb'
 require 'sqlhelper'
 require 'query/query_string'
@@ -10,7 +9,7 @@ require 'sql/date'
 
 help("Summarizes a player's public server career.")
 
-query_string = Query::QueryString.new(ARGV[2].split()[1..-1])
+query_string = Query::QueryString.new(ARGV[2].split()[1..-1]).with_extra
 q = Query::QueryBuilder.build(ARGV[1], query_string.dup, CTX_LOG, nil, true)
 
 full_query =
@@ -41,6 +40,10 @@ def sqlnumber(num)
   sprintf("%.0f", num)
 end
 
+def midnight(date)
+  DateTime.new(date.year, date.month, date.day)
+end
+
 if rows.empty? || rows[0][1].to_i == 0
   puts "No games for #{q.argstr}."
 else
@@ -53,10 +56,29 @@ else
        Query::QueryBuilder.build(ARGV[1], query_string + 'ktyp=winning',
                                  CTX_LOG, nil, true))
 
-  tstart = Sql::Date.display_date(r[2])
-  tend = Sql::Date.display_date(r[3])
-  puts "#{q.argstr} has played #{ngames} game#{plural}, between " +
-      "#{datestr(tstart)} and #{datestr(tend)}, won #{winstr(win_count, ngames)}, " +
-      "high score #{r[4]}, total score #{sqlnumber(r[5])}, total turns #{sqlnumber(r[6])}, " +
-      "total time #{duration_str(r[7].to_i)}."
+  start_date = r[2]
+  end_date = r[3]
+
+  start_time_bracket = midnight(start_date)
+  end_time_bracket = midnight(end_date) + 1
+  tstart = Sql::Date.display_date(start_date)
+  tend = Sql::Date.display_date(end_date)
+
+  duration = r[7]
+
+  stats = [
+    "won #{winstr(win_count, ngames)}",
+    "high score #{r[4]}",
+    "total score #{sqlnumber(r[5])}",
+    "total turns #{sqlnumber(r[6])}"
+  ]
+
+  time_span_days = (end_time_bracket - start_time_bracket).to_f
+  duration_per_day = time_span_days > 0 && duration / time_span_days
+  stats << "play-time/day #{duration_str(duration_per_day)}" if duration_per_day
+
+  stats << "total time #{duration_str(duration.to_i)}"
+
+  puts("#{q.argstr} has played #{ngames} game#{plural}, between " +
+    "#{datestr(tstart)} and #{datestr(tend)}, " + stats.join(", ") + ".")
 end

@@ -4,14 +4,13 @@ use warnings;
 
 use lib 'src';
 use Helper;
+use Henzell::IRC;
 
-our $message_dir = '/home/henzell/henzell/dat/messages';
+our $message_dir = 'dat/messages';
 
 sub cleanse_nick
 {
-  my $nick = lc(shift);
-  $nick =~ y/a-z0-9_//cd;
-  return $nick;
+  Henzell::IRC::cleanse_nick(shift())
 }
 
 sub message_count

@@ -1,6 +1,5 @@
 #! /usr/bin/env ruby
 
-$:.push("src")
 require 'helper'
 require 'sqlhelper'
 require 'libtv'
@@ -15,7 +14,7 @@ TV.with_tv_opts(ctx.arguments) do |args, tvopt|
   ctx.arguments = args
   ctx.extract_options!('game', 'log', 'ttyrec')
 
-  query = Query::QueryString.new(ctx.arguments)
+  query = Query::QueryString.new(ctx.arguments).with_extra
   extra = Query::ExtraFieldParser.parse(query.dup, CTX_STONE)
 
   tv = tvopt[:tv]
@@ -24,8 +23,7 @@ TV.with_tv_opts(ctx.arguments) do |args, tvopt|
       puts("#{res.n}. #{short_game_summary(res.game)}: " +
            (find_milestone_crash_dump(res.game) || "Can't find crash dump."))
     elsif (ctx[:game] || ctx[:log])
-      key = res.game['game_key']
-      game = key != nil ? sql_game_by_key(key) : nil
+      game = res.milestone_game
       if not game
         puts "#{short_game_summary(res.game)} has no matching game."
       elsif ctx[:log]
@@ -33,16 +31,21 @@ TV.with_tv_opts(ctx.arguments) do |args, tvopt|
       elsif ctx[:ttyrec]
         report_game_ttyrecs(nil, game)
       elsif tv
-        TV.request_game_verbosely(key, game, ARGV[1])
+        TV.request_game_verbosely(res.game_key, game, ARGV[1])
       else
         CTX_STONE.with {
-          print_game_n(key, add_extra_fields_to_xlog_record(extra, game))
+          print_game_n(res.game_key,
+                       add_extra_fields_to_xlog_record(extra, game))
         }
       end
     elsif ctx[:ttyrec]
       # ttyrec for the milestone
       report_game_ttyrecs(res.n, res.game)
     elsif tv
+      game = res.game
+      if TV.seek_to_game_end?
+        game['end'] = res.milestone_game && res.milestone_game['end']
+      end
       TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1])
     else
       print_game_result(res)

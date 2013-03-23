@@ -100,8 +100,11 @@ module Sql
     end
 
     def disambiguate_alias(table_alias)
-      @alias_index += 1
-      "#{table_alias}_#{@alias_index}"
+      while true
+        @alias_index += 1
+        new_alias = "#{table_alias}_#{@alias_index}"
+        return new_alias unless self[new_alias]
+      end
     end
   end
 end

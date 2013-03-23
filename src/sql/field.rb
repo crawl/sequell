@@ -17,7 +17,7 @@ module Sql
 
     include FieldPredicates
 
-    attr_reader :prefix, :aliased_name, :full_name
+    attr_reader :prefix, :aliased_name, :full_name, :canonical_name
     attr_accessor :table
     attr_accessor :name
 
@@ -31,6 +31,7 @@ module Sql
         @prefix, @aliased_name = $1, $2
       end
       @name = SQL_CONFIG.column_aliases[@aliased_name] || @aliased_name
+      @canonical_name = @name
       @oname = @name.dup
     end
 
@@ -42,10 +43,6 @@ module Sql
     # the context.
     def context_qualified
       context.table_qualified(self)
-    end
-
-    def column_prop(prop)
-      self.column && self.column.send(prop)
     end
 
     def unique_valued?
@@ -90,9 +87,6 @@ module Sql
     end
 
     def comparison_value(raw_value)
-      if self.version_number?
-        return Sql::VersionNumber.version_numberize(raw_value)
-      end
       self.type.comparison_value(raw_value)
     end
 
@@ -132,6 +126,12 @@ module Sql
 
     def reference_field
       self.resolve(self.sql_column_name + '_id')
+    end
+
+    def bind_ordered_column!
+      if self.column && self.column.ordered_column_alias
+        self.name = self.column.ordered_column_alias
+      end
     end
 
     def === (name)

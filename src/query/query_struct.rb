@@ -24,10 +24,22 @@ module Query
       @sorts = []
     end
 
+    def negate
+      if self.predicates.size == 1
+        QueryStruct.new(self.operator, self.predicates[0].negate)
+      else
+        QueryStruct.new('AND', QueryStruct.new('NOT', self))
+      end
+    end
+
     def dup
       copy = QueryStruct.new(@operator.dup, * @predicates.map { |p| p.dup })
       copy.sorts = @sorts.map { |s| s.dup }
       copy
+    end
+
+    def not?
+      @operator == 'NOT'
     end
 
     def or?
@@ -65,9 +77,19 @@ module Query
         end
       end
 
-      self.map { |p|
-        p.to_sql(table_set, context, true)
-      }.join(" #{operator} ")
+      assert_well_formed!
+
+      if not?
+        "NOT " + self.predicates.first.to_sql(table_set, context, true)
+      else
+        self.map { |p|
+          p.to_sql(table_set, context, true)
+        }.join(" #{operator} ")
+      end
+    end
+
+    def assert_well_formed!
+      !not? || @predicates.size == 1
     end
 
     def sql_values
@@ -105,6 +127,12 @@ module Query
 
     def body
       self.atom || self
+    end
+
+    def without_sorts
+      copy = self.dup
+      copy.sorts = []
+      copy
     end
 
     def sort(sort)

@@ -8,7 +8,6 @@ use IO::Handle;
 use DBI;
 use Henzell::Crawl;
 use Henzell::DB;
-use Henzell::ServerConfig;
 use Henzell::TableLoader;
 
 do 'game_parser.pl';
@@ -18,6 +17,7 @@ my %GAME_TYPE_PREFIXES = Henzell::Crawl::game_type_prefixes();
 
 my %LOG2SQL = Henzell::Crawl::config_hash('sql-field-names');
 my %TABLE_LOADERS;
+my %FIELD_TRANSFORMS = Henzell::Crawl::config_hash('field-input-transforms');
 
 sub strip_suffix {
   my $val = shift;
@@ -191,20 +191,21 @@ sub open_handles
   my @handles;
 
   for my $file (@files) {
-    my $path = $$file{path};
+    my $path = $file->read_filepath() or next;
     open my $handle, '<', $path or do {
       warn "Unable to open $path for reading: $!";
       next;
     };
 
     seek($handle, 0, SEEK_END); # EOF
-    push @handles, { file   => $$file{path},
+    push @handles, { file   => $file->target_filepath(),
+                     readfile => $path,
                      fref   => $file,
                      handle => $handle,
                      pos    => tell($handle),
-                     server => $$file{src},
-                     src    => $$file{src},
-                     alpha  => $$file{alpha} };
+                     server => $file->server_name(),
+                     src    => $file->server_name(),
+                     alpha  => $file->alpha()};
   }
   return @handles;
 }
@@ -274,10 +275,11 @@ sub cat_xlog {
 
   my $loghandle = $lf->{handle};
   my $lfile = $lf->{file};
+  my $readfile = $lf->{readfile};
   $offset = find_start_offset_in($table, $lfile) unless defined $offset;
   die "No offset into $lfile ($table)" unless defined $offset;
 
-  my $size = -s($lfile);
+  my $size = -s($readfile);
   my $outstanding_size = $size - $offset;
 
   eval {
@@ -300,7 +302,7 @@ sub cat_xlog {
     if (!($rows % $COMMIT_INTERVAL)) {
       $dbh->commit;
       $dbh->begin_work;
-      print "\rCommitted $rows records from $lfile.";
+      print "\rCommitted $rows records from $readfile.";
       STDOUT->flush;
     }
   }
@@ -379,6 +381,30 @@ sub execute_st {
   }
 }
 
+sub canonicalize_fields {
+  my $g = shift;
+  $g->{char} = Henzell::Crawl::canonical_charabbrev($g->{char});
+  for my $field (keys %FIELD_TRANSFORMS) {
+    next unless $$g{$field};
+
+    my %subst = %{$FIELD_TRANSFORMS{$field}};
+    my ($key, $value);
+    while (($key, $value) = each %subst) {
+      $$g{$field} =~ s/\Q$key\E\b/$value/i;
+    }
+  }
+}
+
+sub sanitize_gold {
+  my $g = shift;
+  my $gold = $g->{gold} || 0;
+  my $goldfound = $g->{goldfound} || 0;
+  my $goldspent = $g->{goldspent} || 0;
+  if ($gold < 0 || $goldfound < 0 || $goldspent < 0) {
+    $g->{gold} = $g->{goldfound} = $g->{goldspent} = 0;
+  }
+}
+
 =head2 fixup_logfields
 
 Cleans up xlog dictionary for milestones and logfile entries.
@@ -425,6 +451,12 @@ sub fixup_logfields {
   unless ($milestone) {
     $g->{vmsg} ||= $g->{tmsg};
     $g->{map} ||= '';
+    $g->{killermap} ||= '';
+
+    for my $map ($g->{map}, $g->{killermap}) {
+      $map =~ tr/,/;/;
+    }
+
     $g->{mapdesc} ||= '';
     $g->{ikiller} ||= $g->{killer};
     $g->{ckiller} = $g->{killer} || $g->{ktyp} || '';
@@ -511,13 +543,11 @@ sub fixup_logfields {
     milestone_mangle($g);
   }
   else {
-    my $src = $g->{src};
-    # Fixup src for interesting_game.
-    $g->{src} = "http://" . Henzell::ServerConfig::source_hostname($src) . "/";
     $g->{splat} = '';
-    $g->{src} = $src;
   }
   $g->{game_key} = "$$g{name}:$$g{src}:$$g{rstart}";
+  canonicalize_fields($g);
+  sanitize_gold($g);
 
   $g
 }

@@ -21,6 +21,16 @@ module Sql
     end
   end
 
+  class FunctionTypeMismatch < ParseError
+    attr_reader :function, :expr
+
+    def initialize(function, expr)
+      super("Cannot apply function #{function}() to #{expr}: type mismatch")
+      @function = function
+      @expr = expr
+    end
+  end
+
   class MalformedTermError < ParseError
     def initialize(term)
       super("Malformed term: #{term}")

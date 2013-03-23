@@ -7,13 +7,20 @@ use base 'Exporter';
 our @EXPORT_OK = qw/canonical_place_name/;
 
 use YAML::Any qw/LoadFile/;
+use File::Spec;
+use File::Basename;
 
-my $CONFIG_FILE = 'config/crawl-data.yml';
+my $HENZELL_ROOT = File::Spec->catfile(File::Basename::dirname(__FILE__), '..');
+my $CONFIG_FILE =
+  File::Spec->catfile($HENZELL_ROOT, 'config/crawl-data.yml');
+
 my $CRAWLDATA = LoadFile($CONFIG_FILE);
 
 my %UNIQUES = map(($_ => 1), @{$$CRAWLDATA{uniques}});
 my %ORCS = map(($_ => 1), @{$$CRAWLDATA{orcs}});
 my %GOD_ALIASES = %{$$CRAWLDATA{'god-aliases'}};
+my %SPECIES_ABBR = map((lc($_) => $_), keys %{$CRAWLDATA->{species}});
+my %CLASS_ABBR = map((lc($_) => $_), keys %{$CRAWLDATA->{classes}});
 
 sub version_qualifier_numberize {
   my $qualifier = shift;
@@ -129,6 +136,13 @@ sub canonical_place_name {
   $place =~ s/^Vault\b/Vaults/i;
   $place =~ s/^Shoal\b/Shoals/;
   $place
+}
+
+sub canonical_charabbrev {
+  my $abbr = shift;
+  return $abbr unless $abbr;
+  my ($race, $cls) = $abbr =~ /^(.{2})(.{2})$/;
+  ($SPECIES_ABBR{lc $race} || $race) . ($CLASS_ABBR{lc $cls} || $cls)
 }
 
 1

@@ -85,7 +85,7 @@ sub build_char_options { # {{{
                 $race = 'draconian' if $race && $race eq 'red draconian';
                 push @found_races, $race;
             }
-            elsif (/return \(CC_(\w+)\)/) {
+            elsif (/return CC_(\w+)/) {
                 my $type = lc $1;
                 if (@found_races) {
                     for my $race (@found_races) {

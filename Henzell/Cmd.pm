@@ -8,7 +8,11 @@ use base 'Exporter';
 our @EXPORT_OK = qw/load_commands_from_file clear_commands load_all_commands
                     execute_cmd/;
 
+use lib '..';
+use Henzell::UserCommandDb;
+
 our %CMD;
+our %USER_CMD;
 
 sub load_commands_from_file($) {
   my $file = shift;
@@ -26,29 +30,39 @@ sub load_all_commands() {
   for my $file (@command_files) {
     load_commands_from_file($file);
   }
+  %USER_CMD = Henzell::UserCommandDb::user_commands();
 }
 
 sub command_exists($) {
-  $CMD{(shift)}
+  my $cmd = shift;
+  $CMD{$cmd} || $USER_CMD{$cmd}
 }
 
 sub clear_commands() {
   %CMD = ();
 }
 
-sub execute_cmd($$) {
-  my ($nick, $cmdline) = @_;
+sub execute_cmd($$;$) {
+  my ($nick, $cmdline, $ignore_stderr) = @_;
   $cmdline =~ s/^[?][?]/!learn query /;
   my ($cmd) = $cmdline =~ /^(\S+)/;
   my ($target) = $cmdline =~ /^\S+ (\S+)/;
   $target = $nick if !$target || $target !~ /^\w+$/;
   my $script = $CMD{$cmd};
+
+  if (!$script && $USER_CMD{$cmd}) {
+    $script = 'user_command.rb';
+  }
+
   if (!$script) {
     return (1, "Command not found: $cmd", $cmd);
   }
+
   my $executable_command =
     "./commands/$script \Q$target\E \Q$nick\E \Q$cmdline\E ''";
-  my $output = qx/$executable_command 2>&1/;
+  print "Exec: $executable_command\n";
+  my $redirect = $ignore_stderr ? '' : '2>&1';
+  my $output = qx/$executable_command $redirect/;
   my $exitcode = ($? >> 8);
   ($exitcode, $output, $executable_command)
 }

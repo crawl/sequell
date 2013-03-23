@@ -5,10 +5,13 @@ use warnings;
 use Time::localtime;
 use File::stat;
 use Henzell::Cmd;
+use Henzell::SourceServer;
+use Henzell::XlogSrc;
 
+$Henzell::XlogSrc::TARGET_BASE = 'tests/data';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{HENZELL_TEST} = 'y';
-$ENV{RUBYOPT} = '-rubygems';
+$ENV{RUBYOPT} = '-rubygems -Isrc';
 
 require 'sqllog.pl';
 
@@ -24,6 +27,7 @@ $ENV{'HENZELL_DBPASS'} = $DBPASS;
 new_db_handle($DBNAME, $DBUSER, $DBPASS) && initialize_sqllog();
 
 my $SCHEMAFILE = 'henzell-schema.sql';
+my $INDEXFILE  = 'henzell-indexes.sql';
 my $TESTFILE = 'testcmd.txt';
 
 my $TESTLOG = 'test.log';
@@ -79,9 +83,13 @@ sub datafile_path($) {
 }
 
 sub datafile_hashrefs(@) {
-  map({ file => datafile_path($_),
-        path => datafile_path($_),
-        src => 'cdo' },
+  map(Henzell::XlogSrc->new($_, scalar(/logfile/i),
+                            Henzell::SourceServer->new({
+                              name => 'cdo',
+                              local => $DATADIR,
+                              logfiles => [],
+                              milestones => []
+                            })),
       @_)
 }
 
@@ -156,11 +164,12 @@ sub db_timestamp_stale {
   !$canary_time || $datafiles_newest_time gt $canary_time
 }
 
-sub db_load_schema() {
-  announce "Rebuilding schema from $SCHEMAFILE";
+sub db_load_schema($) {
+  my $file = shift;
+  announce "Rebuilding schema from $file";
   with_db {
     my $dbh = shift;
-    my $sql_ddl = do { local (@ARGV, $/) = $SCHEMAFILE; <> };
+    my $sql_ddl = do { local (@ARGV, $/) = $file; <> };
     my @ddl_statements = split(/;/, $sql_ddl);
     for my $statement (@ddl_statements) {
       if ($statement =~ /\S/) {
@@ -175,12 +184,15 @@ sub db_load_data() {
   with_db {
     my $dbh = shift;
     my $timestamp = localtime();
-    for my $logfile (open_handles(datafile_hashrefs(datafile_logs()))) {
-      announce "Loading logfile data from $$logfile{file}";
+
+    my @logfiles = open_handles(datafile_hashrefs(datafile_logs()));
+    my @milestones = open_handles(datafile_hashrefs(datafile_milestones()));
+    for my $logfile (@logfiles) {
+      announce "Loading logfile data from $$logfile{readfile}";
       cat_logfile($logfile);
     }
-    for my $milestone (open_handles(datafile_hashrefs(datafile_milestones()))) {
-      announce "Loading milestone data from $$milestone{file}";
+    for my $milestone (@milestones) {
+      announce "Loading milestone data from $$milestone{readfile}";
       cat_stonefile($milestone);
     }
   };
@@ -207,9 +219,10 @@ sub build_test_db() {
   $DB_DIRTY = db_schema_missing() || db_timestamp_stale();
   if ($DB_DIRTY) {
     announce "Database needs update";
-    db_load_schema();
+    db_load_schema($SCHEMAFILE);
     db_load_data();
     db_canary_set_time();
+    db_load_schema($INDEXFILE);
   }
 }
 
@@ -233,8 +246,6 @@ sub parse_test($) {
   }
   die "Malformed test line\n" unless $text =~ /\S/;
   my ($cmd) = $text =~ /^(\S+)/;
-  die "Unknown command $cmd in test '$text'\n"
-    unless Henzell::Cmd::command_exists($cmd);
   $test{cmd} = $cmd;
 
   if ($text =~ /::(!?)~(.*)/) {
@@ -266,6 +277,7 @@ sub read_tests() {
 }
 
 sub execute_cmd($) {
+  Henzell::Cmd::load_all_commands();
   Henzell::Cmd::execute_cmd($TESTNICK, shift)
 }
 

@@ -2,6 +2,10 @@ require 'sql/date'
 
 module Sql
   module TypePredicates
+    def unit
+      self.type.unit
+    end
+
     def text?
       self.type.text?
     end

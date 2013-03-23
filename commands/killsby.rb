@@ -1,6 +1,5 @@
 #! /usr/bin/env ruby
 
-$:.push("src")
 require 'helper'
 require 'sqlhelper'
 require 'query/query_string'
@@ -13,5 +12,5 @@ args = (ARGV[2].split)[1 .. -1]
 killer_field = args.include?('-i') ? 'ikiller' : 'ckiller'
 args = args.select { |x| x != '-i' }
 
-query = Query::QueryString.new("* #{killer_field}=" + args.join(' '))
+query = Query::QueryString.new("* #{killer_field}=" + args.join(' ')).with_extra
 report_grouped_games('name', '*', query.args)

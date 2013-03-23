@@ -1,4 +1,4 @@
-$:.push("src")
+$:.push(File.join(ENV['HENZELL_ROOT'], 'src'))
 
 SERVICE_PORT = 29880
 

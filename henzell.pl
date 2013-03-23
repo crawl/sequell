@@ -5,12 +5,14 @@ use POSIX qw(setsid); # For daemonization.
 use Fcntl qw/:flock SEEK_END/;
 use IPC::Open2;
 
-use Henzell::Config qw/%CONFIG %CMD %PUBLIC_CMD/;
+use Henzell::Config qw/%CONFIG %CMD %USER_CMD %PUBLIC_CMD/;
 use Henzell::Utils;
+use Henzell::IRC;
 use Getopt::Long;
+use Cwd;
 
 END {
-  kill 0;
+  kill TERM => -$$;
 }
 
 my $daemon = 1;
@@ -20,8 +22,8 @@ GetOptions("daemon!" => \$daemon,
            "irc!" => \$irc,
            "rc=s" => \$config_file) or die "Invalid options\n";
 
-$ENV{LC_ALL} = 'en_US.utf8';
-$ENV{RUBYOPT} = '-rubygems';
+$ENV{LC_ALL} = 'en_US.UTF-8';
+$ENV{RUBYOPT} = "-rubygems -I" . File::Spec->catfile(getcwd(), 'src');
 
 my $SERVER = 'cao';     # Local server.
 my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
@@ -47,7 +49,7 @@ my $sibling_logs_need_fetch;
 # The most recent explicit fetch of logfile records from sibling servers.
 my $sibling_last_fetch_time;
 
-my $seen_dir       = '/home/henzell/henzell/dat/seendb';
+my $seen_dir       = 'dat/seendb';
 my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
                                       greensnark cbus doy/;
 
@@ -66,7 +68,7 @@ my @CHANNELS         = Henzell::Config::array('channels');
 my $ANNOUNCE_CHANNEL = $CONFIG{announce_channel};
 my $DEV_CHANNEL      = $CONFIG{dev_channel};
 
-my $ANNOUNCEMENTS_FILE = '/var/lib/dgamelaunch/logs/announcements.log';
+my $ANNOUNCEMENTS_FILE = $CONFIG{announcements_file};
 
 my @BORING_UNIQUES = qw/Jessica Ijyb Blork Terence Edmund Psyche
                         Joseph Josephine Harold Norbert Jozef
@@ -77,10 +79,10 @@ my @BORING_UNIQUES = qw/Jessica Ijyb Blork Terence Edmund Psyche
 binmode STDOUT, ':utf8';
 
 Henzell::Utils::lock(verbose => 1,
-                     lock_name => $CONFIG{lock_name});
+                     lock_name => $ENV{HENZELL_LOCK} || $CONFIG{lock_name});
 
-if ($irc && $CONFIG{http_services}) {
-  Henzell::Utils::spawn_service("http_service", "rackup -p 29880 config.ru");
+if ($CONFIG{startup_services}) {
+  Henzell::Utils::spawn_services($CONFIG{startup_services});
 }
 
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
@@ -111,11 +113,13 @@ my %AUTHENTICATED_USERS;
 my %PENDING_AUTH;
 
 if ($irc) {
+  print "Connecting to $ircserver as $nickname, channels: @CHANNELS\n";
   $HENZELL = Henzell->new(nick     => $nickname,
                           server   => $ircserver,
                           port     => $port,
                           name     => $ircname,
                           channels => [ @CHANNELS ],
+                          flood    => 1,
                           charset  => "utf-8")
     or die "Unable to create Henzell\n";
   $HENZELL->run();
@@ -308,7 +312,7 @@ sub tail_logfile
     {
       if (!suppress_game($game_ref)) {
         my $output = pretty_print($game_ref);
-        $output =~ s/ on \d{4}-\d{2}-\d{2}//;
+        $output =~ s/ on \d{4}-\d{2}-\d{2} (?:\d{2}:\d{2}:\d{2})?//;
         unless (contains_banned_word($output)) {
           raw_message_post({ channel => $ANNOUNCE_CHANNEL }, $output);
         }
@@ -322,7 +326,7 @@ sub sibling_fetch_logs {
   # If we're saving all logfile and milestone entries, update remote
   # logs; else we don't care.
   if ($CONFIG{sql_store}) {
-    print "*** Fetching remote logfiles\n";
+    print "*** Fetching remote logfiles\n" if $ENV{DEBUG_HENZELL};
     system "./remote-fetch-logfile >/dev/null 2>&1 &";
   }
   $sibling_last_fetch_time = time();
@@ -366,8 +370,7 @@ sub respond_to_any_msg {
   my $nick = $$m{who};
   my $verbatim = $$m{body};
   $nick =~ tr/'//d;
-  $verbatim =~ tr/'//d;
-  my $output = qx!./commands/message/all_input.pl '$nick' '$verbatim'!;
+  my $output = qx!./commands/message/all_input.pl '$nick' \Q$verbatim\E!;
   if ($output) {
     $HENZELL->say(channel => $$m{channel},
                   who => $$m{who},
@@ -397,26 +400,11 @@ sub raw_message_post {
                 body => $output);
 }
 
-sub any_ontoclasm {
-  my ($m, $default) = @_;
-  my $channel = $$m{channel};
-  my @nicks = grep(/ontocl/i, keys %{$HENZELL->channel_data($channel)});
-  @nicks ? $nicks[rand(@nicks)] : $default
-}
-
-sub ontoclasmize {
-  my ($m, $msg) = @_;
-  $msg =~ s/ by ((?:an? )?\w+)/' by ' . any_ontoclasm($m, $1)/e;
-  $msg
-}
-
 sub respond_with_message {
   my ($m, $output) = @_;
   return unless $output;
 
   my $private = $$m{channel} eq 'msg';
-
-  $output = ontoclasmize($m, $output) if !$private && !int(rand(1000));
 
   $output = substr($output, 0, $MAX_PAGINATE_LENGTH) . "..."
     if length($output) > $MAX_PAGINATE_LENGTH;
@@ -446,8 +434,7 @@ sub is_always_public {
   my $command = shift;
   # Every !learn command apart from !learn query has to be public, always.
   return 1 if $command =~ /^!learn/i && $command !~ /^!learn\s+query/i;
-  return 1 unless $command =~ /^\W+(\w+)/;
-  return $PUBLIC_CMD{lc($1)};
+  return $PUBLIC_CMD{lc $command};
 }
 
 sub force_private {
@@ -509,9 +496,38 @@ sub process_authentication {
   }
 }
 
-sub process_message {
-  my ($m) = @_;
+sub nick_rule_match {
+  my ($rule, $nick) = @_;
+  ($$rule{nick} || '') eq $nick
+}
 
+sub rule_pattern_match {
+  my ($rule, $verbatim) = @_;
+  $verbatim =~ qr/$$rule{pattern}/ && $1
+}
+
+sub handle_special_command {
+  my ($m, $private, $nick, $verbatim) = @_;
+  return if $private;
+  my $respond_to = $CONFIG{respond_to};
+  return unless $respond_to && ref($respond_to) eq 'ARRAY';
+  for my $rule (@{$CONFIG{respond_to}}) {
+    next unless ref($rule) eq 'HASH';
+    next unless nick_rule_match($rule, $nick);
+    next unless $$rule{executor} eq 'command';
+
+    my $body = rule_pattern_match($rule, $verbatim);
+    next unless $body;
+    $$m{body} = $body;
+    $$m{proxied} = 1;
+    process_command($m);
+    return 1;
+  }
+  undef
+}
+
+sub message_metadata {
+  my $m = shift;
   my $reprocessed_command = $$m{reproc};
   my $nick = $$m{who};
   my $channel = $$m{channel};
@@ -520,53 +536,105 @@ sub process_message {
   my $verbatim = $$m{body};
   my $target = $verbatim;
   $nick     =~ y/'//d;
-
   my $sibling = nick_is_sibling($nick);
-  unless ($sibling || $reprocessed_command) {
-    seen_update($m, "saying '$verbatim' on $channel");
-    respond_to_any_msg($m);
-  }
-
-  unless ($private || $reprocessed_command) {
-    check_sibling_announcements($nick, $verbatim);
-  }
-  return if $sibling;
 
   $target =~ s/^\?[?>]/!learn query /;
   $target =~ s/^!>/!/;
-  $target =~ s/^([!@]\w+) ?// or return;
-  my $command = lc $1;
 
-  $target   =~ s/ .*$//;
-  $target   =~ y/a-zA-Z0-9_-//cd;
-  $target = $nick unless $target =~ /\S/;
-  $target   =~ y/a-zA-Z0-9_-//cd;
+  my $sigils = Henzell::Config::sigils();
+  $target =~ s/^([\Q$sigils\E]\S*) *// or undef($target);
+
+  my $command;
+  if (defined $target) {
+    $command = lc $1;
+
+    $target   =~ s/ .*$//;
+    $target   = Henzell::IRC::cleanse_nick($target);
+    $target   = $nick unless $target =~ /\S/;
+    $target   = Henzell::IRC::cleanse_nick($target);
+  }
 
   if (force_private($verbatim) && !is_always_public($verbatim)) {
     $private = 1;
     $$m{channel} = 'msg';
   }
 
-  if ($command eq '!load' && exists $admins{$nick})
+  {
+    m => $m,
+    reprocessed_command => $reprocessed_command,
+    nick => $nick,
+    channel => $channel,
+    private => $private,
+    verbatim => $verbatim,
+    target => $target,
+    sibling => $sibling,
+    command => $command,
+    target => $target,
+    proxied => $$m{proxied}
+  }
+}
+
+sub process_message {
+  my ($m) = @_;
+  my $meta = message_metadata($m);
+  unless ($$meta{sibling} || $$meta{reprocessed_command}) {
+    seen_update($m, "saying '$$meta{verbatim}' on $$meta{channel}");
+    respond_to_any_msg($m);
+  }
+
+  unless ($$meta{private} || $$meta{reprocessed_command}) {
+    check_sibling_announcements($$meta{nick}, $$meta{verbatim});
+  }
+
+  if (!$$meta{reprocessed_command} &&
+      handle_special_command($m, $$meta{private}, $$meta{nick},
+                             $$meta{verbatim}))
+  {
+    return;
+  }
+  return if $$meta{sibling};
+  process_command($m);
+}
+
+sub process_command {
+  my ($m) = @_;
+
+  my $meta = message_metadata($m);
+  my $command = $$meta{command};
+  return unless $command;
+
+  my $target = $$meta{target};
+  my $nick = $$meta{nick};
+  my $verbatim = $$meta{verbatim};
+  my $channel = $$meta{channel};
+  my $private = $$meta{private};
+  my $reprocessed_command = $$meta{reprocessed_command};
+  my $proxied = $$meta{proxied};
+
+  if (!$proxied && $command eq '!load' && exists $admins{$nick})
   {
     print "LOAD: $nick: $verbatim\n";
     $HENZELL->say(channel => $channel,
                   who => $$m{who},
                   body => load_commands());
   }
-  elsif (exists $CMD{$command} &&
+  elsif (Henzell::Config::command_exists($command) &&
          (!$private || !is_always_public($verbatim)))
   {
     # Log all commands to Henzell.
     print "CMD($private): $nick: $verbatim\n";
     $ENV{PRIVMSG} = $private ? 'y' : '';
+    $ENV{HENZELL_PROXIED} = $proxied ? 'y' : '';
     $ENV{IRC_NICK_AUTHENTICATED} = nick_identified($nick) ? 'y' : '';
     $ENV{CRAWL_SERVER} = $command =~ /^!/ ? $SERVER : $ALT_SERVER;
+
+    my $processor = $CMD{$command} || $CMD{custom};
     my $output =
-      $CMD{$command}->(pack_args($target, $nick, $verbatim, '', ''));
+      $processor->(pack_args($target, $nick, $verbatim, '', ''));
 
     if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
-      if ($reprocessed_command || nick_identified($nick, 'any_auth')) {
+      if ($reprocessed_command || $proxied ||
+          nick_identified($nick, 'any_auth')) {
         respond_with_message($m,
               "Cannot authenticate $nick with services, ignoring $verbatim");
       } else {
@@ -639,7 +707,6 @@ sub seen_update {
   my $nick = $$e{who};
 
   $nick =~ y/'//d;
-  $doing =~ y/'//d;
 
   my %seen =
   (
@@ -732,6 +799,7 @@ sub tick {
   main::check_stonefiles();
   main::check_all_logfiles();
   main::make_announcements();
+  Henzell::Config::load_user_commands();
   return 1;
 }
 
@@ -774,3 +842,5 @@ sub say {
 
   $self->privmsg($who, $body);
 }
+
+1

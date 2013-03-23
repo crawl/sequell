@@ -6,7 +6,7 @@ import yaml
 from datetime import datetime
 import time
 
-CFGFILE = 'config/crawl-data.yml'
+CFGFILE = os.path.join(os.environ['HENZELL_ROOT'], 'config/crawl-data.yml')
 CFG = yaml.load(open(CFGFILE).read())
 
 www_rawdatapath = '/var/www/crawl/rawdata/'
@@ -30,7 +30,7 @@ ROLES_ABBR = ROLE_MAP.keys()
 WHERE_DIRS = None
 
 NICK_ALIASES = { }
-NICKMAP_FILE = 'dat/nicks.map'
+NICKMAP_FILE = os.path.join(os.environ['HENZELL_ROOT'], 'dat/nicks.map')
 nick_aliases_loaded = False
 
 class Tournament (object):

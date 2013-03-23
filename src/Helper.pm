@@ -8,6 +8,7 @@ use base 'Exporter';
 
 use YAML::Any qw/LoadFile/;
 use Data::Dumper;
+use Henzell::IRC;
 
 my $CONFIG_FILE = 'config/crawl-data.yml';
 
@@ -23,7 +24,7 @@ our @EXPORT_OK = qw/$logfile demunge_logline demunge_xlogline munge_game
                     @roles normalize_role short_role code_role display_role
                     @gods normalize_god short_god code_god display_god
                     ntimes once serialize_time ucfirst_word
-                    nick_alias unwon_combos/;
+                    nick_alias unwon_combos cleanse_nick/;
 our %EXPORT_TAGS = (
     logfile => [qw/demunge_logline demunge_xlogline munge_game games_for/],
     skills  => [grep /skill/, @EXPORT_OK],
@@ -139,11 +140,9 @@ sub species_flavours($) {
   }
 }
 
-our %dead_species = map((lc($CFG->{species}{$_}), 1), @{$$CFG{'dead-species'}});
-
 sub find_species_list() {
   my @species = values %{$CFG->{species}};
-  map(species_flavours($_), grep(!$dead_species{$_}, map(lc, @species)))
+  map(species_flavours($_), grep($_ !~ /\*$/, map(lc, @species)))
 }
 
 our @races = find_species_list();
@@ -185,7 +184,7 @@ my %code_races = map {
 # short race names {{{
 
 my %race_map = %{$CFG->{species}};
-delete @race_map{@{$$CFG{'dead-species'}}};
+delete @race_map{grep($CFG->{species}{$_} =~ /\*$/, keys %{$CFG->{species}})};
 
 my %short_races;
 @short_races{map(lc, values %race_map)} = keys %race_map;
@@ -240,9 +239,7 @@ sub display_race { # {{{
 # }}}
 # roles {{{
 # role list {{{
-our %dead_class_abbrs = map(($_, 1), @{$$CFG{'dead-classes'}});
-our %dead_classes = map((lc($$CFG{classes}{$_}), 1), keys %dead_class_abbrs);
-our @roles = grep(!$dead_classes{$_}, map(lc, values(%{$CFG->{classes}})));
+our @roles = grep($_ !~ /\*$/, map(lc, values(%{$CFG->{classes}})));
 
 # }}}
 # role names used by the code {{{
@@ -255,7 +252,7 @@ my %code_roles = map {
 # short role names {{{
 
 my %short_roles;
-@short_roles{@roles} = grep(!$dead_class_abbrs{$_}, keys %{$CFG->{classes}});
+@short_roles{@roles} = grep($CFG->{classes}{$_} !~ /\*$/, keys %{$CFG->{classes}});
 # }}}
 # role normalization {{{
 my %normalize_role = (
@@ -388,12 +385,7 @@ sub serialize_time # {{{
 
   if (not $long)
   {
-    my $hours = int($seconds/3600);
-    $seconds %= 3600;
-    my $minutes = int($seconds/60);
-    $seconds %= 60;
-
-    return sprintf "%d:%02d:%02d", $hours, $minutes, $seconds;
+    return short_elapsed_time($seconds);
   }
 
   my $minutes = int($seconds / 60);
@@ -418,6 +410,26 @@ sub serialize_time # {{{
   return join ' ', @fields if @fields;
   return '0s';
 } # }}}
+
+sub short_elapsed_time {
+  my $seconds = shift;
+  my $hours = int($seconds/3600);
+  $seconds %= 3600;
+  my $minutes = int($seconds/60);
+  $seconds %= 60;
+
+  my $days = int($hours / 24);
+  my $years = int($days / 365);
+  $days %= 365;
+  $hours %= 24;
+
+  my @pieces;
+  push @pieces, "${years}y" if $years > 0;
+  push @pieces, "${days}d" if $days > 0;
+  push @pieces, sprintf("%d:%02d:%02d", $hours, $minutes, $seconds);
+  join('+', @pieces)
+}
+
 sub ucfirst_word { # {{{
     join ' ', map { ucfirst } split / /, shift;
 } # }}}
@@ -446,5 +458,10 @@ sub nick_alias {
 
   $aliases && $aliases =~ /^(\S+)/ ? $1 : $nick
 }
+
+sub cleanse_nick {
+  Henzell::IRC::cleanse_nick(shift)
+}
+
 
 1;

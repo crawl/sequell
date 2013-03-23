@@ -1,6 +1,8 @@
 require 'sql/column_list'
 require 'sql/lookup_table_registry'
 require 'sql/function_defs'
+require 'sql/field_value_transformer'
+require 'crawl/milestone_type'
 
 module Sql
   class Config
@@ -43,7 +45,7 @@ module Sql
     end
 
     def milestone_types
-      @milestone_types ||= @cfg['milestone-types']
+      @milestone_types ||= Crawl::MilestoneType
     end
 
     def sql_field_name_map
@@ -54,19 +56,36 @@ module Sql
       @cfg['column-aliases']
     end
 
+    def column_substitutes
+      @cfg['column-substitutes']
+    end
+
+    def field_value_transformer
+      @field_value_transformer ||=
+        Sql::FieldValueTransformer.new(self['field-transforms'])
+    end
+
+    def transform_value(value, field)
+      field_value_transformer.transform(value, field)
+    end
+
     def logfields
       @logfields ||=
-        Sql::ColumnList.new(self, @cfg['logrecord-fields-with-type'])
+        Sql::ColumnList.new(self,
+                            @cfg['logrecord-fields-with-type'],
+                            self.column_substitutes)
     end
 
     def milefields
       @milefields ||=
-        Sql::ColumnList.new(self, @cfg['milestone-fields-with-type'])
+        Sql::ColumnList.new(self, @cfg['milestone-fields-with-type'],
+                            self.column_substitutes)
     end
 
     def fakefields
       @fakefields ||=
-        Sql::ColumnList.new(self, @cfg['fake-fields-with-type'])
+        Sql::ColumnList.new(self, @cfg['fake-fields-with-type'],
+                            self.column_substitutes)
     end
 
     def [](name)

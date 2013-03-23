@@ -25,13 +25,18 @@ module Sql
       @type = Type.type(@cfg['type'])
       @summarisable = @cfg['summarisable']
       @display_format = @cfg['display-format']
+      @preserve_unit = @cfg['preserve-unit']
+      @unit = @cfg['unit']
       @expr = @cfg['expr']
-      @return_type = Type.type(@cfg['return'] || @type)
+      @return_type = Type.type(@cfg['return'] || '*')
     end
 
     def return_type(field)
-      return @return_type unless @return_type.any?
-      field.type
+      find_return_type(field).with_unit(unit(field))
+    end
+
+    def preserve_unit?
+      @preserve_unit
     end
 
     def summarisable?
@@ -48,6 +53,19 @@ module Sql
 
     def to_s
       @name
+    end
+
+  private
+    def find_return_type(field)
+      expr = Sql::FieldExpr.expr(field)
+      return @return_type unless @return_type.any?
+      expr.type
+    end
+
+    def unit(field)
+      expr = Sql::FieldExpr.expr(field)
+      return expr.unit if preserve_unit?
+      @unit
     end
   end
 end

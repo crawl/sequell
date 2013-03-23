@@ -5,8 +5,6 @@ if !ENV['HENZELL_SQL_QUERIES']
 end
 
 DEBUG_HENZELL = ENV['DEBUG_HENZELL']
-LG_CONFIG_FILE = 'config/crawl-data.yml'
-LG_SERVERS_FILE = 'config/servers.yml'
 
 require 'dbi'
 require 'set'
@@ -16,6 +14,7 @@ require 'helper'
 require 'tourney'
 require 'sql_connection'
 require 'henzell_config'
+require 'henzell/sources'
 
 require 'sql/config'
 require 'sql/field_predicate'
@@ -30,12 +29,13 @@ require 'query/query_struct'
 require 'query/summary_graph_builder'
 require 'crawl/branch_set'
 require 'crawl/gods'
+require 'crawl/config'
+require 'string_fixup'
 
 include Tourney
 include HenzellConfig
 
-CFG = YAML.load_file(LG_CONFIG_FILE)
-LG_SERVER_CFG = YAML.load_file(LG_SERVERS_FILE)
+CFG = Crawl::Config.config
 
 # Don't use more than this much memory (bytes)
 MAX_MEMORY_USED = 768 * 1024 * 1024
@@ -43,11 +43,12 @@ Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
 
 include Query::Grammar
 
-BRANCHES = Crawl::BranchSet.new(CFG['branches'])
+PLACE_FIXUPS = StringFixup.new(CFG['place-fixups'])
+BRANCHES = Crawl::BranchSet.new(CFG['branches'], PLACE_FIXUPS)
 UNIQUES = Set.new(CFG['uniques'].map { |u| u.downcase })
 GODS = Crawl::Gods.new(CFG['god'])
 
-SOURCES = LG_SERVER_CFG['sources'].keys.sort
+SOURCES = Henzell::Sources.instance.source_names
 
 CLASS_EXPANSIONS =
   Hash[CFG['classes'].map { |abbr, cls| [abbr, cls.sub('*', '')] }]
@@ -77,6 +78,10 @@ module GameContext
     ensure
       @@game = old_game
     end
+  end
+
+  def self.game=(game)
+    @@game = game
   end
 
   def self.game
@@ -141,6 +146,7 @@ end
 #       nick num etc
 # runs the query and returns the matching game.
 def sql_find_game(default_nick, args, context=CTX_LOG)
+  args = Query::QueryString.new(args).with_extra.args
   query_group = sql_parse_query(default_nick, args, context)
   query_group.with_context do
     q = query_group.primary_query
@@ -188,15 +194,17 @@ end
 # Given a Henzell command's command-line, looks up a game and reports it,
 # also recognising -tv and -log options.
 def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
-  TV.with_tv_opts(other_args_string.split()[1 .. -1]) do |args, opts|
+  combined_args = other_args_string.split()[1 .. -1] + extra_args
+  combined_args = Query::QueryString.new(combined_args).with_extra.args
+  TV.with_tv_opts(combined_args) do |args, opts|
     args, logopts = extract_options(args, 'log', 'ttyrec')
-    sql_show_game(ARGV[1], args + extra_args) do |res|
+    sql_show_game(ARGV[1], args) do |res|
       if opts[:tv]
         TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1])
       elsif logopts[:log]
-        report_game_log(res.n, res.game)
+        report_game_log(res.qualified_index, res.game)
       elsif logopts[:ttyrec]
-        report_game_ttyrecs(res.n, res.game)
+        report_game_ttyrecs(res.qualified_index, res.game)
       else
         print_game_result(res)
       end
@@ -272,14 +280,7 @@ QUERY
 end
 
 def sql_each_row_matching(q, limit=0)
-  query = q.select_all
-  if limit > 0
-    if limit > 1
-      query += " LIMIT 1 OFFSET #{limit - 1}"
-    else
-      query += " LIMIT #{limit}"
-    end
-  end
+  query = q.select_all(true, limit=limit)
   if DEBUG_HENZELL
     STDERR.puts("SELECT query: #{query}, values: #{q.values.inspect}")
   end
@@ -329,7 +330,7 @@ def sql_game_by_key(key)
 end
 
 def is_charabbrev? (arg)
-  arg =~ /^([a-z]{2})([a-z]{2})/i && RACE_EXPANSIONS[$1.downcase] &&
+  arg =~ /^([a-z]{2})([a-z]{2})$/i && RACE_EXPANSIONS[$1.downcase] &&
     CLASS_EXPANSIONS[$2.downcase]
 end
 

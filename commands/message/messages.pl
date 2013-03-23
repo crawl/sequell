@@ -1,7 +1,10 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+
 do 'commands/message/helper.pl';
+use lib 'src';
+use Helper qw/demunge_xlogline/;
 
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
@@ -32,6 +35,6 @@ else
 printf '(1/%d) %s said (%s ago): %s%s',
   1 + @rest,
   $message_ref->{from},
-  serialize_time(time - $message_ref->{time}, 1),
+  Helper::serialize_time(time - $message_ref->{time}, 1),
   $message_ref->{msg},
   "\n";

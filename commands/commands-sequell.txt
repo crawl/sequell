@@ -1,7 +1,6 @@
 !cmdinfo cmdinfo.pl
 !help help.pl
 !chars chars.rb
-!deathsby deathsby.rb
 !deathsin deathsin.rb
 !gamesby gamesby.rb
 !gkills gkills.rb
@@ -18,4 +17,6 @@
 !tv tvreq.rb
 !tvdef tvdef.rb
 !won won.rb
-!tlg ttlistgame.rb
+!cmd querydef.rb
+!kw keyworddef.rb
+!keyworddef keyworddef.rb

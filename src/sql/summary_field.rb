@@ -14,6 +14,7 @@ module Sql
       @order = $1.empty? ? '+' : $1
       @field = Sql::FieldExprParser.expr($2)
       unless @field.summarisable?
+        raise UnknownFieldError.new(@field) unless @field.column
         raise StandardError.new("Cannot summarise by #{@field}")
       end
       @percentage = !$3.empty?
@@ -31,6 +32,10 @@ module Sql
 
     def sort_field
       "#{order}#{field}"
+    end
+
+    def to_s
+      "SummaryField[#{order || ''}#{field}#{percentage ? '%' : ''}]"
     end
   end
 end

@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-$:.push("src")
 require 'helper'
 require 'sqlhelper'
 require 'libtv'

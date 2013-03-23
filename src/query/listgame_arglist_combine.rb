@@ -1,26 +1,19 @@
-require 'query/query_argument_normalizer'
+require 'query/grammar'
 
 module Query
   class ListgameArglistCombine
-    # Combines to arrays of listgame arguments into one, correctly
+    include Grammar
+
+    # Combines two arrays of listgame arguments into one, correctly
     # handling keyword-style arguments at the head of the secondary list.
     # Example:  [ '*', 'killer=orc' ], [ 'xom' ]
-    #        => [ '*', 'xom', 'killer=orc']
+    #        => [ '*', 'killer=orc', '((', 'xom', '))' ]
     def self.apply(arguments_a, arguments_b)
-      result = self.clone(arguments_a)
-      secondary = QueryArgumentNormalizer.normalize(arguments_b)
-      for arg in secondary do
-        if arg !~ OPMATCH
-          result.insert(1, arg)
-        else
-          result << arg
-        end
-      end
-      result
-    end
-
-    def self.clone(args)
-      args.map { |x| x.dup }
+      a_string = arguments_a.join(' ')
+      b_string = arguments_b.join(' ')
+      a_tail = a_string.index('?:') ? a_string.sub(/^.*\?:/, '?:') : ''
+      a_string = a_string.sub(/^(.*)\?:.*/, '\1')
+      [a_string, OPEN_PAREN, b_string, CLOSE_PAREN, a_tail].join(' ').split(' ')
     end
   end
 end

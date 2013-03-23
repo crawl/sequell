@@ -12,6 +12,14 @@ module Sql
       field.type
     end
 
+    def canonical_name
+      field.canonical_name
+    end
+
+    def bind_ordered_column!
+      self.field.bind_ordered_column!
+    end
+
     def resolve(new_field_name)
       clone = self.dup
       clone.field = self.field.resolve(new_field_name)
@@ -86,8 +94,16 @@ module Sql
       field.summarisable?
     end
 
+    def multivalue?
+      column_prop(:multivalue?)
+    end
+
     def column
       field.column
+    end
+
+    def column_prop(prop)
+      self.column && self.column.send(prop)
     end
 
     def known?

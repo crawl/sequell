@@ -1,5 +1,7 @@
+require 'crawl/milestone_type'
+
 class QueryContextFixups
-  MILESTONE_TYPES = HenzellConfig::CFG['milestone-types']
+  MILESTONE_TYPES = Crawl::MilestoneType
 
   BRANCHES = QueryConfig::CFG['branches'].map { |b| b.sub(':', '') }
   BRANCHES_WITH_DEPTHS = \
@@ -179,7 +181,8 @@ class QueryContextFixups
     # Given a query such as `!lm * abyss.enter`, translate the keyword
     # `abyss.enter` into `type=abyss.enter`
     keyword_match("milestone-type") do |keyword|
-      if MILESTONE_TYPES.include?(keyword.downcase)
+      milestone = MILESTONE_TYPES.canonicalize(keyword)
+      if milestone
         SQLExprs.field_op_val('type', '=', keyword)
       end
     end

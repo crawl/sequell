@@ -110,7 +110,11 @@ sub format_date {
 
 sub formatted_game_field {
   my ($g, $field) = @_;
-  if (grep($_ eq $field, 'end', 'start', 'rend', 'rstart', 'time') ||
+  if ($field =~ /\bk?map\b/) {
+    my $val = $$g{$field};
+    $val =~ s/(?<!;) /_/g;
+    $val
+  } elsif (grep($_ eq $field, 'end', 'start', 'rend', 'rstart', 'time') ||
       $field =~ /^(?:day|year|month)\(/)
   {
     return format_date($$g{$field}) . " [$$g{$field}]";
@@ -135,6 +139,13 @@ sub parse_extras {
   $extra
 }
 
+sub vault_name_transform($) {
+  my $vault = shift;
+  return $vault unless $vault;
+  $vault =~ s/(?<!;) /_/g;
+  $vault
+}
+
 sub game_place($) {
   my $g = shift;
 
@@ -145,7 +156,7 @@ sub game_place($) {
 
   my $qualifier = '';
   if ($$g{map}) {
-    my $map = $$g{map};
+    my $map = vault_name_transform($$g{map});
     $map = "$$g{mapdesc} : $map" if $$g{mapdesc};
     $map = $$g{mapdesc} if $$g{mapdesc} && game_is_sprint($g);
     $qualifier = " ($map)"
@@ -164,6 +175,12 @@ sub game_place($) {
   return $loc_string;
 }
 
+sub kmap_is_significant
+{
+  my $kmap = shift;
+  $kmap && $kmap !~ /^uniq[ _]/;
+}
+
 sub pretty_print
 {
   my $game_ref = shift;
@@ -173,7 +190,12 @@ sub pretty_print
 
   my $death_date = " on " . format_date($$game_ref{end});
   my $deathmsg = $game_ref->{vmsg} || $game_ref->{tmsg};
-  $deathmsg =~ s/!$//;
+  $deathmsg =~ s/[.!]+$//;
+  my $killer_map = vault_name_transform($game_ref->{killermap});
+  if (kmap_is_significant($killer_map) && !$game_ref->{map}) {
+    $deathmsg .= " (kmap: $killer_map)";
+  }
+
   my $title = game_skill_title($game_ref);
   sprintf '%s%s the %s (L%d %s)%s, %s%s%s, with %d point%s after %d turn%s and %s.',
       $extra,
@@ -199,10 +221,6 @@ sub milestone_string
 
   my $place = $$g{oplace} || $$g{place};
   my $placestring = " ($place)";
-  if ($g->{milestone} eq "escaped from the Abyss!")
-  {
-    $placestring = "";
-  }
 
   my $ms = $$g{milestone};
   my $turn = $$g{turn};

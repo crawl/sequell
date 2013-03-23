@@ -4,6 +4,7 @@ require 'gserver'
 require 'helper'
 require 'sqlop/tv_view_count'
 require 'fileutils'
+require 'termcast_config'
 
 module TV
   @@tv_args = nil
@@ -13,6 +14,9 @@ module TV
   TV_QUEUE_FILE = 'tv.queue'
   TV_LOCK_FILE = 'tv.queue.lock'
   TV_LOG_FILE = 'tv.queue.log'
+
+  SPEED_MIN = 0.1
+  SPEED_MAX = 50
 
   def self.queue_dir
     TV_QUEUE_DIR
@@ -203,9 +207,9 @@ module TV
 
   def self.parse_seek_num(seek, num, allow_end=false)
     seekname = seek == '<' ? 'seek-back' : 'seek-after'
-    expected = allow_end ? 'T<turncount>, number or "$"' : 'T<turncount> or number'
+    expected = allow_end ? 'T<turncount>, number, ">" or "$"' : 'T<turncount> or number'
     if (num !~ /^t[+-]?\d+$/i && num !~ /^[-+]?\d+(?:\.\d+)?$/ &&
-        (!allow_end || num != '$'))
+        (!allow_end || (num != '$' && num != '>')))
       raise "Bad seek argument for #{seekname}: #{num} (#{expected} expected)"
     end
     num
@@ -213,8 +217,8 @@ module TV
 
   def self.read_playback_speed(speed_string)
     speed = speed_string.to_f
-    if speed < 0.1 || speed > 10
-      raise "Playback speed must be between 0.1 and 10"
+    if speed < SPEED_MIN || speed > SPEED_MAX
+      raise "Playback speed must be between #{SPEED_MIN} and #{SPEED_MAX}"
     end
     speed
   end
@@ -257,6 +261,10 @@ module TV
     end
   end
 
+  def self.seek_to_game_end?
+    @@tv_args && @@tv_args['seekafter'] == '>'
+  end
+
   def self.request_game(g)
     # Launch a daemon that keeps a server socket open for interested
     # parties (i.e. C-SPLAT) to listen in.
@@ -272,6 +280,10 @@ module TV
     end
   end
 
+  def self.tv_description(tv)
+    "#{tv} (#{TermcastConfig.client_urls.join(' or ')})"
+  end
+
   def self.request_game_verbosely(n, g, who)
     summary = short_game_summary(g)
     tv = 'FooTV'
@@ -281,7 +293,7 @@ module TV
         puts "FooTV playlist clear requested by #{who}."
       else
         suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
-        puts "#{n}. #{summary}#{suffix} requested for #{tv}."
+        puts "#{n}. #{summary}#{suffix} requested for #{tv_description(tv)}."
       end
 
       Sqlop::TVViewCount.increment(g)

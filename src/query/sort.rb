@@ -12,6 +12,7 @@ module Query
         raise "Bad sort direction: #{direction}"
       end
       @field = field
+      @field.bind_ordered_column!
       @direction = direction
     end
 

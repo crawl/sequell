@@ -24,6 +24,14 @@ module Sql
       @aggregate = !@fields.empty?() && @fields[0].aggregate?()
     end
 
+    def dup
+      clone = self.class.new('', @ctx)
+      clone.fields = self.fields.map { |f| f.dup }
+      clone.instance_variable_set(:@extra, @extra.dup)
+      clone.instance_variable_set(:@aggregate, @aggregate)
+      clone
+    end
+
     def to_s
       "QueryFields:#{@fields.inspect}"
     end
@@ -71,12 +79,9 @@ module Sql
     def parse_field(field)
       begin
         simple_field(field)
-      rescue Sql::ParseError
-        if field =~ /^(\w+)\((\S+)\)$/
-          aggregate_function($1, $2)
-        else
-          raise
-        end
+      rescue Sql::UnknownFunctionError, Sql::MalformedTermError
+        raise unless field =~ /^(\w+)\((\S+)\)$/
+        aggregate_function($1, $2)
       end
     end
 
@@ -92,6 +97,7 @@ module Sql
           :percentage)
       else
         @ctx.with do
+          field = Sql::FieldExprParser.expr(field)
           query_field = Sql::QueryField.new(self, nil, field, field)
           unless query_field.known?
             raise Sql::UnknownFieldError.new(query_field)
@@ -113,7 +119,7 @@ module Sql
 
       # And check that the types match up.
       if not aggregate_typematch(func, field)
-        raise "#{func} cannot be applied to #{field}"
+        raise FunctionTypeMismatch.new(func, field)
       end
 
       fieldalias = (func.to_s + "_" + field.to_s.gsub(/[^\w]+/, '_') +

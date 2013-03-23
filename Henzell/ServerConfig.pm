@@ -6,8 +6,25 @@ package Henzell::ServerConfig;
 use base 'Exporter';
 use YAML::Any qw/LoadFile/;
 
-my $SERVER_CONFIG_FILE = 'config/servers.yml';
+use Henzell::SourceServer;
+
+my $SERVER_CONFIG_FILE = 'config/sources.yml';
 my $SERVERCFG = LoadFile($SERVER_CONFIG_FILE);
+
+my @SERVERS = map(Henzell::SourceServer->new($_),
+                  @{$SERVERCFG->{sources}});
+
+sub servers {
+  @SERVERS
+}
+
+sub server_logfiles {
+  map($_->logfiles(), servers())
+}
+
+sub server_milestones {
+  map($_->milestones(), servers())
+}
 
 sub source_hostname {
   my $source = shift;

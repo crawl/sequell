@@ -1,13 +1,12 @@
-require 'yaml'
+require 'crawl/config'
 
 module Tourney
-  CFG = YAML.load_file(LG_CONFIG_FILE)
+  CFG = Crawl::Config.config
 
   TOURNEY_SPRINT_MAP = CFG['tournament-sprint-map']
   TOURNEY_PREFIXES = CFG['tournament-prefixes']
   TOURNEY_VERSIONS = CFG['tournament-versions']
   TOURNEY_DATA = CFG['tournament-data']
-  SPRINT_TOURNEY_DATES =
 
   TOURNEY_REGEXES = TOURNEY_PREFIXES.map do |p|
     %r/^(#{p})(\d*)([a-z]?)$/i

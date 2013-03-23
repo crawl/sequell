@@ -67,7 +67,7 @@ module Sql
       row.extra_fields = fullrow.extra_fields
       row.extra_values = fullrow.extra_values
       row.counts = fullrow.counts
-      row.key = key_override if key_override
+      row.key = key_override unless key_override.nil?
       row.subrows = subrows
       row
     end

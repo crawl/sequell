@@ -8,13 +8,15 @@ Dependencies
 ------------
 
 Henzell wants a slew of Perl modules for IRC, YAML parsing, DB
-connectivity, etc.; it will usually produce a somewhat relevant error
-message when it cannot find a module it wants.
+connectivity, etc. In addition the SQL query commands require several
+Ruby gems. To install Henzell's dependencies, use:
 
-If you want to use Henzell with a non-DGL crawl, build it with at
-least these flags:
+   # ./install-henzell-libs
 
-    make EXTERNAL_DEFINES="-DDGL_MILESTONES -DDGL_WHEREIS -DDGL_EXTENDED_LOGFILES"
+You can also install the Perl and Ruby dependencies independently:
+
+   # ./install-perl-modules
+   # gem install bundler && bundle install
 
 
 Configuring Henzell
@@ -93,7 +95,7 @@ This is more complicated than a simple announcement bot:
    perl schema-gen.pl
 
    Create the tables:
-   psql -U henzell henzell < henzell.sql
+   psql -U henzell henzell < henzell-schema.sql
 
 3. Make sure def.logs and def.stones are set up correctly.
 

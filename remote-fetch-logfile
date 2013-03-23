@@ -7,15 +7,49 @@ use Henzell::Config qw/%CONFIG @LOGS @MILESTONES/;
 use Henzell::Utils;
 
 my $verbose = -t STDIN;
+my $show_missing = grep(/^--show-missing$/, @ARGV);
+my $list_files = grep(/^--list-files$/, @ARGV);
+
+sub symlink_local_file($) {
+  my $file = shift;
+  my $local_source = $file->local_filepath();
+  my $target_file = $file->target_filepath();
+  print "Symlinking $local_source -> $target_file\n" if $verbose;
+  symlink($local_source, $target_file) or die "Couldn't symlink $local_source -> $target_file\n";
+}
 
 sub fetch_file($) {
   my $file = shift;
-  unless ($$file{url}) {
-    print "Skipping $$file{path}, no URL\n" if $verbose;
+  my $path = $file->target_filepath();
+  my $target_exists = $file->target_exists();
+
+  if ($show_missing || $list_files) {
+    print "$path (" . $file->source_name() . ")\n" if !$target_exists || $list_files;
     return;
   }
-  print "Fetching $$file{url} -> $$file{path}\n" if $verbose;
-  system(qq{wget --timeout=15 -q -c $$file{url} -O $$file{path} >/dev/null 2>&1});
+
+  if ($target_exists && !$file->is_live()) {
+    print "$path already exists and is not live, skipping it\n" if $verbose;
+    return;
+  }
+
+  if (!$target_exists && $file->local_source_exists()) {
+    symlink_local_file($file);
+    return;
+  }
+
+  unless ($file->http_url()) {
+    print "Skipping $file, no URL\n" if $verbose;
+    return;
+  }
+
+  my $url = $file->http_url();
+  print "Fetching $url -> $path\n" if $verbose;
+
+  my $limit_time = $target_exists ? '--max-time 15' : '';
+  my $cmd = qq{curl -s $limit_time -C- $url -o $path >/dev/null 2>&1};
+  print "[CMD] $cmd\n" if $verbose;
+  system($cmd);
 }
 
 sub main() {

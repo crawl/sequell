@@ -1,12 +1,30 @@
 class CommandContext
+  def self.extra_args_parenthesized
+    ENV['EXTRA_ARGS_PARENTHESIZED']
+  end
+
+  def self.extra_args
+    ENV['EXTRA_ARGS']
+  end
+
+  def self.command_words
+    ARGV[2].split()
+  end
+
   def self.command_arguments
-    ARGV[2].split()[1 .. -1]
+    command_words[1 .. -1]
+  end
+
+  def self.command
+    command_words[0]
   end
 
   attr_accessor :arguments, :opts
 
-  def initialize
-    @arguments = self.class.command_arguments
+  def initialize(args=nil, command=nil)
+    @original_arguments = args || self.class.command_arguments
+    @arguments = @original_arguments.dup
+    @command = command || self.class.command
     @opts = { }
   end
 
@@ -14,8 +32,16 @@ class CommandContext
     self.arguments.join(' ')
   end
 
+  def command
+    @command
+  end
+
   def default_nick
     ARGV[1]
+  end
+
+  def first
+    @arguments.first
   end
 
   def [](key)

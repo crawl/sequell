@@ -1,7 +1,5 @@
 #! /usr/bin/env ruby
 
-$:.push("src")
-
 require 'helper'
 require 'libtv'
 require 'tv/channel_manager'

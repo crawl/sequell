@@ -42,6 +42,14 @@ module Query
       @arg =~ ARGSPLITTER
       raw_key, op, val = $1, $2, $3
 
+      if raw_key =~ /[|]/
+        return split_clause(:or_clause, raw_key.split(/\|/), op, val)
+      end
+
+      if raw_key =~ /&/
+        return split_clause(:and_clause, raw_key.split(/&/), op, val)
+      end
+
       key = Sql::FieldExprParser.expr(raw_key)
       op = Sql::Operator.new(op)
       selector = key.sort? ? Sql::FieldExprParser.expr(val) : key
@@ -56,15 +64,6 @@ module Query
         order = key.max? ? 'DESC' : 'ASC'
         body.sort(Sort.new(selector, order))
       else
-        if selector.integer?
-          if op.textual?
-            raise "Can't use #{op} on numeric field #{selector} in #{rawarg}"
-          end
-          if val !~ /^[+-]?(?:\d+[.]?|[.]\d+|\d+[.]\d+)$/
-            raise "Bad expression: '#{@arg}': #{selector} is numeric, but value '#{val}' is not."
-          end
-          val = val.to_i
-        end
         body.append(query_field(selector, op, val))
       end
 
@@ -90,8 +89,21 @@ module Query
         op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
       end
 
-      if field === 'name' && val[0, 1] == '@' and op.equality?
-        return NickExpr.expr(val[1..-1], op.not_equal?)
+      if field.integer?
+        if op.textual?
+          raise "Can't use #{op} on numeric field #{field} in #{@rawarg}"
+        end
+        if val !~ /^[+-]?(?:\d+[.]?|[.]\d+|\d+[.]\d+)$/
+          raise "Bad expression: '#{@arg}': #{field} is numeric, but value '#{val}' is not."
+        end
+        val = val.to_i
+      end
+
+      val, op = expand_field_value(val, field, op) if op.equality?
+
+      if field === 'name' && op.equality?
+        val = "@" + (NickExpr.default_nick || val) if val == '.'
+        return NickExpr.expr(val, op.not_equal?) if val =~ /^[@:]/
       end
 
       if field === ['v', 'cv'] && op.relational? &&
@@ -99,6 +111,16 @@ module Query
         return field_pred(Sql::VersionNumber.version_numberize(val),
                           op,
                           field.resolve(field.name + 'num'))
+      end
+
+      if field === 'god'
+        val = GODS.god_resolve_name(val) || val
+      end
+
+      if (field === ['map', 'killermap'] && op.equality? &&
+          val =~ /^[\w -]+$/)
+        op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
+        val = "^#{Regexp.quote(val)}($|;)"
       end
 
       if field === ['kaux', 'ckaux', 'killer', 'ktyp'] && op.equality? then
@@ -116,6 +138,10 @@ module Query
         val = 'winning' if val =~ /^w[io]n/
         val = 'leaving' if val =~ /^leav/ || val == 'left'
         val = 'quitting' if val =~ /^quit/
+      end
+
+      if field === 'verb' && op.equality?
+        val = Crawl::MilestoneType.canonicalize(val)
       end
 
       if field === ['killer', 'ckiller', 'ikiller']
@@ -149,13 +175,20 @@ module Query
 
       if field.value_key?
         return QueryStruct.new('AND',
-          field_pred(field.to_s, '=', context.key_field),
+          field_pred(context.canonical_value_key(field.to_s), '=',
+                     context.key_field),
           field_pred(val, op, context.value_field))
       end
 
       if (field === 'place' || field === 'oplace') and !val.index(':') and
           op.equality? and BRANCHES.deep?(val) then
-        val += ':*'
+        val += BRANCHES.deepish?(val) ? '*' : ':*'
+        op = Sql::Operator.new(op.equal? ? '=~' : '!~')
+      end
+
+      if (field === 'place' || field === 'oplace') and val =~ /:\*?$/ and
+          op.equality? and BRANCHES.deep?(val) then
+        val = val + '*' unless val =~ /\*$/
         op = Sql::Operator.new(op.equal? ? '=~' : '!~')
       end
 
@@ -171,24 +204,25 @@ module Query
         val = CLASS_EXPANSIONS[val.downcase] || val
       end
 
-      if field === ['place', 'oplace'] && op === ['=', '!=', '=~', '!~'] then
-        place_fixups = CFG['place-fixups']
-        for place_fixup_match in place_fixups.keys do
-          regex = %r/#{place_fixup_match}/i
-          if val =~ regex then
-            replacement = place_fixups[place_fixup_match]
-            replacement = [replacement] unless replacement.is_a?(Array)
-            values = replacement.map { |r|
-              val.sub(regex, r.sub(%r/\$(\d)/, '\\\1'))
-            }
-            inclusive = op.to_s.index('=') == 0
-            clause = QueryStruct.new(inclusive ? 'OR' : 'AND')
-            for value in values do
-              clause << field_pred(value, op, field)
-            end
-            return clause
-          end
+      if field === ['place', 'oplace'] && op.equality? then
+        fixed_up_places = PLACE_FIXUPS.fixup(val)
+        return QueryStruct.new(op.equal? ? 'OR' : 'AND',
+          *fixed_up_places.map { |place|
+            field_pred(place, op, field)
+          })
+      end
+
+      if field.multivalue? && op.equality? && !val.empty?
+        if val.index(',')
+          values = val.split(',').map { |s| s.strip }
+          operator = op.equal? ? 'AND' : 'OR'
+          return QueryStruct.new(operator, *values.map { |v|
+              query_field(field, op, v)
+            })
         end
+
+        op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
+        val = "(?:^|,)" + Regexp.quote(val) + '\y'
       end
 
       if field === 'when'
@@ -226,6 +260,22 @@ module Query
       end
 
       field_pred(val, op, field)
+    end
+
+    def split_clause(clause, keys, op, val)
+      QueryStruct.send(clause, false,
+        *keys.map { |split_key|
+          QueryExprParser.parse("#{split_key}#{op}#{val}")
+        })
+    end
+
+    def expand_field_value(val, field, op)
+      transformed_value = SQL_CONFIG.transform_value(val.to_s, field)
+      if transformed_value.to_s.index('~') == 0
+        transformed_value = transformed_value[1..-1]
+        op = Sql::Operator.op(op.equal? ? '=~' : '!~')
+      end
+      [transformed_value, op]
     end
   end
 end
