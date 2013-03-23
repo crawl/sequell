@@ -1030,6 +1030,29 @@ These shortcut commands can be used as:
 The usual !lg rule of the first argument being treated as a nick does
 not necessarily apply to custom commands.
 
+You may define simple placeholder variables for your custom commands:
+
+  !cmd !unwon !lg * s=char / won @$1 ?: N=0
+
+  !unwon elliptic => !lg * s=char / won @elliptic ?: N=0
+  !unwon . =>  !lg * s=char / won @. ?: N=0
+
+Placeholders may be of the form $1, $2, etc., or $* to imply "all
+remaining arguments". You may define default values for missing arguments
+with ${N:-default} or ${*:-default}. For example:
+
+  !cmd !unwon !lg * $2 s=char / won @${1:-.} $* ?: N=0
+
+  !unwon => !lg * s=char / won @. ?: N=0
+  !unwon xyz => !lg * s=char / won @xyz ?: N=0
+  !unwon xyz dg => !lg * dg s=char / won @xyz ?: N=0
+  !unwon xyz dg turn<30000 => !lg * dg s=char / won @xyz turn<30000 ?: N=0
+
+The placeholder variables operate on space-delimited words, so they
+will be unable to handle conditions containing spaces, (such as
+'killer=storm dragon'; underscored forms such as 'killer=storm_dragon'
+will work) parenthesized groups, ratio queries (/), etc.
+
 To get a list of user-defined commands, use !cmd -ls. To delete
 a command, use !cmd -rm as:
 

@@ -103,6 +103,7 @@ module Query
 
       if field === 'name' && op.equality?
         val = "@" + (NickExpr.default_nick || val) if val == '.'
+        return QueryStruct.new if val == '*'
         return NickExpr.expr(val, op.not_equal?) if val =~ /^[@:]/
       end
 

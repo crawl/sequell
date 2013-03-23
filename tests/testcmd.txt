@@ -284,3 +284,10 @@ E !lg * s=trunc99(sc)
 !kw nondead ((boring || winning))
 
 !lg * x=cdist(name) / won
+
+!cmd a !lg * tree $1 / win $*
+!cmd b !a dg $* xl>15
+!b D:20
+
+!cmd !lgyak !lg
+!lgyak * / win

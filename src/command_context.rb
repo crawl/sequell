@@ -1,10 +1,8 @@
-class CommandContext
-  def self.extra_args_parenthesized
-    ENV['EXTRA_ARGS_PARENTHESIZED']
-  end
+require 'json'
 
-  def self.extra_args
-    ENV['EXTRA_ARGS']
+class CommandContext
+  def self.extra_argument_lists
+    @extra_args ||= find_extra_arglists
   end
 
   def self.command_words
@@ -64,5 +62,12 @@ class CommandContext
 
   def shift!
     @arguments.shift
+  end
+
+private
+  def self.find_extra_arglists
+    json = ENV['EXTRA_ARGS_JSON']
+    return [] unless json
+    JSON.parse(json)
   end
 end

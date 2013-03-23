@@ -2,6 +2,7 @@ require 'henzell/learndb_query'
 require 'query/grammar'
 require 'set'
 require 'cmd/user_defined_command'
+require 'json'
 
 module Henzell
   class Commands
@@ -46,6 +47,7 @@ module Henzell
       seen_commands = Set.new
       extra_args = []
       while true
+        STDERR.puts("execute_command: #{command.inspect}, args: #{arguments.inspect}, arglists: #{extra_args.reverse.inspect}")
         if seen_commands.include?(command)
           raise "Bad command (recursive): #{command}"
         end
@@ -67,10 +69,7 @@ module Henzell
 
         extra_args = extra_args.reverse
         ENV['EXTRA_ARGS'] = extra_args.join(' ')
-        ENV['EXTRA_ARGS_PARENTHESIZED'] = extra_args.map { |arg|
-          Query::Grammar::OPEN_PAREN + " " + arg + " " +
-          Query::Grammar::CLOSE_PAREN
-        }.join(' ')
+        ENV['EXTRA_ARGS_JSON'] = JSON.generate(extra_args)
         command_line = [command, arguments].join(' ')
         system_command_line =
           %{#{command_script} #{quote(target)} #{quote(default_nick)} } +
