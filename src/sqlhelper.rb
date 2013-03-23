@@ -48,7 +48,7 @@ BRANCHES = Crawl::BranchSet.new(CFG['branches'], PLACE_FIXUPS)
 UNIQUES = Set.new(CFG['uniques'].map { |u| u.downcase })
 GODS = Crawl::Gods.new(CFG['god'])
 
-SOURCES = Henzell::Sources.instance.source_names
+SOURCES = Henzell::Sources.instance
 
 CLASS_EXPANSIONS =
   Hash[CFG['classes'].map { |abbr, cls| [abbr, cls.sub('*', '')] }]

@@ -107,6 +107,10 @@ module Query
         return NickExpr.expr(val, op.not_equal?) if val =~ /^[@:]/
       end
 
+      if field === 'src' && op.equality?
+        val = SOURCES.canonical_source(val)
+      end
+
       if field === ['v', 'cv'] && op.relational? &&
           Sql::VersionNumber.version_number?(val)
         return field_pred(Sql::VersionNumber.version_numberize(val),

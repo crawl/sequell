@@ -116,7 +116,7 @@ module Query
   }
 
   KeywordMatcher.matcher(:source) {
-    SOURCES.index(arg.downcase) && 'src'
+    expr.parse('src', SOURCES.canonical_source(arg)) if SOURCES.source?(arg)
   }
 
   KeywordMatcher.matcher(:branch) {

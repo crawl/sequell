@@ -291,3 +291,5 @@ E !lg * s=trunc99(sc)
 
 !cmd !lgyak !lg
 !lgyak * / win
+
+!lg * cßo
