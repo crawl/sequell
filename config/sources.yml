@@ -91,6 +91,8 @@ sources:
       - http://crawl.develz.org/ttyrecs
 
   - name: cszo
+    aliases:
+      - cßo
     base: http://dobrazupa.org
     logfiles:
       - meta/git/logfile{,-sprint,-zotdef}*

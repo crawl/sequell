@@ -2,6 +2,7 @@ require 'cmd/option_parser'
 require 'query/listgame_arglist_combine'
 require 'query/operator_back_combine'
 require 'query/compact_parens'
+require 'query/query_string_template'
 require 'command_context'
 
 module Query
@@ -149,7 +150,10 @@ module Query
     end
 
     def with_extra
-      self + CommandContext.extra_args_parenthesized
+      st = QueryStringTemplate.substitute(self,
+        CommandContext.extra_argument_lists)
+      STDERR.puts("Query string: #{st}")
+      self.class.new(st, @context_word)
     end
   end
 end

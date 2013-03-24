@@ -13,7 +13,13 @@ module Query
       b_string = arguments_b.join(' ')
       a_tail = a_string.index('?:') ? a_string.sub(/^.*\?:/, '?:') : ''
       a_string = a_string.sub(/^(.*)\?:.*/, '\1')
-      [a_string, OPEN_PAREN, b_string, CLOSE_PAREN, a_tail].join(' ').split(' ')
+
+      ratio_tail = b_string.index('/')
+      (if ratio_tail
+        [a_string, b_string, a_tail]
+      else
+        [a_string, OPEN_PAREN, b_string, CLOSE_PAREN, a_tail]
+      end).join(' ').split(' ')
     end
   end
 end

@@ -27,6 +27,8 @@ module Henzell
         Source.new(source_cfg)
       }
       @source_map = Hash[ @sources.map { |s| [s.name, s] } ]
+      @alias_map =
+        Hash[@sources.map { |s| s.aliases.map { |a| [a, s.name] } }.flatten(1)]
     end
 
     def source_abbreviations
@@ -34,7 +36,23 @@ module Henzell
     end
 
     def source_names
-      self.sources.map(&:name)
+      @source_names ||= self.sources.map(&:name)
+    end
+
+    def source_aliases
+      @source_aliases ||= self.sources.map { |src| src.aliases }.flatten
+    end
+
+    def source_names_and_aliases
+      source_names + source_aliases
+    end
+
+    def source?(name)
+      source_names_and_aliases.include?(name.downcase)
+    end
+
+    def canonical_source(name)
+      @alias_map[name.downcase] || name.downcase
     end
 
     def source(name)

@@ -8,6 +8,10 @@ module Henzell
       @name ||= @config['name']
     end
 
+    def aliases
+      @aliases ||= (@config['aliases'] || [])
+    end
+
     def morgue_paths
       require 'henzell/server/morgue_path'
       @morgue_paths ||= @config['morgues'].map { |morgue_cfg|

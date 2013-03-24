@@ -103,7 +103,12 @@ module Query
 
       if field === 'name' && op.equality?
         val = "@" + (NickExpr.default_nick || val) if val == '.'
+        return QueryStruct.new if val == '*'
         return NickExpr.expr(val, op.not_equal?) if val =~ /^[@:]/
+      end
+
+      if field === 'src' && op.equality?
+        val = SOURCES.canonical_source(val)
       end
 
       if field === ['v', 'cv'] && op.relational? &&

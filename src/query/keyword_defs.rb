@@ -5,7 +5,7 @@ module Query
   # These matches are applied in sequence, order is significant.
 
   KeywordMatcher.matcher(:nick) {
-    'name' if arg =~ /^[@:]/ || arg == '.'
+    'name' if arg =~ /^[@:]/ || arg == '.' || arg == '*'
   }
 
   KeywordMatcher.matcher(:char_abbrev) {
@@ -116,7 +116,7 @@ module Query
   }
 
   KeywordMatcher.matcher(:source) {
-    SOURCES.index(arg.downcase) && 'src'
+    expr.parse('src', SOURCES.canonical_source(arg)) if SOURCES.source?(arg)
   }
 
   KeywordMatcher.matcher(:branch) {
