@@ -23,7 +23,7 @@ module Query
         inverted = !inverted
       end
 
-      nick = nick.sub(/^@/, '')
+      nick = nick.sub(/^@+/, '')
       nick = self.default_nick || nick if nick == '.'
 
       aliases = Query::Nick.aliases(nick)

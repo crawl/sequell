@@ -293,3 +293,4 @@ E !lg * s=trunc99(sc)
 !lgyak * / win
 
 !lg * cßo
+!lg * @@@elliptic ::~ name=elliptic
