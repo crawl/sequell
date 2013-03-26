@@ -96,6 +96,10 @@ module Sql
       self.sql_expr(table_set)
     end
 
+    def to_query_string
+      "#{@field_expr}#{@operator}#{@value}"
+    end
+
     def to_s
       "#{@field_expr} #{@operator} #{@value}"
     end

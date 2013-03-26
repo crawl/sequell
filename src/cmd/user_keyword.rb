@@ -6,7 +6,7 @@ require 'query/query_keyword_parser'
 
 module Cmd
   class UserKeyword
-    KEYWORD_REGEX = /^[\w@_.:+*&#=$~`'"-]+$/
+    KEYWORD_REGEX = /^[\w@_.:+*&#$~`'"-]+$/
 
     def self.define(name, definition)
       name = canonicalize_name(name)
@@ -17,7 +17,7 @@ module Cmd
       UserCommandDb.db.define_keyword(name, definition)
       final_keyword = self.keyword(name)
       if existing_keyword
-        puts("Redefined keyword: #{final_keyword}")
+        puts("Redefined keyword: #{final_keyword} (was: #{existing_keyword})")
       else
         puts("Defined keyword: #{final_keyword}")
       end
@@ -42,6 +42,7 @@ module Cmd
 
     def self.delete(name)
       name = canonicalize_name(name)
+      assert_name_valid!(name)
       existing_keyword = self.keyword(name)
       raise "No user keyword '#{name}'" if existing_keyword.nil?
       UserCommandDb.db.delete_keyword(name)
@@ -50,6 +51,10 @@ module Cmd
 
     def self.canonicalize_name(name)
       name.downcase.strip
+    end
+
+    def self.valid_keyword_name?(name)
+      name.downcase =~ KEYWORD_REGEX
     end
 
   private
@@ -64,16 +69,16 @@ module Cmd
 
     def self.assert_name_valid!(name)
       name = name.downcase
-      unless name =~ KEYWORD_REGEX
+      unless valid_keyword_name?(name)
         raise "Invalid keyword string: #{name}"
       end
 
       begin
-        CTX_STONE.with do
+        parse = CTX_STONE.with do
           Query::QueryKeywordParser.parse(name)
         end
         unless self.keyword(name)
-          raise "'#{name}' is already a valid keyword definition."
+          raise "'#{name}' is built-in: #{name} => #{parse.to_query_string}"
         end
       rescue Query::KeywordParseError
       end

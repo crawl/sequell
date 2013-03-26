@@ -46,7 +46,17 @@ end
 def display_keyword(name)
   keyword = Cmd::UserKeyword.keyword(name)
   if keyword.nil?
-    puts("No keyword #{name}")
+    begin
+      parse = CTX_STONE.with do
+        Query::QueryKeywordParser.parse(name)
+      end
+      kwtype =
+        Cmd::UserKeyword.valid_keyword_name?(name) ? 'Built-in' :
+                                                     'Keyword expression'
+      puts "#{kwtype}: #{name} => #{parse.to_query_string}"
+    rescue Query::KeywordParseError
+      puts "No keyword '#{name}'"
+    end
   else
     puts("Keyword: #{keyword}")
   end

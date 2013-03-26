@@ -294,3 +294,5 @@ E !lg * s=trunc99(sc)
 
 !lg * cßo
 !lg * @@@elliptic ::~ name=elliptic
+!kw t9
+!kw lava

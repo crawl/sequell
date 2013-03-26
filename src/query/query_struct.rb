@@ -174,8 +174,26 @@ module Query
       self.append(predicate)
     end
 
+    def to_query_string
+      if self.not?
+        "!((#{self.predicates.first.to_query_string}))"
+      else
+        self.map(&:to_query_string).join(self.query_string_operator)
+      end
+    end
+
+    def query_string_operator
+      case @operator
+      when 'AND'
+        ' '
+      when 'OR'
+        ' || '
+      end
+    end
+
     def to_s
-      "Query[#{self.map(&:to_s).join(' ' + @operator + ' ')}]"
+      prefix = self.not? ? '!' : ''
+      "Query[#{prefix}#{self.map(&:to_s).join(' ' + @operator + ' ')}]"
     end
 
     def inspect
