@@ -32,7 +32,7 @@ module Query
         end
       }
       if max_index == 0 && !rest_args_used && !arglist.empty?
-        (QueryString.new(res) + arglist).to_s
+        res.gsub(%r{(\?:.*)?$}, ' ' + arglist + ' \1')
       else
         res
       end

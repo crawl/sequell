@@ -148,12 +148,5 @@ module Query
       combined_args = ListgameArglistCombine.apply(@args, other.args)
       QueryString.new(combined_args.join(' '), self.context_word)
     end
-
-    def with_extra
-      st = QueryStringTemplate.substitute(self,
-        CommandContext.extra_argument_lists)
-      STDERR.puts("Query string: #{st}")
-      self.class.new(st, @context_word)
-    end
   end
 end

@@ -39,7 +39,7 @@ def times(n)
 end
 
 nick, num, trail_select = parse_args
-query = Query::QueryString.new(trail_select).with_extra
+query = Query::QueryString.new(trail_select)
 
 if not num or num < 0
   puts "Bad index: #{num}"

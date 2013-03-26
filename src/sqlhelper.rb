@@ -146,7 +146,7 @@ end
 #       nick num etc
 # runs the query and returns the matching game.
 def sql_find_game(default_nick, args, context=CTX_LOG)
-  args = Query::QueryString.new(args).with_extra.args
+  args = Query::QueryString.new(args).args
   query_group = sql_parse_query(default_nick, args, context)
   query_group.with_context do
     q = query_group.primary_query
@@ -195,7 +195,7 @@ end
 # also recognising -tv and -log options.
 def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
   combined_args = other_args_string.split()[1 .. -1] + extra_args
-  combined_args = Query::QueryString.new(combined_args).with_extra.args
+  combined_args = Query::QueryString.new(combined_args).args
   TV.with_tv_opts(combined_args) do |args, opts|
     args, logopts = extract_options(args, 'log', 'ttyrec')
     sql_show_game(ARGV[1], args) do |res|

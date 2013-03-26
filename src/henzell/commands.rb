@@ -2,6 +2,7 @@ require 'henzell/learndb_query'
 require 'query/grammar'
 require 'set'
 require 'cmd/user_defined_command'
+require 'query/query_string_template'
 require 'json'
 
 module Henzell
@@ -45,9 +46,7 @@ module Henzell
 
     def execute_command(command, arguments, default_nick)
       seen_commands = Set.new
-      extra_args = []
       while true
-        STDERR.puts("execute_command: #{command.inspect}, args: #{arguments.inspect}, arglists: #{extra_args.reverse.inspect}")
         if seen_commands.include?(command)
           raise "Bad command (recursive): #{command}"
         end
@@ -59,18 +58,16 @@ module Henzell
 
         if self.user_defined?(command)
           command, args = Cmd::UserDefinedCommand.expand(command)
-          extra_args << arguments
-          arguments = args
+          arguments =
+            Query::QueryStringTemplate.substitute(args, [arguments])
+          STDERR.puts("Cmd: " + [command, arguments].join(' '))
           next
         end
 
         command_script = File.join(Config.root, "commands", @commands[command])
         target = default_nick
-
-        extra_args = extra_args.reverse
-        ENV['EXTRA_ARGS'] = extra_args.join(' ')
-        ENV['EXTRA_ARGS_JSON'] = JSON.generate(extra_args)
         command_line = [command, arguments].join(' ')
+        STDERR.puts("Cmd: " + command_line)
         system_command_line =
           %{#{command_script} #{quote(target)} #{quote(default_nick)} } +
           %{#{quote(command_line)} ''}
