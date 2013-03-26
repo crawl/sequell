@@ -19,8 +19,31 @@ my $CRAWLDATA = LoadFile($CONFIG_FILE);
 my %UNIQUES = map(($_ => 1), @{$$CRAWLDATA{uniques}});
 my %ORCS = map(($_ => 1), @{$$CRAWLDATA{orcs}});
 my %GOD_ALIASES = %{$$CRAWLDATA{'god-aliases'}};
+
+my %SP_ABBR_NAME = map {
+  my $x = $_; $x =~ tr/*//d; $x
+} %{$CRAWLDATA->{species}};
+
+my %SP_NAME_ABBR;
+@SP_NAME_ABBR{values %SP_ABBR_NAME} = keys %SP_ABBR_NAME;
+
+my %CLS_ABBR_NAME = map {
+  my $x = $_; $x =~ tr/*//d; $x
+} %{$CRAWLDATA->{classes}};
+
+my %CLS_NAME_ABBR;
+@CLS_NAME_ABBR{values %CLS_ABBR_NAME} = keys %CLS_ABBR_NAME;
+
 my %SPECIES_ABBR = map((lc($_) => $_), keys %{$CRAWLDATA->{species}});
 my %CLASS_ABBR = map((lc($_) => $_), keys %{$CRAWLDATA->{classes}});
+
+sub species_abbr {
+  $SP_NAME_ABBR{shift()}
+}
+
+sub class_abbr {
+  $CLS_NAME_ABBR{shift()}
+}
 
 sub version_qualifier_numberize {
   my $qualifier = shift;

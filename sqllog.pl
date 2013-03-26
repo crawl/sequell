@@ -539,6 +539,12 @@ sub fixup_logfields {
     }
   }
 
+  for my $ch ($g->{char}) {
+    my ($sp, $cls) = $ch =~ /^(.{2})(.{2})/;
+    $ch = ((Henzell::Crawl::species_abbr($g->{race}) || $sp) .
+           (Henzell::Crawl::class_abbr($g->{cls}) || $cls));
+  }
+
   if ($milestone) {
     milestone_mangle($g);
   }
