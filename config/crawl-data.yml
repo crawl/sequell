@@ -430,6 +430,7 @@ classes:
   VM: Venom Mage
   AM: Arcane Marksman
   Sk: Skald
+  Jr: Jester
 
 column-aliases:
   maxsk: maxskills
