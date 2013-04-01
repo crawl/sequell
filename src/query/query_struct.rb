@@ -66,13 +66,17 @@ module Query
       parenthesize(self.sql_expr(table_set, context), parens)
     end
 
+    def field_value_in_set?
+      ((first.operator === '=' && self.or?) ||
+          (first.operator === '!=' && self.and?)) &&
+        @predicates.all? { |p| p.condition_match?(first) }
+    end
+
     def sql_expr(table_set, context)
       # Try to identify IN clauses for more readable queries.
       if @predicates.size > 1 && @predicates.all? { |p| p.simple_expression? }
         first = @predicates[0]
-        if (((first.operator === '=' && self.or?) ||
-              (first.operator === '!=' && self.and?)) &&
-            @predicates.all? { |p| p.condition_match?(first) })
+        if self.field_value_in_set?
           return sql_in_clause(table_set, context)
         end
       end
@@ -177,6 +181,10 @@ module Query
     def to_query_string
       if self.not?
         "!((#{self.predicates.first.to_query_string}))"
+      elsif self.field_value_in_set? && @predicates.all? { |p|
+          !p.value.index('|')
+        }
+        "#{first.field}#{first.operator}" + @predicates.map(&:value).join('|')
       else
         self.map(&:to_query_string).join(self.query_string_operator)
       end
