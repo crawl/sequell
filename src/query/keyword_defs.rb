@@ -103,10 +103,15 @@ module Query
     return expr.parse('god', god_name) if god_name
   }
 
-  KeywordMatcher.matcher(:ktyp) {
-    ktyp_matches = SQL_CONFIG['prefix-field-fixups']['ktyp']
-    match = ktyp_matches.keys.find { |ktyp| arg =~ /^#{ktyp}\w*$/i }
-    return expr.parse('ktyp', ktyp_matches[match]) if match
+  KeywordMatcher.matcher(:prefixed_field_fixups) {
+    SQL_CONFIG['prefix-field-fixups'].each { |field, map|
+      match = map.keys.find { |fval|
+        long_form = map[fval].downcase
+        lcarg.index(fval) == 0 && (fval == lcarg || long_form.index(lcarg) == 0)
+      }
+      return expr.parse(field, map[match]) if match
+    }
+    nil
   }
 
   KeywordMatcher.matcher(:version) {

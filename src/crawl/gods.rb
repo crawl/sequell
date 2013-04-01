@@ -14,7 +14,12 @@ module Crawl
 
     def god_resolve_name(abbr)
       return unless abbr =~ /^[a-z]{3,}$/i
-      match = self.god_abbreviations.find { |g| abbr.downcase.index(g) == 0 }
+
+      dcabbr = abbr.downcase
+      match = self.god_abbreviations.find { |g|
+        full_name = self.god_full_name(g).downcase
+        dcabbr.index(g) == 0 && (dcabbr == g || full_name.index(dcabbr) == 0)
+      }
       match && self.god_full_name(match)
     end
   end
