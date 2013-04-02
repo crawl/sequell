@@ -96,10 +96,12 @@ sources:
     base: http://dobrazupa.org
     logfiles:
       - meta/git/logfile{,-sprint,-zotdef}*
+      - meta/0.12/logfile{,-sprint,-zotdef}*
       - meta/0.11/logfile{,-sprint,-zotdef}*
       - meta/0.10/logfile{,-sprint,-zotdef}*
     milestones:
       - meta/git/milestones{,-sprint,-zotdef}*
+      - meta/0.12/milestones{,-sprint,-zotdef}*
       - meta/0.11/milestones{,-sprint,-zotdef}*
       - meta/0.10/milestones{,-sprint,-zotdef}*
     morgues:
