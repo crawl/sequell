@@ -26,6 +26,12 @@ module Grammar
       match('\S')
     }
 
+    rule(:boolean) {
+      str("false").as(:false) | str("true").as(:true) |
+      str("f").as(:false) | str("t").as(:true) |
+      str("n").as(:false) | str("y").as(:true)
+    }
+
     rule(:integer) {
       sign.maybe >> digits
     }

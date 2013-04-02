@@ -2,7 +2,12 @@ require 'query/nick'
 require 'sql/field_predicate'
 
 module Query
-  class NickExpr
+  class NickExpr < Expr
+    def self.nick(nick)
+      return nick if nick.is_a?(self)
+      self.new(nick)
+    end
+
     def self.with_default_nick(nick)
       old_default_nick = @default_nick
       begin
@@ -37,6 +42,10 @@ module Query
 
     def self.single_nick_predicate(nick, inverted)
       Sql::FieldPredicate.predicate(nick, inverted ? '!=' : '=', 'name')
+    end
+
+    def initialize(nick)
+      super(:=, Sql::Field.field('name'), nick)
     end
   end
 end

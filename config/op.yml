@@ -1,0 +1,6 @@
+operators:
+  - op: '<'
+    type: bool
+    args:
+      - string
+      - number

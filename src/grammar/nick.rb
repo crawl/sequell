@@ -6,14 +6,14 @@ module Grammar
       nick_expr.as(:nick_expr)
     }
 
-    rule(:negated) { str("!") }
-
     rule (:nick_expr) {
-      (negated >> (nick_expr | nick_selector | nick_atom_loose)).as(:negated) |
-        nick_selector
+      (str("!") >> (nick_expr | nick_selector | nick_atom_loose).as(:nick)).as(:negated_nick) |
+        nick_selector.as(:nick)
     }
     rule(:nick_selector) {
-      (str("@") >> nick_atom_loose).as(:nick_alias) | nick_atom_strict
+      (str("@") >> match["@:"].repeat >> nick_atom_loose) |
+      (str(":") >> match["@:"].repeat >> nick_atom_loose) |
+      nick_atom_strict
     }
     rule(:nick_atom_loose) {
       nick_self | nick_any | nick_name_loose
@@ -21,12 +21,12 @@ module Grammar
     rule(:nick_atom_strict) {
       nick_self | nick_any | nick_name_strict
     }
-    rule(:nick_self) { str(".").as(:nick_self) }
-    rule(:nick_any)  { str("*").as(:nick_any) }
+    rule(:nick_self) { str(".") }
+    rule(:nick_any)  { str("*") }
     rule(:nick_name_strict) {
       ( match["0-9"].repeat >>
         nick_alpha_char >>
-        nick_char.repeat).as(:nick)
+        nick_char.repeat )
     }
     rule(:nick_name_loose) { nick_char.repeat(1) }
     rule(:nick_char) {

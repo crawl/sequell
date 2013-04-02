@@ -7,6 +7,7 @@ describe Grammar::Query do
 
   QUERIES = [
     '!lg *',
+    '!lg xl>15',
     '!lm *',
     '!lg @78291',
     '!lg !@Sebi',
@@ -42,7 +43,15 @@ describe Grammar::Query do
     '!lg * s=trunc99(sc)',
     '!lg * won start>=20120101 s=day(end),tiles -graph',
     '!lg * 0.11-a tiles xl>10 s=god% -graph',
-    '!lg * won cv>=0.5 s=char / end>=20101020 ?:%=1'
+    '!lg * won cv>=0.5 s=char / end>=20101020 ?:%=1',
+    '!lg * ac>${ev+sh}',
+    '!lg * x=log(log(sc))',
+    '!lg * kmap&map=foo',
+    '!lg * kmap|map=foo',
+    '!lg * ${ac > (ev + sh) * 2}',
+    '!lg * ${log(ac) > 5}',
+    '!lg * x=${log(log(sc))}',
+    '!lg * !((killer=tentacled monstrosity))'
   ]
 
   QUERIES.each { |query|

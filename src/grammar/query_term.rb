@@ -1,5 +1,6 @@
 require 'parslet'
 require 'grammar/atom'
+require 'grammar/sql_expr'
 require 'query/grammar'
 
 module Grammar
@@ -95,10 +96,17 @@ module Grammar
       ordered_expr(field_expr)
     }
 
+    rule(:term_field_expr) {
+      (field_expr >> (str('&') >> field_expr).repeat(1)).as(:and_field) |
+      (field_expr >> (str('|') >> field_expr).repeat(1)).as(:or_field) |
+      field_expr
+    }
+
     rule(:term) {
-      field_expr >> space? >> op >>
+      term_field_expr >> space? >> op >>
       (space >> (field_value_boundary | body_expr).absent?).maybe >>
-      field_value.as(:value)
+      field_value.as(:value) |
+      SqlExpr.new
     }
 
     rule(:field_expr) {
@@ -110,6 +118,7 @@ module Grammar
     }
 
     rule(:field_value) {
+      SqlExpr.new |
       Atom.new.quoted_string |
       (space >> (field_value_boundary | body_expr).absent? |
        field_value_boundary.absent? >> Atom.new.safe_value).repeat

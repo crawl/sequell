@@ -7,6 +7,14 @@ module Grammar
   class QueryBody < Parslet::Parser
     root(:body_root)
 
+    rule(:nick_expr) { Nick.new }
+
+    rule(:nick_body) {
+      ((query_expression.absent? >> nick_expr).maybe >>
+      space? >>
+      body_root.as(:body).maybe).as(:nick_and_body)
+    }
+
     rule(:body_root) {
       body_alternation | body_expressions
     }
@@ -17,7 +25,7 @@ module Grammar
     }
 
     rule(:body_expressions) {
-      (body_expr >> (space >> body_expr).repeat).as(:and)
+      (body_expr >> (space? >> body_expr).repeat).as(:and)
     }
 
     rule(:body_expr) {

@@ -10,16 +10,18 @@ module Grammar
     rule(:query) {
       space? >>
         query_context >>
-        (space >> nick_expr).maybe >>
-        (space >> query_body.as(:body)).maybe >>
+        ((space >> nicked_query_body).maybe >>
         (space? >> query_tail).maybe >>
         (space? >> query_result_filter).maybe >>
-        space?
+        space?).as(:query)
     }
 
     rule(:query_context) {
-      str("!lg").as(:context_lg) |
-      str("!lm").as(:context_lm)
+      (str("!") >> match('\S').repeat(1)).as(:context)
+    }
+
+    rule(:nicked_query_body) {
+      QueryBody.new.nick_body
     }
 
     rule(:query_body) { QueryBody.new }
@@ -31,9 +33,6 @@ module Grammar
     rule(:query_result_filter) {
       str("?:") >> space? >> QueryResultFilter.new.as(:result_filter)
     }
-
-    rule(:nick_expr) { Nick.new }
-
     rule(:negated) { str("!").as(:negated) }
 
     rule(:space) { match('\s').repeat(1) }
