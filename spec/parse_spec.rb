@@ -51,7 +51,12 @@ describe Grammar::Query do
     '!lg * ${ac > (ev + sh) * 2}',
     '!lg * ${log(ac) > 5}',
     '!lg * x=${log(log(sc))}',
-    '!lg * !((killer=tentacled monstrosity))'
+    '!lg * !((killer=tentacled monstrosity))',
+    '!lg * $ ac > ev + sh',
+    '!lg * $ ac + ev + sh > 15',
+    '!lg * $ ac > ev + sh $',
+    '!lg * $ ac > ev + sh $ / win ?: N = 0',
+    '!lg * $ 2 + 3 * 4 / 5 > 0'
   ]
 
   QUERIES.each { |query|

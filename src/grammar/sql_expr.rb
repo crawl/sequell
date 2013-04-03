@@ -7,12 +7,15 @@ module Grammar
     root(:escaped_expr)
 
     rule(:escaped_expr) {
-      str("${") >> space? >> expr.as(:sql_expr) >> space? >> str("}")
+      str("${") >> space? >> expr.as(:sql_expr) >> space? >> str("}") |
+      str("$") >> space? >> expr.as(:sql_expr) >> space? >>
+      (any.absent? | str("$"))
     }
 
     rule(:expr) {
       (or_expr.as(:left) >>
-        (space? >> str("||") >> space? >> or_expr.as(:right)).repeat(1)).as(:or) |
+        (space? >> str("||") >> space? >>
+          or_expr.as(:right)).repeat(1)).as(:or) |
       or_expr
     }
 
@@ -26,7 +29,8 @@ module Grammar
     }
 
     rule(:cmp_expr) {
-      eqterm.as(:left) >> space? >> eqop.as(:op) >> space? >> eqterm.as(:right) |
+      eqterm.as(:left) >> space? >>
+      eqop.as(:op) >> space? >> eqterm.as(:right) |
       eqterm
     }
 
@@ -35,32 +39,33 @@ module Grammar
     }
 
     rule(:eqterm) {
-      bitwiseterm.as(:left) >> space? >> bitwise_op >> space? >>
-      bitwiseterm.as(:right) |
+      bitwiseterm.as(:left) >> (space? >> bitwise_op >> space? >>
+        eqterm).repeat(1).as(:right) |
       bitwiseterm
     }
 
     rule(:bitwiseterm) {
-      addterm.as(:left) >> space? >> additive_op >> space? >>
-      addterm.as(:right) |
+      addterm.as(:left) >> (space? >> additive_op >> space? >>
+        addterm).repeat(1).as(:right) |
       addterm
     }
 
     rule(:addterm) {
-      multerm.as(:left) >> space? >> multiplicative_op >> space? >>
-      multerm.as(:right) |
+      multerm.as(:left) >> (space? >> multiplicative_op >> space? >>
+        multerm).repeat(1).as(:right) |
       multerm
     }
 
     rule(:multerm) {
-      expterm.as(:left) >> space? >> exp_op >> space? >> expterm.as(:right) |
+      expterm.as(:left) >> (space? >> exp_op >> space? >>
+        expterm).repeat(1).as(:right) |
       expterm
     }
 
     rule(:expterm) {
       str("-") >> simple_expr.as(:negated) |
       str("+") >> simple_expr.as(:plus) |
-      (str("~").as(:op) >> simple_expr.as(:expr)).as(:complement) |
+      (str("~").as(:op) >> expterm.as(:expr)).as(:complement) |
       simple_expr
     }
 
