@@ -7,18 +7,35 @@ module Query
       REGISTRY[name.to_s] or raise "No operator: #{name}"
     end
 
-    def self.define(name, options)
-      self.new(name, options)
+    def self.define(name, negated, options)
+      self.new(name, negated, options)
     end
 
     def self.register(name, op)
       REGISTRY[name.to_s] = op
     end
 
-    def initialize(name, options)
+    def initialize(name, negated, options)
       @name = name
+      @negated = negated
       @options = options
       self.class.register(name, self)
+    end
+
+    def negate
+      self.class.op(@negated)
+    end
+
+    def arity
+      @options[:arity] || 0
+    end
+
+    def unary?
+      arity == 1
+    end
+
+    def commutative?
+      !@options[:non_commutative]
     end
 
     def argtypes

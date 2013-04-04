@@ -90,7 +90,7 @@ module GameContext
 end
 
 CTX_LOG =
-  Sql::QueryContext.new(SQL_CONFIG, 'logrecord', 'game', nil,
+  Sql::QueryContext.new(SQL_CONFIG, '!lg', 'logrecord', 'game', nil,
                         :alias => 'lg',
                         :fields => SQL_CONFIG.logfields,
                         :synthetic_fields => SQL_CONFIG.fakefields,
@@ -98,7 +98,7 @@ CTX_LOG =
                         :raw_time_field => 'rend')
 
 CTX_STONE =
-  Sql::QueryContext.new(SQL_CONFIG, 'milestone', 'milestone', CTX_LOG,
+  Sql::QueryContext.new(SQL_CONFIG, '!lm', 'milestone', 'milestone', CTX_LOG,
                         :alias => 'lm',
                         :fields => SQL_CONFIG.milefields,
                         :synthetic_fields => SQL_CONFIG.fakefields,

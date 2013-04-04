@@ -64,4 +64,17 @@ describe Grammar::Query do
   QUERIES.each { |query|
     it { should parse(query) }
   }
+
+  def q
+    Grammar::Query.new
+  end
+
+  def nick(tree)
+    (tree[:query][:nick_and_body][:nick_expr] || {})[:nick].to_s
+  end
+
+  it 'should recognize nicks' do
+    nick(q.parse('!lg *')).should == '*'
+    nick(q.parse('!lg 22')).should == '22'
+  end
 end

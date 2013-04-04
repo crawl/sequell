@@ -2,7 +2,12 @@ require 'sql/field'
 
 module Sql
   class QueryContext
+    CONTEXT_MAP = { }
     @@global_context = nil
+
+    def self.named(name)
+      CONTEXT_MAP[name] || self.context
+    end
 
     def self.context
       @@global_context
@@ -140,7 +145,9 @@ module Sql
       @value_field.dup
     end
 
-    def initialize(config, table, entity_name, alt_context, options)
+    def initialize(config, name, table, entity_name, alt_context, options)
+      CONTEXT_MAP[name] = self
+      @name = name
       @config = config
       @table = table
       @entity_name = entity_name

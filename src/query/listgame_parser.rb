@@ -1,13 +1,39 @@
 module Query
   class ListgameParser
+    def self.fragment(fragment)
+      require 'query/ast/ast_builder'
+      require 'query/ast/ast_translator'
+      require 'query/ast/ast_fixup'
+      require 'grammar/query_body'
+
+      raw_parse = Grammar::QueryBody.new.parse(fragment.to_s)
+      STDERR.puts("Fragment raw_parse: #{raw_parse.inspect}")
+      ast = AST::ASTBuilder.new.apply(raw_parse)
+      STDERR.puts("Fragment AST: #{ast.inspect}")
+      ast = AST::ASTTranslator.apply(ast)
+      STDERR.puts("Fragment translated AST: #{ast.inspect}")
+      ast
+    end
+
     def self.parse(default_nick, query)
-      require 'query/ast_transform'
-      require 'query/ast_fixup'
+      require 'query/ast/ast_builder'
+      require 'query/ast/ast_translator'
+      require 'query/ast/ast_fixup'
       require 'grammar/query'
 
-      ast = Query::ASTTransform.new.apply(
-        ::Grammar::Query.new.parse(query.to_s))
-      ASTFixup.new.apply(ast)
+      raw_parse = ::Grammar::Query.new.parse(query.to_s)
+      STDERR.puts("raw_parse: #{raw_parse.inspect}")
+
+      ast = AST::ASTBuilder.new.apply(raw_parse)
+      STDERR.puts("AST: #{ast}")
+
+      ast = AST::ASTTranslator.apply(ast)
+      STDERR.puts("Resolved AST: #{ast}")
+
+      fixed_ast = AST::ASTFixup.new.apply(ast)
+      STDERR.puts("Fixed AST: #{fixed_ast}")
+
+      fixed_ast
     end
   end
 end

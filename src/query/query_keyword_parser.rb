@@ -14,7 +14,7 @@ module Query
     end
 
     def parse(field, value, op=@op)
-      QueryExprParser.parse("#{field}#{op}#{value}")
+      Query::AST::Expr.new(op, Sql::Field.field(field), value)
     end
   end
 
@@ -33,45 +33,28 @@ module Query
       @arg = arg.strip
     end
 
-    def atom?
-      @arg !~ /[()| ]/
-    end
-
     def body
-      @body ||= QueryStruct.new
+      @body ||= Expr.new(:and)
     end
 
     def parse
-      return self.parse_split_keywords(@arg) unless self.atom?
-
       arg = @arg.dup
-      negated = arg =~ /^!/
-      arg.sub!(/^!/, '')
       @equal_op = '='
 
       expr_candidate = QueryExprCandidate.new(@equal_op)
       KeywordMatcher.each do |matcher|
         res = matcher.match(arg, expr_candidate)
         if res
-          return negate(body, negated) if res == true
-          return negate(parse_expr(res, arg), negated) if res.is_a?(String)
-          return negate(res, negated)
+          return nil if res == true
+          return parse_expr(res, arg) if res.is_a?(String)
+          return res
         end
       end
       raise KeywordParseError.new(arg)
     end
 
-    def negate(expr, negated)
-      return expr.negate if negated
-      expr
-    end
-
     def parse_expr(field, value)
-      QueryExprParser.parse("#{field}#{@equal_op}#{value}")
-    end
-
-    def parse_split_keywords(argument)
-      CompoundKeywordParser.parse(argument)
+      Query::AST::Expr.new(@equal_op, Sql::Field.field(field), value)
     end
   end
 end

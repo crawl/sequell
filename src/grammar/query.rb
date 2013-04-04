@@ -9,10 +9,10 @@ module Grammar
 
     rule(:query) {
       space? >>
-        query_context >>
-        ((space >> nicked_query_body).maybe >>
-        (space? >> query_tail).maybe >>
-        (space? >> query_result_filter).maybe >>
+        (query_context >>
+         (space >> nicked_query_body).maybe.as(:head) >>
+        (space? >> query_tail).maybe.as(:tail) >>
+        (space? >> query_result_filter).maybe.as(:filter) >>
         space?).as(:query)
     }
 

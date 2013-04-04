@@ -2,9 +2,10 @@ require 'sql/type'
 require 'sql/query_context'
 require 'sql/query_table'
 require 'sql/field_predicates'
+require 'query/ast/term'
 
 module Sql
-  class Field
+  class Field < Query::AST::Term
     def self.field(name)
       return nil unless name
       return name if self.field?(name)
@@ -33,6 +34,10 @@ module Sql
       @name = SQL_CONFIG.column_aliases[@aliased_name] || @aliased_name
       @canonical_name = @name
       @oname = @name.dup
+    end
+
+    def kind
+      :field
     end
 
     def context

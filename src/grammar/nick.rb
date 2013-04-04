@@ -24,9 +24,7 @@ module Grammar
     rule(:nick_self) { str(".") }
     rule(:nick_any)  { str("*") }
     rule(:nick_name_strict) {
-      ( match["0-9"].repeat >>
-        nick_alpha_char >>
-        nick_char.repeat )
+      nick_char.repeat
     }
     rule(:nick_name_loose) { nick_char.repeat(1) }
     rule(:nick_char) {

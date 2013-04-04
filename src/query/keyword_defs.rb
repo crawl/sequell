@@ -17,7 +17,7 @@ module Query
       require 'crawl/species'
       QueryStruct.or_clause(!expr.op.equal?,
         *Crawl::Species.available_species.map { |sp|
-          Sql::FieldPredicate.predicate(sp.name, expr.op, 'crace')
+          Query::AST::Expr.new(expr.op, Sql::Field.field('crace'), sp.name)
         })
     end
   }
@@ -27,7 +27,7 @@ module Query
       require 'crawl/job'
       QueryStruct.or_clause(!expr.op.equal?,
         *Crawl::Job.available_jobs.map { |job|
-          Sql::FieldPredicate.predicate(job.name, expr.op, 'class')
+          Query::AST::Expr.new(expr.op, Sql::Field.field('class'), job.name)
         })
     end
   }
@@ -37,7 +37,7 @@ module Query
       require 'crawl/combo'
       QueryStruct.or_clause(!expr.op.equal?,
         *Crawl::Combo.available_combos.map { |combo|
-          Sql::FieldPredicate.predicate(combo.to_s, expr.op, 'char')
+          Query::AST::Expr.new(expr.op, Sql::Field.field('char'), combo.to_s)
         })
     end
   }
@@ -47,7 +47,7 @@ module Query
       require 'crawl/combo'
       QueryStruct.or_clause(!expr.op.equal?,
         *Crawl::Combo.good_combos.map { |combo|
-          Sql::FieldPredicate.predicate(combo.to_s, expr.op, 'char')
+          Query::AST::Expr.new(expr.op, Sql::Field.field('char'), combo.to_s)
         })
     end
   }
@@ -57,7 +57,7 @@ module Query
       require 'crawl/combo'
       QueryStruct.or_clause(!expr.op.equal?,
         *Crawl::Combo.bad_combos.map { |combo|
-          Sql::FieldPredicate.predicate(combo.to_s, expr.op, 'char')
+          Query::AST::Expr.new(expr.op, Sql::Field.field('char'), combo.to_s)
         })
     end
   }
@@ -67,7 +67,7 @@ module Query
       require 'crawl/species'
       QueryStruct.or_clause(expr.op.equal?,
         *Crawl::Species.available_species.map { |sp|
-          Sql::FieldPredicate.predicate(sp.name, expr.op, 'sp')
+          Query::AST::Expr.new(expr.op, Sql::Field.field('sp'), sp.name)
         })
     end
   }
@@ -149,8 +149,7 @@ module Query
   KeywordMatcher.matcher(:game_type) {
     game = arg.downcase
     if SQL_CONFIG.games.index(game)
-      GameContext.game = game
-      return true
+      Expr.new(:'=', Sql::Field.field('game'), game)
     end
   }
 
