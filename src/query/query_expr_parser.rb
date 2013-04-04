@@ -99,6 +99,14 @@ module Query
         val = val.to_i
       end
 
+      if field.multivalue? && op.equality? && val.index(',')
+        values = val.split(',').map { |s| s.strip }
+        operator = op.equal? ? 'AND' : 'OR'
+        return QueryStruct.new(operator, *values.map { |v|
+            query_field(field, op, v)
+          })
+      end
+
       val, op = expand_field_value(val, field, op) if op.equality?
 
       if field === 'name' && op.equality?
@@ -147,6 +155,11 @@ module Query
 
       if field === 'verb' && op.equality?
         val = Crawl::MilestoneType.canonicalize(val)
+      end
+
+      if field.multivalue? && op.equality? && !val.empty?
+        op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
+        val = "(?:^|,)" + Regexp.quote(val) + '\y'
       end
 
       if field === ['killer', 'ckiller', 'ikiller']
@@ -215,19 +228,6 @@ module Query
           *fixed_up_places.map { |place|
             field_pred(place, op, field)
           })
-      end
-
-      if field.multivalue? && op.equality? && !val.empty?
-        if val.index(',')
-          values = val.split(',').map { |s| s.strip }
-          operator = op.equal? ? 'AND' : 'OR'
-          return QueryStruct.new(operator, *values.map { |v|
-              query_field(field, op, v)
-            })
-        end
-
-        op = Sql::Operator.op(op.equal? ? '~~' : '!~~')
-        val = "(?:^|,)" + Regexp.quote(val) + '\y'
       end
 
       if field === 'when'

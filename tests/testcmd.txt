@@ -296,3 +296,5 @@ E !lg * s=trunc99(sc)
 !lg * @@@elliptic ::~ name=elliptic
 !kw t9
 !kw lava
+
+!lg * status=para,slow s=status ::~ 71x paralysed,slowed
