@@ -1,4 +1,5 @@
 require 'query/nick'
+require 'query/expr'
 require 'sql/field_predicate'
 
 module Query
@@ -45,7 +46,7 @@ module Query
     end
 
     def initialize(nick)
-      super(:=, Sql::Field.field('name'), nick)
+      super(:'=', Sql::Field.field('name'), nick)
     end
   end
 end

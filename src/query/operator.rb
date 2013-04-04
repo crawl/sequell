@@ -3,7 +3,7 @@ module Query
     REGISTRY = { }
 
     def self.op(name)
-      REGISTRY[name.to_sym] || raise "No operator: #{name}"
+      REGISTRY[name.to_sym] or raise "No operator: #{name}"
     end
 
     def self.define(name, options)
