@@ -21,11 +21,11 @@ module Grammar
 
     rule(:body_alternation) {
       (body_expressions >> (space? >> str("||") >> space? >>
-                     body_expressions).repeat(1)).as(:or)
+                     body_expressions).repeat(1)).as(:body_or)
     }
 
     rule(:body_expressions) {
-      (body_expr >> (space? >> body_expr).repeat).as(:and)
+      (body_expr >> (space? >> body_expr).repeat).as(:body_and)
     }
 
     rule(:body_expr) {

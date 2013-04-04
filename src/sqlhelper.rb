@@ -128,8 +128,8 @@ end
 
 # Parse a listgame argument string into
 def sql_parse_query(default_nick, args, context=CTX_LOG)
-  query = Query::LgQuery.new(default_nick, args, context)
-  query.query_list
+  require 'query/listgame_parser'
+  Query::ListgameQuery.parse(default_nick, args.join(' ')).query_list
 end
 
 def add_extra_fields_to_xlog_record(extra_fields, xlog_record)

@@ -57,7 +57,8 @@ describe Grammar::Query do
     '!lg * $ ac > ev + sh $',
     '!lg * $ ac > ev + sh $ / win ?: N = 0',
     '!lg * $ 2 + 3 * 4 / 5 > 0',
-    '!lg * ktyp= killer=foo'
+    '!lg * ktyp= killer=foo',
+    '!lg * ktyp=  killer=foo'
   ]
 
   QUERIES.each { |query|

@@ -1,15 +1,16 @@
 require 'query/operators'
+require 'query/term'
 
 module Query
-  class Expr
-    def self.and(arguments)
-      self.new(Query::Operator.op(:and), arguments)
+  class Expr < Term
+    def self.and(*arguments)
+      self.new(Query::Operator.op(:and), *arguments)
     end
 
     attr_reader :operator, :arguments
 
-    def initialize(operator, arguments)
-      @operator = operator
+    def initialize(operator, *arguments)
+      @operator = Query::Operator.op(operator)
       @arguments = arguments.compact
     end
 
@@ -19,6 +20,10 @@ module Query
 
     def type
       operator.result_type(args)
+    end
+
+    def to_s
+      "(#{operator.to_s} " + arguments.map(&:to_s).join(' ') + ")"
     end
   end
 end

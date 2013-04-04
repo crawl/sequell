@@ -3,7 +3,8 @@ module Query
     REGISTRY = { }
 
     def self.op(name)
-      REGISTRY[name.to_sym] or raise "No operator: #{name}"
+      return name if name.is_a?(self)
+      REGISTRY[name.to_s] or raise "No operator: #{name}"
     end
 
     def self.define(name, options)
@@ -11,7 +12,7 @@ module Query
     end
 
     def self.register(name, op)
-      REGISTRY[name] = op
+      REGISTRY[name.to_s] = op
     end
 
     def initialize(name, options)
@@ -40,6 +41,10 @@ module Query
 
     def result_type(args)
       @options[:result] || args.first.type
+    end
+
+    def to_s
+      @name
     end
   end
 end

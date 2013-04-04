@@ -1,11 +1,13 @@
 module Query
   class ListgameParser
-    def self.parse(query)
+    def self.parse(default_nick, query)
       require 'query/ast_transform'
+      require 'query/ast_fixup'
       require 'grammar/query'
 
-      Query::ASTTransform.new.transform(
-        Grammar::Query.new.parse(query.to_s))
+      ast = Query::ASTTransform.new.apply(
+        ::Grammar::Query.new.parse(query.to_s))
+      ASTFixup.new.apply(ast)
     end
   end
 end

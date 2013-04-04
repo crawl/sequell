@@ -8,7 +8,7 @@ module Grammar
     root(:expr)
 
     rule(:expr) {
-      body_term | option
+      option | body_term
     }
 
     rule(:option) {
@@ -25,7 +25,7 @@ module Grammar
     }
 
     rule(:body_expr) {
-      QueryBody.new.parenthesized_body | body_term
+      QueryBody.new.parenthesized_body | expr
     }
 
     rule(:body_term) {
@@ -118,10 +118,10 @@ module Grammar
     }
 
     rule(:field_value) {
-      SqlExpr.new |
-      Atom.new.quoted_string |
-      (space >> (field_value_boundary | body_expr).absent? |
-       field_value_boundary.absent? >> Atom.new.safe_value).repeat
+      (SqlExpr.new |
+        Atom.new.quoted_string |
+        (match('\s') >> (field_value_boundary | body_expr).absent? |
+          field_value_boundary.absent? >> Atom.new.safe_value).repeat).as(:field_value)
     }
 
     rule(:function_expr) {
