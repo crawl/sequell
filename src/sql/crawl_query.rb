@@ -9,18 +9,19 @@ require 'sql/aggregate_expression'
 
 module Sql
   class CrawlQuery
-    attr_accessor :argstr, :nick, :num, :raw, :extra_fields, :ctx
+    attr_accessor :ast, :argstr, :nick, :num, :raw, :extra_fields, :ctx
     attr_accessor :summary_sort, :table, :game
     attr_reader   :query_fields
 
-    def initialize(predicates, extra_fields, nick, num, argstr)
+    def initialize(ast, predicates, extra_fields, nick, argstr=nil)
+      @ast = ast
       @tables = QueryTables.new(QueryContext.context.table)
       @original_pred = predicates
       @pred = predicates.dup
       @nick = nick
-      @num = num
+      @num = @ast.game_number
       @extra_fields = extra_fields && extra_fields.dup
-      @argstr = argstr
+      @argstr = argstr || predicates.to_query_string
       @values = nil
       @summarise = nil
       @random_game = nil
@@ -66,8 +67,12 @@ module Sql
     end
 
     def resolve_sort_fields(pred, tables)
-      pred.sorts.each { |sort|
-        resolve_field(sort.field, tables)
+      STDERR.puts("Resolving sorts: #{ast.sorts}")
+      ast.sorts.each { |sort|
+        sort.each_field { |field|
+          STDERR.puts("Resolving sort: #{field}")
+          resolve_field(field, tables)
+        }
       }
     end
 
@@ -211,7 +216,7 @@ module Sql
 
     def select_id(with_sorts=false, single_record_index=0)
       id_field = Sql::Field.field('id')
-      id_sql = resolve_field(id_field, @count_tables).to_sql
+      id_sql = resolve_field(id_field, @count_tables).to_sql(@count_tables, @ctx)
       "SELECT #{id_sql} FROM #{@count_tables.to_sql} " +
         "#{where(@count_pred, with_sorts)} #{limit_clause(single_record_index)}"
     end
@@ -303,11 +308,11 @@ module Sql
     def build_query(predicates, with_sorts=true)
       @query, @values = predicates.to_sql(@tables, @ctx), predicates.sql_values
       @query = "WHERE #{@query}" unless @query.empty?
-      if with_sorts && predicates.has_sorts?
+      if with_sorts && ast.has_sorts?
         @query << " " unless @query.empty?
-        @query << "ORDER BY " << predicates.primary_sort.to_sql(@tables)
+        @query << "ORDER BY " << ast.primary_sort.to_sql(@tables)
 
-        unless predicates.primary_sort.unique_valued?
+        unless ast.primary_sort.unique_valued?
           @query << ", " <<
                  Query::Sort.new(resolve_field('id'), 'ASC').to_sql(@tables)
         end
@@ -318,9 +323,10 @@ module Sql
     def reverse
       with_contexts do
         predicate_copy = @original_pred.dup
-        predicate_copy.reverse_sorts!
-        rq = CrawlQuery.new(predicate_copy, @extra_fields,
-                            @nick, @num, @argstr)
+        ast_copy = @ast.dup
+        ast_copy.reverse_sorts!
+        rq = CrawlQuery.new(ast_copy, predicate_copy, @extra_fields,
+                            @nick)
         rq.table = @table
         rq
       end

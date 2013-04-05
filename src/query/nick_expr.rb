@@ -27,7 +27,7 @@ module Query
       @default_nick
     end
 
-    def self.expr(nick, inverted)
+    def self.expr(nick, inverted=false)
       if nick =~ /^!/
         nick = nick.sub(/^!/, '')
         inverted = !inverted
@@ -40,13 +40,14 @@ module Query
       if aliases.size == 1
         self.single_nick_predicate(aliases[0], inverted)
       else
-        QueryStruct.or_clause(inverted,
+        Query::AST::Expr.new(inverted ? :and : :or,
           *aliases.map { |a| single_nick_predicate(a, inverted) })
       end
     end
 
     def self.single_nick_predicate(nick, inverted)
-      Sql::FieldPredicate.predicate(nick, inverted ? '!=' : '=', 'name')
+      Query::AST::Expr.new(inverted ? '!=' : '=',
+        Sql::Field.field('name'), nick)
     end
 
     def initialize(nick, negated=false)

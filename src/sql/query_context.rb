@@ -66,7 +66,7 @@ module Sql
     end
 
     def local_field_def(field)
-      field = Sql::FieldExprParser.expr(field)
+      field = Sql::Field.field(field)
       (!field.prefixed? || field.has_prefix?(@table_alias)) &&
         (@fields[field.name] || @synthetic[field.name])
     end

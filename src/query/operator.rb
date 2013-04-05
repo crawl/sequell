@@ -7,8 +7,8 @@ module Query
       REGISTRY[name.to_s] or raise "No operator: #{name}"
     end
 
-    def self.define(name, negated, options)
-      self.new(name, negated, options)
+    def self.define(*args)
+      self.new(*args)
     end
 
     def self.register(name, op)
@@ -17,11 +17,16 @@ module Query
 
     attr_reader :name
 
-    def initialize(name, negated, options)
+    def initialize(name, negated, sql_operator, options)
       @name = name
       @negated = negated
+      @sql_operator = sql_operator
       @options = options
       self.class.register(name, self)
+    end
+
+    def sql_operator
+      @sql_operator || " #{@name.upcase} "
     end
 
     def negate
@@ -59,11 +64,31 @@ module Query
     end
 
     def result_type(args)
-      @options[:result] || args.first.type
+      Sql::Type.type(@options[:result] || args.first.type)
+    end
+
+    def equality?
+      self == '=' || self == '!='
+    end
+
+    def equal?
+      self == '='
     end
 
     def == (other)
-      @name.to_s == other.name.to_s
+      @name.to_s == other.to_s
+    end
+
+    def === (ops)
+      if ops.is_a?(Enumerable)
+        ops.any? { |op| self == op }
+      else
+        self == ops
+      end
+    end
+
+    def to_sql
+      self.sql_operator
     end
 
     def display_string

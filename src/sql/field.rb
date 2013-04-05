@@ -36,6 +36,10 @@ module Sql
       @oname = @name.dup
     end
 
+    def fields
+      [self]
+    end
+
     def kind
       :field
     end
@@ -116,6 +120,8 @@ module Sql
       @table
     end
 
+    alias :resolved? :qualified?
+
     def sql_column_name
       SQL_CONFIG.sql_field_name_map[self.name] || self.name
     end
@@ -167,7 +173,7 @@ module Sql
       @prefix == prefix
     end
 
-    def to_sql
+    def to_sql(tables=nil, ctx=nil)
       unless @table
         raise "Attempt to use unresolved field #{self} in a SQL statement"
       end

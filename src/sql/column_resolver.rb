@@ -19,11 +19,13 @@ module Sql
       @predicates.each_predicate { |p|
         resolve_predicate(p)
       }
+      @predicates.each_field { |f|
+        Sql::FieldResolver.resolve(@context, @tables, f)
+      }
     end
 
     def resolve_predicate(p)
       Sql::PredicateTranslator.translate(@context, @tables, p)
-      Sql::FieldResolver.resolve(@context, @tables, p.field)
     end
   end
 end

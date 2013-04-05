@@ -50,6 +50,8 @@ module Sql
     include FieldPredicates
 
     def initialize(field, expression=nil, type=nil)
+      raise "FIXME"
+
       @field = Sql::Field.field(field)
       @expr  = expression
       @type  = type

@@ -9,6 +9,7 @@ module Query
       end
 
       attr_reader :operator, :arguments
+      alias :args :arguments
 
       def initialize(operator, *arguments)
         @operator = Query::Operator.op(operator)
@@ -19,6 +20,32 @@ module Query
             arg
           end
         }
+      end
+
+      def dup
+        self.class.new(operator, *arguments.map { |a| a.dup })
+      end
+
+      def fields
+        self.arguments.select { |arg|
+          arg.kind == :field
+        }
+      end
+
+      def resolved?
+        self.fields.all? { |field| field.qualified? }
+      end
+
+      def each_predicate(&block)
+        arguments.each { |arg|
+          arg.each_predicate(&block) if arg.kind == :expr
+          block.call(arg) if arg.type.boolean?
+        }
+        block.call(self) if self.boolean?
+      end
+
+      def each_field(&block)
+        ASTWalker.each_field(self, &block)
       end
 
       def negate
@@ -35,6 +62,10 @@ module Query
 
       def type
         operator.result_type(args)
+      end
+
+      def boolean?
+        self.type.boolean?
       end
 
       def merge(other, merge_op=:and)
@@ -57,6 +88,14 @@ module Query
         "(#{operator.to_s} " + arguments.map(&:to_s).join(' ') + ")"
       end
 
+      def to_sql(tables, ctx)
+        if self.operator.unary?
+          "#{operator.to_sql} #{self.arguments.first.to_sql(tables, ctx)}"
+        else
+          self.arguments.map { |a| a.to_sql(tables, ctx) }.join(operator.to_sql)
+        end
+      end
+
       def to_query_string
         if self.operator.unary?
           "#{operator.display_string}#{self.arguments.first.to_query_string}"
@@ -64,6 +103,15 @@ module Query
           self.arguments.map(&:to_query_string).join(
             "#{operator.display_string}")
         end
+      end
+
+      def sql_values
+        values = []
+        ASTWalker.map_values(self) { |value|
+          values << value.value
+          value
+        }
+        values
       end
     end
   end

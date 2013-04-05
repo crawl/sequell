@@ -1,3 +1,5 @@
+require 'sql/query_context'
+
 module Query
   module AST
     class ASTFixup
@@ -10,13 +12,39 @@ module Query
       def initialize(nick, ast)
         @nick = nick
         @ast = ast
+        @ctx = Sql::QueryContext.context
       end
 
       def result
         STDERR.puts("Fixing: #{ast}")
-        ast.head = collapse_empty_nodes(ast.head)
-        ast.tail = collapse_empty_nodes(ast.tail)
-        ast
+        ast.game_number = -1
+
+        ast.transform_nodes! { |node|
+          kill_meta_nodes(node)
+        }
+
+        if !ast.has_sorts? && ast.needs_sort?
+          STDERR.puts("defsort: #{@ctx.defsort}")
+          ast.sorts << Query::Sort.new(@ctx.defsort)
+        end
+
+        ast.transform! { |node|
+          collapse_empty_nodes(node)
+        }
+      end
+
+      def kill_meta_nodes(node)
+        return node unless node.meta?
+        case node.kind
+        when :option
+          ast.options << node
+        when :game_number
+          ast.game_number = node.value > 0 ? node.value - 1 : node.value
+        else
+          raise "Unknown node: #{node}"
+        end
+
+        nil
       end
 
       def collapse_empty_nodes(ast)

@@ -8,6 +8,8 @@ module Sql
     attr_accessor :expr, :field, :calias, :special, :display, :order
     attr_accessor :function
     def initialize(field_list, dbexpr, field, display, calias=nil, special=nil)
+      raise "FIXME"
+
       @field_list = field_list
       @expr = dbexpr
       @field = FieldExprParser.expr(field)

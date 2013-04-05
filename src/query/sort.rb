@@ -1,35 +1,40 @@
 require 'sql/query_context'
 require 'sql/field_predicates'
+require 'query/has_expression'
 
 module Query
   class Sort
-    attr_reader :field, :direction
+    attr_reader :expr, :direction
 
-    include Sql::FieldPredicates
+    include HasExpression
 
-    def initialize(field, direction='DESC')
+    def initialize(expr, direction='DESC')
       unless direction == 'ASC' || direction == 'DESC'
         raise "Bad sort direction: #{direction}"
       end
-      @field = field
-      @field.bind_ordered_column!
+      @expr = expr
+      @expr.bind_ordered_column! if @expr.kind == :field
       @direction = direction
     end
 
+    def unique_valued?
+      @expr.kind == :field && @expr.unique_valued?
+    end
+
     def dup
-      Sort.new(@field.dup, @direction.dup)
+      Sort.new(@expr.dup, @direction.dup)
     end
 
     def reverse
-      Sort.new(@field, @direction == 'DESC' ? 'ASC' : 'DESC')
+      Sort.new(@expr.dup, @direction == 'DESC' ? 'ASC' : 'DESC')
     end
 
     def to_sql(table_set, context=Sql::QueryContext.context)
-      "#{@field.to_sql} #{@direction}"
+      "#{@expr.to_sql} #{@direction}"
     end
 
     def to_s
-      "sort(#{@field} #{@direction})"
+      "sort(#{@expr} #{@direction})"
     end
   end
 end

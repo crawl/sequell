@@ -27,13 +27,14 @@ module Query
       ast = AST::ASTBuilder.new.apply(raw_parse)
       STDERR.puts("AST: #{ast}")
 
-      ast = AST::ASTTranslator.apply(ast)
-      STDERR.puts("Resolved AST: #{ast}")
+      ast.with_context {
+        translated_ast = AST::ASTTranslator.apply(ast)
+        STDERR.puts("Resolved AST: #{translated_ast}")
 
-      fixed_ast = AST::ASTFixup.result(default_nick, ast)
-      STDERR.puts("Fixed AST: #{fixed_ast}")
-
-      fixed_ast
+        fixed_ast = AST::ASTFixup.result(default_nick, translated_ast)
+        STDERR.puts("Fixed AST: #{fixed_ast}")
+        fixed_ast
+      }
     end
   end
 end

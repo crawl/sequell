@@ -6,7 +6,7 @@ module Sql
   class FieldResolver
     def self.resolve(context, table_set, field)
       return unless field
-      self.new(context, table_set, Sql::FieldExprParser.expr(field)).resolve
+      self.new(context, table_set, field).resolve
     end
 
     def initialize(context, table_set, field)

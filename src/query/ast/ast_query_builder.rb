@@ -14,8 +14,7 @@ module Query
       end
 
       def build
-        ::Sql::CrawlQuery.new(@tree, nil, @nick, @ast.game_number,
-                              @tree.to_query_string)
+        ::Sql::CrawlQuery.new(@ast, @tree, nil, @nick)
       end
     end
   end

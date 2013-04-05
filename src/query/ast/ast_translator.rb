@@ -1,5 +1,6 @@
 require 'query/ast/ast_walker'
 require 'query/query_keyword_parser'
+require 'query/query_node_translator'
 
 module Query
   module AST
@@ -27,6 +28,10 @@ module Query
       def translate_ast(ast)
         ASTWalker.map_keywords(ast) { |kw|
           ::Query::QueryKeywordParser.parse(kw.value)
+        }
+
+        ASTWalker.map_nodes(ast) { |node|
+          ::Query::QueryNodeTranslator.translate(node)
         }
       end
     end

@@ -1,7 +1,12 @@
+require 'sql/type'
+require 'query/termlike'
+
 module Query
   module AST
     class Term
       attr_accessor :context, :arguments
+
+      include ::Query::Termlike
 
       def initialize
         @arguments = []
@@ -12,23 +17,15 @@ module Query
       end
 
       def arguments
-        []
+        @arguments || []
       end
 
       def kind
         :generic
       end
 
-      def first
-        arguments.first
-      end
-
-      def single_argument?
-        operator && arguments.size == 1
-      end
-
       def type
-        '*'
+        Sql::Type.type('*')
       end
 
       def to_query_string

@@ -1,0 +1,105 @@
+operators:
+  - op: and
+    negated: or
+    argtype: !
+    result: !
+    display: ' '
+
+  - op: or
+    negated: and
+    argtype: !
+    result: !
+    display: ' || '
+
+  - op: not
+    negated: and
+    argtype: !
+    result: !
+    display: '!'
+    arity: 1
+
+  - op: '='
+    negated: '!='
+    argtype: '*'
+    result: !
+    arity: 2
+
+  - op: '!='
+    negated: '='
+    argtype: '*'
+    result: !
+    arity: 2
+
+  - op: '=='
+    negated: '!=='
+    argtype: '*'
+    result: !
+    arity: 2
+    sql_operator: '='
+
+  - op: '!=='
+    negated: '=='
+    argtype: '*'
+    result: !
+    arity: 2
+    sql_operator: '!='
+
+  - op: '=~'
+    negated: '!~'
+    argtype: S
+    result: !
+    arity: 2
+    non_commutative: true
+    sql_operator: ' ILIKE '
+
+  - op: '!~'
+    negated: '=~'
+    argtype: S
+    result: !
+    arity: 2
+    non_commutative: true
+    sql_operator: ' NOT ILIKE '
+
+  - op: '~~'
+    negated: '!~~'
+    argtype: S
+    result: !
+    arity: 2
+    non_commutative: true
+    sql_operator: '~*'
+
+  - op: '!~~'
+    negated: '~~'
+    argtype: S
+    result: !
+    arity: 2
+    non_commutative: true
+    sql_operator: '!~*'
+
+  - op: '<'
+    negated: '>='
+    argtype: '*'
+    result: !
+    arity: 2
+    non_commutative: true
+
+  - op: '>='
+    negated: '<'
+    argtype: '*'
+    result: !
+    arity: 2
+    non_commutative: true
+
+  - op: '>'
+    negated: '<='
+    argtype: '*'
+    result: !
+    arity: 2
+    non_commutative: true
+
+  - op: '<='
+    negated: '>'
+    argtype: '*'
+    result: !
+    arity: 2
+    non_commutative: true

@@ -34,7 +34,7 @@ module Grammar
 
     rule(:game_number) {
       Atom.new.integer.as(:game_number) >>
-      (space.present? || any.absent? | field_value_boundary.present?)
+      (space.present? | any.absent? | field_value_boundary.present?)
     }
 
     def query_fn(prefix, body)

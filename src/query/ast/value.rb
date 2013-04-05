@@ -21,8 +21,12 @@ module Query
         @value.to_s.inspect
       end
 
-      def value_type
-        '*'
+      def to_sql(*args)
+        '?'
+      end
+
+      def value_type(value)
+        Sql::Type.type('*')
       end
     end
   end
