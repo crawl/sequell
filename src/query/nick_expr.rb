@@ -58,5 +58,9 @@ module Query
     def dup
       self.class.new(@nick, @negated)
     end
+
+    def to_query_string
+      @nick
+    end
   end
 end

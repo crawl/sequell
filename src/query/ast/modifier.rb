@@ -19,6 +19,10 @@ module Query
       def to_s
         "[#{modifier}:#{value}]"
       end
+
+      def to_query_string
+        value.to_s
+      end
     end
   end
 end

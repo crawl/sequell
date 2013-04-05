@@ -27,6 +27,10 @@ module Query
           ast.sorts << Query::Sort.new(@ctx.defsort)
         end
 
+        ast.transform_nodes! { |node|
+          collapse_negated_node(node)
+        }
+
         ast.transform! { |node|
           collapse_empty_nodes(node)
         }
@@ -44,6 +48,14 @@ module Query
         end
 
         nil
+      end
+
+      def collapse_negated_node(node)
+        if node.operator == :not && node.arity == 1 &&
+            node.arguments.all? { |arg| arg.negatable? }
+          return node.first.negate
+        end
+        node
       end
 
       def collapse_empty_nodes(ast)

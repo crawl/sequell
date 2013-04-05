@@ -7,10 +7,15 @@ module Query
       attr_accessor :extra, :summarise, :options, :sorts
       attr_accessor :game_number
 
+      attr_reader :head_str, :tail_str
+
       def initialize(context, head, tail, filter)
         @context = context
         @head = head || Expr.and()
         @tail = tail
+
+        @head_str = @head.to_query_string
+        @tail_str = @tail && @tail.to_query_string
         @filter = filter
         @summarise = []
         @options = []

@@ -19,7 +19,7 @@ module Sql
       @nick = nick
       @num = @ast.game_number
       @extra_fields = extra_fields && extra_fields.dup
-      @argstr = argstr || predicates.to_query_string
+      @argstr = argstr || ast.head_str
       @values = nil
       @summarise = nil
       @random_game = nil

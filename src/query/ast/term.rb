@@ -12,6 +12,10 @@ module Query
         @arguments = []
       end
 
+      def negatable?
+        false
+      end
+
       def operator
         nil
       end

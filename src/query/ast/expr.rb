@@ -58,7 +58,14 @@ module Query
       end
 
       def negate
-        Expr.new(operator.negate, arguments.map(&:negate))
+        Expr.new(operator.negate,
+          *arguments.map { |arg|
+            arg.negatable? ? arg.negate : arg
+          })
+      end
+
+      def negatable?
+        true
       end
 
       def kind

@@ -7,7 +7,7 @@ module Query
     attr_accessor :op
 
     def initialize(op)
-      @op = Sql::Operator.op(op)
+      @op = Query::Operator.op(op)
     end
 
     def parse(field, value, op=@op)
