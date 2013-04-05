@@ -24,7 +24,8 @@ require 'sql/crawl_query'
 require 'sql/summary_reporter'
 require 'sql/query_context'
 require 'query/grammar'
-require 'query/lg_query'
+require 'query/listgame_query'
+require 'query/query_string'
 require 'query/query_struct'
 require 'query/summary_graph_builder'
 require 'crawl/branch_set'
@@ -194,8 +195,8 @@ end
 # Given a Henzell command's command-line, looks up a game and reports it,
 # also recognising -tv and -log options.
 def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
-  combined_args = other_args_string.split()[1 .. -1] + extra_args
-  combined_args = Query::QueryString.new(combined_args).args
+  combined_args = other_args_string.split() + extra_args
+  combined_args = ::Query::QueryString.new(combined_args).args
   TV.with_tv_opts(combined_args) do |args, opts|
     args, logopts = extract_options(args, 'log', 'ttyrec')
     sql_show_game(ARGV[1], args) do |res|

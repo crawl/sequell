@@ -1,5 +1,6 @@
 require 'query/listgame_parser'
 require 'sql/query_list'
+require 'query/ast/ast_query_builder'
 
 module Query
   # Parslet grammar backed listgame query.
@@ -8,17 +9,27 @@ module Query
       self.new(default_nick, QueryString.query(query))
     end
 
+    attr_reader :default_nick
+
     def initialize(default_nick, query)
       @default_nick = default_nick
       @query = query
     end
 
     def ast
-      @ast ||= Query::ListgameParser.parse(@query)
+      @ast ||= Query::ListgameParser.parse(@default_nick, @query)
     end
 
     def primary_query
       @primary_query ||= build_primary_query
+    end
+
+    def compound_query?
+      self.ast.compound_query?
+    end
+
+    def secondary_query
+      @secondary_query ||= build_secondary_query
     end
 
     def query_list
@@ -27,12 +38,18 @@ module Query
 
   private
     def build_primary_query
-      ASTQueryBuilder.build(self.ast)
+      AST::ASTQueryBuilder.build(self.default_nick, self.ast, self.ast.head)
+    end
+
+    def build_secondary_query
+      AST::ASTQueryBuilder.build(self.default_nick, self.ast,
+                                 self.ast.full_tail)
     end
 
     def build_query_list
       list = ::Sql::QueryList.new
       list << primary_query
+      list << secondary_query if compound_query?
       list
     end
   end

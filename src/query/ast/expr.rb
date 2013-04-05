@@ -56,6 +56,15 @@ module Query
       def to_s
         "(#{operator.to_s} " + arguments.map(&:to_s).join(' ') + ")"
       end
+
+      def to_query_string
+        if self.operator.unary?
+          "#{operator.display_string}#{self.arguments.first.to_query_string}"
+        else
+          self.arguments.map(&:to_query_string).join(
+            "#{operator.display_string}")
+        end
+      end
     end
   end
 end

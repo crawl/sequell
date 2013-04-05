@@ -1,7 +1,18 @@
 module Query
   module AST
     class ASTFixup
-      def apply(ast)
+      def self.result(nick, ast)
+        self.new(nick, ast).result
+      end
+
+      attr_reader :nick, :ast
+
+      def initialize(nick, ast)
+        @nick = nick
+        @ast = ast
+      end
+
+      def result
         STDERR.puts("Fixing: #{ast}")
         ast.head = collapse_empty_nodes(ast.head)
         ast.tail = collapse_empty_nodes(ast.tail)

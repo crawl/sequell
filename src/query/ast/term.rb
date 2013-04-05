@@ -31,6 +31,10 @@ module Query
         '*'
       end
 
+      def to_query_string
+        self.to_s
+      end
+
       def value?
         false
       end

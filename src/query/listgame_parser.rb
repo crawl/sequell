@@ -30,7 +30,7 @@ module Query
       ast = AST::ASTTranslator.apply(ast)
       STDERR.puts("Resolved AST: #{ast}")
 
-      fixed_ast = AST::ASTFixup.new.apply(ast)
+      fixed_ast = AST::ASTFixup.result(default_nick, ast)
       STDERR.puts("Fixed AST: #{fixed_ast}")
 
       fixed_ast

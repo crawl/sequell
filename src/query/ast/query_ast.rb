@@ -7,12 +7,17 @@ module Query
 
       def initialize(context, head, tail, filter)
         @context = context
-        @head = head || Expr.and
-          @tail = tail
+        @head = head || Expr.and()
+        @tail = tail
         @filter = filter
       end
 
-      def with_context
+      def compound_query?
+        @tail
+      end
+
+      def with_context(&block)
+        Sql::QueryContext.named(self.context).with(&block)
       end
 
       def full_tail

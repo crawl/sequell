@@ -23,6 +23,7 @@ describe Grammar::Query do
     '!lg * won ((dur<12600 ((start>20110201 || start<20110101)) || turn<40000)) -tv:<T1',
 
     '!lg * / won',
+    '!lg * win',
     '!lg * s=name ?: N>10',
     '!lg * s=name / win ?: %>0.5',
     '!lg * s=name / win ?: d:N > 50 num.N > 5',
@@ -70,7 +71,7 @@ describe Grammar::Query do
   end
 
   def nick(tree)
-    (tree[:query][:nick_and_body][:nick_expr] || {})[:nick].to_s
+    (tree[:query][:head][:nick_and_body][:nick_expr] || {})[:nick].to_s
   end
 
   it 'should recognize nicks' do

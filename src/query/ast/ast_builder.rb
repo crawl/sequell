@@ -5,6 +5,7 @@ require 'query/ast/option'
 require 'query/ast/modifier'
 require 'query/ast/keyword'
 require 'query/ast/query_ast'
+require 'query/nick_expr'
 require 'sql/field'
 
 module Query

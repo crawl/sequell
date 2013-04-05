@@ -15,6 +15,8 @@ module Query
       REGISTRY[name.to_s] = op
     end
 
+    attr_reader :name
+
     def initialize(name, negated, options)
       @name = name
       @negated = negated
@@ -58,6 +60,14 @@ module Query
 
     def result_type(args)
       @options[:result] || args.first.type
+    end
+
+    def == (other)
+      @name.to_s == other.name.to_s
+    end
+
+    def display_string
+      @options[:display] || @name
     end
 
     def to_s
