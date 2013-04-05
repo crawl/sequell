@@ -16,19 +16,27 @@ module Query
       end
 
       def apply
-        @ast.transform_nodes! { |node|
+        @ast.transform! { |node|
           translate_ast(node)
         }
       end
 
       def translate_ast(ast)
-        ASTWalker.map_keywords(ast) { |kw|
+        ast = ASTWalker.map_keywords(ast) { |kw|
           ::Query::QueryKeywordParser.parse(kw.value)
         }
 
-        ASTWalker.map_nodes(ast) { |node|
+        ast = ASTWalker.map_nodes(ast) { |node|
           ::Query::QueryNodeTranslator.translate(node)
         }
+
+        ast = ASTWalker.map_nodes(ast) { |node|
+          value_fixup(node)
+        }
+      end
+
+      def value_fixup(node)
+        node
       end
     end
   end

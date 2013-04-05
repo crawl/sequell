@@ -1,53 +1,53 @@
 operators:
   - op: and
     negated: or
-    argtype: !
-    result: !
-    display: ' '
+    argtype: '!'
+    result: '!'
+    display_string: ' '
 
   - op: or
     negated: and
-    argtype: !
-    result: !
-    display: ' || '
+    argtype: '!'
+    result: '!'
+    display_string: ' || '
 
   - op: not
     negated: and
-    argtype: !
-    result: !
-    display: '!'
+    argtype: '!'
+    result: '!'
+    display_string: '!'
     arity: 1
 
   - op: '='
     negated: '!='
     argtype: '*'
-    result: !
+    result: '!'
     arity: 2
 
   - op: '!='
     negated: '='
     argtype: '*'
-    result: !
+    result: '!'
     arity: 2
 
   - op: '=='
     negated: '!=='
     argtype: '*'
-    result: !
+    result: '!'
     arity: 2
     sql_operator: '='
 
   - op: '!=='
     negated: '=='
     argtype: '*'
-    result: !
+    result: '!'
     arity: 2
     sql_operator: '!='
 
   - op: '=~'
     negated: '!~'
     argtype: S
-    result: !
+    result: '!'
     arity: 2
     non_commutative: true
     sql_operator: ' ILIKE '
@@ -55,7 +55,7 @@ operators:
   - op: '!~'
     negated: '=~'
     argtype: S
-    result: !
+    result: '!'
     arity: 2
     non_commutative: true
     sql_operator: ' NOT ILIKE '
@@ -63,7 +63,7 @@ operators:
   - op: '~~'
     negated: '!~~'
     argtype: S
-    result: !
+    result: '!'
     arity: 2
     non_commutative: true
     sql_operator: '~*'
@@ -71,7 +71,7 @@ operators:
   - op: '!~~'
     negated: '~~'
     argtype: S
-    result: !
+    result: '!'
     arity: 2
     non_commutative: true
     sql_operator: '!~*'
@@ -79,27 +79,27 @@ operators:
   - op: '<'
     negated: '>='
     argtype: '*'
-    result: !
+    result: '!'
     arity: 2
     non_commutative: true
 
   - op: '>='
     negated: '<'
     argtype: '*'
-    result: !
+    result: '!'
     arity: 2
     non_commutative: true
 
   - op: '>'
     negated: '<='
     argtype: '*'
-    result: !
+    result: '!'
     arity: 2
     non_commutative: true
 
   - op: '<='
     negated: '>'
     argtype: '*'
-    result: !
+    result: '!'
     arity: 2
     non_commutative: true

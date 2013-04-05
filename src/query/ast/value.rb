@@ -3,7 +3,7 @@ require 'query/ast/term'
 module Query
   module AST
     class Value < Term
-      attr_reader :value
+      attr_accessor :value
 
       def initialize(value)
         @value = value.to_s

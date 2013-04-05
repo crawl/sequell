@@ -1,3 +1,5 @@
+require 'ostruct'
+
 module Query
   class Operator
     REGISTRY = { }
@@ -21,7 +23,7 @@ module Query
       @name = name
       @negated = negated
       @sql_operator = sql_operator
-      @options = options
+      @options = OpenStruct.new(options)
       self.class.register(name, self)
     end
 
@@ -34,7 +36,7 @@ module Query
     end
 
     def arity
-      @options[:arity] || 0
+      @options.arity || 0
     end
 
     def unary?
@@ -42,15 +44,15 @@ module Query
     end
 
     def commutative?
-      !@options[:non_commutative]
+      !@options.non_commutative
     end
 
     def argtypes
       @argtypes ||=
-        (if @options[:argtype].is_a?(Array)
-           @options[:argtype]
-         elsif @options[:argtype]
-           [@options[:argtype]]
+        (if @options.argtype.is_a?(Array)
+           @options.argtype
+         elsif @options.argtype
+           [@options.argtype]
          end).map { |type| Sql::Type.type(type) }
     end
 
@@ -64,7 +66,7 @@ module Query
     end
 
     def result_type(args)
-      Sql::Type.type(@options[:result] || args.first.type)
+      Sql::Type.type(@options.result || args.first.type)
     end
 
     def equality?
@@ -92,7 +94,7 @@ module Query
     end
 
     def display_string
-      @options[:display] || @name
+      @options.display_string || @name
     end
 
     def to_s

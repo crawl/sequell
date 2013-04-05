@@ -24,7 +24,6 @@ module Query
         }
 
         if !ast.has_sorts? && ast.needs_sort?
-          STDERR.puts("defsort: #{@ctx.defsort}")
           ast.sorts << Query::Sort.new(@ctx.defsort)
         end
 

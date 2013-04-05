@@ -4,6 +4,7 @@ module Query
   module AST
     class ASTWalker
       def self.map_nodes(ast, condition=nil, &block)
+        pre = ast.dup
         ast.arguments = ast.arguments.map { |arg|
           map_nodes(arg, condition, &block)
         }.compact

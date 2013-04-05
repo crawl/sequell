@@ -1,8 +1,5 @@
-require 'query/query_struct'
-require 'query/compound_keyword_parser'
 require 'query/keyword_matcher'
 require 'query/keyword_defs'
-require 'sql/operator'
 require 'sql/errors'
 
 module Query

@@ -1,5 +1,4 @@
 require 'query/nick'
-require 'sql/field_predicate'
 require 'query/ast/expr'
 
 module Query
@@ -52,6 +51,12 @@ module Query
 
     def initialize(nick, negated=false)
       super(negated ? :'!=' : :'=', Sql::Field.field('name'), nick)
+      @nick = nick
+      @negated = negated
+    end
+
+    def dup
+      self.class.new(@nick, @negated)
     end
   end
 end

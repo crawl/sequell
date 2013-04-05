@@ -1,11 +1,16 @@
 require 'query/operators'
 require 'query/ast/term'
+require 'sql/field'
 
 module Query
   module AST
     class Expr < Term
       def self.and(*arguments)
         self.new(Query::Operator.op(:and), *arguments)
+      end
+
+      def self.field_predicate(op, field, value)
+        self.new(op, Sql::Field.field(field), value)
       end
 
       attr_reader :operator, :arguments
@@ -20,6 +25,10 @@ module Query
             arg
           end
         }
+      end
+
+      def operator=(op)
+        @operator = Query::Operator.op(op)
       end
 
       def dup
@@ -62,10 +71,6 @@ module Query
 
       def type
         operator.result_type(args)
-      end
-
-      def boolean?
-        self.type.boolean?
       end
 
       def merge(other, merge_op=:and)

@@ -1,8 +1,6 @@
-require 'query/query_struct'
 require 'query/sort'
 require 'sql/field'
 require 'sql/query_tables'
-require 'sql/field_predicate'
 require 'sql/column_resolver'
 require 'sql/field_resolver'
 require 'sql/aggregate_expression'
@@ -67,7 +65,6 @@ module Sql
     end
 
     def resolve_sort_fields(pred, tables)
-      STDERR.puts("Resolving sorts: #{ast.sorts}")
       ast.sorts.each { |sort|
         sort.each_field { |field|
           STDERR.puts("Resolving sort: #{field}")

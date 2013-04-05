@@ -2,6 +2,22 @@ require 'query/ast/ast_walker'
 
 module Query
   module Termlike
+    def boolean?
+      self.type.boolean?
+    end
+
+    def equality?
+      self.operator && self.operator.equality?
+    end
+
+    def value
+      self.right.value if self.right && self.right.kind == :value
+    end
+
+    def value=(new_value)
+      self.right.value = new_value
+    end
+
     def kind
       :termlike
     end
@@ -28,6 +44,14 @@ module Query
       self.arity == 2 && self.left.kind == :field && self.right.kind == :value
     end
 
+    def field
+      self.left if self.field_value?
+    end
+
+    def field_value_predicate?
+      boolean? && field_value?
+    end
+
     def field_equality?
       self.operator && self.operator.equality? && self.arity == 2 &&
         self.left.kind == :field
@@ -46,6 +70,10 @@ module Query
 
     def transform_nodes!(&block)
       self.map_nodes_as!(:map_nodes, &block)
+    end
+
+    def transform!(&block)
+      block.call(self)
     end
 
     def map_fields(&block)

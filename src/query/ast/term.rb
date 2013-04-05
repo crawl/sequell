@@ -45,6 +45,9 @@ module Query
         return self if meta?
         raise "Unsupported operation"
       end
+
+      def convert_types!
+      end
     end
   end
 end

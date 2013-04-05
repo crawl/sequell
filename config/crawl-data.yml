@@ -780,6 +780,14 @@ field-input-transforms: &inputtransforms
     Transmigration: Transmutations
 
 field-transforms:
+  ktyp:
+    poison: pois
+    drown: water
+    won: winning
+    win: winning
+    left: leaving
+    leave: leaving
+    quit: quitting
   status:
     berserk: berserking
     haste: hasted

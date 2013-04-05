@@ -1,8 +1,8 @@
 require 'cmd/user_command_db'
 require 'cmd/user_def'
-require 'query/query_param_parser'
 require 'query/query_string'
 require 'query/query_keyword_parser'
+require 'query/listgame_parser'
 
 module Cmd
   class UserKeyword
@@ -61,9 +61,7 @@ module Cmd
     def self.assert_definition_parseable!(definition)
       # Verify that the definition parses:
       CTX_STONE.with do
-        qs = Query::QueryString.new(definition)
-        qs.normalize!
-        Query::QueryParamParser.parse(qs)
+        Query::ListgameParser.fragment(definition)
       end
     end
 
