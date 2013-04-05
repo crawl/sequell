@@ -16,13 +16,9 @@ module Query
       end
 
       def apply
-        @ast.head = translate_ast(@ast.head)
-        @ast.tail = translate_ast(@ast.tail) if @ast.tail
-        extract_query_modifiers!
-        @ast
-      end
-
-      def extract_query_modifiers!
+        @ast.transform_nodes! { |node|
+          translate_ast(node)
+        }
       end
 
       def translate_ast(ast)

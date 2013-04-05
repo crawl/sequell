@@ -6,7 +6,7 @@ module Query
       require 'query/ast/ast_fixup'
       require 'grammar/query_body'
 
-      raw_parse = Grammar::QueryBody.new.parse(fragment.to_s)
+      raw_parse = ::Grammar::QueryBody.new.parse(fragment.to_s)
       STDERR.puts("Fragment raw_parse: #{raw_parse.inspect}")
       ast = AST::ASTBuilder.new.apply(raw_parse)
       STDERR.puts("Fragment AST: #{ast.inspect}")

@@ -44,6 +44,10 @@ module Query
       Query::AST::ASTWalker.send(mapper, self, *args, &block)
     end
 
+    def transform_nodes!(&block)
+      self.map_nodes_as!(:map_nodes, &block)
+    end
+
     def map_fields(&block)
       map_nodes_as!(:map_fields, &block)
     end

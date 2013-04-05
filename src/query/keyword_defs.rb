@@ -156,9 +156,7 @@ module Query
   KeywordMatcher.matcher(:user_keyword) {
     user_keyword = Cmd::UserKeyword.keyword(arg)
     if user_keyword
-      qs = Query::QueryString.new(user_keyword.definition)
-      qs.normalize!
-      return Query::QueryParamParser.parse(qs).without_sorts
+      ListgameParser.fragment(user_keyword.definition)
     end
   }
 end
