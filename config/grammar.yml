@@ -1,3 +1,9 @@
+options:
+  - tv
+  - ttyrec
+  - log
+  - game
+
 operators:
   - op: and
     negated: or

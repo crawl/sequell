@@ -15,6 +15,10 @@ module Sql
       @query = query
     end
 
+    def option(key)
+      query.option(key)
+    end
+
     def milestone?
       game['milestone']
     end

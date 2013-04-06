@@ -40,6 +40,10 @@ module Sql
       @query_fields = resolve_query_fields
     end
 
+    def option(key)
+      @ast.option(key)
+    end
+
     def extra_fields=(extra)
       @extra_fields = extra && extra.dup
     end

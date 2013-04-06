@@ -126,9 +126,9 @@ def split_negated_expression(expr)
 end
 
 # Parse a listgame argument string into
-def sql_parse_query(default_nick, args, context=CTX_LOG)
+def sql_parse_query(default_nick, query_text)
   require 'query/listgame_parser'
-  Query::ListgameQuery.parse(default_nick, args.join(' ')).query_list
+  Query::ListgameQuery.parse(default_nick, query_text).query_list
 end
 
 def add_extra_fields_to_xlog_record(extra_fields, xlog_record)
@@ -153,11 +153,11 @@ def sql_find_game(default_nick, args, context=CTX_LOG)
   end
 end
 
-def sql_show_game(default_nick, args, context=CTX_LOG)
+def sql_show_game(default_nick, args)
   original_args = args.map { |a| a.dup }
   args, opts = extract_options(args, 'graph')
 
-  query_group = sql_parse_query(default_nick, args, context)
+  query_group = sql_parse_query(default_nick, args)
   query_group.with_context do
     q = query_group.primary_query
 
@@ -194,19 +194,17 @@ end
 # also recognising -tv and -log options.
 def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
   combined_args = other_args_string.split() + extra_args
-  combined_args = ::Query::QueryString.new(combined_args).args
-  TV.with_tv_opts(combined_args) do |args, opts|
-    args, logopts = extract_options(args, 'log', 'ttyrec')
-    sql_show_game(ARGV[1], args) do |res|
-      if opts[:tv]
-        TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1])
-      elsif logopts[:log]
-        report_game_log(res.qualified_index, res.game)
-      elsif logopts[:ttyrec]
-        report_game_ttyrecs(res.qualified_index, res.game)
-      else
-        print_game_result(res)
-      end
+  command_line = ::Query::QueryString.new(combined_args)
+  sql_show_game(ARGV[1], command_line) do |res|
+    if res.option(:tv)
+      TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1],
+                                res.option(:tv))
+    elsif res.option(:log)
+      report_game_log(res.qualified_index, res.game)
+    elsif res.option(:ttyrec)
+      report_game_ttyrecs(res.qualified_index, res.game)
+    else
+      print_game_result(res)
     end
   end
 end

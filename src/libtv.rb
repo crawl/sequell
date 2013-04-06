@@ -15,9 +15,6 @@ module TV
   TV_LOCK_FILE = 'tv.queue.lock'
   TV_LOG_FILE = 'tv.queue.log'
 
-  SPEED_MIN = 0.1
-  SPEED_MAX = 50
-
   def self.queue_dir
     TV_QUEUE_DIR
   end
@@ -191,80 +188,6 @@ module TV
     exit 0
   end
 
-  def self.parse_tv_args(opts)
-    hash = { }
-    for key in opts.keys
-      if key == :cancel || key == :nuke
-        self.parse_tv_arg(hash, key.to_s)
-      elsif key == :tv
-        value = opts[key]
-        next unless value.is_a?(String)
-        value.split(':').each { |v| self.parse_tv_arg(hash, v) }
-      end
-    end
-    hash
-  end
-
-  def self.parse_seek_num(seek, num, allow_end=false)
-    seekname = seek == '<' ? 'seek-back' : 'seek-after'
-    expected = allow_end ? 'T<turncount>, number, ">" or "$"' : 'T<turncount> or number'
-    if (num !~ /^t[+-]?\d+$/i && num !~ /^[-+]?\d+(?:\.\d+)?$/ &&
-        (!allow_end || (num != '$' && num != '>')))
-      raise "Bad seek argument for #{seekname}: #{num} (#{expected} expected)"
-    end
-    num
-  end
-
-  def self.read_playback_speed(speed_string)
-    speed = speed_string.to_f
-    if speed < SPEED_MIN || speed > SPEED_MAX
-      raise "Playback speed must be between #{SPEED_MIN} and #{SPEED_MAX}"
-    end
-    speed
-  end
-
-  def self.parse_tv_arg(hash, key)
-    if key == 'cancel' or key == 'nuke'
-      hash[key] = 'y'
-    else
-      prefix = key[0..0].downcase
-      rest = key[1 .. -1].strip
-      case prefix
-      when '<'
-        hash['seekbefore'] = parse_seek_num(prefix, rest)
-      when '>'
-        hash['seekafter'] = parse_seek_num(prefix, rest, true)
-      when 't'
-        hash['seekafter'] = parse_seek_num('<', prefix + rest)
-      when 'x'
-        hash['playback_speed'] = read_playback_speed(rest)
-      else
-        raise "Unrecognised TV option: #{key}"
-      end
-    end
-  end
-
-  def self.with_tv_opts(argv, tv_command = false)
-    opts = %w/tv/
-    opts += %w/cancel nuke/ if tv_command
-
-    args, opts = extract_options(argv, *opts)
-    old_args = @@tv_args
-    begin
-      @@tv_args = parse_tv_args(opts)
-      yield args, opts
-    rescue
-      puts $! unless $!.is_a?(NameError)
-      raise
-    ensure
-      @@tv_args = old_args
-    end
-  end
-
-  def self.seek_to_game_end?
-    @@tv_args && @@tv_args['seekafter'] == '>'
-  end
-
   def self.request_game(g)
     # Launch a daemon that keeps a server socket open for interested
     # parties (i.e. C-SPLAT) to listen in.
@@ -284,15 +207,15 @@ module TV
     "#{tv} (#{TermcastConfig.client_urls.join(' or ')})"
   end
 
-  def self.request_game_verbosely(n, g, who)
+  def self.request_game_verbosely(n, g, who, tv_opt)
     summary = short_game_summary(g)
     tv = 'FooTV'
 
     unless TV.channel_server?
-      if @@tv_args && @@tv_args['nuke']
+      if tv_opt && tv_opt[:nuke]
         puts "FooTV playlist clear requested by #{who}."
       else
-        suffix = @@tv_args && @@tv_args['cancel'] ? ' cancel' : ''
+        suffix = tv_opt && tv_opt[:cancel] ? ' cancel' : ''
         puts "#{n}. #{summary}#{suffix} requested for #{tv_description(tv)}."
       end
 
@@ -300,12 +223,7 @@ module TV
       g['req'] = ARGV[1]
     end
 
-    if @@tv_args
-      for k in @@tv_args.keys
-        g[k] = @@tv_args[k]
-      end
-    end
-
+    g = g.merge(tv_opt.opts) if tv_opt
     if TV.channel_server?
       puts "#{n}. :#{munge_game(g)}:"
       return

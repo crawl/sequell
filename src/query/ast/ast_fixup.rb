@@ -40,7 +40,7 @@ module Query
         return node unless node.meta?
         case node.kind
         when :option
-          ast.options << node
+          ast.add_option(node)
         when :game_number
           ast.game_number = node.value > 0 ? node.value - 1 : node.value
         when :summary, :extra

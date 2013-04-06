@@ -1,7 +1,7 @@
 require 'parslet'
 require 'query/ast/expr'
 require 'query/ast/value'
-require 'query/ast/option'
+require 'query/ast/option_builder'
 require 'query/ast/modifier'
 require 'query/ast/keyword'
 require 'query/ast/query_ast'
@@ -71,7 +71,7 @@ module Query
             arguments: sequence(:args)
           }
         }) {
-        ::Query::Option.new(name, args)
+        ::Query::AST::OptionBuilder.build(name, args)
       }
 
       rule(field_value: sequence(:value)) {

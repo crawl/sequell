@@ -26,6 +26,7 @@ $ENV{'HENZELL_DBPASS'} = $DBPASS;
 
 new_db_handle($DBNAME, $DBUSER, $DBPASS) && initialize_sqllog();
 
+my $FAILFAST;
 my $SCHEMAFILE = 'henzell-schema.sql';
 my $INDEXFILE  = 'henzell-indexes.sql';
 my $TESTFILE = 'testcmd.txt';
@@ -325,10 +326,11 @@ TESTREPORT
   if ($err) {
     print $logf "Error: $err\n";
     test_failed($test, $err);
-    return;
+    return 1;
   }
   print $logf "TEST SUCCESS\n";
   test_ok($test);
+  return;
 }
 
 sub test_failure_report($) {
@@ -378,13 +380,15 @@ sub run_tests() {
   announce "Running $test_count tests";
   open my $logf, '>', $TESTLOG or die "Can't write $TESTLOG: $!\n";
   for my $test (@tests) {
-    execute_test($test, $logf);
+    last if execute_test($test, $logf) && $FAILFAST;
   }
   test_summary($logf);
   test_summary(\*STDERR);
 }
 
 sub main() {
+  $FAILFAST = grep(/--fail-fast/, @ARGV);
+  @ARGV = grep(!/^--/, @ARGV);
   check_datafiles_exist();
   build_test_db();
   run_tests();

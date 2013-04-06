@@ -8,6 +8,10 @@ module Grammar
       @config ||= YAML.load_file(Henzell::Config.file_path(CONFIG_FILE))
     end
 
+    def self.option_names
+      self['options']
+    end
+
     def self.[](key)
       self.config[key]
     end

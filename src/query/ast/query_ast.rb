@@ -19,12 +19,22 @@ module Query
 
         @filter = filter
         @options = []
+        @opt_map = { }
         @sorts = []
 
         @nick = ASTWalker.find(@head) { |node|
           node.nick.value if node.is_a?(NickExpr)
         }
         @nick ||= '.'
+      end
+
+      def add_option(option)
+        @options << option
+        @opt_map[option.name.to_sym] = option
+      end
+
+      def option(name)
+        @opt_map[name.to_sym]
       end
 
       def head

@@ -6,7 +6,11 @@ class CommandContext
   end
 
   def self.command_words
-    ARGV[2].split()
+    command_line.split()
+  end
+
+  def self.command_line
+    ARGV[2]
   end
 
   def self.command_arguments

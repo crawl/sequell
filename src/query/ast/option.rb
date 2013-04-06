@@ -3,24 +3,27 @@ require 'query/ast/term'
 module Query
   module AST
     class Option < Term
-      attr_reader :name, :args
+      attr_reader :name
 
-      def initialize(name, args)
+      def initialize(name, arguments)
         @name = name
-        @args = args || []
+        @arguments = arguments || []
       end
 
       def meta?
         true
       end
 
+      def kind
+        :option
+      end
+
       def has_args?
-        !@args.empty?
+        !arguments.empty?
       end
 
       def to_s
-        argstr = @args.empty? ? nil : @args.join(':')
-        ["-#{name}", argstr].compact.join(':')
+        ["-#{name}", argstr].select { |x| !x.empty? }.join(':')
       end
     end
   end

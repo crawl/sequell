@@ -10,42 +10,33 @@ help("Lists milestones for the specified player. Usage: !lm (<player>) (<number>
 
 ctx = CommandContext.new
 
-TV.with_tv_opts(ctx.arguments) do |args, tvopt|
-  ctx.arguments = args
-  ctx.extract_options!('game', 'log', 'ttyrec')
-
-  query = Query::QueryString.new(ctx.arguments)
-  extra = Query::ExtraFieldParser.parse(query.dup, CTX_STONE)
-
-  tv = tvopt[:tv]
-  sql_show_game(ctx.default_nick, query.args, CTX_STONE) do |res|
-    if ctx[:log] && res.game['verb'] == 'crash'
-      puts("#{res.n}. #{short_game_summary(res.game)}: " +
-           (find_milestone_crash_dump(res.game) || "Can't find crash dump."))
-    elsif (ctx[:game] || ctx[:log])
-      game = res.milestone_game
-      if not game
-        puts "#{short_game_summary(res.game)} has no matching game."
-      elsif ctx[:log]
-        report_game_log(nil, game)
-      elsif ctx[:ttyrec]
-        report_game_ttyrecs(nil, game)
-      elsif tv
-        TV.request_game_verbosely(res.game_key, game, ARGV[1])
-      else
-        CTX_STONE.with {
-          print_game_n(res.game_key,
-                       add_extra_fields_to_xlog_record(extra, game))
-        }
-      end
-    elsif ctx[:ttyrec]
-      # ttyrec for the milestone
-      report_game_ttyrecs(res.n, res.game)
-    elsif tv
-      game = res.game
-      if TV.seek_to_game_end?
-        game['end'] = res.milestone_game && res.milestone_game['end']
-      end
+sql_show_game(ctx.default_nick, ctx.command_line) do |res|
+  if res.option(:log) && res.game['verb'] == 'crash'
+    puts("#{res.n}. #{short_game_summary(res.game)}: " +
+      (find_milestone_crash_dump(res.game) || "Can't find crash dump."))
+  elsif res.option(:game) || res.option(:log)
+    game = res.milestone_game
+    if not game
+      puts "#{short_game_summary(res.game)} has no matching game."
+    elsif res.option(:log)
+      report_game_log(nil, game)
+    elsif res.option(:ttyrec)
+      report_game_ttyrecs(nil, game)
+    elsif res.option(:tv)
+      TV.request_game_verbosely(res.game_key, game, ARGV[1], res.option(:tv))
+    else
+      CTX_STONE.with {
+        print_game_n(res.game_key, game)
+      }
+    end
+  elsif res.option(:ttyrec)
+    # ttyrec for the milestone
+    report_game_ttyrecs(res.n, res.game)
+  elsif res.option(:tv)
+    game = res.game
+    if TV.seek_to_game_end?
+      game['end'] = res.milestone_game && res.milestone_game['end']
+    end
       TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1])
     else
       print_game_result(res)
