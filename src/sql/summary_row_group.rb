@@ -27,7 +27,7 @@ module Sql
 
     def unify(summary_rows)
       summary_field_list = @summary_reporter.query_group.primary_query.summarise
-      field_count = summary_field_list.fields.size
+      field_count = summary_field_list.arity
       unify_groups(summary_field_list, 0, field_count, summary_rows)
     end
 
@@ -36,7 +36,7 @@ module Sql
     end
 
     def unify_groups(summary_field_list, which_group, total_groups, rows)
-      current_field_spec = summary_field_list.fields[which_group]
+      current_field_spec = summary_field_list.args[which_group]
       if which_group == total_groups - 1
         subrows = rows.map { |r|
           SummaryRow.subrow_from_fullrow(r, r.fields[-1])

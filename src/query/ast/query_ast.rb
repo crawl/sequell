@@ -5,7 +5,7 @@ module Query
     class QueryAST
       attr_accessor :context, :head, :tail, :filter
       attr_accessor :extra, :summarise, :options, :sorts
-      attr_accessor :game_number
+      attr_accessor :game_number, :nick
 
       attr_reader :head_str, :tail_str
 
@@ -16,14 +16,23 @@ module Query
 
         @head_str = @head.to_query_string
         @tail_str = @tail && @tail.to_query_string
+
         @filter = filter
-        @summarise = []
         @options = []
         @sorts = []
+
+        @nick = ASTWalker.find(@head) { |node|
+          node.nick.value if node.is_a?(NickExpr)
+        }
+        @nick ||= '.'
+      end
+
+      def head
+        @head || Expr.and()
       end
 
       def summary?
-        !@summarise.empty?
+        @summarise
       end
 
       def has_sorts?
@@ -71,8 +80,13 @@ module Query
       end
 
       def to_s
-        tail_s = @tail ? " / #{@tail}" : ""
-        "#{@context} #{@head}#{tail_s} #{@filter}"
+        pieces = [@context.to_s]
+        pieces << @nick if @nick
+        pieces << @head.to_s
+        pieces << @summarise.to_s if summary?
+        pieces << "/" << @tail.to_s if @tail
+        pieces << @filter.to_s if @filter
+        pieces.select { |x| !x.empty? }.join(' ')
       end
     end
   end

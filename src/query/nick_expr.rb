@@ -49,6 +49,8 @@ module Query
         Sql::Field.field('name'), nick)
     end
 
+    attr_reader :nick
+
     def initialize(nick, negated=false)
       super(negated ? :'!=' : :'=', Sql::Field.field('name'), nick)
       @nick = nick

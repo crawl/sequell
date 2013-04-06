@@ -17,7 +17,7 @@ module Sql
 
       @summary_field_spec = nil
       summarise_fields = summary_reporter.query.summarise
-      @summary_field_spec = summarise_fields.fields[0] if summarise_fields
+      @summary_field_spec = summarise_fields.args[0] if summarise_fields
       @fields = summary_fields
       @key =
         if summary_fields

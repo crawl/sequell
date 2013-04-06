@@ -24,6 +24,14 @@ module Query
         ast
       end
 
+      def self.find(ast, &block)
+        ast.arguments.each { |arg|
+          result = find(arg, &block)
+          return result if result
+        }
+        block.call(ast)
+      end
+
       def self.map_predicates(ast, &block)
         map_nodes(ast, lambda { |node| node.type.boolean? }, &block)
       end

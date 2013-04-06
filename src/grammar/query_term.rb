@@ -47,8 +47,8 @@ module Grammar
       min_term | max_term
     }
 
-    rule(:min_term) { query_fn(str("min"), field_expr.as(:max)) }
-    rule(:max_term) { query_fn(str("max"), field_expr.as(:min)) }
+    rule(:min_term) { query_fn(str("min"), field_expr.as(:min)) }
+    rule(:max_term) { query_fn(str("max"), field_expr.as(:max)) }
 
     rule(:order_term) {
       query_fn(str("o") | str("order"), ordered_sort_expression_list)

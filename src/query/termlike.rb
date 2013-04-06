@@ -2,6 +2,14 @@ require 'query/ast/ast_walker'
 
 module Query
   module Termlike
+    def args
+      self.arguments
+    end
+
+    def display_value(raw_value, display_format=nil)
+      self.type.display_value(raw_value, display_format)
+    end
+
     def boolean?
       self.type.boolean?
     end
@@ -59,6 +67,12 @@ module Query
 
     def field_value_equality?
       field_equality? && self.right.kind == :value
+    end
+
+    # Given a value, converts it into a value that can be simply
+    # compared with <, based on the type of this term.
+    def comparison_value(raw_value)
+      self.type.comparison_value(raw_value)
     end
 
     def map_nodes_as!(mapper, *args, &block)

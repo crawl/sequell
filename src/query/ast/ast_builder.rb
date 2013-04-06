@@ -5,6 +5,8 @@ require 'query/ast/option'
 require 'query/ast/modifier'
 require 'query/ast/keyword'
 require 'query/ast/query_ast'
+require 'query/ast/summary'
+require 'query/ast/summary_list'
 require 'query/nick_expr'
 require 'sql/field'
 
@@ -31,6 +33,12 @@ module Query
           body: simple(:body)
         }) {
         Expr.and(NickExpr.nick(nick), body)
+      }
+
+      rule(nick_and_body: {
+          nick_expr: simple(:nick)
+        }) {
+        Expr.and(NickExpr.nick(nick))
       }
 
       rule(nick_and_body: {
@@ -139,6 +147,24 @@ module Query
 
       rule(field: { identifier: simple(:fieldname) }) {
         { field: Sql::Field.field(fieldname.to_s) }
+      }
+
+      rule(ordering: simple(:ordering),
+           field: { identifier: simple(:field) },
+           percentage: simple(:percentage)) {
+        Summary.new(Sql::Field.field(field.to_s), ordering.to_s,
+                    percentage.to_s)
+      }
+
+      rule(summary: sequence(:summary)) {
+        SummaryList.new(*summary)
+      }
+      rule(summary: simple(:summary)) {
+        SummaryList.new(summary)
+      }
+
+      rule(term: simple(:term)) {
+        term
       }
     end
   end

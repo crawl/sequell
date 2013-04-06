@@ -43,6 +43,12 @@ module Query
           ast.options << node
         when :game_number
           ast.game_number = node.value > 0 ? node.value - 1 : node.value
+        when :summary
+          # Don't cull the summary node...
+          return node
+        when :summary_list
+          raise "Too many grouping terms (extra: #{node})" if ast.summarise
+          ast.summarise = node
         else
           raise "Unknown node: #{node}"
         end
@@ -64,7 +70,7 @@ module Query
         liftup_possible = ast.operator && ast.operator.commutative?
         ast.arguments = ast.arguments.map { |child|
           child = collapse_empty_nodes(child)
-          if liftup_possible && child.operator == ast.operator
+          if child && liftup_possible && child.operator == ast.operator
             lifted_nodes << child
             nil
           else

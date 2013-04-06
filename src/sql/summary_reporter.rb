@@ -75,7 +75,7 @@ module Sql
 
     def filter_count_summary_rows!
       group_by = @q.summarise
-      summary_field_count = group_by ? group_by.fields.size : 0
+      summary_field_count = group_by ? group_by.arity : 0
 
       rowmap = { }
       rows = []

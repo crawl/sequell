@@ -15,13 +15,12 @@ module Sql
       @ast = ast
       @tables = QueryTables.new(QueryContext.context.table)
       @original_pred = predicates
-      @pred = predicates.dup
+      @pred = predicates
       @nick = nick
       @num = @ast.game_number
       @extra_fields = extra_fields && extra_fields.dup
-      @argstr = argstr || ast.head_str
+      @argstr = "(" + (argstr || ast.head_str) + ")"
       @values = nil
-      @summarise = nil
       @random_game = nil
       @summary_sort = nil
       @raw = nil
@@ -115,23 +114,24 @@ module Sql
     end
 
     def summarise
-      @summarise
+      @ast.summarise
     end
 
     def summarise?
-      @summarise || (@extra_fields && @extra_fields.aggregate?)
+      @ast.summary?
+      #@summarise || (@extra_fields && @extra_fields.aggregate?)
     end
 
     def grouping_query?
-      @summarise
+      self.summarise
     end
 
     def group_count
-      @summarise ? @summarise.fields.size : 0
+      summarise ? summarise.arity : 0
     end
 
     def query_groups
-      @summarise ? @summarise.fields : []
+      summarise ? summarise.arguments : []
     end
 
     def random_game?
@@ -159,6 +159,7 @@ module Sql
     end
 
     def summarise= (s)
+      raise "WTF"
       @summarise = s
 
       for summary_field in @summarise.fields
@@ -230,16 +231,18 @@ module Sql
     end
 
     def resolve_summary_fields
-      if @summarise
-        @summarise.fields.each { |summary_field|
-          resolve_field(summary_field.field, @summary_tables)
+      if summarise
+        STDERR.puts("Summary field resolve for #{summarise}")
+        summarise.each_field { |field|
+          STDERR.puts("Resolving summary #{field}")
+          resolve_field(field, @summary_tables)
         }
       end
 
       if @extra_fields
-        @extra_fields.fields.each { |extra_field|
-          self.resolve_value_key(extra_field)
-          resolve_field(extra_field.field, @summary_tables)
+        @extra_fields.each_field { |field|
+          self.resolve_value_key(field)
+          resolve_field(field, @summary_tables)
         }
       end
     end
@@ -254,7 +257,7 @@ module Sql
     end
 
     def summary_order
-      if @summarise && !@summarise.multiple_field_group?
+      if summarise && !summarise.multiple_field_group?
         "ORDER BY fieldcount #{@summary_sort}"
       else
         ''
@@ -262,19 +265,19 @@ module Sql
     end
 
     def summary_db_fields
-      @summarise.fields.map { |f|
-        f.field.to_sql
+      summarise.arguments.map { |arg|
+        arg.to_sql
       }
     end
 
     def summary_group
-      @summarise ? "GROUP BY #{summary_db_fields.join(',')}" : ''
+      summarise ? "GROUP BY #{summary_db_fields.join(',')}" : ''
     end
 
     def summary_fields
       basefields = ''
       extras = ''
-      if @summarise
+      if summarise
         basefields = "COUNT(*) AS fieldcount, #{summary_db_fields.join(", ")}"
       end
       if @extra_fields && !@extra_fields.empty?

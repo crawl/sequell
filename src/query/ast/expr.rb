@@ -14,7 +14,6 @@ module Query
       end
 
       attr_reader :operator, :arguments
-      alias :args :arguments
 
       def initialize(operator, *arguments)
         @operator = Query::Operator.op(operator)
@@ -97,6 +96,7 @@ module Query
       end
 
       def to_s
+        return '' if self.arity == 0
         "(#{operator.to_s} " + arguments.map(&:to_s).join(' ') + ")"
       end
 

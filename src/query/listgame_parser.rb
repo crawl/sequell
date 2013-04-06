@@ -28,12 +28,14 @@ module Query
       STDERR.puts("AST: #{ast}")
 
       ast.with_context {
-        translated_ast = AST::ASTTranslator.apply(ast)
-        STDERR.puts("Resolved AST: #{translated_ast}")
+        ::Query::NickExpr.with_default_nick(default_nick) {
+          translated_ast = AST::ASTTranslator.apply(ast)
+          STDERR.puts("Resolved AST: #{translated_ast}")
 
-        fixed_ast = AST::ASTFixup.result(default_nick, translated_ast)
-        STDERR.puts("Fixed AST: #{fixed_ast}")
-        fixed_ast
+          fixed_ast = AST::ASTFixup.result(default_nick, translated_ast)
+          STDERR.puts("Fixed AST: #{fixed_ast}")
+          fixed_ast
+        }
       }
     end
   end
