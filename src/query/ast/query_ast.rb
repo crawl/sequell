@@ -44,7 +44,7 @@ module Query
       end
 
       def summary?
-        @summarise
+        summarise || (extra && extra.aggregate?)
       end
 
       def has_sorts?

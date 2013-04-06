@@ -6,6 +6,14 @@ module Query
       self.arguments
     end
 
+    def empty?
+      arguments.empty?
+    end
+
+    def aggregate?
+      false
+    end
+
     def display_value(raw_value, display_format=nil)
       self.type.display_value(raw_value, display_format)
     end

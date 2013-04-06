@@ -7,11 +7,11 @@ require 'sql/aggregate_expression'
 
 module Sql
   class CrawlQuery
-    attr_accessor :ast, :argstr, :nick, :num, :raw, :extra_fields, :ctx
+    attr_accessor :ast, :argstr, :nick, :num, :raw, :extra, :ctx
     attr_accessor :summary_sort, :table, :game
     attr_reader   :query_fields
 
-    def initialize(ast, predicates, extra_fields, nick, argstr=nil)
+    def initialize(ast, predicates, nick, argstr=nil)
       @ast = ast
       @ctx = @ast.context
       @tables = QueryTables.new(@ctx.table(@ast.game))
@@ -19,7 +19,7 @@ module Sql
       @pred = predicates
       @nick = nick
       @num = @ast.game_number
-      @extra_fields = extra_fields && extra_fields.dup
+      @extra = @ast.extra
       @argstr = "(" + (argstr || ast.head_str) + ")"
       @values = nil
       @random_game = nil
@@ -44,8 +44,8 @@ module Sql
       @ast.option(key)
     end
 
-    def extra_fields=(extra)
-      @extra_fields = extra && extra.dup
+    def extra=(extra)
+      @extra = extra && extra.dup
     end
 
     def row_to_fieldmap(row)
@@ -98,10 +98,10 @@ module Sql
 
     def select_query_fields
       fields = @ctx.db_columns.map { |c| Sql::Field.field(c.name) }
-      if @extra_fields && @extra_fields.fields
-        fields += @extra_fields.fields.find_all { |ef|
+      if @extra && @extra.fields
+        fields += @extra.fields.find_all { |ef|
           !ef.simple_field? && !ef.aggregate?
-        }.map { |qf| qf.field }
+        }.map(&:expr)
       end
       fields
     end
@@ -123,7 +123,7 @@ module Sql
 
     def summarise?
       @ast.summary?
-      #@summarise || (@extra_fields && @extra_fields.aggregate?)
+      #@summarise || (@extra && @extra.aggregate?)
     end
 
     def grouping_query?
@@ -152,24 +152,9 @@ module Sql
       }
     end
 
-    def resolve_value_key(expr)
-      if expr.value_key?
-        verb = @ctx.key_field
-        # Ulch, we have to modify our predicates.
-        add_predicate('AND',
-                      Sql::FieldPredicate.predicate(expr.name, '=', verb))
-        expr.field = Sql::FieldExprParser.expr(@ctx.value_field)
-      end
-    end
-
     def summarise= (s)
       raise "WTF"
       @summarise = s
-
-      for summary_field in @summarise.fields
-        self.resolve_value_key(summary_field)
-      end
-
       resolve_summary_fields
       @query = nil
     end
@@ -243,9 +228,8 @@ module Sql
         }
       end
 
-      if @extra_fields
-        @extra_fields.each_field { |field|
-          self.resolve_value_key(field)
+      if @extra
+        @extra.each_field { |field|
           resolve_field(field, @summary_tables)
         }
       end
@@ -284,12 +268,12 @@ module Sql
       if summarise
         basefields = "COUNT(*) AS fieldcount, #{summary_db_fields.join(", ")}"
       end
-      if @extra_fields && !@extra_fields.empty?
+      if @extra && !@extra.empty?
         # At this point extras must be aggregate columns.
-        if !@extra_fields.aggregate?
-          raise "Extra fields (#{@extra_fields.extra}) contain non-aggregates"
+        if !@extra.aggregate?
+          raise "Extra fields (#{@extra.extra}) contain non-aggregates"
         end
-        extras = @extra_fields.fields.map { |f|
+        extras = @extra.fields.map { |f|
           Sql::AggregateExpression.aggregate_sql(@summary_tables, f)
         }.join(", ")
       end
@@ -310,7 +294,7 @@ module Sql
     end
 
     def build_query(predicates, with_sorts=true)
-      @query, @values = predicates.to_sql(@tables, @ctx), predicates.sql_values
+      @query, @values = predicates.to_sql, predicates.sql_values
       @query = "WHERE #{@query}" unless @query.empty?
       if with_sorts && ast.has_sorts?
         @query << " " unless @query.empty?
@@ -329,8 +313,7 @@ module Sql
         predicate_copy = @original_pred.dup
         ast_copy = @ast.dup
         ast_copy.reverse_sorts!
-        rq = CrawlQuery.new(ast_copy, predicate_copy, @extra_fields,
-                            @nick)
+        rq = CrawlQuery.new(ast_copy, predicate_copy, @nick)
         rq.table = @table
         rq
       end

@@ -10,7 +10,7 @@ module Sql
       @query_group = query_group
       @q = query_group.primary_query
       @lq = query_group[-1]
-      @extra = @q.extra_fields
+      @extra = @q.extra
       @efields = @extra ? @extra.fields : nil
       @sorted_row_values = nil
       @formatter = formatter
@@ -70,7 +70,7 @@ module Sql
     end
 
     def extra_fields
-      @q.extra_fields ? @q.extra_fields.fields : []
+      @q.extra ? @q.extra.fields : []
     end
 
     def filter_count_summary_rows!
@@ -88,10 +88,10 @@ module Sql
             srow = SummaryRow.new(self,
               row[1 .. summary_field_count],
               row[0],
-              @q.extra_fields,
+              @q.extra,
               row[(summary_field_count + 1)..-1])
           else
-            srow = SummaryRow.new(self, nil, nil, @q.extra_fields, row)
+            srow = SummaryRow.new(self, nil, nil, @q.extra, row)
           end
 
           if query_count > 1

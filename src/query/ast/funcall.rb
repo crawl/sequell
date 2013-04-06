@@ -29,6 +29,12 @@ module Query
       def to_s
         "#{@name}(" + arguments.map(&:to_s).join(',') + ")"
       end
+
+      def to_sql
+        @fn.expr.gsub(/%s/) { |m| self.first.to_sql }.gsub(/:(\d+)\b/) { |m|
+          arguments[$1.to_i - 1].to_sql
+        }
+      end
     end
   end
 end

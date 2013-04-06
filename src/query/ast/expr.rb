@@ -100,11 +100,11 @@ module Query
         self.to_query_string(false)
       end
 
-      def to_sql(tables, ctx)
+      def to_sql
         if self.operator.unary?
-          "#{operator.to_sql} #{self.arguments.first.to_sql(tables, ctx)}"
+          "#{operator.to_sql} #{self.arguments.first.to_sql}"
         else
-          self.arguments.map { |a| a.to_sql(tables, ctx) }.join(operator.to_sql)
+          self.arguments.map { |a| a.to_sql }.join(operator.to_sql)
         end
       end
 

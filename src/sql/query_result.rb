@@ -63,7 +63,7 @@ module Sql
       return nil unless @result
       fieldmap = @query.row_to_fieldmap(@result)
       fieldmap =
-        add_extra_fields_to_xlog_record(@query.extra_fields, fieldmap)
+        add_extra_fields_to_xlog_record(@query.extra, fieldmap)
       fieldmap
     end
   end

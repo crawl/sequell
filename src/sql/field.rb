@@ -173,7 +173,7 @@ module Sql
       @prefix == prefix
     end
 
-    def to_sql(tables=nil, ctx=nil)
+    def to_sql
       unless @table
         raise "Attempt to use unresolved field #{self} in a SQL statement"
       end

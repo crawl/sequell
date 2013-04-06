@@ -189,7 +189,7 @@ module Sql
     end
 
     def annotated_value(field, value)
-      "#{field.display}=#{value_string(value, field)}"
+      "#{field}=#{value_string(value, field)}"
     end
 
     def format_value(v, field=nil)

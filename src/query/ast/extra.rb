@@ -18,6 +18,18 @@ module Query
         true
       end
 
+      def type
+        expr.type
+      end
+
+      def aggregate?
+        expr.aggregate?
+      end
+
+      def simple_field?
+        expr.kind == :field
+      end
+
       def desc?
         !asc?
       end
@@ -32,6 +44,10 @@ module Query
 
       def to_s
         (asc? ? '-' : '') + expr.to_s
+      end
+
+      def to_sql
+        expr.to_sql
       end
     end
   end

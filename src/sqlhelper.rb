@@ -110,12 +110,10 @@ def sql_parse_query(default_nick, query_text)
   Query::ListgameQuery.parse(default_nick, query_text).query_list
 end
 
-def add_extra_fields_to_xlog_record(extra_fields, xlog_record)
-  if extra_fields && !extra_fields.empty? && xlog_record
+def add_extra_fields_to_xlog_record(extra, xlog_record)
+  if extra && !extra.empty? && xlog_record
     context = Sql::QueryContext.context
-    xlog_record['extra'] = extra_fields.fields.map { |f|
-      context.value_key?(f.field.name) ? context.value_field.name : f.field.to_s
-    }.join(",")
+    xlog_record['extra'] = extra.fields.map(&:to_s).join(',')
   end
   xlog_record
 end

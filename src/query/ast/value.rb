@@ -21,7 +21,7 @@ module Query
         @value.to_s
       end
 
-      def to_sql(*args)
+      def to_sql
         '?'
       end
 

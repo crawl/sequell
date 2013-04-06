@@ -19,6 +19,8 @@ module Query
         STDERR.puts("Fixing: #{ast}")
         ast.game_number = -1
 
+        fix_value_fields!
+
         ast.transform_nodes! { |node|
           kill_meta_nodes(node)
         }
@@ -34,6 +36,23 @@ module Query
         ast.transform! { |node|
           collapse_empty_nodes(node)
         }
+      end
+
+      def fix_value_fields!
+        values = []
+        ast.head.map_fields { |field|
+          if field.value_key?
+            values << field.name
+            Sql::Field.field(@ctx.value_field)
+          else
+            field
+          end
+        }
+        unless values.empty?
+          ast.head << Expr.and(*values.map { |v|
+              Expr.field_predicate('=', @ctx.key_field, v)
+            })
+        end
       end
 
       def kill_meta_nodes(node)

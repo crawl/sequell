@@ -13,6 +13,10 @@ module Query
         @arguments.first
       end
 
+      def type
+        expr.type
+      end
+
       def reverse?
         @ordering == '-'
       end
@@ -33,8 +37,8 @@ module Query
         [@ordering, expr.to_s, @percentage && '%'].select { |x| x }.join('')
       end
 
-      def to_sql(*args)
-        expr.to_sql(*args)
+      def to_sql
+        expr.to_sql
       end
     end
   end

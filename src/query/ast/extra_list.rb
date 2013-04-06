@@ -15,6 +15,14 @@ module Query
         true
       end
 
+      def fields
+        arguments
+      end
+
+      def aggregate?
+        arguments.all? { |a| a.aggregate? }
+      end
+
       def to_s
         "x=" + arguments.map(&:to_s).join(',')
       end
