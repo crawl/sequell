@@ -29,11 +29,11 @@ module Grammar
     }
 
     rule(:body_expr) {
-      parenthesized_body | body
+      parenthesized_body | body_term
     }
 
     rule(:parenthesized_body) {
-      (str("!") >> parenthesized_body).as(:negated) |
+      (str("!") >> space? >> parenthesized_body).as(:negated) |
         parenthesized_body_unprefixed
     }
 
@@ -42,19 +42,8 @@ module Grammar
        space? >> str("))")
     }
 
-    rule(:body) {
-      keywords >> space >> query_expressions |
-        keywords |
-        query_expressions
-    }
-
-    rule(:keywords) {
-      keyword_expr.as(:keyword_expr) >>
-      (space >> keyword_expr.as(:keyword_expr)).repeat
-    }
-
-    rule(:query_expressions) {
-      query_expression >> (space >> query_expression).repeat
+    rule(:body_term) {
+      keyword_expr.as(:keyword_expr) | query_expression
     }
 
     rule(:query_expression) {

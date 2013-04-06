@@ -13,7 +13,7 @@ module Grammar
 
     rule(:option) {
       (str("-") >> option_name >>
-        (str(":") >> option_argument).repeat.as(:arguments)).as(:option)
+        (str(":") >> option_argument.as(:arg)).repeat).as(:option)
     }
 
     rule(:option_name) {
@@ -61,15 +61,15 @@ module Grammar
 
     rule(:extra_term) {
       query_fn(str("extra") | str("x"),
-        ordered_field_expression_list.as(:extra))
+        extra_field_expression_list.as(:extra))
     }
 
     def comma_separated(expr)
       expr >> (space? >> str(",") >> space? >> expr).repeat
     end
 
-    rule(:ordered_field_expression_list) {
-      comma_separated(ordered_field_expr)
+    rule(:extra_field_expression_list) {
+      comma_separated(extra_field_expr)
     }
 
     rule(:ordered_group_expression_list) {
@@ -92,8 +92,8 @@ module Grammar
       ordered_expr(str(".").as(:sort_group_expr) | field_expr)
     }
 
-    rule(:ordered_field_expr) {
-      ordered_expr(field_expr)
+    rule(:extra_field_expr) {
+      ordered_expr(field_expr).as(:extra_expr)
     }
 
     rule(:term_field_expr) {

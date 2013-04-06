@@ -7,6 +7,8 @@ require 'query/ast/keyword'
 require 'query/ast/query_ast'
 require 'query/ast/summary'
 require 'query/ast/summary_list'
+require 'query/ast/extra'
+require 'query/ast/extra_list'
 require 'query/nick_expr'
 require 'sql/field'
 
@@ -155,6 +157,16 @@ module Query
         Summary.new(Sql::Field.field(field.to_s), ordering.to_s,
                     percentage.to_s)
       }
+
+      rule(extra_expr: {
+          ordering: simple(:ordering),
+          field: { identifier: simple(:field) }
+        }) {
+        Extra.new(Sql::Field.field(field.to_s), ordering.to_s)
+      }
+
+      rule(extra: sequence(:extra)) { ExtraList.new(*extra) }
+      rule(extra: simple(:extra)) { ExtraList.new(extra) }
 
       rule(summary: sequence(:summary)) {
         SummaryList.new(*summary)

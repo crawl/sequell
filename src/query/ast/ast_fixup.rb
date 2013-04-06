@@ -43,12 +43,15 @@ module Query
           ast.options << node
         when :game_number
           ast.game_number = node.value > 0 ? node.value - 1 : node.value
-        when :summary
-          # Don't cull the summary node...
+        when :summary, :extra
+          # Don't cull these nodes, cull the parent.
           return node
         when :summary_list
           raise "Too many grouping terms (extra: #{node})" if ast.summarise
           ast.summarise = node
+        when :extra_list
+          raise "Too many x=... terms (extra: #{node})" if ast.extra
+          ast.extra = node
         else
           raise "Unknown node: #{node}"
         end

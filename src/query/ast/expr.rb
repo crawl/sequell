@@ -97,7 +97,7 @@ module Query
 
       def to_s
         return '' if self.arity == 0
-        "(#{operator.to_s} " + arguments.map(&:to_s).join(' ') + ")"
+        self.to_query_string
       end
 
       def to_sql(tables, ctx)
