@@ -52,6 +52,7 @@ module Query
     attr_reader :nick
 
     def initialize(nick, negated=false)
+      nick = Query::AST::Value.value(nick)
       super(negated ? :'!=' : :'=', Sql::Field.field('name'), nick)
       @nick = nick
       @negated = negated

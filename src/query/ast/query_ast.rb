@@ -27,7 +27,11 @@ module Query
         @nick = ASTWalker.find(@head) { |node|
           node.nick.value if node.is_a?(NickExpr)
         }
-        @nick ||= '.'
+
+        unless @nick
+          @nick = '.'
+          @head << ::Query::NickExpr.nick('.')
+        end
       end
 
       def add_option(option)
@@ -40,7 +44,7 @@ module Query
       end
 
       def head
-        @head || Expr.and()
+        @head ||= Expr.and()
       end
 
       def summary?

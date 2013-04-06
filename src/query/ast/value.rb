@@ -5,6 +5,11 @@ module Query
     class Value < Term
       attr_accessor :value
 
+      def self.value(v)
+        return v if v.is_a?(self)
+        self.new(v)
+      end
+
       def initialize(value)
         @value = value.to_s
       end

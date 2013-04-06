@@ -203,7 +203,7 @@ module Sql
 
     def select_id(with_sorts=false, single_record_index=0)
       id_field = Sql::Field.field('id')
-      id_sql = resolve_field(id_field, @count_tables).to_sql(@count_tables, @ctx)
+      id_sql = resolve_field(id_field, @count_tables).to_sql
       "SELECT #{id_sql} FROM #{@count_tables.to_sql} " +
         "#{where(@count_pred, with_sorts)} #{limit_clause(single_record_index)}"
     end
