@@ -14,8 +14,8 @@ module Query
         @head = head || Expr.and()
         @tail = tail
 
-        @head_str = @head.to_query_string
-        @tail_str = @tail && @tail.to_query_string
+        @head_str = @head.to_query_string(false)
+        @tail_str = @tail && @tail.to_query_string(false)
 
         @filter = filter
         @options = []
@@ -82,9 +82,9 @@ module Query
       def to_s
         pieces = [@context.to_s]
         pieces << @nick if @nick
-        pieces << @head.to_s
+        pieces << @head.to_query_string(false)
         pieces << @summarise.to_s if summary?
-        pieces << "/" << @tail.to_s if @tail
+        pieces << "/" << @tail.to_query_string(false) if @tail
         pieces << @filter.to_s if @filter
         pieces.select { |x| !x.empty? }.join(' ')
       end
