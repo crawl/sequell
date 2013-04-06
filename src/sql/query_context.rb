@@ -106,8 +106,8 @@ module Sql
       end
     end
 
-    def table
-      GAME_PREFIXES[GameContext.game] + @table
+    def table(game=GameContext.game)
+      GAME_PREFIXES[game] + @table
     end
 
     def field_table(field)

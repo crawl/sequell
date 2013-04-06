@@ -37,6 +37,11 @@ module Query
       end
 
       def kill_meta_nodes(node)
+        if node.field_value_predicate? && node.field === 'game'
+          ast.game = node.value
+          return nil
+        end
+
         return node unless node.meta?
         case node.kind
         when :option

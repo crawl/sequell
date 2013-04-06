@@ -30,6 +30,7 @@ require 'crawl/branch_set'
 require 'crawl/gods'
 require 'crawl/config'
 require 'string_fixup'
+require 'game_context'
 
 include Tourney
 include HenzellConfig
@@ -65,28 +66,6 @@ end
 SQL_CONFIG = Sql::Config.new(CFG)
 
 DB_NICKS = { }
-
-module GameContext
-  @@game = GAME_TYPE_DEFAULT
-
-  def self.with_game(game)
-    begin
-      old_game = @@game
-      @@game = game
-      yield
-    ensure
-      @@game = old_game
-    end
-  end
-
-  def self.game=(game)
-    @@game = game
-  end
-
-  def self.game
-    @@game
-  end
-end
 
 CTX_LOG =
   Sql::QueryContext.new(SQL_CONFIG, '!lg', 'logrecord', 'game', nil,

@@ -3,14 +3,16 @@ require 'query/ast/ast_walker'
 module Query
   module AST
     class QueryAST
-      attr_accessor :context, :head, :tail, :filter
+      attr_accessor :context, :context_name, :head, :tail, :filter
       attr_accessor :extra, :summarise, :options, :sorts
-      attr_accessor :game_number, :nick
+      attr_accessor :game_number, :nick, :game
 
       attr_reader :head_str, :tail_str
 
-      def initialize(context, head, tail, filter)
-        @context = context
+      def initialize(context_name, head, tail, filter)
+        @game = GameContext.game
+        @context_name = context_name.to_s
+        @context = Sql::QueryContext.named(@context_name)
         @head = head || Expr.and()
         @tail = tail
 
@@ -82,7 +84,7 @@ module Query
       end
 
       def with_context(&block)
-        Sql::QueryContext.named(self.context).with(&block)
+        self.context.with(&block)
       end
 
       def full_tail
@@ -90,9 +92,9 @@ module Query
       end
 
       def to_s
-        pieces = [@context.to_s]
+        pieces = [context_name]
         pieces << @nick if @nick
-        pieces << @head.to_query_string(false)
+        pieces << head.to_query_string(false)
         pieces << @summarise.to_s if summary?
         pieces << "/" << @tail.to_query_string(false) if @tail
         pieces << @filter.to_s if @filter

@@ -9,6 +9,7 @@ require 'query/ast/summary'
 require 'query/ast/summary_list'
 require 'query/ast/extra'
 require 'query/ast/extra_list'
+require 'query/ast/field'
 require 'query/ast/funcall'
 require 'query/nick_expr'
 require 'sql/field'
@@ -84,7 +85,7 @@ module Query
       }
 
       rule(field: { identifier: simple(:field) }) {
-        Sql::Field.field(field.to_s)
+        Field.new(field)
       }
 
       rule(function_call: {
@@ -134,7 +135,7 @@ module Query
           op: simple(:op),
           value: simple(:value)
         }) {
-        Expr.new(op.to_s, Sql::Field.field(field.to_s), Value.new(value.to_s))
+        Expr.new(op.to_s, Field.new(field), Value.new(value.to_s))
       }
 
       rule(
@@ -162,13 +163,13 @@ module Query
       }
 
       rule(field: { identifier: simple(:fieldname) }) {
-        { field: Sql::Field.field(fieldname.to_s) }
+        { field: Field.new(fieldname) }
       }
 
       rule(ordering: simple(:ordering),
            field: { identifier: simple(:field) },
            percentage: simple(:percentage)) {
-        Summary.new(Sql::Field.field(field.to_s), ordering.to_s,
+        Summary.new(Field.new(field), ordering.to_s,
                     percentage.to_s)
       }
 

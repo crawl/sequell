@@ -50,6 +50,10 @@ module Query
         map_kinds(ast, :field, &block)
       end
 
+      def self.map_raw_fields(ast, &block)
+        map_kinds(ast, :raw_field, &block)
+      end
+
       def self.each_field(ast, &block)
         each_kind(ast, :field, &block)
       end

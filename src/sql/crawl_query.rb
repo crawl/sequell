@@ -13,7 +13,8 @@ module Sql
 
     def initialize(ast, predicates, extra_fields, nick, argstr=nil)
       @ast = ast
-      @tables = QueryTables.new(QueryContext.context.table)
+      @ctx = @ast.context
+      @tables = QueryTables.new(@ctx.table(@ast.game))
       @original_pred = predicates
       @pred = predicates
       @nick = nick
@@ -25,8 +26,6 @@ module Sql
       @summary_sort = nil
       @raw = nil
       @joins = false
-      @ctx = QueryContext.context
-      @game = GameContext.game
 
       resolve_predicate_columns(@pred)
 
@@ -77,7 +76,7 @@ module Sql
     end
 
     def with_contexts
-      GameContext.with_game(@game) do
+      GameContext.with_game(ast.game) do
         @ctx.with do
           yield
         end

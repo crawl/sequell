@@ -149,7 +149,7 @@ module Query
   KeywordMatcher.matcher(:game_type) {
     game = arg.downcase
     if SQL_CONFIG.games.index(game)
-      Expr.new(:'=', Sql::Field.field('game'), game)
+      Query::AST::Expr.new(:'=', Sql::Field.field('game'), game)
     end
   }
 

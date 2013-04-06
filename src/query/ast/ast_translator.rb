@@ -22,6 +22,10 @@ module Query
       end
 
       def translate_ast(ast)
+        ast = ASTWalker.map_raw_fields(ast) { |field|
+          Sql::Field.field(field.name)
+        }
+
         ast = ASTWalker.map_keywords(ast) { |kw|
           ::Query::QueryKeywordParser.parse(kw.value)
         }
