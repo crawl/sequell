@@ -154,17 +154,14 @@ def sql_find_game(default_nick, args, context=CTX_LOG)
 end
 
 def sql_show_game(default_nick, args)
-  original_args = args.map { |a| a.dup }
-  args, opts = extract_options(args, 'graph')
-
+  original_args = args.dup
   query_group = sql_parse_query(default_nick, args)
   query_group.with_context do
     q = query_group.primary_query
 
     graph_formatter =
-      if opts[:graph]
-        Query::SummaryGraphBuilder.build(query_group,
-                                         opts[:graph],
+      if q.option(:graph)
+        Query::SummaryGraphBuilder.build(query_group, q.option(:graph),
                                          original_args)
       end
 

@@ -13,6 +13,10 @@ module Sql
         } ]
     end
 
+    def [](name)
+      self.function(name)
+    end
+
     def function(function_name)
       if function_name =~ /^trunc(\d+)$/
         truncate_slab = $1.to_i

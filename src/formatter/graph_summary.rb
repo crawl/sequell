@@ -12,7 +12,7 @@ module Formatter
     def initialize(query_group, title, options)
       @query_group = query_group
       @title = title
-      @options = options.is_a?(String) ? options.split(':') : []
+      @options = options.arguments
       @type = chart_type(@options[0])
 
       check_sanity!

@@ -32,7 +32,11 @@ module Query
         Sql::Type.type('*')
       end
 
-      def to_query_string
+      def unit
+        self.type.unit
+      end
+
+      def to_query_string(parenthesize=false)
         self.to_s
       end
 

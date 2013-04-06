@@ -93,7 +93,7 @@ module Grammar
     }
 
     rule(:extra_field_expr) {
-      ordered_expr(field_expr).as(:extra_expr)
+      ordered_expr(field_expr.as(:extra_term)).as(:extra_expr)
     }
 
     rule(:term_field_expr) {

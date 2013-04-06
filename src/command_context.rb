@@ -21,12 +21,13 @@ class CommandContext
     command_words[0]
   end
 
-  attr_accessor :arguments, :opts
+  attr_accessor :arguments, :opts, :command_line
 
   def initialize(args=nil, command=nil)
     @original_arguments = args || self.class.command_arguments
     @arguments = @original_arguments.dup
     @command = command || self.class.command
+    @command_line = self.class.command_line
     @opts = { }
   end
 

@@ -34,12 +34,12 @@ sql_show_game(ctx.default_nick, ctx.command_line) do |res|
     report_game_ttyrecs(res.n, res.game)
   elsif res.option(:tv)
     game = res.game
-    if TV.seek_to_game_end?
+    if res.option(:tv).seek_to_game_end?
       game['end'] = res.milestone_game && res.milestone_game['end']
     end
-      TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1])
-    else
-      print_game_result(res)
-    end
+    TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1],
+      res.option(:tv))
+  else
+    print_game_result(res)
   end
 end

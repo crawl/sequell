@@ -33,7 +33,7 @@ module Query
           STDERR.puts("Resolved AST: #{translated_ast}")
 
           fixed_ast = AST::ASTFixup.result(default_nick, translated_ast)
-          STDERR.puts("Fixed AST: #{fixed_ast}")
+          STDERR.puts("Fixed AST: #{fixed_ast}, head: #{fixed_ast.head}")
           fixed_ast
         }
       }

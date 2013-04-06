@@ -61,7 +61,8 @@ module Query
       self.class.new(@nick, @negated)
     end
 
-    def to_query_string
+    def to_query_string(wrapping_parens=nil)
+      return nil if @nick.value == '*'
       @nick
     end
   end

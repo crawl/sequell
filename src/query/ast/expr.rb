@@ -97,7 +97,7 @@ module Query
 
       def to_s
         return '' if self.arity == 0
-        self.to_query_string
+        self.to_query_string(false)
       end
 
       def to_sql(tables, ctx)
@@ -111,12 +111,13 @@ module Query
       def to_query_string(wrapping_parens=true)
         if self.operator.unary?
           "#{operator.display_string}#{self.arguments.first.to_query_string}"
-        elsif wrapping_parens && self.operator.arity == 0 && self.arity > 1
-          "((" + self.arguments.map(&:to_query_string).join(
-            "#{operator.display_string}") + "))"
         else
-          self.arguments.map(&:to_query_string).join(
-            "#{operator.display_string}")
+          wrap_with_parens = wrapping_parens && self.arity > 1
+          text = arguments.map { |a|
+            a.to_query_string(self.operator > a.operator)
+          }.compact.join(operator.display_string)
+          text = "((#{text}))" if wrap_with_parens
+          text
         end
       end
 

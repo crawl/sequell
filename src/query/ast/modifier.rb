@@ -20,7 +20,7 @@ module Query
         "[#{modifier}:#{value}]"
       end
 
-      def to_query_string
+      def to_query_string(paren=false)
         value.to_s
       end
     end

@@ -2,6 +2,8 @@ require 'ostruct'
 
 module Query
   class Operator
+    include Comparable
+
     REGISTRY = { }
 
     def self.op(name)
@@ -25,6 +27,10 @@ module Query
       @sql_operator = sql_operator
       @options = OpenStruct.new(options)
       self.class.register(name, self)
+    end
+
+    def precedence
+      @options.precedence || 0
     end
 
     def sql_operator
@@ -81,6 +87,11 @@ module Query
       self == '='
     end
 
+    def <=> (other)
+      return 1 unless other
+      self.precedence <=> self.class.op(other).precedence
+    end
+
     def == (other)
       @name.to_s == other.to_s
     end
@@ -98,7 +109,7 @@ module Query
     end
 
     def display_string
-      @options.display_string || @name
+      (@options.display_string || @name).to_s
     end
 
     def to_s

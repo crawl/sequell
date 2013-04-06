@@ -9,6 +9,7 @@ require 'query/ast/summary'
 require 'query/ast/summary_list'
 require 'query/ast/extra'
 require 'query/ast/extra_list'
+require 'query/ast/funcall'
 require 'query/nick_expr'
 require 'sql/field'
 
@@ -86,6 +87,19 @@ module Query
         Sql::Field.field(field.to_s)
       }
 
+      rule(function_call: {
+          function_name: simple(:name),
+          arguments: simple(:argument)
+        }) {
+        Funcall.new(name.to_s, argument)
+      }
+      rule(function_call: {
+          function_name: simple(:name),
+          arguments: sequence(:arguments)
+        }) {
+        Funcall.new(name.to_s, *arguments)
+      }
+
       rule(and: sequence(:expressions)) {
         Expr.new(:and, *expressions)
       }
@@ -160,9 +174,9 @@ module Query
 
       rule(extra_expr: {
           ordering: simple(:ordering),
-          field: { identifier: simple(:field) }
+          extra_term: simple(:term)
         }) {
-        Extra.new(Sql::Field.field(field.to_s), ordering.to_s)
+        Extra.new(term, ordering.to_s)
       }
 
       rule(extra: sequence(:extra)) { ExtraList.new(*extra) }

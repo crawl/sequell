@@ -31,8 +31,8 @@ module Sql
       @return_type = Type.type(@cfg['return'] || '*')
     end
 
-    def return_type(field)
-      find_return_type(field).with_unit(unit(field))
+    def return_type(expr)
+      find_return_type(expr).with_unit(unit(expr))
     end
 
     def preserve_unit?
@@ -56,14 +56,12 @@ module Sql
     end
 
   private
-    def find_return_type(field)
-      expr = Sql::FieldExpr.expr(field)
+    def find_return_type(expr)
       return @return_type unless @return_type.any?
       expr.type
     end
 
-    def unit(field)
-      expr = Sql::FieldExpr.expr(field)
+    def unit(expr)
       return expr.unit if preserve_unit?
       @unit
     end
