@@ -27,16 +27,17 @@ module Sql
       @raw = nil
       @joins = false
 
-      resolve_predicate_columns(@pred)
+      with_contexts {
+        resolve_predicate_columns(@pred)
+        @count_pred = @pred.dup
+        @summary_pred = @pred.dup
 
-      @count_pred = @pred.dup
-      @summary_pred = @pred.dup
+        @count_tables = @tables.dup
+        @summary_tables = @tables.dup
 
-      @count_tables = @tables.dup
-      @summary_tables = @tables.dup
-
-      resolve_sort_fields(@pred, @tables)
-      @query_fields = resolve_query_fields
+        resolve_sort_fields(@pred, @tables)
+        @query_fields = resolve_query_fields
+      }
     end
 
     def option(key)
