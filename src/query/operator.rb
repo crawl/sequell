@@ -47,6 +47,10 @@ module Query
       !@options.non_commutative
     end
 
+    def can_coalesce?
+      commutative? && arity == 0
+    end
+
     def argtypes
       @argtypes ||=
         (if @options.argtype.is_a?(Array)
@@ -98,7 +102,7 @@ module Query
     end
 
     def to_s
-      @name
+      @name.to_s
     end
   end
 end

@@ -67,7 +67,7 @@ module Query
       def collapse_empty_nodes(ast)
         return nil unless ast
         lifted_nodes = []
-        liftup_possible = ast.operator && ast.operator.commutative?
+        liftup_possible = ast.operator && ast.operator.can_coalesce?
         ast.arguments = ast.arguments.map { |child|
           child = collapse_empty_nodes(child)
           if child && liftup_possible && child.operator == ast.operator

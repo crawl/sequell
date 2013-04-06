@@ -40,7 +40,7 @@ module Query
     end
 
     def reexpand(node)
-      ASTTranslator.apply(node)
+      ::Query::AST::ASTTranslator.apply(node)
     end
 
     def expand_field_value!
