@@ -29,6 +29,14 @@ module Query
           ast.sorts << Query::Sort.new(@ctx.defsort)
         end
 
+        if ast.filter
+          ast.filter.each_node { |node|
+            if node.kind == :filter_term
+              node.validate_filter!(ast.extra)
+            end
+          }
+        end
+
         ast.transform_nodes! { |node|
           collapse_negated_node(node)
         }

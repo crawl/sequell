@@ -117,10 +117,11 @@ module Sql
         end
       end
 
-      filters = @query_group.filters
-      if filters
+      filter = @query_group.filter
+      STDERR.puts("Query group filters: #{filter}")
+      if filter
         raw_values = raw_values.find_all do |row|
-          filters.all? { |f| f.matches?(row) }
+          filter.filter_value(@extra, row)
         end
       end
 
@@ -131,7 +132,7 @@ module Sql
       end
 
       @sorted_row_values = raw_values
-      if filters && !filters.empty?
+      if filter
         @counts = count_filtered_values(@sorted_row_values)
       end
     end

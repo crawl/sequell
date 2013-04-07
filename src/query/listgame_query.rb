@@ -52,6 +52,8 @@ module Query
       list = ::Sql::QueryList.new
       list << primary_query
       list << secondary_query if compound_query?
+      list.filter = ast.filter
+      list.sorts = ast.sorts
       list
     end
   end

@@ -12,6 +12,7 @@ require 'query/ast/extra_list'
 require 'query/ast/field'
 require 'query/ast/filter_expr'
 require 'query/ast/filter_term'
+require 'query/ast/filter_value'
 require 'query/ast/funcall'
 require 'query/nick_expr'
 require 'query/sort'
@@ -207,7 +208,7 @@ module Query
         FilterExpr.predicate(
           op,
           FilterTerm.term(filter_expr.to_s),
-          value.to_s)
+          FilterValue.new(value.to_s))
       }
 
       rule(filter_and: sequence(:filter_expr)) {
