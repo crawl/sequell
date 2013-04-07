@@ -29,7 +29,9 @@ module Query
           @head << ::Query::NickExpr.nick('.')
         end
 
-        @desc = @head.without { |node| node.is_a?(Query::NickExpr) }.to_s.strip
+        @desc = @head.without { |node|
+          node.is_a?(Query::NickExpr) || node.meta?
+        }.to_s.strip
       end
 
       def description(default_nick=Query::NickExpr.default_nick)

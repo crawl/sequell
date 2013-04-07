@@ -6,6 +6,10 @@ module Query
       def initialize(keyword)
         super(:keyword, keyword)
       end
+
+      def meta?
+        false
+      end
     end
   end
 end
