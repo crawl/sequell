@@ -11,7 +11,7 @@ module Sql
     attr_accessor :summary_sort, :table, :game
     attr_reader   :query_fields
 
-    def initialize(ast, predicates, nick, argstr=nil)
+    def initialize(ast, predicates, nick)
       @ast = ast
       @ctx = @ast.context
       @tables = QueryTables.new(@ctx.table(@ast.game))
@@ -20,7 +20,7 @@ module Sql
       @nick = nick
       @num = @ast.game_number
       @extra = @ast.extra
-      @argstr = "(" + (argstr || ast.head_str) + ")"
+      @argstr = ast.description(nick)
       @values = nil
       @random_game = nil
       @summary_sort = nil

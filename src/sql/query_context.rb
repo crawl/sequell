@@ -5,6 +5,10 @@ module Sql
     CONTEXT_MAP = { }
     @@global_context = nil
 
+    def self.names
+      CONTEXT_MAP.keys.sort
+    end
+
     def self.named(name)
       CONTEXT_MAP[name] || self.context
     end

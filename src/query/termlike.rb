@@ -109,5 +109,9 @@ module Query
     def each_node(&block)
       Query::AST::ASTWalker.each_node(self, &block)
     end
+
+    def without(&filter)
+      Query::AST::ASTWalker.map_nodes(self.dup, filter) { nil }
+    end
   end
 end

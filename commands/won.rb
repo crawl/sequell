@@ -2,9 +2,7 @@
 
 require 'helper'
 require 'sqlhelper'
-require 'query/query_string'
-require 'query/game_type_extractor'
-require 'query/query_builder'
+require 'query/listgame_query'
 require 'query/nick_resolver'
 
 help("Shows the number of games won. Usage:" +
@@ -52,10 +50,10 @@ begin
   if num == 0
     winning_query = query + 'ktyp=winning'
     game_query = query.dup
-    q = Query::QueryBuilder.build(ARGV[1], winning_query,
-                                  CTX_LOG, nil, true).reverse
+    q =
+      Query::ListgameQuery.parse(ARGV[1], winning_query).query.reverse
     game_count_query =
-      Query::QueryBuilder.build(ARGV[1], game_query, CTX_LOG, nil, true)
+      Query::ListgameQuery.parse(ARGV[1], game_query).query
 
     count = sql_count_rows_matching(game_count_query)
     desc = game_count_query.argstr
@@ -64,7 +62,7 @@ begin
       puts "Cannot combine * with win-skip count."
       exit 0
     end
-    q = Query::QueryBuilder.build(ARGV[1], query, CTX_LOG, nil, true).reverse
+    q = Query::ListgameQuery.parse(ARGV[1], query).query.reverse
     desc = q.argstr
     count = 0
   end

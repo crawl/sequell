@@ -11,9 +11,7 @@ module Grammar
         nick_selector.as(:nick)
     }
     rule(:nick_selector) {
-      (str("@") >> match["@:"].repeat >> nick_atom_loose) |
-      (str(":") >> match["@:"].repeat >> nick_atom_loose) |
-      nick_atom_strict
+      (match["@:"].repeat(1) >> nick_atom_loose) | nick_atom_strict
     }
     rule(:nick_atom_loose) {
       nick_self | nick_any | nick_name_loose
@@ -24,7 +22,7 @@ module Grammar
     rule(:nick_self) { str(".") }
     rule(:nick_any)  { str("*") }
     rule(:nick_name_strict) {
-      nick_char.repeat
+      nick_char.repeat(1)
     }
     rule(:nick_name_loose) { nick_char.repeat(1) }
     rule(:nick_char) {

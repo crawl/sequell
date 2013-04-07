@@ -14,7 +14,7 @@ module Query
       end
 
       def build
-        ::Sql::CrawlQuery.new(@ast, @tree, nil, @nick)
+        ::Sql::CrawlQuery.new(@ast, @tree, @nick)
       end
     end
   end

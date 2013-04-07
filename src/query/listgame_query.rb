@@ -24,6 +24,8 @@ module Query
       @primary_query ||= build_primary_query
     end
 
+    alias :query :primary_query
+
     def compound_query?
       self.ast.compound_query?
     end

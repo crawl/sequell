@@ -25,6 +25,7 @@ module Query
         head: simple(:head),
         tail: simple(:tail),
         filter: simple(:filter)) {
+        STDERR.puts("Creating QueryAST: head: #{head}, tail: #{tail}")
         QueryAST.new(context, head, tail, filter)
       }
 

@@ -1,3 +1,5 @@
+require 'sql/query_context'
+
 module Query
   class ListgameParser
     def self.fragment(fragment)
@@ -21,7 +23,9 @@ module Query
       require 'query/ast/ast_fixup'
       require 'grammar/query'
 
-      raw_parse = ::Grammar::Query.new.parse(query.to_s)
+      query_text = query_with_context(query.to_s)
+      STDERR.puts("Parsing query: '#{query_text}'")
+      raw_parse = ::Grammar::Query.new.parse(query_text)
       STDERR.puts("raw_parse: #{raw_parse.inspect}")
 
       ast = AST::ASTBuilder.new.apply(raw_parse)
@@ -37,6 +41,13 @@ module Query
           fixed_ast
         }
       }
+    end
+
+    def self.query_with_context(query, context='!lg')
+      return query if Sql::QueryContext.names.any? { |name|
+        query.index(name + ' ') == 0
+      }
+      context + ' ' + query
     end
   end
 end

@@ -1,4 +1,5 @@
 require 'query/ast/ast_walker'
+require 'query/nick_expr'
 
 module Query
   module AST
@@ -7,17 +8,12 @@ module Query
       attr_accessor :extra, :summarise, :options, :sorts
       attr_accessor :game_number, :nick, :game
 
-      attr_reader :head_str, :tail_str
-
       def initialize(context_name, head, tail, filter)
         @game = GameContext.game
         @context_name = context_name.to_s
         @context = Sql::QueryContext.named(@context_name)
         @head = head || Expr.and()
         @tail = tail
-
-        @head_str = @head.to_query_string(false)
-        @tail_str = @tail && @tail.to_query_string(false)
 
         @filter = filter
         @options = []
@@ -32,6 +28,16 @@ module Query
           @nick = '.'
           @head << ::Query::NickExpr.nick('.')
         end
+
+        @desc = @head.without { |node| node.is_a?(Query::NickExpr) }.to_s.strip
+      end
+
+      def description(default_nick=Query::NickExpr.default_nick)
+        text = (@nick == '.' ? default_nick : @nick).dup
+        if !@desc.empty?
+          text << " (#{@desc})"
+        end
+        text
       end
 
       def add_option(option)
