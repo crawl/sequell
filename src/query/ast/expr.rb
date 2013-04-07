@@ -1,5 +1,6 @@
 require 'query/operators'
 require 'query/ast/term'
+require 'query/ast/value'
 require 'sql/field'
 
 module Query
@@ -7,6 +8,10 @@ module Query
     class Expr < Term
       def self.and(*arguments)
         self.new(Query::Operator.op(:and), *arguments)
+      end
+
+      def self.or(*arguments)
+        self.new(Query::Operator.op(:or), *arguments)
       end
 
       def self.field_predicate(op, field, value)
@@ -105,6 +110,8 @@ module Query
         return '' if arity == 0
         if self.operator.unary?
           "(#{operator.to_sql} (#{self.arguments.first.to_sql}))"
+        elsif self.in_clause_transformable?
+          self.in_clause_sql
         else
           paren_wrapped(
             arguments.map { |a| a.to_sql }.join(operator.to_sql),
@@ -112,10 +119,43 @@ module Query
         end
       end
 
+      def in_clause_transformable?
+        return unless self.first && self.first.field_value_predicate?
+
+        first_field = self.first.field
+        first_op = self.first.operator
+        return unless first_op.equality?
+
+        wanted_op = first_op.equal? ? :or : :and
+        self.operator == wanted_op &&
+          self.arguments.all? { |arg|
+            arg.field_value_predicate? && arg.field == first_field &&
+            arg.operator == first_op
+          }
+      end
+
+      def in_clause_sql
+        field = self.first.field
+        values = self.arguments.map { |x| '?' }.join(', ')
+        op = self.first.operator.equal? ? 'IN' : 'NOT IN'
+        "#{field.to_sql} #{op} (#{values})"
+      end
+
+      def to_in_clause_query_string
+        field = self.first.field
+        op = self.first.operator
+        value = self.arguments.map(&:value).join('|')
+        "#{field}#{op}#{value}"
+      end
+
       def to_query_string(wrapping_parens=true)
         if self.operator.unary?
           "#{operator.display_string}#{self.arguments.first.to_query_string}"
         else
+          if self.in_clause_transformable?
+            return self.to_in_clause_query_string
+          end
+
           wrap_with_parens = wrapping_parens && self.arity > 1
           text = arguments.map { |a|
             a.to_query_string(self.operator > a.operator)

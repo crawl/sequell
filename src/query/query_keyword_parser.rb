@@ -1,5 +1,6 @@
 require 'query/keyword_matcher'
 require 'query/keyword_defs'
+require 'query/operators'
 require 'sql/errors'
 
 module Query
