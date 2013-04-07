@@ -30,7 +30,12 @@ module Query
         @value.to_s
       end
 
+      def null?
+        value.nil?
+      end
+
       def to_sql
+        return 'NULL' if null?
         '?'
       end
 

@@ -28,6 +28,22 @@ operators:
     arity: 1
     precedence: 100
 
+  - op: is
+    display_string: '=:'
+    negated: is_not
+    argtype: '*'
+    result: '!'
+    arity: 2
+    precedence: 40
+
+  - op: is_not
+    display_string: '!=:'
+    negated: is
+    argtype: '*'
+    result: '!'
+    arity: 2
+    precedence: 40
+
   - op: '='
     negated: '!='
     argtype: '*'

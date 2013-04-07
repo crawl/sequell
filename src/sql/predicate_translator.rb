@@ -35,9 +35,8 @@ module Sql
 
       @field.table = alt_table
       @field.name  = context.join_field
-      @predicate.value_expr = 'NULL'
-      @predicate.operator = Sql::Operator.op('IS')
-      @predicate.static = true
+      @predicate.value = nil
+      @predicate.operator = :is
     end
   end
 end
