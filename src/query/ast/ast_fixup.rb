@@ -97,8 +97,7 @@ module Query
           raise "Too many grouping terms (extra: #{node})" if ast.summarise
           ast.summarise = node
         when :extra_list
-          raise "Too many x=... terms (extra: #{node})" if ast.extra
-          ast.extra = node
+          ast.extra = node.merge(ast.extra)
         else
           raise "Unknown meta: #{node}"
         end

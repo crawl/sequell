@@ -316,12 +316,9 @@ def report_grouped_games_for_query(q, formatter=nil)
 end
 
 def report_grouped_games(group_by, who, args, formatter=nil)
-  q = Query::QueryBuilder.build(who, Query::QueryString.new(args),
-                                Sql::QueryContext.context, nil, true)
-  q.summarise = Sql::SummaryFieldList.new("s=#{group_by}")
-  query_group = Sql::QueryList.new
-  query_group << q
-  report_grouped_games_for_query(query_group, formatter)
+  q = Query::ListgameQuery.parse(
+    who, Query::QueryString.query(args) + " s=#{group_by}", true).query_list
+  report_grouped_games_for_query(q, formatter)
 rescue
   puts $!
   raise

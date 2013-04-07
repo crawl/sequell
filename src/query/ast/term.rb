@@ -57,6 +57,12 @@ module Query
           text
         end
       end
+
+      def == (other)
+        return false unless other && other.respond_to?(:kind)
+        return false unless self.kind == other.kind
+        operator == other.operator && arguments == other.arguments
+      end
     end
   end
 end

@@ -27,6 +27,15 @@ module Query
         arguments.all? { |a| a.aggregate? }
       end
 
+      def merge(other)
+        return self unless other
+        clone = self.dup
+        other.arguments.each { |arg|
+          clone.arguments << arg unless clone.arguments.include?(arg)
+        }
+        clone
+      end
+
       def to_s
         "x=" + arguments.map(&:to_s).join(',')
       end
