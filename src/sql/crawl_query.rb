@@ -42,6 +42,10 @@ module Sql
       }
     end
 
+    def title
+      @ast.description(@nick, context: true, meta: true, no_parens: true)
+    end
+
     def option(key)
       @ast.option(key)
     end

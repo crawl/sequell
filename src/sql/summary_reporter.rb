@@ -66,7 +66,7 @@ module Sql
 
     def group_fields
       group_by = @q.summarise
-      group_by ? group_by.fields : []
+      group_by ? group_by.arguments : []
     end
 
     def extra_fields

@@ -1,4 +1,5 @@
 require 'sql/type'
+require 'sql/type_predicates'
 require 'query/termlike'
 
 module Query
@@ -7,6 +8,7 @@ module Query
       attr_accessor :context, :arguments
 
       include ::Query::Termlike
+      include ::Sql::TypePredicates
 
       def initialize
         @arguments = []

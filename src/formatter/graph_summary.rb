@@ -85,7 +85,7 @@ module Formatter
     end
 
     def summary_key_field
-      query.summarise.fields[0]
+      query.summarise.first
     end
 
     def data_types(json)
@@ -151,7 +151,7 @@ module Formatter
       end
 
       summarise = query.summarise
-      if !summarise || summarise.fields.size > 2
+      if !summarise || summarise.arity > 2
         raise "-graph requires one or two group s=<field> terms"
       end
 

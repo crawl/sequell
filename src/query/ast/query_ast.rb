@@ -14,6 +14,7 @@ module Query
         @context_name = context_name.to_s
         @context = Sql::QueryContext.named(@context_name)
         @head = head || Expr.and()
+        @original_head = @head.dup
         @tail = tail
 
         @filter = filter
@@ -29,10 +30,6 @@ module Query
           @nick = '.'
           @head << ::Query::NickExpr.nick('.')
         end
-
-        @desc = @head.without { |node|
-          node.is_a?(Query::NickExpr) || node.meta?
-        }.to_s.strip
       end
 
       def needs_group_order?
@@ -44,12 +41,22 @@ module Query
         summarise.default_group_order
       end
 
-      def description(default_nick=Query::NickExpr.default_nick)
-        text = (@nick == '.' ? default_nick : @nick).dup
-        if !@desc.empty?
-          text << " (#{@desc})"
+      def head_desc(suppress_meta=true)
+        @original_head.without { |node|
+          node.is_a?(Query::NickExpr) || (suppress_meta && node.meta?)
+        }.to_s.strip
+      end
+
+      def description(default_nick=Query::NickExpr.default_nick,
+                      options={})
+        texts = []
+        texts << self.context_name if options[:context]
+        texts << (@nick == '.' ? default_nick : @nick).dup
+        desc = self.head_desc(!options[:meta])
+        if !desc.empty?
+          texts << (!options[:no_parens] ? "(#{desc})" : desc)
         end
-        text
+        texts.join(' ')
       end
 
       def add_option(option)

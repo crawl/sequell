@@ -38,8 +38,8 @@ module Sql
       nil
     end
 
-    def display_value(value)
-      self.type.display_value(value, self.display_format)
+    def display_value(value, format=nil)
+      self.type.display_value(value, format || self.display_format)
     end
 
     def log_value(raw_value)

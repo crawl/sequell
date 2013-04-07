@@ -139,7 +139,7 @@ def sql_show_game(default_nick, args)
     graph_formatter =
       if q.option(:graph)
         Query::SummaryGraphBuilder.build(query_group, q.option(:graph),
-                                         original_args)
+                                         q.title)
       end
 
     if q.summarise?

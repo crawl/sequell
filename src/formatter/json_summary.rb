@@ -12,7 +12,7 @@ module Formatter
         raise "JSON summary can only be used for grouped results"
       end
 
-      fields = [primary_grouping_field.name] + count_field_names
+      fields = [primary_grouping_field.to_s] + count_field_names
       extractor = self.create_data_extractor
       { :fields => fields,
         :data => self.data_rows(extractor) }
