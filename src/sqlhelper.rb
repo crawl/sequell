@@ -284,10 +284,11 @@ def sql_game_by_id(id, index, count, original_query)
   return Sql::QueryResult.none(original_query)
 end
 
-def sql_game_by_key(key)
+def sql_game_by_key(key, extra=nil)
   CTX_LOG.with do
     query = "!lg * gid=#{key}"
     q = Query::ListgameQuery.parse('.', query).primary_query
+    q.extra = extra
     r = nil
     sql_each_row_matching(q) do |row|
       r = q.row_to_fieldmap(row)

@@ -29,7 +29,8 @@ module Sql
 
     def milestone_game
       raise StandardError, "Not a milestone" unless milestone?
-      @milestone_game ||= self.game_key && sql_game_by_key(self.game_key)
+      @milestone_game ||=
+        self.game_key && sql_game_by_key(self.game_key, query.ast.extra)
     end
 
     def qualified_index
@@ -61,10 +62,7 @@ module Sql
   private
     def row_fieldmap
       return nil unless @result
-      fieldmap = @query.row_to_fieldmap(@result)
-      fieldmap =
-        add_extra_fields_to_xlog_record(@query.extra, fieldmap)
-      fieldmap
+      @query.row_to_fieldmap(@result)
     end
   end
 end

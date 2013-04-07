@@ -70,7 +70,7 @@ module Sql
       unless extras.empty?
         map['extra_values'] = extras.map { |k, v| "#{k}=#{v}" }.join(";;;;")
       end
-      map
+      add_extra_fields_to_xlog_record(self.extra, map)
     end
 
     def resolve_sort_fields(pred, tables)
