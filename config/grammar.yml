@@ -101,6 +101,7 @@ operators:
     arity: 2
     non_commutative: true
     precedence: 40
+    relational: true
 
   - op: '>='
     negated: '<'
@@ -109,6 +110,7 @@ operators:
     arity: 2
     non_commutative: true
     precedence: 40
+    relational: true
 
   - op: '>'
     negated: '<='
@@ -117,6 +119,7 @@ operators:
     arity: 2
     non_commutative: true
     precedence: 40
+    relational: true
 
   - op: '<='
     negated: '>'
@@ -125,3 +128,4 @@ operators:
     arity: 2
     non_commutative: true
     precedence: 40
+    relational: true

@@ -29,6 +29,10 @@ module Query
       self.class.register(name, self)
     end
 
+    def relational?
+      @options.relational
+    end
+
     def precedence
       @options.precedence || 0
     end

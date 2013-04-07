@@ -49,6 +49,14 @@ module Query
         return self if meta?
         raise "Unsupported operation"
       end
+
+      def paren_wrapped(text, wrap=false)
+        if wrap
+          "(#{text})"
+        else
+          text
+        end
+      end
     end
   end
 end

@@ -104,7 +104,9 @@ module Query
         if self.operator.unary?
           "(#{operator.to_sql} (#{self.arguments.first.to_sql}))"
         else
-          "(" + arguments.map { |a| a.to_sql }.join(operator.to_sql) + ")"
+          paren_wrapped(
+            arguments.map { |a| a.to_sql }.join(operator.to_sql),
+            arity > 1)
         end
       end
 

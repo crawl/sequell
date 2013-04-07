@@ -93,7 +93,7 @@ module Query
       if field === ['v', 'cv'] && op.relational? &&
           Sql::VersionNumber.version_number?(value)
         return reexpand(AST::Expr.new(op, field.resolve(field.name + 'num'),
-                                 Sql::VersionNumber.version_numberize(val)))
+                                 Sql::VersionNumber.version_numberize(value)))
       end
 
       if field === 'god'
