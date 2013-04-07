@@ -17,13 +17,14 @@ module Query
       ast
     end
 
-    def self.parse(default_nick, query)
+    def self.parse(default_nick, query, add_context=false)
       require 'query/ast/ast_builder'
       require 'query/ast/ast_translator'
       require 'query/ast/ast_fixup'
       require 'grammar/query'
 
-      query_text = query_with_context(query.to_s)
+      query_text = query.to_s
+      query_text = query_with_context(query_text) if add_context
       STDERR.puts("Parsing query: '#{query_text}'")
       raw_parse = ::Grammar::Query.new.parse(query_text)
       STDERR.puts("raw_parse: #{raw_parse.inspect}")

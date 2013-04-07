@@ -5,19 +5,20 @@ require 'query/ast/ast_query_builder'
 module Query
   # Parslet grammar backed listgame query.
   class ListgameQuery
-    def self.parse(default_nick, query)
-      self.new(default_nick, QueryString.query(query))
+    def self.parse(default_nick, query, add_context=false)
+      self.new(default_nick, QueryString.query(query), add_context)
     end
 
     attr_reader :default_nick
 
-    def initialize(default_nick, query)
+    def initialize(default_nick, query, add_context)
       @default_nick = default_nick
       @query = query
+      @add_context = add_context
     end
 
     def ast
-      @ast ||= Query::ListgameParser.parse(@default_nick, @query)
+      @ast ||= Query::ListgameParser.parse(@default_nick, @query, @add_context)
     end
 
     def primary_query

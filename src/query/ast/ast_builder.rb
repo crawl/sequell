@@ -80,7 +80,15 @@ module Query
             arguments: sequence(:args)
           }
         }) {
-        ::Query::AST::OptionBuilder.build(name, args)
+        ::Query::AST::OptionBuilder.build(name.to_s, args)
+      }
+
+      rule(term: {
+          option: {
+            option_name: simple(:name)
+          }
+        }) {
+        ::Query::AST::OptionBuilder.build(name.to_s, [])
       }
 
       rule(field_value: sequence(:value)) {

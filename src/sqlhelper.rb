@@ -121,9 +121,9 @@ end
 # Given a set of arguments of the form
 #       nick num etc
 # runs the query and returns the matching game.
-def sql_find_game(default_nick, args, context=CTX_LOG)
+def sql_find_game(default_nick, args)
   args = Query::QueryString.new(args).args
-  query_group = sql_parse_query(default_nick, args, context)
+  query_group = sql_parse_query(default_nick, args)
   query_group.with_context do
     q = query_group.primary_query
     sql_exec_query(q.num, q)
@@ -286,15 +286,12 @@ end
 
 def sql_game_by_key(key)
   CTX_LOG.with do
-    q =
-      Sql::CrawlQuery.new(
-        Query::QueryStruct.new('AND',
-          field_pred(key, '=', 'game_key')),
-          nil, '*', 1, "gid=#{key}")
-    #puts "Query: #{q.select_all}"
+    query = "!lg * gid=#{key}"
+    q = Query::ListgameQuery.parse('.', query).primary_query
     r = nil
     sql_each_row_matching(q) do |row|
       r = q.row_to_fieldmap(row)
+      break
     end
     r
   end

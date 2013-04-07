@@ -97,7 +97,7 @@ module Query
       end
 
       def to_s
-        return '#ERR#' if self.arity == 0
+        return '' if self.arity == 0
         self.to_query_string(false)
       end
 

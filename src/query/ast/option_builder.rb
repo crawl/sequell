@@ -16,7 +16,7 @@ module Query
       end
 
       def self.known_option?(name)
-        Grammar::Config.option_names.include?(name.downcase)
+        ::Grammar::Config.option_names.include?(name.downcase)
       end
 
       def self.reject_unknown_option!(name)

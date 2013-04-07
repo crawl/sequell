@@ -23,7 +23,7 @@ module Query
       end
 
       def to_s
-        ["-#{name}", argstr].select { |x| !x.empty? }.join(':')
+        (["-#{name}"] + @arguments).select { |x| !x.empty? }.join(':')
       end
     end
   end

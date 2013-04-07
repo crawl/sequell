@@ -15,8 +15,8 @@ module Sql
       @ast = ast
       @ctx = @ast.context
       @tables = QueryTables.new(@ctx.table(@ast.game))
-      @original_pred = predicates
-      @pred = predicates
+      @original_pred = predicates.dup
+      @pred = predicates.dup
       @nick = nick
       @num = @ast.game_number
       @extra = @ast.extra

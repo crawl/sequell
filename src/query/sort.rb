@@ -53,7 +53,7 @@ module Query
     end
 
     def to_s
-      (asc? ? 'min' : 'max') + "=#{@expr}"
+      (asc? ? 'min' : 'max') + "=#{expr}"
     end
   end
 end

@@ -27,6 +27,7 @@ module Query
 
         if !ast.has_sorts? && ast.needs_sort?
           ast.sorts << Query::Sort.new(@ctx.defsort)
+          STDERR.puts("Sorts: #{ast.sorts}")
         end
 
         validate_filters(ast.filter)

@@ -51,9 +51,9 @@ begin
     winning_query = query + 'ktyp=winning'
     game_query = query.dup
     q =
-      Query::ListgameQuery.parse(ARGV[1], winning_query).query.reverse
+      Query::ListgameQuery.parse(ARGV[1], winning_query, true).query.reverse
     game_count_query =
-      Query::ListgameQuery.parse(ARGV[1], game_query).query
+      Query::ListgameQuery.parse(ARGV[1], game_query, true).query
 
     count = sql_count_rows_matching(game_count_query)
     desc = game_count_query.argstr
@@ -62,7 +62,7 @@ begin
       puts "Cannot combine * with win-skip count."
       exit 0
     end
-    q = Query::ListgameQuery.parse(ARGV[1], query).query.reverse
+    q = Query::ListgameQuery.parse(ARGV[1], query, true).query.reverse
     desc = q.argstr
     count = 0
   end

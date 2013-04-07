@@ -7,7 +7,7 @@ help("Gives a URL to the user's last morgue file. Accepts !listgame " +
      "style selectors.")
 
 begin
-  result = sql_find_game(ARGV[1], (ARGV[2].split)[1..-1])
+  result = sql_find_game(ARGV[1], ARGV[2].split)
 rescue
   puts $!
   raise
