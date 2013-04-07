@@ -114,7 +114,8 @@ module Query
         node.value = "(?:^|,)" + Regexp.quote(val) + '\y'
       end
 
-      if field === ['killer', 'ckiller', 'ikiller'] && !value.empty?
+      if field === ['killer', 'ckiller', 'ikiller'] && !value.empty? &&
+          !node.flags[:killer_expanded]
         if equality? && value !~ /^an? /i && !UNIQUES.include?(value) then
           if value.downcase == 'uniq' and field === ['killer', 'ikiller']
             # Handle check for uniques.
@@ -125,12 +126,12 @@ module Query
                 AST::Expr.new(op.negate, field, ''),
                 AST::Expr.new(uniq ? '!~~' : '~~', field, "^an? |^the "),
                 AST::Expr.new(uniq ? '!~' : '~~', field, "ghost"),
-                AST::Expr.new(uniq ? '!~' : '~~', field, "illusion")))
+                AST::Expr.new(uniq ? '!~' : '~~', field, "illusion")).recursive_flag!(:killer_expanded))
           else
             return AST::Expr.new(op.equal? ? :or : :and,
               AST::Expr.new(op, field, value),
               AST::Expr.new(op, field, "a " + value),
-              AST::Expr.new(op, field, "an " + value))
+              AST::Expr.new(op, field, "an " + value)).recursive_flag!(:killer_expanded)
           end
         end
       end

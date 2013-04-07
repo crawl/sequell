@@ -4,6 +4,20 @@ module Query
   module Termlike
     attr_accessor :arguments
 
+    def flags
+      @flags ||= { }
+    end
+
+    def flag!(flag_name)
+      self.flags[flag_name] = true
+      self
+    end
+
+    def recursive_flag!(flag_name)
+      self.each_node { |node| node.flag!(flag_name) }
+      self
+    end
+
     def negatable?
       false
     end
