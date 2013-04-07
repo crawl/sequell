@@ -15,7 +15,7 @@ module Query
         true
       end
 
-      def filter_value(extra, row)
+      def filter_value(query, row)
         @value
       end
 

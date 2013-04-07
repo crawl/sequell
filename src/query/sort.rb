@@ -9,12 +9,19 @@ module Query
     include HasExpression
 
     def initialize(expr, direction='DESC')
+      direction = canonicalize_direction(direction)
       unless direction == 'ASC' || direction == 'DESC'
         raise "Bad sort direction: #{direction}"
       end
       self.expr = expr
       expr.bind_ordered_column! if expr.kind == :field
       @direction = direction
+    end
+
+    def canonicalize_direction(dir)
+      return 'DESC' if !dir || dir == '' || dir == '+'
+      return 'ASC' if dir == '-'
+      dir
     end
 
     def kind

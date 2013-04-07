@@ -6,8 +6,12 @@ module Query
       attr_reader :ordering
 
       def initialize(expr, ordering=nil)
-        @arguments = [expr]
+        self.expr = expr
         @ordering = ordering.to_s
+      end
+
+      def expr=(expr)
+        @arguments = [expr]
       end
 
       def dup

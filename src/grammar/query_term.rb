@@ -51,7 +51,7 @@ module Grammar
     rule(:max_term) { query_fn(str("max"), field_expr.as(:max)) }
 
     rule(:order_term) {
-      query_fn(str("o") | str("order"), ordered_sort_expression_list)
+      query_fn(str("o") | str("order"), ordered_sort_expression_list).as(:group_order_list)
     }
 
     rule(:summary_term) {
@@ -80,8 +80,8 @@ module Grammar
       comma_separated(ordered_sort_expr)
     }
 
-    def ordered_expr(expr)
-      match["+-"].maybe.as(:ordering) >> expr
+    def ordered_expr(expr, capture=:ordering)
+      match["+-"].maybe.as(capture) >> expr
     end
 
     rule(:ordered_group_expr) {
@@ -89,7 +89,9 @@ module Grammar
     }
 
     rule(:ordered_sort_expr) {
-      ordered_expr(str(".").as(:sort_group_expr) | field_expr)
+      ordered_expr(
+        (match[".%"].as(:sort_group_expr) | field_expr).as(:group_order_term),
+        :group_order)
     }
 
     rule(:extra_field_expr) {

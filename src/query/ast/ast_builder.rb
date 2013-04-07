@@ -13,6 +13,8 @@ require 'query/ast/field'
 require 'query/ast/filter_expr'
 require 'query/ast/filter_term'
 require 'query/ast/filter_value'
+require 'query/ast/group_order_term'
+require 'query/ast/group_order_list'
 require 'query/ast/funcall'
 require 'query/nick_expr'
 require 'query/sort'
@@ -29,7 +31,7 @@ module Query
         head: simple(:head),
         tail: simple(:tail),
         filter: simple(:filter)) {
-        STDERR.puts("Creating QueryAST: head: #{head}, tail: #{tail}")
+        STDERR.puts("Creating QueryAST: head: #{head}, tail: #{tail}, filter: #{filter}")
         QueryAST.new(context, head, tail, filter)
       }
 
@@ -114,9 +116,8 @@ module Query
         Expr.new(:or, *expressions)
       }
 
-      rule(expr: simple(:expr)) {
-        expr
-      }
+      rule(expr: simple(:expr)) { expr }
+      rule(term: simple(:term)) { term }
 
       rule(keyword_expr: simple(:keyword)) {
         keyword
@@ -239,6 +240,20 @@ module Query
           op,
           FilterTerm.term(filter_expr.to_s, ratio: true),
           FilterValue.new(value.to_s))
+      }
+
+      rule(sort_group_expr: simple(:expr)) { FilterTerm.term(expr) }
+
+      rule(group_order: simple(:group_order),
+           group_order_term: simple(:term)) {
+        GroupOrderTerm.new(FilterTerm.term(term), group_order)
+      }
+
+      rule(group_order_list: sequence(:group_order)) {
+        GroupOrderList.new(*group_order)
+      }
+      rule(group_order_list: simple(:group_order)) {
+        GroupOrderList.new(group_order)
       }
 
       rule(filter_and: sequence(:filter_expr)) {

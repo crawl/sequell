@@ -1,6 +1,6 @@
 module Sql
   class QueryList < Array
-    attr_accessor :ctx, :sorts, :filter
+    attr_accessor :ctx, :group_order, :filter
 
     def grouping_query?
       self.primary_query.grouping_query?

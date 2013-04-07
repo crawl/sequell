@@ -7,6 +7,7 @@ module Query
       attr_accessor :context, :context_name, :head, :tail, :filter
       attr_accessor :extra, :summarise, :options, :sorts
       attr_accessor :game_number, :nick, :game
+      attr_accessor :group_order
 
       def initialize(context_name, head, tail, filter)
         @game = GameContext.game
@@ -81,6 +82,7 @@ module Query
 
       def transform!(&block)
         self.head = block.call(self.head)
+        @full_tail = block.call(@full_tail) if @full_tail
         self.tail = block.call(self.tail) if self.tail
         self
       end
@@ -91,7 +93,7 @@ module Query
 
       def each_node(&block)
         self.head.each_node(&block)
-        self.tail.each_node(&block) if self.tail
+        (self.full_tail || self.tail).each_node(&block) if self.tail
         self
       end
 
@@ -105,8 +107,12 @@ module Query
         self.context.with(&block)
       end
 
+      def bind_tail!
+        @full_tail = @tail && @tail.merge(@head)
+      end
+
       def full_tail
-        @full_tail ||= @tail && @tail.merge(@head)
+        @full_tail
       end
 
       def to_s
@@ -115,7 +121,7 @@ module Query
         pieces << head.to_query_string(false)
         pieces << @summarise.to_s if summary?
         pieces << "/" << @tail.to_query_string(false) if @tail
-        pieces << @filter.to_s if @filter
+        pieces << "?:" << @filter.to_s if @filter
         pieces.select { |x| !x.empty? }.join(' ')
       end
     end

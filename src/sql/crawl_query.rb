@@ -87,7 +87,6 @@ module Sql
     end
 
     def resolve_predicate_columns(predicates, table_set=@tables)
-      STDERR.puts("Resolving predicates in #{predicates} for #{@tables} (#{@tables.object_id})")
       Sql::ColumnResolver.resolve(@ctx, table_set, predicates)
     end
 
@@ -223,9 +222,7 @@ module Sql
 
     def resolve_summary_fields
       if summarise
-        STDERR.puts("Summary field resolve for #{summarise}")
         summarise.each_field { |field|
-          STDERR.puts("Resolving summary #{field} / #{field.object_id}")
           resolve_field(field, @summary_tables)
         }
       end

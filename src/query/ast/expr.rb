@@ -24,6 +24,7 @@ module Query
             arg
           end
         }
+        @original = @arguments.map { |a| a.dup }
       end
 
       def operator=(op)
@@ -96,11 +97,12 @@ module Query
       end
 
       def to_s
-        return '' if self.arity == 0
+        return '#ERR#' if self.arity == 0
         self.to_query_string(false)
       end
 
       def to_sql
+        return '' if arity == 0
         if self.operator.unary?
           "(#{operator.to_sql} (#{self.arguments.first.to_sql}))"
         else

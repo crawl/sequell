@@ -6,19 +6,17 @@ module Sql
       @summary_reporter = summary_reporter
     end
 
-    def sort(summary_rows)
-      sorts = @summary_reporter.query_group.sorts
+    def primary_query
+      @summary_reporter.query_group.primary_query
+    end
 
-      #puts "Sorts: #{sorts}"
-      sort_condition_exists = sorts && !sorts.empty? ? sorts[0] : nil
-      if sort_condition_exists
+    def sort(summary_rows)
+      order = @summary_reporter.query_group.group_order
+
+      if order
+        query = self.primary_query
         summary_rows.sort do |a,b|
-          cmp = 0
-          for sort in sorts do
-            cmp = sort.sort_cmp(a, b)
-            break if cmp != 0
-          end
-          cmp
+          order.compare_rows(query, a, b)
         end
       else
         summary_rows.sort

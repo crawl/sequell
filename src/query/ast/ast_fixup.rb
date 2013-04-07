@@ -29,13 +29,10 @@ module Query
           ast.sorts << Query::Sort.new(@ctx.defsort)
         end
 
-        if ast.filter
-          ast.filter.each_node { |node|
-            if node.kind == :filter_term
-              node.validate_filter!(ast.extra)
-            end
-          }
-        end
+        validate_filters(ast.filter)
+        validate_filters(ast.group_order)
+
+        ast.bind_tail!
 
         ast.transform_nodes! { |node|
           collapse_negated_node(node)
@@ -47,6 +44,15 @@ module Query
 
         ast.each_node { |node|
           fix_node(node)
+        }
+      end
+
+      def validate_filters(filter)
+        return unless filter
+        filter.each_node { |node|
+          if node.kind == :filter_term
+            node.validate_filter!(ast.summarise, ast.extra)
+          end
         }
       end
 
@@ -75,15 +81,17 @@ module Query
 
         return node unless node.meta?
         case node.kind
+        when :summary, :extra, :group_order
+          # Don't cull these nodes, cull the parent.
+          return node
         when :sort
           ast.sorts << node
         when :option
           ast.add_option(node)
         when :game_number
           ast.game_number = node.value > 0 ? node.value - 1 : node.value
-        when :summary, :extra
-          # Don't cull these nodes, cull the parent.
-          return node
+        when :group_order_list
+          ast.group_order = node
         when :summary_list
           raise "Too many grouping terms (extra: #{node})" if ast.summarise
           ast.summarise = node
@@ -91,9 +99,8 @@ module Query
           raise "Too many x=... terms (extra: #{node})" if ast.extra
           ast.extra = node
         else
-          raise "Unknown node: #{node}"
+          raise "Unknown meta: #{node}"
         end
-
         nil
       end
 

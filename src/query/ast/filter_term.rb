@@ -1,8 +1,9 @@
 module Query
   module AST
     class FilterTerm < Term
-      def self.term(term)
-        self.new(term)
+      def self.term(term, options={})
+        return term if term.is_a?(self)
+        self.new(term, options)
       end
 
       attr_reader :term
@@ -35,13 +36,13 @@ module Query
         den == 0 ? 0 : num / den
       end
 
-      def filter_value(extra, row)
+      def filter_value(query, row)
         unless @validated
           raise "Cannot get filter value for unvalidated field #{self}"
         end
 
         if @index.nil?
-          bind_row_index!(extra)
+          bind_row_index!(query.extra)
           if row.counts && row.counts.size == 1
             @base_index = 0
           end
@@ -65,7 +66,7 @@ module Query
       def bind_row_index!(extra)
         if @use_grouped_value
           @index = 0
-        elsif term == 'n' || term == '%'
+        elsif term == 'n' || term == 'N' || term == '%'
           @index = 1
         else
           @index = 2 + find_extra_field_index(extra, term)
@@ -86,7 +87,6 @@ module Query
           @binder = Proc.new { |r| r.compare_key }
         else
           extractor = if @base_index == 2
-                        STDERR.puts("RATIO")
                         Proc.new { |v| v && ratio(v[1], v[0]) }
                       else
                         Proc.new { |v| v && v[@base_index] }
@@ -106,8 +106,8 @@ module Query
         end
       end
 
-      def validate_filter!(extra)
-        if term == '.'
+      def validate_filter!(summarise, extra)
+        if term == '.' || (summarise && term.to_s == summarise.first.to_s)
           @use_grouped_value = true
         else
           if term != 'n' && extra && extra.fields.any? { |x| x.to_s == term }

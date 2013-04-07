@@ -53,7 +53,7 @@ module Query
       list << primary_query
       list << secondary_query if compound_query?
       list.filter = ast.filter
-      list.sorts = ast.sorts
+      list.group_order = ast.group_order
       list
     end
   end

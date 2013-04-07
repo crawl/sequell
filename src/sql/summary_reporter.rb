@@ -118,10 +118,9 @@ module Sql
       end
 
       filter = @query_group.filter
-      STDERR.puts("Query group filters: #{filter}")
       if filter
         raw_values = raw_values.find_all do |row|
-          filter.filter_value(@extra, row)
+          filter.filter_value(self.query, row)
         end
       end
 

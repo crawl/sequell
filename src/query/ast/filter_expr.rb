@@ -17,32 +17,34 @@ module Query
         :filter
       end
 
-      def filter_value(extra, row)
+      def filter_value(query, row)
         case operator.to_s
+        when 'not'
+          !first.filter_value(query, row)
         when 'and'
-          args.all? { |a| a.filter_value(extra, row) }
+          args.all? { |a| a.filter_value(query, row) }
         when 'or'
-          args.any? { |a| a.filter_value(extra, row) }
+          args.any? { |a| a.filter_value(query, row) }
         when '='
-          left.filter_value(extra, row).to_f == right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f == right.filter_value(query, row).to_f
         when '!='
-          left.filter_value(extra, row).to_f != right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f != right.filter_value(query, row).to_f
         when '<'
-          left.filter_value(extra, row).to_f < right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f < right.filter_value(query, row).to_f
         when '>'
-          left.filter_value(extra, row).to_f > right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f > right.filter_value(query, row).to_f
         when '>='
-          left.filter_value(extra, row).to_f >= right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f >= right.filter_value(query, row).to_f
         when '<='
-          left.filter_value(extra, row).to_f <= right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f <= right.filter_value(query, row).to_f
         when '+'
-          left.filter_value(extra, row).to_f + right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f + right.filter_value(query, row).to_f
         when '-'
-          left.filter_value(extra, row).to_f - right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f - right.filter_value(query, row).to_f
         when '*'
-          left.filter_value(extra, row).to_f * right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f * right.filter_value(query, row).to_f
         when '/'
-          left.filter_value(extra, row).to_f / right.filter_value(extra, row).to_f
+          left.filter_value(query, row).to_f / right.filter_value(query, row).to_f
         end
       end
 
