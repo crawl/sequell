@@ -3,25 +3,31 @@
 require 'helper.rb'
 require 'sqlhelper'
 require 'query/query_string'
-require 'query/query_builder'
-require 'sql/field_expr'
+require 'query/ast/funcall'
 require 'sql/date'
 
 help("Summarizes a player's public server career.")
 
-query_string = Query::QueryString.new(ARGV[2].split()[1..-1])
-q = Query::QueryBuilder.build(ARGV[1], query_string.dup, CTX_LOG, nil, true)
+query_string = Query::QueryString.new(ARGV[2])
+q = Query::ListgameQuery.parse(ARGV[1], query_string).primary_query
+
+def field(name)
+  Sql::Field.field(name)
+end
+
+Funcall = Query::AST::Funcall
 
 full_query =
-  q.select([Sql::FieldExpr.max('name'),
-            Sql::FieldExpr.count_all,
-            Sql::FieldExpr.min('start'),
-            Sql::FieldExpr.max('end'),
-            Sql::FieldExpr.max('sc'),
-            Sql::FieldExpr.sum('sc'),
-            Sql::FieldExpr.sum('turn'),
-            Sql::FieldExpr.sum('dur')],
-           false)
+  q.select([
+    Funcall.new('max', field('name')),
+    Funcall.new('count_all'),
+    Funcall.new('min', field('start')),
+    Funcall.new('max', field('end')),
+    Funcall.new('max', field('sc')),
+    Funcall.new('sum', field('sc')),
+    Funcall.new('sum', field('turn')),
+    Funcall.new('sum', field('dur')),
+  ], false)
 
 rows = []
 sql_each_row_for_query(full_query, *q.values) do |r|
@@ -53,8 +59,8 @@ else
 
   win_count = \
     sql_count_rows_matching(
-       Query::QueryBuilder.build(ARGV[1], query_string + 'ktyp=winning',
-                                 CTX_LOG, nil, true))
+       Query::ListgameQuery.parse(ARGV[1],
+                                  query_string + ' ktyp=winning').primary_query)
 
   start_date = r[2]
   end_date = r[3]

@@ -480,6 +480,10 @@ prefix-field-fixups:
 
 # cdist and count are both count distinct
 aggregate-functions:
+  count_all:
+    type: '*'
+    expr: "COUNT(*)"
+    return: I
   cdist:
     type: '*'
     expr: "COUNT(DISTINCT %s)"
