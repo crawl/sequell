@@ -298,11 +298,11 @@ module Sql
       @query = "WHERE #{@query}" unless @query.empty?
       if with_sorts && ast.has_sorts?
         @query << " " unless @query.empty?
-        @query << "ORDER BY " << ast.primary_sort.to_sql(@tables)
+        @query << "ORDER BY " << ast.primary_sort.to_sql
 
         unless ast.primary_sort.unique_valued?
           @query << ", " <<
-                 Query::Sort.new(resolve_field('id'), 'ASC').to_sql(@tables)
+                 Query::Sort.new(resolve_field('id'), 'ASC').to_sql
         end
       end
       @query

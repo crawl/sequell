@@ -102,9 +102,9 @@ module Query
 
       def to_sql
         if self.operator.unary?
-          "#{operator.to_sql} #{self.arguments.first.to_sql}"
+          "(#{operator.to_sql} (#{self.arguments.first.to_sql}))"
         else
-          self.arguments.map { |a| a.to_sql }.join(operator.to_sql)
+          "(" + arguments.map { |a| a.to_sql }.join(operator.to_sql) + ")"
         end
       end
 

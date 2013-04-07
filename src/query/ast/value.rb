@@ -18,6 +18,10 @@ module Query
         :value
       end
 
+      def value?
+        true
+      end
+
       def type
         value_type(@value)
       end

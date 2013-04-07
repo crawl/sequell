@@ -36,6 +36,10 @@ module Query
         ast.transform! { |node|
           collapse_empty_nodes(node)
         }
+
+        ast.each_node { |node|
+          fix_node(node)
+        }
       end
 
       def fix_value_fields!
@@ -63,6 +67,8 @@ module Query
 
         return node unless node.meta?
         case node.kind
+        when :sort
+          ast.sorts << node
         when :option
           ast.add_option(node)
         when :game_number
@@ -111,6 +117,18 @@ module Query
         return ast.first if ast_collapsible?(ast)
         return nil if ast_empty?(ast)
         ast
+      end
+
+      def fix_node(node)
+        # Fix LIKE expressions:
+        if (node.operator == '=~' || node.operator == '!~') &&
+            node.right.value?
+          node.right.value = like_escape(node.right.value)
+        end
+      end
+
+      def like_escape(val)
+        val.index('*') || val.index('?') ? val.tr('*?', '%_') : "%#{val}%"
       end
 
       def ast_collapsible?(ast)

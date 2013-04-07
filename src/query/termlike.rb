@@ -2,6 +2,16 @@ require 'query/ast/ast_walker'
 
 module Query
   module Termlike
+    attr_accessor :arguments
+
+    def negatable?
+      false
+    end
+
+    def value?
+      false
+    end
+
     def args
       self.arguments
     end
@@ -112,6 +122,13 @@ module Query
 
     def without(&filter)
       Query::AST::ASTWalker.map_nodes(self.dup, filter) { nil }
+    end
+
+    def to_query_string(paren=false)
+      to_s
+    end
+
+    def convert_types!
     end
   end
 end

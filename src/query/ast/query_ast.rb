@@ -89,6 +89,12 @@ module Query
         self.map_nodes_as!(:map_nodes, &block)
       end
 
+      def each_node(&block)
+        self.head.each_node(&block)
+        self.tail.each_node(&block) if self.tail
+        self
+      end
+
       def map_nodes_as!(mapper, *args, &block)
         self.transform! { |tree|
           ASTWalker.send(mapper, tree, *args, &block)

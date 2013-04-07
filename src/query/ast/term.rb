@@ -12,10 +12,6 @@ module Query
         @arguments = []
       end
 
-      def negatable?
-        false
-      end
-
       def operator
         nil
       end
@@ -52,9 +48,6 @@ module Query
       def negate
         return self if meta?
         raise "Unsupported operation"
-      end
-
-      def convert_types!
       end
     end
   end

@@ -12,6 +12,7 @@ require 'query/ast/extra_list'
 require 'query/ast/field'
 require 'query/ast/funcall'
 require 'query/nick_expr'
+require 'query/sort'
 require 'sql/field'
 
 module Query
@@ -183,6 +184,9 @@ module Query
 
       rule(extra: sequence(:extra)) { ExtraList.new(*extra) }
       rule(extra: simple(:extra)) { ExtraList.new(extra) }
+
+      rule(max: simple(:expr)) { Query::Sort.new(expr, 'DESC') }
+      rule(min: simple(:expr)) { Query::Sort.new(expr, 'ASC') }
 
       rule(summary: sequence(:summary)) {
         SummaryList.new(*summary)

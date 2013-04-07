@@ -12,7 +12,7 @@ module Sql
     def initialize(context, table_set, field)
       @context = context
       @tables = table_set
-      @field = field
+      @field = field.is_a?(String) ? Sql::Field.field(field) : field
     end
 
     def resolve
