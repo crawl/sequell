@@ -19,7 +19,7 @@ module Sql
       @pred = predicates.dup
       @nick = nick
       @num = @ast.game_number
-      @extra = @ast.extra
+      @extra = @ast.extra && @ast.extra.dup
       @argstr = ast.description(nick)
       @values = nil
       @random_game = nil

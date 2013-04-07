@@ -60,7 +60,8 @@ describe Grammar::Query do
     '!lg * $ 2 + 3 * 4 / 5 > 0',
     '!lg * ktyp= killer=foo',
     '!lg * ktyp=  killer=foo',
-    '!lm * rune  1'
+    '!lm * rune  1',
+    '!lg * abyss:*'
   ]
 
   QUERIES.each { |query|

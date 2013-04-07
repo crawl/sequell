@@ -36,7 +36,7 @@ module Grammar
     }
 
     rule(:keyword_any) {
-      match['\\\\0-9a-zA-Z_\[\]/$,.:&*+-'].repeat(1)
+      match['\\\\0-9a-zA-Z_\[\]$,.:&*+-'].repeat(1)
     }
 
     rule(:space) {

@@ -100,9 +100,9 @@ module Query
       end
 
       if (field === ['map', 'killermap'] && equality? &&
-          val =~ /^[\w -]+$/)
+          value =~ /^[\w -]+$/)
         node.operator = op.equal? ? '~~' : '!~~'
-        node.value = "^#{Regexp.quote(val)}($|;)"
+        node.value = "^#{Regexp.quote(value)}($|;)"
       end
 
       if field === 'verb' && equality?

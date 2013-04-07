@@ -14,6 +14,10 @@ module Query
         @arguments = arguments
       end
 
+      def dup
+        self.class.new(@name.dup, *arguments.map(&:dup))
+      end
+
       def display_value(raw_value, format=nil)
         self.type.display_value(raw_value, format || @fn.display_format)
       end
