@@ -3,15 +3,13 @@ require 'query/ast/term'
 module Query
   module AST
     class Extra < Term
+      include HasExpression
+
       attr_reader :ordering
 
       def initialize(expr, ordering=nil)
         self.expr = expr
         @ordering = ordering.to_s
-      end
-
-      def expr=(expr)
-        @arguments = [expr]
       end
 
       def dup
@@ -20,14 +18,6 @@ module Query
 
       def kind
         :extra
-      end
-
-      def meta?
-        true
-      end
-
-      def type
-        expr.type
       end
 
       def aggregate?
@@ -46,16 +36,8 @@ module Query
         ordering == '-'
       end
 
-      def expr
-        self.first
-      end
-
       def to_s
         (asc? ? '-' : '') + expr.to_s
-      end
-
-      def to_sql
-        expr.to_sql
       end
     end
   end

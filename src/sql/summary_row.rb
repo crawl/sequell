@@ -193,6 +193,7 @@ module Sql
     end
 
     def format_value(v, field=nil)
+      STDERR.puts("format_value: #{v}, field: #{field} (#{field.class})")
       return field.display_value(v) if field
       if v.is_a?(BigDecimal) || v.is_a?(Float)
         rawv = sprintf("%.2f", v)

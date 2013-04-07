@@ -194,6 +194,13 @@ module Query
                     percentage.to_s)
       }
 
+
+      rule(ordering: simple(:ordering),
+           function_call: simple(:funcall),
+           percentage: simple(:percentage)) {
+        Summary.new(funcall, ordering.to_s, percentage.to_s)
+      }
+
       rule(extra_expr: {
           ordering: simple(:ordering),
           extra_term: simple(:term)

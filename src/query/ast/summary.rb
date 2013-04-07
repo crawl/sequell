@@ -1,6 +1,8 @@
 module Query
   module AST
     class Summary < Term
+      include HasExpression
+
       attr_reader :field, :ordering, :percentage
 
       def initialize(expr, ordering='', percentage=nil)
@@ -13,20 +15,12 @@ module Query
         self.class.new(expr.dup, ordering, percentage)
       end
 
-      def expr
-        @arguments.first
-      end
-
-      def type
-        expr.type
+      def display_value(raw_value, format=nil)
+        expr.display_value(raw_value, format)
       end
 
       def reverse?
         @ordering == '-'
-      end
-
-      def meta?
-        true
       end
 
       def kind
@@ -39,10 +33,6 @@ module Query
 
       def to_s
         [@ordering, expr.to_s, @percentage && '%'].select { |x| x }.join('')
-      end
-
-      def to_sql
-        expr.to_sql
       end
     end
   end

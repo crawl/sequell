@@ -12,6 +12,10 @@ module Query
       self.arguments = [exp]
     end
 
+    def display_value(raw_value, format=nil)
+      expr.display_value(raw_value, format)
+    end
+
     def operator
       nil
     end
