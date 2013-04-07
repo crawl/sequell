@@ -104,16 +104,14 @@ module Query
         Field.new(field)
       }
 
-      rule(function_call: {
-          function_name: simple(:name),
-          arguments: simple(:argument)
-        }) {
+      rule(function_call: simple(:funcall)) { funcall }
+
+      rule(function_name: simple(:name),
+           arguments: simple(:argument)) {
         Funcall.new(name.to_s, argument)
       }
-      rule(function_call: {
-          function_name: simple(:name),
-          arguments: sequence(:arguments)
-        }) {
+      rule(function_name: simple(:name),
+           arguments: sequence(:arguments)) {
         Funcall.new(name.to_s, *arguments)
       }
 
@@ -142,6 +140,14 @@ module Query
 
       rule(keyword: simple(:keyword)) {
         AST::Keyword.new(keyword.to_s)
+      }
+
+      rule(term: {
+          function_call: simple(:funcall),
+          op: simple(:op),
+          value: simple(:value)
+        }) {
+        Expr.new(op.to_s, funcall, Value.new(value.to_s))
       }
 
       rule(
