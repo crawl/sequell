@@ -23,6 +23,18 @@ module Sql
       @type ||= find_type
     end
 
+    def convert(value)
+      return value.to_f if self.real?
+      return value.to_i if self.integer?
+      return value.to_i if self.numeric?
+      dcvalue = value.downcase
+      if self.boolean?
+        return dcvalue == 'y' || dcvalue == 't' || dcvalue == 'true' ||
+          dcvalue == '1'
+      end
+      value
+    end
+
     def raw_type
       @raw_type ||= find_raw_type
     end

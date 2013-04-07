@@ -45,7 +45,7 @@ module Grammar
     }
 
     rule(:number) {
-      float | integer
+      float.as(:float) | integer.as(:integer)
     }
 
     rule(:sign) {

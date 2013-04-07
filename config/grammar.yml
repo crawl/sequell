@@ -145,3 +145,36 @@ operators:
     non_commutative: true
     precedence: 40
     relational: true
+
+  - op: '+'
+    argtype: I
+    result: I
+    precedence: 60
+
+  - op: '-'
+    argtype: I
+    result: I
+    arity: 2
+    precedence: 60
+
+  - op: '*'
+    argtype: I
+    result: I
+    precedence: 80
+
+  - op: '/'
+    argtype: I
+    result: I
+    precedence: 80
+
+  - op: '%'
+    argtype: I
+    result: I
+    arity: 2
+    precedence: 80
+
+  - op: '**'
+    argtype: I
+    result: I
+    arity: 2
+    precedence: 90

@@ -143,6 +143,7 @@ module Query
             node.right.value?
           node.right.value = like_escape(node.right.value)
         end
+        node.convert_types!
       end
 
       def like_escape(val)

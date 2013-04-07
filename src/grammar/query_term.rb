@@ -85,7 +85,7 @@ module Grammar
     end
 
     rule(:ordered_group_expr) {
-      ordered_expr(field_expr >> str("%").maybe.as(:percentage))
+      ordered_expr(field_expr.as(:summary_expr) >> str("%").maybe.as(:percentage))
     }
 
     rule(:ordered_sort_expr) {
@@ -112,7 +112,7 @@ module Grammar
     }
 
     rule(:field_expr) {
-      function_expr | field
+      function_expr | field | SqlExpr.new
     }
 
     rule(:field_value_boundary) {

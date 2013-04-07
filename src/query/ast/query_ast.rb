@@ -97,6 +97,14 @@ module Query
       end
 
       def transform!(&block)
+        self.summarise = block.call(self.summarise) if self.summarise
+        if self.sorts
+          self.sorts = self.sorts.map { |sort|
+            block.call(sort)
+          }.compact
+        end
+        self.group_order = block.call(self.group_order) if self.group_order
+        self.extra = block.call(self.extra) if self.extra
         self.head = block.call(self.head)
         @full_tail = block.call(@full_tail) if @full_tail
         self.tail = block.call(self.tail) if self.tail
@@ -108,6 +116,14 @@ module Query
       end
 
       def each_node(&block)
+        self.summarise.each_node(&block) if self.summarise
+        if self.sorts
+          self.sorts.each { |sort|
+            sort.each_node(&block)
+          }
+        end
+        self.group_order.each_node(&block) if self.group_order
+        self.extra.each_node(&block) if self.extra
         self.head.each_node(&block)
         (self.full_tail || self.tail).each_node(&block) if self.tail
         self

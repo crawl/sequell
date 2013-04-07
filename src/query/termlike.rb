@@ -134,6 +134,10 @@ module Query
       Query::AST::ASTWalker.each_node(self, &block)
     end
 
+    def each_value(&block)
+      Query::AST::ASTWalker.each_value(self, &block)
+    end
+
     def without(&filter)
       Query::AST::ASTWalker.map_nodes(self.dup, filter) { nil }
     end
@@ -143,6 +147,11 @@ module Query
     end
 
     def convert_types!
+      self
+    end
+
+    def convert_to_type(type)
+      self
     end
   end
 end

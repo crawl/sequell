@@ -39,26 +39,27 @@ module Grammar
     }
 
     rule(:eqterm) {
-      bitwiseterm.as(:left) >> (space? >> bitwise_op >> space? >>
-        eqterm).repeat(1).as(:right) |
       bitwiseterm
+      # bitwiseterm.as(:left) >> (space? >> bitwise_op >> space? >>
+      #   eqterm).repeat(1).as(:right) |
+      # bitwiseterm
     }
 
     rule(:bitwiseterm) {
       addterm.as(:left) >> (space? >> additive_op >> space? >>
-        addterm).repeat(1).as(:right) |
+        addterm.as(:right)).repeat(1).as(:right_partial) |
       addterm
     }
 
     rule(:addterm) {
       multerm.as(:left) >> (space? >> multiplicative_op >> space? >>
-        multerm).repeat(1).as(:right) |
+        multerm.as(:right)).repeat(1).as(:right_partial) |
       multerm
     }
 
     rule(:multerm) {
       expterm.as(:left) >> (space? >> exp_op >> space? >>
-        expterm).repeat(1).as(:right) |
+        expterm.as(:right)).repeat(1).as(:right_partial) |
       expterm
     }
 

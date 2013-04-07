@@ -29,6 +29,10 @@ module Query
       self.class.register(name, self)
     end
 
+    def negatable?
+      @options.negated
+    end
+
     def relational?
       @options.relational
     end
@@ -42,6 +46,7 @@ module Query
     end
 
     def negate
+      raise "Cannot negate operator: #{self}" unless @negated
       self.class.op(@negated)
     end
 
@@ -77,6 +82,14 @@ module Query
           arg.type.type_match?(argtype)
         }
       }
+    end
+
+    def argtype(args)
+      Sql::Type.type(
+        self.argtypes.find { |at|
+          args.first.type.type_match?(at)
+        }
+      )
     end
 
     def result_type(args)

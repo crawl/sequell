@@ -298,3 +298,9 @@ E !lg * s=trunc99(sc)
 !kw lava
 
 !lg * status=para,slow s=status ::~ 71x paralysed,slowed
+
+!lg * x=${hp}
+!lg * x=${hp + ac}
+!lg * win s=${hp + 500}
+!lg * win s=${hp + 500 / 500}
+!lg * ${ac + ev} > 15

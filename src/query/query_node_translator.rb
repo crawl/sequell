@@ -73,8 +73,6 @@ module Query
         return reexpand(AST::Expr.new(op.equal? ? '~~' : '!~~', field, value))
       end
 
-      node.convert_types!
-
       if field.multivalue? && op.equality? && value.index(',')
         values = value.split(',').map { |s| s.strip }
         operator = (op.equal? ? :and : :or)

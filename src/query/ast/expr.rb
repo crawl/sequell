@@ -70,7 +70,7 @@ module Query
       end
 
       def negatable?
-        true
+        self.operator.negatable?
       end
 
       def kind
@@ -94,6 +94,15 @@ module Query
           merged.arguments += other.dup.arguments
           merged
         end
+      end
+
+      def convert_types!
+        arg_type = self.operator.argtype(arguments)
+        self.arguments = self.arguments.map { |arg|
+          STDERR.puts("Converting #{arg} to #{arg_type}")
+          arg.convert_to_type(arg_type)
+        }.compact
+        self
       end
 
       def << (term)

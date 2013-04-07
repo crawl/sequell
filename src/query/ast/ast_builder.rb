@@ -125,6 +125,7 @@ module Query
 
       rule(expr: simple(:expr)) { expr }
       rule(term: simple(:term)) { term }
+      rule(sql_expr: simple(:expr)) { expr }
 
       rule(keyword_expr: simple(:keyword)) {
         keyword
@@ -148,6 +149,23 @@ module Query
           value: simple(:value)
         }) {
         Expr.new(op.to_s, funcall, Value.new(value.to_s))
+      }
+
+      rule(number: simple(:num)) { num }
+
+      rule(integer: simple(:num)) { Value.new(num.to_i) }
+      rule(float: simple(:num)) { Value.new(num.to_f) }
+
+      rule(op: simple(:op),
+           right: simple(:value)) {
+        OpenStruct.new(op: op.to_s, value: value)
+      }
+
+      rule(left: simple(:left),
+           right_partial: sequence(:op_right)) {
+        op_right.reduce(left) { |term, right|
+          Expr.new(right.op, term, right.value)
+        }
       }
 
       rule(
@@ -188,17 +206,9 @@ module Query
       }
 
       rule(ordering: simple(:ordering),
-           field: { identifier: simple(:field) },
+           summary_expr: simple(:expr),
            percentage: simple(:percentage)) {
-        Summary.new(Field.new(field), ordering.to_s,
-                    percentage.to_s)
-      }
-
-
-      rule(ordering: simple(:ordering),
-           function_call: simple(:funcall),
-           percentage: simple(:percentage)) {
-        Summary.new(funcall, ordering.to_s, percentage.to_s)
+        Summary.new(expr, ordering.to_s, percentage.to_s)
       }
 
       rule(extra_expr: {

@@ -180,9 +180,20 @@ module Sql
           resolve_field(fe, table_context).to_sql
         }.join(", ")
 
+        @values = self.with_values(field_expressions, @values)
         "SELECT #{select_cols} FROM #{table_context.to_sql} " +
            where(@pred, with_sorts)
       }
+    end
+
+    def with_values(expressions, values=[])
+      new_values = []
+      expressions.each { |expr|
+        expr.each_value { |value|
+          new_values << value.value unless value.null?
+        }
+      }
+      new_values + values
     end
 
     def query_columns
@@ -197,10 +208,12 @@ module Sql
         id_subquery = self.select_id(with_sorts, single_record_index)
         id_field = Sql::Field.field('id')
         id_sql = resolve_field(id_field, @tables).to_sql
+        @values = self.with_values(query_fields, @values)
         return ("SELECT #{query_columns.join(", ")} " +
                 "FROM #{@tables.to_sql} WHERE #{id_sql} = (#{id_subquery})")
       end
 
+      @values = self.with_values(query_columns, @values)
       "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " +
          where(@pred, with_sorts)
     end
@@ -242,8 +255,14 @@ module Sql
 
       @query = nil
       sortdir = @summary_sort
-      %{SELECT #{summary_fields} FROM #{@summary_tables.to_sql}
-        #{where(@summary_pred, false)} #{summary_group} #{summary_order}}
+
+      where_clause = where(@summary_pred, false)
+      @values = self.with_values([summarise, extra].compact, @values)
+
+      summary_field_text = self.summary_fields
+      summary_group_text = self.summary_group
+      %{SELECT #{summary_field_text} FROM #{@summary_tables.to_sql}
+        #{where_clause} #{summary_group_text} #{summary_order}}
     end
 
     def summary_order
@@ -256,8 +275,29 @@ module Sql
 
     def summary_db_fields
       summarise.arguments.map { |arg|
-        arg.to_sql
+        if arg.simple?
+          arg.to_sql
+        else
+          aliased_summary_field(arg)
+        end
       }
+    end
+
+    def aliased_summary_field(expr)
+      expr_alias = @aliases[expr.to_s]
+      return expr_alias if expr_alias
+      expr_alias = unique_alias(expr)
+      expr.to_sql + " AS #{expr_alias}"
+    end
+
+    def unique_alias(expr)
+      base = expr.to_s.gsub(/[^a-zA-Z]/, '_').gsub(/_+$/, '') + '_alias'
+      while @aliases.values.include?(base)
+        base += "_0" unless base =~ /_\d+$/
+        base = base.gsub(/(\d+)$/) { |m| ($1.to_i + 1).to_s }
+      end
+      @aliases[expr.to_s] = base
+      base
     end
 
     def summary_group
@@ -286,6 +326,7 @@ module Sql
     end
 
     def where(predicates, with_sorts)
+      @aliases = { }
       build_query(predicates, with_sorts)
     end
 

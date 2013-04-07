@@ -27,7 +27,7 @@ module Query
       end
 
       def to_s
-        @value.to_s
+        display_value(@value)
       end
 
       def null?
@@ -40,7 +40,14 @@ module Query
       end
 
       def value_type(value)
+        return Sql::Type.type('F') if value.is_a?(Float)
+        return Sql::Type.type('I') if value.is_a?(Integer)
         Sql::Type.type('*')
+      end
+
+      def convert_to_type(type)
+        self.value = type.convert(self.value)
+        self
       end
     end
   end

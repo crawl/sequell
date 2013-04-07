@@ -19,6 +19,10 @@ module Query
         expr.display_value(raw_value, format)
       end
 
+      def simple?
+        self.first.kind == :field
+      end
+
       def reverse?
         @ordering == '-'
       end
