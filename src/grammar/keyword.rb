@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'parslet'
 
 module Grammar
@@ -36,7 +37,7 @@ module Grammar
     }
 
     rule(:keyword_any) {
-      match['\\\\0-9a-zA-Z_\[\]$,.:&*+-'].repeat(1)
+      match['\\\\0-9a-zA-Z_\[\]$,.:&*+[^\x00-\x7f]-'].repeat(1)
     }
 
     rule(:space) {

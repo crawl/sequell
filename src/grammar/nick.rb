@@ -1,3 +1,4 @@
+# encoding: UTF-8
 module Grammar
   class Nick < Parslet::Parser
     root(:nick_root)
@@ -26,10 +27,10 @@ module Grammar
     }
     rule(:nick_name_loose) { nick_char.repeat(1) }
     rule(:nick_char) {
-      match['0-9a-zA-Z_`\[\]{}\\^-']
+      match['0-9a-zA-Z_`\[\]{}\\^[^\x00-\x7f]-']
     }
     rule(:nick_alpha_char) {
-      match['a-zA-Z_`\[\]{}\\|^-']
+      match['\p{Alpha}a-zA-Z_`\[\]{}\\|^-']
     }
   end
 end

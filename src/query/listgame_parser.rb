@@ -9,11 +9,11 @@ module Query
       require 'grammar/query_body'
 
       raw_parse = ::Grammar::QueryBody.new.parse(fragment.to_s)
-      STDERR.puts("Fragment raw_parse: #{raw_parse.inspect}")
+      debug("Fragment raw_parse: #{raw_parse.inspect}")
       ast = AST::ASTBuilder.new.apply(raw_parse)
-      STDERR.puts("Fragment AST: #{ast.inspect}")
+      debug("Fragment AST: #{ast.inspect}")
       ast = AST::ASTTranslator.apply(ast)
-      STDERR.puts("Fragment translated AST: #{ast.inspect}")
+      debug("Fragment translated AST: #{ast.inspect}")
       ast
     end
 
@@ -25,20 +25,20 @@ module Query
 
       query_text = query.to_s
       query_text = query_with_context(query_text) if add_context
-      STDERR.puts("Parsing query: '#{query_text}'")
+      debug("Parsing query: '#{query_text}', encoding: #{query_text.encoding}")
       raw_parse = ::Grammar::Query.new.parse(query_text)
-      STDERR.puts("raw_parse: #{raw_parse.inspect}")
+      debug("raw_parse: #{raw_parse.inspect}")
 
       ast = AST::ASTBuilder.new.apply(raw_parse)
-      STDERR.puts("AST: #{ast}")
+      debug("AST: #{ast}")
 
       ast.with_context {
         ::Query::NickExpr.with_default_nick(default_nick) {
           translated_ast = AST::ASTTranslator.apply(ast)
-          STDERR.puts("Resolved AST: #{translated_ast}")
+          debug("Resolved AST: #{translated_ast}")
 
           fixed_ast = AST::ASTFixup.result(default_nick, translated_ast)
-          STDERR.puts("Fixed AST: #{fixed_ast}, head: #{fixed_ast.head}")
+          debug("Fixed AST: #{fixed_ast}, head: #{fixed_ast.head}")
           fixed_ast
         }
       }

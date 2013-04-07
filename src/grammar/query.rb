@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'parslet'
 require 'grammar/nick'
 require 'grammar/query_body'

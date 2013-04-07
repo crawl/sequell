@@ -1,9 +1,12 @@
+# encoding: UTF-8
+
 require 'parslet'
 
 module Grammar
   class Atom < Parslet::Parser
     rule(:identifier) {
-      match["a-zA-Z_."] >> match["a-zA-Z0-9_."].repeat
+      match["a-zA-Z_.[^\x00-\x7f]".force_encoding('UTF-8')] >>
+      match["a-zA-Z0-9_.[^\x00-\x7f]".force_encoding('UTF-8')].repeat
     }
 
     rule(:quoted_string) {

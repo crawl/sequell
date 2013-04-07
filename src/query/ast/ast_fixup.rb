@@ -16,7 +16,7 @@ module Query
       end
 
       def result
-        STDERR.puts("Fixing: #{ast}")
+        debug("AST Fixup: #{ast}")
         ast.game_number = -1
 
         fix_value_fields!
@@ -27,7 +27,6 @@ module Query
 
         if !ast.has_sorts? && ast.needs_sort?
           ast.sorts << Query::Sort.new(@ctx.defsort)
-          STDERR.puts("Sorts: #{ast.sorts}")
         end
 
         if !ast.group_order && ast.needs_group_order?

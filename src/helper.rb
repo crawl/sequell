@@ -399,6 +399,10 @@ def pretty_duration(durseconds)
   timestr
 end
 
+def debug(text)
+  STDERR.puts(text) if ENV['DEBUG_HENZELL']
+end
+
 def pretty_date(date)
   if date =~ /^(\d{4})(\d{2})(\d{2})/
     return "$1-#{sprintf('%02d',$2.to_i + 1)}-$3"

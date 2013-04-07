@@ -111,7 +111,7 @@ module Query
 
       if field.multivalue? && equality? && !value.empty?
         node.operator = op.equal? ? '~~' : '!~~'
-        node.value = "(?:^|,)" + Regexp.quote(val) + '\y'
+        node.value = "(?:^|,)" + Regexp.quote(value) + '\y'
       end
 
       if field === ['killer', 'ckiller', 'ikiller'] && !value.empty? &&

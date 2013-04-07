@@ -31,7 +31,7 @@ module Query
         head: simple(:head),
         tail: simple(:tail),
         filter: simple(:filter)) {
-        STDERR.puts("Creating QueryAST: head: #{head}, tail: #{tail}, filter: #{filter}")
+        debug("Creating QueryAST: head: #{head}, tail: #{tail}, filter: #{filter}")
         QueryAST.new(context, head, tail, filter)
       }
 
