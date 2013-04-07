@@ -27,7 +27,7 @@ module Query
 
       def default_group_order
         GroupOrderList.new(
-          if primary_type.text? || primary_type.date?
+          if primary_type.date?
             GroupOrderTerm.new(FilterTerm.new('.'), '-')
           else
             GroupOrderTerm.new(FilterTerm.new('n'))
