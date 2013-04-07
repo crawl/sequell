@@ -35,6 +35,15 @@ module Query
         }.to_s.strip
       end
 
+      def needs_group_order?
+        !self.group_order && self.summarise
+      end
+
+      def default_group_order
+        return nil unless summarise
+        summarise.default_group_order
+      end
+
       def description(default_nick=Query::NickExpr.default_nick)
         text = (@nick == '.' ? default_nick : @nick).dup
         if !@desc.empty?

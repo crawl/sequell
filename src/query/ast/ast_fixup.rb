@@ -30,6 +30,10 @@ module Query
           STDERR.puts("Sorts: #{ast.sorts}")
         end
 
+        if !ast.group_order && ast.needs_group_order?
+          ast.group_order = ast.default_group_order
+        end
+
         validate_filters(ast.filter)
         validate_filters(ast.group_order)
 

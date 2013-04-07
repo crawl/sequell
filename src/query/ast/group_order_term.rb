@@ -15,7 +15,7 @@ module Query
 
       def compare_rows(q, a, b)
         av, bv = cmp_value(q, a), cmp_value(q, b)
-        @reverse ? av <=> bv : bv <=> av
+        asc? ? av <=> bv : bv <=> av
       end
     end
   end

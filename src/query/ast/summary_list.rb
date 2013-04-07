@@ -21,6 +21,20 @@ module Query
         self.arity > 1
       end
 
+      def primary_type
+        self.first.type
+      end
+
+      def default_group_order
+        GroupOrderList.new(
+          if primary_type.text? || primary_type.date?
+            GroupOrderTerm.new(FilterTerm.new('.'), '-')
+          else
+            GroupOrderTerm.new(FilterTerm.new('n'))
+          end
+        )
+      end
+
       def to_s
         "s=" + arguments.map(&:to_s).join(",")
       end
