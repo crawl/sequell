@@ -3,11 +3,11 @@ require 'query/ast/term'
 module Query
   module AST
     class Option < Term
-      attr_reader :name
+      attr_reader :name, :option_arguments
 
       def initialize(name, arguments)
         @name = name
-        @arguments = arguments || []
+        @option_arguments = arguments || []
       end
 
       def meta?
@@ -19,11 +19,11 @@ module Query
       end
 
       def has_args?
-        !arguments.empty?
+        !option_arguments.empty?
       end
 
       def to_s
-        (["-#{name}"] + @arguments).select { |x| !x.empty? }.join(':')
+        (["-#{name}"] + option_arguments).select { |x| !x.empty? }.join(':')
       end
     end
   end

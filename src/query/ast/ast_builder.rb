@@ -74,6 +74,7 @@ module Query
         Modifier.new(:game_number, number.to_i)
       }
 
+      rule(option_argument: simple(:arg)) { arg.to_s }
       rule(term: {
           option: {
             option_name: simple(:name),

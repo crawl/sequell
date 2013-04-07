@@ -13,7 +13,7 @@ module Grammar
 
     rule(:option) {
       (str("-") >> option_name >>
-        (str(":") >> option_argument.as(:arg)).repeat).as(:option)
+        (str(":") >> option_argument).repeat.as(:arguments)).as(:option)
     }
 
     rule(:option_name) {
@@ -21,7 +21,7 @@ module Grammar
     }
 
     rule(:option_argument) {
-      match["^ :"].repeat(1).as(:argument)
+      match["^ :"].repeat(1).as(:option_argument)
     }
 
     rule(:body_expr) {

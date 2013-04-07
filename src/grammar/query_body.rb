@@ -63,7 +63,7 @@ module Grammar
     }
 
     rule(:space) {
-      match('\s')
+      match('\s').repeat(1)
     }
 
     rule(:space?) {

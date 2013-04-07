@@ -72,7 +72,7 @@ module Grammar
       QueryTerm.new.function_expr
     }
 
-    rule(:space) { match('\s') }
+    rule(:space) { match('\s').repeat(1) }
     rule(:space?) { space.maybe }
   end
 end

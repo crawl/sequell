@@ -22,7 +22,7 @@ module Query
 
     private
       def parse_tv_opts!
-        arguments.each { |key|
+        option_arguments.each { |key|
           parse_option(key.downcase)
         }
       end

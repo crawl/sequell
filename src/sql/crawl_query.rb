@@ -72,7 +72,6 @@ module Sql
     def resolve_sort_fields(pred, tables)
       @sorts.each { |sort|
         sort.each_field { |field|
-          STDERR.puts("Resolving sort: #{field}")
           resolve_field(field, tables)
         }
       }
