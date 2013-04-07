@@ -13,8 +13,12 @@ module Query
         @tree = tree
       end
 
+      def nick
+        @ast.nick == '.' ? @nick : @ast.nick
+      end
+
       def build
-        ::Sql::CrawlQuery.new(@ast, @tree, @nick)
+        ::Sql::CrawlQuery.new(@ast, @tree, nick)
       end
     end
   end

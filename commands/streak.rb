@@ -3,12 +3,12 @@
 require 'helper'
 require 'sqlhelper'
 require 'query/query_string'
-require 'query/query_builder'
+require 'query/listgame_query'
 
 default_nick = ARGV[1]
-args = Query::QueryString.new((ARGV[2].split)[1 .. -1])
+args = Query::QueryString.new(ARGV[2])
 
-query = Query::QueryBuilder.build(default_nick, args, CTX_LOG, nil, true)
+query = Query::ListgameQuery.parse(default_nick, args).primary_query
 unless query.single_nick?
   puts "Cannot check streaks for #{query.nick}"
   exit 1
