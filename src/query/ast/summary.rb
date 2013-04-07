@@ -12,7 +12,7 @@ module Query
       end
 
       def dup
-        self.class.new(expr.dup, ordering, percentage)
+        self.class.new(expr.dup, ordering, percentage ? '%' : '')
       end
 
       def display_value(raw_value, format=nil)

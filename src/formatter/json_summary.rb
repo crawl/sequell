@@ -38,7 +38,7 @@ module Formatter
     # The display names of each of the fields (1 or more) used as Y
     # axis series.
     def count_field_names
-      count_fields.map(&:name)
+      count_fields.map(&:to_s)
     end
 
     def ratio_query?
@@ -93,9 +93,9 @@ module Formatter
         f.numeric?
       }
       if @extra_numeric_fields.empty? && ratio_query?
-        return [OpenStruct.new(:name => "#{ratio_title} %")]
+        return ["#{ratio_title} %"]
       end
-      @extra_numeric_fields.empty? ? [OpenStruct.new(:name => 'N')] :
+      @extra_numeric_fields.empty? ? ['N'] :
                                      @extra_numeric_fields
     end
 
@@ -109,20 +109,16 @@ module Formatter
           group_set << key_val
         }
       }
-      count_fields = group_set.to_a.sort.map { |name|
-        OpenStruct.new(:name => name)
-      }
+      count_fields = group_set.to_a.sort.map(&:to_s)
       count_fields.reverse! if count_fields.size == 2 && stacked_group.boolean?
 
       @field_indexes = Hash[count_fields.each_with_index.map { |field, i|
-        [field.name, i]
+        [field, i]
       }]
 
       if count_fields.size == 2 && stacked_group.boolean?
-        return [stacked_group.name.to_s,
-                "!" + stacked_group.name.to_s].map { |name|
-          OpenStruct.new(:name => name)
-        }
+        return [stacked_group.to_s,
+                "!" + stacked_group.to_s]
       end
       count_fields
     end
