@@ -211,6 +211,36 @@ module Query
           FilterValue.new(value.to_s))
       }
 
+      rule(filter_expr: simple(:filter_expr),
+           denominator: simple(:denominator),
+           op: simple(:op),
+           value: simple(:value)) {
+        FilterExpr.predicate(
+          op,
+          FilterTerm.term(filter_expr.to_s, denominator: true),
+          FilterValue.new(value.to_s))
+      }
+
+      rule(filter_expr: simple(:filter_expr),
+           numerator: simple(:numerator),
+           op: simple(:op),
+           value: simple(:value)) {
+        FilterExpr.predicate(
+          op,
+          FilterTerm.term(filter_expr.to_s, numerator: true),
+          FilterValue.new(value.to_s))
+      }
+
+      rule(filter_expr: simple(:filter_expr),
+           ratio: simple(:ratio),
+           op: simple(:op),
+           value: simple(:value)) {
+        FilterExpr.predicate(
+          op,
+          FilterTerm.term(filter_expr.to_s, ratio: true),
+          FilterValue.new(value.to_s))
+      }
+
       rule(filter_and: sequence(:filter_expr)) {
         FilterExpr.new(:and, *filter_expr)
       }

@@ -49,7 +49,11 @@ module Grammar
     }
 
     rule(:qualifier) {
-      (numerator | denominator) >> match[":."]
+      (numerator | denominator | ratio) >> match[":."]
+    }
+
+    rule(:ratio) {
+      str("%").as(:ratio)
     }
 
     rule(:numerator) {

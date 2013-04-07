@@ -6,8 +6,23 @@ module Query
       end
 
       attr_reader :term
-      def initialize(term)
+      def initialize(term, options={})
         @term = term
+        @denominator = options[:denominator]
+        @ratio = options[:ratio] || @term == '%'
+        @term = 'n' if @term == '%'
+      end
+
+      def ratio?
+        @ratio
+      end
+
+      def numerator?
+        !denominator?
+      end
+
+      def denominator?
+        @denominator
       end
 
       def kind
@@ -57,13 +72,11 @@ module Query
         end
 
         if !@use_grouped_value
-          @base_index = case @base
-                        when 'den'
-                          0
-                        when 'num'
-                          1
-                        when '%'
+          @base_index = case
+                        when ratio?
                           2
+                        when denominator?
+                          0
                         else
                           1
                         end
@@ -94,16 +107,9 @@ module Query
       end
 
       def validate_filter!(extra)
-        field = term.to_s
-        if field == '.'
+        if term == '.'
           @use_grouped_value = true
         else
-          field = "#{$1}%.n" if field =~ /^(-)?%$/
-          if field =~ /^(den|num|%)[.](.*)/
-            @base = $1
-            field = $2
-          end
-          @term = field.downcase
           if term != 'n' && extra && extra.fields.any? { |x| x.to_s == term }
             raise "Bad sort condition: '#{field}'"
           end
@@ -111,8 +117,14 @@ module Query
         @validated = true
       end
 
+      def qualifier
+        return '%.' if ratio?
+        return 'den.' if denominator?
+        ''
+      end
+
       def to_s
-        term.to_s
+        qualifier + term.to_s
       end
     end
   end
