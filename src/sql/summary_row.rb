@@ -180,16 +180,16 @@ module Sql
     def annotated_extra_val_string
       res = []
       index = 0
-      fields = @extra_fields.fields
+      fields = @extra_fields && @extra_fields.fields
       @extra_values.each do |ev|
-        res << annotated_value(fields[index], ev)
+        res << annotated_value(fields && fields[index], ev)
         index += 1
       end
       res.join("; ")
     end
 
     def annotated_value(field, value)
-      "#{field}=#{value_string(value, field)}"
+      "#{field || 'N'}=#{value_string(value, field)}"
     end
 
     def format_value(v, field=nil)

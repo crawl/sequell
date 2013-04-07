@@ -275,6 +275,9 @@ module Sql
           Sql::AggregateExpression.aggregate_sql(@summary_tables, f)
         }.join(", ")
       end
+      if basefields.empty? && extras.empty?
+        basefields = "COUNT(*) AS fieldcount"
+      end
       [basefields, extras].find_all { |x| x && !x.empty? }.join(", ")
     end
 

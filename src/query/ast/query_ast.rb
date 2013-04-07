@@ -57,7 +57,7 @@ module Query
       end
 
       def summary?
-        summarise || (extra && extra.aggregate?)
+        summarise || (extra && extra.aggregate?) || self.tail
       end
 
       def has_sorts?
