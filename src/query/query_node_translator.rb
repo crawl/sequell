@@ -151,7 +151,7 @@ module Query
 
       if (field === 'place' || field === 'oplace') and value =~ /:\*?$/ and
           op.equality? and BRANCHES.deep?(value) then
-        node.value += '*' unless val =~ /\*$/
+        node.value += '*' unless value =~ /\*$/
         node.operator = op.equal? ? '=~' : '!~'
       end
 
