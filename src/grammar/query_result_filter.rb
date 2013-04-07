@@ -10,11 +10,11 @@ module Grammar
 
     rule(:result_alternation) {
       (result_expressions >> space? >>
-        str("|") >> space? >> result_expressions).as(:or)
+        str("||") >> space? >> result_expressions).as(:filter_or)
     }
 
     rule(:result_expressions) {
-      (result_expression >> (space >> result_expression).repeat).as(:and)
+      (space? >> result_expression).repeat(1).as(:filter_and)
     }
 
     rule(:result_expression) {
@@ -61,7 +61,7 @@ module Grammar
     }
 
     rule(:field_expression) {
-      (function_expr | str("N") | str("n") | str("%")).as(:expr)
+      (function_expr | str("N") | str("n") | str("%")).as(:filter_expr)
     }
 
     rule(:function_expr) {

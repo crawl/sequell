@@ -82,10 +82,10 @@ module Query
       def merge(other, merge_op=:and)
         raise "Cannot merge #{self} with #{other}" unless other.is_a?(Expr)
         if self.operator != other.operator || self.operator.arity != 0
-          Expr.new(merge_op, self, other)
+          Expr.new(merge_op, self.dup, other.dup)
         else
           merged = self.dup
-          merged.arguments += other.arguments
+          merged.arguments += other.dup.arguments
           merged
         end
       end

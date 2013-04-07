@@ -13,6 +13,10 @@ module Query
         :summary_list
       end
 
+      def dup
+        self.class.new(*arguments.map { |a| a.dup })
+      end
+
       def multiple_field_group?
         self.arity > 1
       end

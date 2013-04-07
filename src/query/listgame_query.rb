@@ -40,12 +40,12 @@ module Query
 
   private
     def build_primary_query
-      AST::ASTQueryBuilder.build(self.default_nick, self.ast, self.ast.head)
+      AST::ASTQueryBuilder.build(self.default_nick, self.ast, self.ast.head.dup)
     end
 
     def build_secondary_query
       AST::ASTQueryBuilder.build(self.default_nick, self.ast,
-                                 self.ast.full_tail)
+                                 self.ast.full_tail.dup)
     end
 
     def build_query_list

@@ -7,6 +7,10 @@ module Query
         @arguments = extras
       end
 
+      def dup
+        self.new(*arguments.map(&:dup))
+      end
+
       def kind
         :extra_list
       end

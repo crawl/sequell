@@ -24,6 +24,8 @@ module Sql
       @values = nil
       @random_game = nil
       @summary_sort = nil
+      @sorts = ast.sorts && ast.sorts.dup
+      @summarise = ast.summarise && ast.summarise.dup
       @raw = nil
       @joins = false
 
@@ -68,7 +70,7 @@ module Sql
     end
 
     def resolve_sort_fields(pred, tables)
-      ast.sorts.each { |sort|
+      @sorts.each { |sort|
         sort.each_field { |field|
           STDERR.puts("Resolving sort: #{field}")
           resolve_field(field, tables)
@@ -85,6 +87,7 @@ module Sql
     end
 
     def resolve_predicate_columns(predicates, table_set=@tables)
+      STDERR.puts("Resolving predicates in #{predicates} for #{@tables} (#{@tables.object_id})")
       Sql::ColumnResolver.resolve(@ctx, table_set, predicates)
     end
 
@@ -118,12 +121,11 @@ module Sql
     end
 
     def summarise
-      @ast.summarise
+      @summarise
     end
 
     def summarise?
       @ast.summary?
-      #@summarise || (@extra && @extra.aggregate?)
     end
 
     def grouping_query?
@@ -223,7 +225,7 @@ module Sql
       if summarise
         STDERR.puts("Summary field resolve for #{summarise}")
         summarise.each_field { |field|
-          STDERR.puts("Resolving summary #{field}")
+          STDERR.puts("Resolving summary #{field} / #{field.object_id}")
           resolve_field(field, @summary_tables)
         }
       end

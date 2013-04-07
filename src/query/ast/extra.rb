@@ -10,6 +10,10 @@ module Query
         @ordering = ordering.to_s
       end
 
+      def dup
+        self.class.new(expr.dup, ordering)
+      end
+
       def kind
         :extra
       end

@@ -9,6 +9,10 @@ module Query
         @percentage = percentage && !percentage.strip.empty?
       end
 
+      def dup
+        self.class.new(expr.dup, ordering, percentage)
+      end
+
       def expr
         @arguments.first
       end

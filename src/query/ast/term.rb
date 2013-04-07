@@ -13,7 +13,7 @@ module Query
       end
 
       def operator
-        nil
+        @operator
       end
 
       def arguments

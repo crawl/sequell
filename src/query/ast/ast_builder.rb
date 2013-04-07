@@ -10,6 +10,8 @@ require 'query/ast/summary_list'
 require 'query/ast/extra'
 require 'query/ast/extra_list'
 require 'query/ast/field'
+require 'query/ast/filter_expr'
+require 'query/ast/filter_term'
 require 'query/ast/funcall'
 require 'query/nick_expr'
 require 'query/sort'
@@ -197,6 +199,25 @@ module Query
 
       rule(term: simple(:term)) {
         term
+      }
+
+      rule(filter_expr: simple(:filter_expr),
+           op: simple(:op),
+           value: simple(:value)) {
+        FilterExpr.predicate(
+          op,
+          FilterTerm.term(filter_expr.to_s),
+          value.to_s)
+      }
+
+      rule(filter_and: sequence(:filter_expr)) {
+        FilterExpr.new(:and, *filter_expr)
+      }
+      rule(filter_or: sequence(:filter_expr)) {
+        FilterExpr.new(:or, *filter_expr)
+      }
+      rule(result_filter: simple(:filter_expr)) {
+        filter_expr
       }
     end
   end
