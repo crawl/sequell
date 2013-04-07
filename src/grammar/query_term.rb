@@ -140,11 +140,11 @@ module Grammar
     }
 
     rule(:field) {
-      (prefix.maybe >> identifier.as(:identifier)).as(:field)
+      (prefix.maybe >> identifier).as(:identifier).as(:field)
     }
 
     rule(:prefix) {
-      identifier.as(:prefix) >> str(":")
+      identifier >> str(":")
     }
 
     rule(:identifier) {
