@@ -24,7 +24,8 @@ module Sql
       @values = nil
       @random_game = nil
       @summary_sort = nil
-      @sorts = ast.sorts && ast.sorts.dup
+      @sorts = ast.sorts && ast.sorts.map(&:dup)
+      @count_sorts = ast.sorts && ast.sorts.map(&:dup)
       @summarise = ast.summarise && ast.summarise.dup
       @raw = nil
       @joins = false
@@ -37,7 +38,7 @@ module Sql
         @count_tables = @tables.dup
         @summary_tables = @tables.dup
 
-        resolve_sort_fields(@pred, @tables)
+        resolve_sort_fields(@sorts, @tables)
         @query_fields = resolve_query_fields
       }
     end
@@ -73,8 +74,8 @@ module Sql
       add_extra_fields_to_xlog_record(self.extra, map)
     end
 
-    def resolve_sort_fields(pred, tables)
-      @sorts.each { |sort|
+    def resolve_sort_fields(sorts, tables)
+      sorts.each { |sort|
         sort.each_field { |field|
           resolve_field(field, tables)
         }
@@ -182,7 +183,7 @@ module Sql
 
         @values = self.with_values(field_expressions, @values)
         "SELECT #{select_cols} FROM #{table_context.to_sql} " +
-           where(@pred, with_sorts)
+           where(@pred, with_sorts && @sorts)
       }
     end
 
@@ -204,7 +205,7 @@ module Sql
 
     def select_all(with_sorts=true, single_record_index=0)
       if single_record_index > 0
-        resolve_sort_fields(@count_pred, @count_tables)
+        resolve_sort_fields(@count_sorts, @count_tables)
         id_subquery = self.select_id(with_sorts, single_record_index)
         id_field = Sql::Field.field('id')
         id_sql = resolve_field(id_field, @tables).to_sql
@@ -215,14 +216,15 @@ module Sql
 
       @values = self.with_values(query_fields, @values)
       "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " +
-         where(@pred, with_sorts)
+         where(@pred, with_sorts && @sorts)
     end
 
     def select_id(with_sorts=false, single_record_index=0)
       id_field = Sql::Field.field('id')
       id_sql = resolve_field(id_field, @count_tables).to_sql
+      where_clause = self.where(@count_pred, with_sorts && @count_sorts)
       "SELECT #{id_sql} FROM #{@count_tables.to_sql} " +
-        "#{where(@count_pred, with_sorts)} #{limit_clause(single_record_index)}"
+        "#{where_clause} #{limit_clause(single_record_index)}"
     end
 
     def select_count
@@ -339,12 +341,12 @@ module Sql
       %{v #{OPERATORS['=~']} ?}
     end
 
-    def build_query(predicates, with_sorts=true)
+    def build_query(predicates, with_sorts=nil)
       @query, @values = predicates.to_sql, predicates.sql_values
       @query = "WHERE #{@query}" unless @query.empty?
-      if with_sorts && ast.has_sorts?
+      if with_sorts
         @query << " " unless @query.empty?
-        @query << "ORDER BY " << ast.primary_sort.to_sql
+        @query << "ORDER BY " << with_sorts.first.to_sql
 
         unless ast.primary_sort.unique_valued?
           @query << ", " <<
