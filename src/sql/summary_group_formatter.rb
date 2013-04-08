@@ -9,7 +9,7 @@ module Sql
     def format(row)
       @format.gsub(/\$\{([^}]+)\}/) { |m|
         format_key_value($1, row)
-      }
+      }.gsub(/ +/, ' ').gsub(/\[;/, '[')
     end
 
     def format_key_value(key, row)
