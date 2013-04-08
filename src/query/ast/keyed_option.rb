@@ -2,9 +2,9 @@ module Query
   module AST
     class KeyedOption < Term
       KEY_ALIASES = {
-        sfmt: 'fmt',
-        summary_format: 'fmt',
-        format: 'fmt'
+        'sfmt' => 'fmt',
+        'summary_format' => 'fmt',
+        'format' => 'fmt'
       }
 
       attr_accessor :name, :value
