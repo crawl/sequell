@@ -8,7 +8,7 @@ module Grammar
     root(:expr)
 
     rule(:expr) {
-      option | body_term
+      keyed_options | option | body_term
     }
 
     rule(:option) {
@@ -29,8 +29,7 @@ module Grammar
     }
 
     rule(:body_term) {
-      summary_term | extra_term | minmax_term | order_term | game_number |
-      keyed_options | term
+      summary_term | extra_term | minmax_term | order_term | game_number | term
     }
 
     rule(:game_number) {
