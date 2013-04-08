@@ -8,7 +8,10 @@ module Query
       require 'query/ast/ast_fixup'
       require 'grammar/query_body'
 
-      raw_parse = ::Grammar::QueryBody.new.parse(fragment.to_s)
+      raw_parse =
+        ::Grammar::QueryBody.new.parse(
+          fragment.to_s,
+          reporter: Parslet::ErrorReporter::Deepest.new)
       debug("Fragment raw_parse: #{raw_parse.inspect}")
       ast = AST::ASTBuilder.new.apply(raw_parse)
       debug("Fragment AST: #{ast.inspect}")
@@ -25,23 +28,33 @@ module Query
 
       query_text = query.to_s
       query_text = query_with_context(query_text) if add_context
-      debug("Parsing query: '#{query_text}', encoding: #{query_text.encoding}")
-      raw_parse = ::Grammar::Query.new.parse(query_text)
-      debug("raw_parse: #{raw_parse.inspect}")
 
-      ast = AST::ASTBuilder.new.apply(raw_parse)
-      debug("AST: #{ast}")
+      begin
+        debug("Parsing query: '#{query_text}', enc: #{query_text.encoding}")
+        raw_parse =
+          ::Grammar::Query.new.parse(
+            query_text,
+            reporter: Parslet::ErrorReporter::Deepest.new)
+        debug("raw_parse: #{raw_parse.inspect}")
 
-      ast.with_context {
-        ::Query::NickExpr.with_default_nick(default_nick) {
-          translated_ast = AST::ASTTranslator.apply(ast)
-          debug("Resolved AST: #{translated_ast}")
+        ast = AST::ASTBuilder.new.apply(raw_parse)
+        debug("AST: #{ast}")
 
-          fixed_ast = AST::ASTFixup.result(default_nick, translated_ast)
-          debug("Fixed AST: #{fixed_ast}, head: #{fixed_ast.head}")
-          fixed_ast
+        ast.with_context {
+          ::Query::NickExpr.with_default_nick(default_nick) {
+            translated_ast = AST::ASTTranslator.apply(ast)
+            debug("Resolved AST: #{translated_ast}")
+
+            fixed_ast = AST::ASTFixup.result(default_nick, translated_ast)
+            debug("Fixed AST: #{fixed_ast}, head: #{fixed_ast.head}")
+            fixed_ast
+          }
         }
-      }
+
+      rescue Parslet::ParseFailed => error
+        raise("Broken query near '" +
+              query_text[error_place(error.cause)..-1] + "'")
+      end
     end
 
     def self.query_with_context(query, context='!lg')
@@ -49,6 +62,12 @@ module Query
         query.index(name + ' ') == 0
       }
       context + ' ' + query
+    end
+
+    def self.error_place(cause)
+      ([cause.pos] + (cause.children || []).map { |child|
+        error_place(child)
+      }).max
     end
   end
 end
