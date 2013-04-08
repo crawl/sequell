@@ -97,7 +97,7 @@ module Query
       }
 
       rule(field_value: simple(:value)) {
-        value.to_s.strip
+        value.is_a?(Term) ? value : value.to_s.strip
       }
 
       rule(field: { identifier: simple(:field) }) {
@@ -176,7 +176,8 @@ module Query
           op: simple(:op),
           value: simple(:value)
         }) {
-        Expr.new(op.to_s, expr, Value.new(value.to_s))
+        Expr.new(op.to_s, expr,
+          value.is_a?(Term) ? value : Value.new(value.to_s))
       }
 
       rule(
@@ -189,7 +190,8 @@ module Query
         }) {
         Expr.new(:and,
           *fields.map { |field|
-            Expr.new(op.to_s, field, Value.new(value.to_s))
+            Expr.new(op.to_s, field,
+              value.is_a?(Term) ? value : Value.new(value.to_s))
           })
       }
 
@@ -203,7 +205,8 @@ module Query
         }) {
         Expr.new(:or,
           *fields.map { |field|
-            Expr.new(op.to_s, field, Value.new(value.to_s))
+            Expr.new(op.to_s, field,
+                     value.is_a?(Term) ? value : Value.new(value.to_s))
           })
       }
 
