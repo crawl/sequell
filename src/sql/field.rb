@@ -177,7 +177,11 @@ module Sql
       unless @table
         raise "Attempt to use unresolved field #{self} in a SQL statement"
       end
-      "#{table.alias}.#{self.sql_column_name}"
+      sql_typecast("#{table.alias}.#{self.sql_column_name}")
+    end
+
+    def sql_typecast(expr)
+      self.type.comparable_expr(expr)
     end
 
     def to_s

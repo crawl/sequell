@@ -151,6 +151,11 @@ module Sql
       end
     end
 
+    def comparable_expr(expr)
+      return expr unless self.case_sensitive?
+      "CAST(#{expr} AS CITEXT)"
+    end
+
     def comparison_value(raw_value)
       return Sql::VersionNumber.version_numberize(raw_value) if self.version?
       return raw_value.to_f if self.real?
