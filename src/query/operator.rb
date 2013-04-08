@@ -92,7 +92,7 @@ module Query
         } || raise(Sql::TypeError.new("Type mismatch: cannot apply #{self} to #{args.first}"))
       )
       args.reduce(chosen_type) { |type, arg|
-        debug("Applying #{type} to #{arg.type} (#{arg})")
+        debug{"Applying #{type} to #{arg.type} (#{arg})"}
         type.applied_to(arg.type)
       }
     end

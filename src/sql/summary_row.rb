@@ -43,7 +43,7 @@ module Sql
 
     def group_formatter
       @group_formatter ||=
-        SummaryGroupFormatter.new(query.ast.key_value(:fmt))
+        SummaryGroupFormatter.child_format(query.ast.key_value(:fmt))
     end
 
     def master_formatter

@@ -399,8 +399,10 @@ def pretty_duration(durseconds)
   timestr
 end
 
-def debug(text)
-  STDERR.puts(text) if ENV['DEBUG_HENZELL']
+def debug
+  if DEBUG_HENZELL
+    STDERR.puts(yield)
+  end
 end
 
 def pretty_date(date)

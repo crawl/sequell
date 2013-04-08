@@ -99,7 +99,7 @@ module Query
       def convert_types!
         arg_type = self.operator.argtype(arguments)
         self.arguments = self.arguments.map { |arg|
-          debug("Converting #{arg} (#{arg.class}) to #{arg_type}")
+          debug{"Converting #{arg} (#{arg.class}) to #{arg_type}"}
           arg.convert_to_type(arg_type)
         }.compact
         self

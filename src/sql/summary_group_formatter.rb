@@ -3,12 +3,24 @@ module Sql
     DEFAULT_FORMAT = '${n_x}${.} ${%} [${n_ratio};${x}]'
     DEFAULT_PARENT_FORMAT = '${n_x}${.} ${%} (${child})'
 
-    def self.parent_format(format=nil)
-      self.new(format || DEFAULT_PARENT_FORMAT)
+    def self.format_cache
+      @format_cache ||= { }
     end
 
-    def initialize(format=nil)
-      @format = format || DEFAULT_FORMAT
+    def self.parent_format(format=nil)
+      self.format(format || DEFAULT_PARENT_FORMAT)
+    end
+
+    def self.child_format(format=nil)
+      self.format(format || DEFAULT_FORMAT)
+    end
+
+    def self.format(format)
+      format_cache[format] ||= self.new(format)
+    end
+
+    def initialize(format)
+      @format = format or raise "No format?"
     end
 
     def format(row)
