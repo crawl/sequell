@@ -1089,11 +1089,6 @@ You may also define new keywords for common listgame filters:
   !kw dying !(boring|winning)
   !kw meatsprint sprint map=meatsprint
 
-Keywords can only include filter conditions, and cannot include
-options that modify the behavior of the !lg command, such as -tv,
--ttyrec, etc., or grouping and non-filter conditions such as s=...,
-x=..., max=... expressions.
-
 !kw accepts -ls and -rm switches to list and delete entries.
   
 
