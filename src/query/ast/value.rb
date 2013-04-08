@@ -27,7 +27,7 @@ module Query
       end
 
       def to_s
-        (flags[:display_value] || display_value(@value)).to_s
+        (flags[:display_value] || @value).to_s
       end
 
       def null?
