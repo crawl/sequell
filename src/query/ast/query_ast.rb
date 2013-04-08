@@ -37,8 +37,8 @@ module Query
       end
 
       def default_group_order
-        return nil unless summarise
-        summarise.default_group_order
+        (extra && extra.default_group_order) ||
+          (summarise && summarise.default_group_order)
       end
 
       def head_desc(suppress_meta=true)

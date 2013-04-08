@@ -36,6 +36,10 @@ module Query
         ordering == '-'
       end
 
+      def reverse?
+        asc?
+      end
+
       def to_s
         (asc? ? '-' : '') + expr.to_s
       end
