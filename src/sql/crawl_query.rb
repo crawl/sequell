@@ -19,7 +19,7 @@ module Sql
       @pred = predicates.dup
       @nick = nick
       @num = @ast.game_number
-      @extra = @ast.extra && @ast.extra.dup
+      self.extra = ast.extra
       @argstr = ast.description(nick)
       @values = nil
       @random_game = nil
@@ -52,7 +52,10 @@ module Sql
     end
 
     def extra=(extra)
+      # FIXME: Break these up.
       @extra = extra && extra.dup
+      @count_extra = extra && extra.dup
+      @summary_extra = extra && extra.dup
     end
 
     def row_to_fieldmap(row)
@@ -113,6 +116,13 @@ module Sql
     end
 
     def resolve_query_fields
+      if @extra
+        @extra.fields.each { |extra|
+          extra.each_field { |field|
+            resolve_field(field, @tables)
+          }
+        }
+      end
       self.select_query_fields.each { |field|
         resolve_field(field, @tables)
       }
@@ -189,11 +199,13 @@ module Sql
 
     def with_values(expressions, values=[])
       new_values = []
-      expressions.each { |expr|
-        expr.each_value { |value|
-          new_values << value.value unless value.null?
+      if expressions
+        expressions.each { |expr|
+          expr.each_value { |value|
+            new_values << value.value unless value.null?
+          }
         }
-      }
+      end
       new_values + (values || [])
     end
 
@@ -245,8 +257,8 @@ module Sql
         }
       end
 
-      if @extra
-        @extra.each_field { |field|
+      if @summary_extra
+        @summary_extra.each_field { |field|
           resolve_field(field, @summary_tables)
         }
       end
@@ -312,13 +324,13 @@ module Sql
       if summarise
         basefields = "COUNT(*) AS fieldcount, #{summary_db_fields.join(", ")}"
       end
-      if @extra && !@extra.empty?
+      if @summary_extra && !@summary_extra.empty?
         # At this point extras must be aggregate columns.
-        if !@extra.aggregate?
-          raise "Extra fields (#{@extra}) contain non-aggregates"
+        if !@summary_extra.aggregate?
+          raise "Extra fields (#{@summary_extra}) contain non-aggregates"
         end
-        extras = @extra.fields.map { |f|
-          Sql::AggregateExpression.aggregate_sql(@summary_tables, f)
+        extras = @summary_extra.fields.map { |f|
+          f.to_sql
         }.join(", ")
       end
       if basefields.empty? && extras.empty?

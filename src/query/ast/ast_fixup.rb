@@ -29,6 +29,14 @@ module Query
           ast.sorts << Query::Sort.new(@ctx.defsort)
         end
 
+        if ast.sorts
+          ast.sorts.each { |sort|
+            if sort.aggregate?
+              raise "Sort expression cannot be aggregate: #{sort}"
+            end
+          }
+        end
+
         if !ast.group_order && ast.needs_group_order?
           ast.group_order = ast.default_group_order
         end

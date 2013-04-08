@@ -14,7 +14,9 @@ module Sql
     def format(row)
       @format.gsub(/\$\{([^}]+)\}/) { |m|
         format_key_value($1, row)
-      }.gsub(/ +/, ' ').gsub(/\(\s*\)|\[\s*\]/, '').gsub(/([\[(])[;,]/, '\1').strip
+      }.gsub(/ +/, ' ').
+        gsub(/([\[(])[;,]/, '\1').gsub(/[;,]([\])])/, '\1').
+        gsub(/\(\s*\)|\[\s*\]/, '').strip
     end
 
     def format_key_value(key, row)

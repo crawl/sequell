@@ -159,23 +159,27 @@ module Query
         "#{field}#{op}#{value}"
       end
 
-      def to_query_string(wrapping_parens=true)
-        wrap_if(self.sql_expr?, '${', '}') {
-          if self.operator.unary?
-            "#{operator.display_string}#{self.arguments.first.to_query_string}"
-          else
-            if self.in_clause_transformable?
-              return self.to_in_clause_query_string
-            end
-
-            wrap_with_parens = wrapping_parens && self.arity > 1
-            text = arguments.map { |a|
-              a.to_query_string(self.operator > a.operator)
-            }.compact.join(operator.display_string)
-            text = "((#{text}))" if wrap_with_parens
-            text
-          end
+      def child_query(child, parens=true)
+        wrap_if(child.sql_expr? && !sql_expr?, '${', '}') {
+          child.to_query_string(parens)
         }
+      end
+
+      def to_query_string(wrapping_parens=true)
+        if self.operator.unary?
+          "#{operator.display_string}#{child_query(self.first)}"
+        else
+          if self.in_clause_transformable?
+            return self.to_in_clause_query_string
+          end
+
+          wrap_with_parens = wrapping_parens && self.arity > 1
+          text = arguments.map { |a|
+            child_query(a, self.operator > a.operator)
+          }.compact.join(operator.display_string)
+          text = "((#{text}))" if wrap_with_parens
+          text
+        end
       end
 
       def sql_values

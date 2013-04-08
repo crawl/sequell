@@ -107,11 +107,11 @@ module Query
       end
 
       def validate_filter!(summarise, extra)
-        if term == '.' || (summarise && term.to_s == summarise.first.to_s)
+        if term.to_s == '.' || (summarise && term.to_s == summarise.first.to_s)
           @use_grouped_value = true
         else
-          if term.downcase != 'n' &&
-              (!extra || !extra.fields.any? { |x| x.to_s == term })
+          if term.to_s.downcase != 'n' &&
+              (!extra || !extra.fields.any? { |x| x.to_s == term.to_s })
             raise "Bad sort condition: '#{self}' (extra: #{extra})"
           end
         end

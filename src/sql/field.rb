@@ -173,6 +173,14 @@ module Sql
       @prefix == prefix
     end
 
+    def to_query_string(paren=false)
+      prefixed_name
+    end
+
+    def prefixed_name
+      @prefix ? "#{@prefix}:#{@name}" : to_s
+    end
+
     def to_sql
       unless @table
         raise "Attempt to use unresolved field #{self} in a SQL statement"

@@ -33,11 +33,11 @@ module Sql
         break if count == 0
       end
 
+      filter_count_summary_rows!
       @count = @counts[0]
       if @count == 0
         query_group.stub_message
       else
-        filter_count_summary_rows!
         formatter = formatter || @formatter || Formatter::TextSummary
         formatter.format(self)
       end
@@ -74,6 +74,7 @@ module Sql
     end
 
     def filter_count_summary_rows!
+      return if @counts[0] == 0
       group_by = @q.summarise
       summary_field_count = group_by ? group_by.arity : 0
 

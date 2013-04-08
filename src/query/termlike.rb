@@ -24,6 +24,10 @@ module Query
       self
     end
 
+    def sql_expr?
+      flags[:sql_expr]
+    end
+
     def negatable?
       false
     end
