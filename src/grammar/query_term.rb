@@ -29,7 +29,8 @@ module Grammar
     }
 
     rule(:body_term) {
-      summary_term | extra_term | minmax_term | order_term | game_number | term
+      summary_term | extra_term | minmax_term | order_term | game_number |
+      keyed_options | term
     }
 
     rule(:game_number) {
@@ -57,6 +58,31 @@ module Grammar
     rule(:summary_term) {
       query_fn(str("group") | match['sg'],
         ordered_group_expression_list.as(:summary))
+    }
+
+    rule(:keyed_options) {
+      str("-").maybe >> str("opt") >> match["=:"] >>
+      keyed_option_list.as(:keyed_options)
+    }
+
+    rule(:keyed_option_list) {
+      keyed_option |
+      str("(") >> space? >> keyed_option >>
+      (space? >> str(",").maybe >> space? >> keyed_option).repeat >>
+      space? >> str(")")
+    }
+
+    rule(:keyed_option) {
+      keyed_option_name >> space? >> match[":="] >> space? >>
+      keyed_option_value
+    }
+
+    rule(:keyed_option_name) {
+      Atom.new.identifier.as(:keyed_option_name)
+    }
+
+    rule(:keyed_option_value) {
+      Atom.new.quoted_string.as(:keyed_option_value)
     }
 
     rule(:extra_term) {

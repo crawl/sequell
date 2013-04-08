@@ -12,6 +12,10 @@ module Formatter
       @summary.query
     end
 
+    def default_result_prefix_title
+      query.ast.result_prefix_title
+    end
+
     def prefix
       "#{summary_count} #{summary_entities} for #{@summary.query.argstr}: "
     end

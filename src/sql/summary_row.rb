@@ -1,5 +1,6 @@
 require 'date'
 require 'sql/date'
+require 'sql/summary_group_formatter'
 
 module Sql
   class SummaryRow
@@ -16,7 +17,13 @@ module Sql
       @parent = @summary_reporter
 
       @summary_field_spec = nil
-      summarise_fields = summary_reporter.query.summarise
+
+      query = summary_reporter.query
+
+      @group_formatter =
+        SummaryGroupFormatter.new(query.ast.key_value(:fmt))
+
+      summarise_fields = query.summarise
       @summary_field_spec = summarise_fields.args[0] if summarise_fields
       @fields = summary_fields
       @key =
@@ -136,9 +143,7 @@ module Sql
       if @subrows
         master_group_to_s
       elsif !@key.nil?
-        [counted_keys, percentage_string, extra_val_string].find_all { |x|
-          !x.to_s.empty?
-        }.join(" ")
+        @group_formatter.format(self)
       else
         annotated_extra_val_string
       end
@@ -153,26 +158,40 @@ module Sql
       ""
     end
 
-    def counted_keys
+    def count_prefix
       if count_string == '1'
-        key_display_value
+        ''
       else
-        "#{count_string}x #{key_display_value}"
+        "#{count_string}x "
       end
+    end
+
+    def counted_keys
+      count_prefix.to_s + key_display_value.to_s
     end
 
     def count_string
       @counts.reverse.join("/")
     end
 
-    def extra_val_string
-      allvals = []
+    def count_ratio_percentage
       if @counts.size > 1
-        allvals << percentage(@counts[1], @counts[0])
+        percentage(@counts[1], @counts[0])
+      else
+        ''
       end
-      allvals << @extra_values.each_with_index.map { |x, i|
+    end
+
+    def extra_field_value_string
+      @extra_values.each_with_index.map { |x, i|
         value_string(x, @extra_fields.fields[i])
       }.join(";")
+    end
+
+    def extra_val_string
+      allvals = []
+      allvals << self.count_ratio_percentage
+      allvals << self.extra_field_value_string
       es = allvals.find_all { |x| !x.empty? }.join(";")
       es.empty? ? es : "[" + es + "]"
     end

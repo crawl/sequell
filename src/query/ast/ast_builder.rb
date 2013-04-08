@@ -15,6 +15,8 @@ require 'query/ast/filter_term'
 require 'query/ast/filter_value'
 require 'query/ast/group_order_term'
 require 'query/ast/group_order_list'
+require 'query/ast/keyed_option_list'
+require 'query/ast/keyed_option'
 require 'query/ast/funcall'
 require 'query/nick_expr'
 require 'query/sort'
@@ -305,6 +307,21 @@ module Query
       }
       rule(result_filter: simple(:filter_expr)) {
         filter_expr
+      }
+
+      rule(char: simple(:c)) { c.to_s }
+      rule(string: sequence(:chars)) { chars.join('') }
+
+      rule(keyed_option_name: simple(:name),
+           keyed_option_value: simple(:value)) {
+        KeyedOption.new(name.to_s, value.to_s)
+      }
+
+      rule(keyed_options: simple(:keyed_option)) {
+        KeyedOptionList.new(keyed_option)
+      }
+      rule(keyed_options: sequence(:keyed_options)) {
+        KeyedOptionList.new(*keyed_options)
       }
     end
   end

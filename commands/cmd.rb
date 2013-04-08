@@ -52,6 +52,7 @@ def display_user_command(name)
 end
 
 def define_user_command(name, definition)
+  definition = definition.sub(/^\s*=>\s*/, '')
   Cmd::UserDefinedCommand.define(name, definition)
 end
 

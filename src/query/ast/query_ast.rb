@@ -7,7 +7,7 @@ module Query
       attr_accessor :context, :context_name, :head, :tail, :filter
       attr_accessor :extra, :summarise, :options, :sorts
       attr_accessor :game_number, :nick, :game
-      attr_accessor :group_order
+      attr_accessor :group_order, :keys
 
       def initialize(context_name, head, tail, filter)
         @game = GameContext.game
@@ -21,6 +21,7 @@ module Query
         @options = []
         @opt_map = { }
         @sorts = []
+        @keys = Query::AST::KeyedOptionList.new
 
         @nick = ASTWalker.find(@head) { |node|
           node.nick.value if node.is_a?(NickExpr)
@@ -30,6 +31,22 @@ module Query
           @nick = '.'
           @head << ::Query::NickExpr.nick('.')
         end
+      end
+
+      def key_value(key)
+        self.keys[key]
+      end
+
+      def result_prefix_title
+        key_value(:title)
+      end
+
+      def stub_message(nick)
+        stub = self.key_value(:stub)
+        return stub if stub
+
+        entities = self.context.entity_name + 's'
+        puts "No #{entities} for #{self.description(nick)}."
       end
 
       def needs_group_order?

@@ -85,9 +85,11 @@ module Query
 
         return node unless node.meta?
         case node.kind
-        when :summary, :extra, :group_order
+        when :summary, :extra, :group_order, :keyed_option
           # Don't cull these nodes, cull the parent.
           return node
+        when :keyed_option_list
+          ast.keys.merge!(node)
         when :sort
           ast.sorts << node
         when :option

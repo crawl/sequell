@@ -2,6 +2,18 @@ module Sql
   class QueryList < Array
     attr_accessor :ctx, :group_order, :filter
 
+    def ast
+      self.primary_query.ast
+    end
+
+    def stub_message
+      ast.stub_message(self.primary_query.nick)
+    end
+
+    def result_prefix_title
+      ast.result_prefix_title
+    end
+
     def grouping_query?
       self.primary_query.grouping_query?
     end

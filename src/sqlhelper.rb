@@ -147,8 +147,7 @@ def sql_show_game(default_nick, args)
     else
       result = sql_exec_query(q.num, q)
       if result.empty?
-        type = Sql::QueryContext.context.entity_name + 's'
-        puts "No #{type} for #{q.argstr}."
+        puts query_group.stub_message
       else
         if block_given?
           yield result

@@ -107,10 +107,6 @@ module Query
         raise Sql::TypeError.new(e.message + " in '#{self}'")
       end
 
-      def sql_expr?
-        flags[:sql_expr]
-      end
-
       def << (term)
         self.arguments << term
         self

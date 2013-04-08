@@ -36,6 +36,7 @@ Syntax
                              [x=<field1>[,<field2>,...]]
                              [o=<aggregate-function or % or N>]
                              [max=<field> or min=<field>; not usable with s=]]
+                             [<keyed_option>]
                              [<option>]
                              [<number>]
 
@@ -194,6 +195,24 @@ Where:
   You may use only one max= or min= operation per query, and you may
   not combine it with o=, or s=
 
+- <keyed_option>
+  Some options modify the display format for listgame. Keyed options are
+  expressed as -opt:key="val" or -opt:(key1="val1" key2:"val2" ...)
+
+  Recognized keyed options:
+  * fmt: For grouped (s=foo) queries, the display format.
+         The default fmt is "${n_x}${.} ${%} [${n_ratio};${x}]", where
+         ${n_x} produces the "45x " prefix in groups such as 45x HEFE,
+         ${.} displays the actual group value, ${%} displays the percentage
+         of the total that the group represents, ${n_ratio} displays the
+         ratio of the numerator to denominator counts for ratio queries, and
+         ${x} displays any extra field expressions.
+
+  * stub: Displayed when no results match the query condition.
+  * title: Displayed as a prefix to grouped queries. For instance:
+         !lg * win s=name -opt:title="Winners"
+      => Winners: 392x ...
+  
 - <option>
   Some options modify the behaviour of !lg:
   * -log    Get a URL to the game morgue instead of displaying the game details.

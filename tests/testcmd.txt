@@ -29,6 +29,11 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg * s=name x=avg(xl) opt:(fmt:"" title:"Hello")
+!lg * s=name x=avg(xl) opt:fmt:"avg(xl)=${x}"
+!cmd !greatrole => !lg * playable role=$1 s=crace / won @${*:-.} ?:N=0
+!greatrole he elliptic opt:(fmt:"${.}" title="Hello")
+
 !lm * time>20130101 s=char,name x=max(xl) ?: max(xl)>=15
 !lm elliptic min=sc
 !lg * win s=-name

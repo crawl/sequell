@@ -35,7 +35,7 @@ module Sql
 
       @count = @counts[0]
       if @count == 0
-        "No #{summary_entities} for #{@q.argstr}"
+        query_group.stub_message
       else
         filter_count_summary_rows!
         formatter = formatter || @formatter || Formatter::TextSummary

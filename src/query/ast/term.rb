@@ -34,6 +34,10 @@ module Query
         self.type.unit
       end
 
+      def sql_expr?
+        flags[:sql_expr]
+      end
+
       def to_query_string(parenthesize=false)
         self.to_s
       end

@@ -63,6 +63,7 @@ def display_keyword(name)
 end
 
 def define_keyword(name, definition)
+  definition = definition.sub(/^\s*=>\s*/, '')
   Cmd::UserKeyword.define(name, definition)
 end
 
