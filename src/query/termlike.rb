@@ -13,8 +13,8 @@ module Query
       self
     end
 
-    def flag!(flag_name)
-      self.flags[flag_name] = true
+    def flag!(flag_name, value=true)
+      self.flags[flag_name] = value
       self
     end
 

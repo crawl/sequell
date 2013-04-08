@@ -29,7 +29,9 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+E !tv * ce killer=elephant slug xl=max ::~ not an integer
 E !lg jeanjacques !win XL>=25 s=killer x=xl ::~ non-aggregates
+!tv * map=~grunt
 !lg * x=${hp}
 !lg * x=${hp + ac}
 !lg * win s=${hp + 500}

@@ -89,7 +89,7 @@ module Query
       chosen_type = Sql::Type.type(
         self.argtypes.find { |at|
           first_type.type_match?(at)
-        } || raise("Type mismatch: cannot apply #{self} to #{args.first}")
+        } || raise(Sql::TypeError.new("Type mismatch: cannot apply #{self} to #{args.first}"))
       )
       args.reduce(chosen_type) { |type, arg|
         debug("Applying #{type} to #{arg.type} (#{arg})")

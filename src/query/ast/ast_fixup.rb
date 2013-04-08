@@ -140,7 +140,8 @@ module Query
       def fix_node(node)
         # Fix LIKE expressions:
         if (node.operator == '=~' || node.operator == '!~') &&
-            node.right.value?
+            node.right.value? && !node.right.flags[:display_value]
+          node.right.flag!(:display_value, node.right.value)
           node.right.value = like_escape(node.right.value)
         end
         node.convert_types!
