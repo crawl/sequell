@@ -4,7 +4,8 @@ module Query
       KEY_ALIASES = {
         'sfmt' => 'fmt',
         'summary_format' => 'fmt',
-        'format' => 'fmt'
+        'format' => 'fmt',
+        'parent_format' => 'pfmt'
       }
 
       attr_accessor :name, :value

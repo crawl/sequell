@@ -20,9 +20,6 @@ module Sql
 
       query = summary_reporter.query
 
-      @group_formatter =
-        SummaryGroupFormatter.new(query.ast.key_value(:fmt))
-
       summarise_fields = query.summarise
       @summary_field_spec = summarise_fields.args[0] if summarise_fields
       @fields = summary_fields
@@ -38,6 +35,20 @@ module Sql
       @extra_fields = extra_fields
       @extra_values = extra_values.map { |e| [ e ] }
       @subrows = nil
+    end
+
+    def query
+      @summary_reporter.query
+    end
+
+    def group_formatter
+      @group_formatter ||=
+        SummaryGroupFormatter.new(query.ast.key_value(:fmt))
+    end
+
+    def master_formatter
+      @master_formatter ||=
+        SummaryGroupFormatter.parent_format(query.ast.key_value(:pfmt))
     end
 
     def count
@@ -136,14 +147,14 @@ module Sql
     end
 
     def master_group_to_s
-      "#{master_string} (#{subrows_string})"
+      master_formatter.format(self)
     end
 
     def to_s
       if @subrows
         master_group_to_s
       elsif !@key.nil?
-        @group_formatter.format(self)
+        group_formatter.format(self)
       else
         annotated_extra_val_string
       end

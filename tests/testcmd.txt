@@ -33,6 +33,7 @@ $ rm dat/user_commands.db
 !lg * s=name x=avg(xl) -opt:fmt:"avg(xl)=${x}"
 !cmd !greatrole => !lg * playable role=$1 s=crace / won @${*:-.} ?:N=0
 !greatrole he elliptic opt:(fmt:"${.}" title="Hello")
+!lm * !ktyp s=name,char x=max(xl) pfmt:'${.} (${child})' fmt:'${.}'
 
 !lm * time>20130101 s=char,name x=max(xl) ?: max(xl)>=15
 !lm elliptic min=sc

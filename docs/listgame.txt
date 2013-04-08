@@ -196,18 +196,22 @@ Where:
   not combine it with o=, or s=
 
 - <keyed_option>
-  Some options modify the display format for listgame. Keyed options are
-  expressed as -opt:key="val" or -opt:(key1="val1" key2:"val2" ...)
+  Some options modify the display format for listgame. Keyed options
+  are expressed as -opt:key="val" or -opt:(key1="val1" key2:"val2"
+  ...) or key:"val". Note that values must be present and are always
+  single- or double- quoted.
 
-  Recognized keyed options:
-  * fmt: For grouped (s=foo) queries, the display format.
+  Recognised keyed options:
+  * fmt: For grouped (s=foo) queries, the display format of the innermost group.
          The default fmt is "${n_x}${.} ${%} [${n_ratio};${x}]", where
          ${n_x} produces the "45x " prefix in groups such as 45x HEFE,
          ${.} displays the actual group value, ${%} displays the percentage
          of the total that the group represents, ${n_ratio} displays the
          ratio of the numerator to denominator counts for ratio queries, and
          ${x} displays any extra field expressions.
-
+  * pfmt: For nested (s=foo,bar) queries, the display format of non-inner
+          groups. Defaults to "${n_x}${.} ${%} (${child})", with ${child}
+          being replaced by a comma-separated list of inner-group strings.
   * stub: Displayed when no results match the query condition.
   * title: Displayed as a prefix to grouped queries. For instance:
          !lg * win s=name -opt:title="Winners"
