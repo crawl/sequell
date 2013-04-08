@@ -313,7 +313,7 @@ module Sql
       if @extra && !@extra.empty?
         # At this point extras must be aggregate columns.
         if !@extra.aggregate?
-          raise "Extra fields (#{@extra.extra}) contain non-aggregates"
+          raise "Extra fields (#{@extra}) contain non-aggregates"
         end
         extras = @extra.fields.map { |f|
           Sql::AggregateExpression.aggregate_sql(@summary_tables, f)
