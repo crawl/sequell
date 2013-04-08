@@ -79,6 +79,9 @@ Where:
   See the section "Logfile Fields" for a list of valid logfile fields
   and "Operators" for a list of valid operators.
 
+  More complex expressions may be expressed by enclosing them in ${ }.
+  For instance: ${ac + ev}>50. See "Expressions" for details.
+
   Values may contain embedded spaces. Underscores in values are
   converted to spaces before running listgame queries.
 
@@ -843,6 +846,11 @@ Listgame expressions may use these operators:
 (( )) grouping parentheses (note: must be doubled)
 ||   Boolean OR
 
+Inside expressions:
+( )        grouping parentheses
++ - * / %  (their standard meanings)
+
+
 Equals (=) is not very equal
 ============================
 The = operator is *not* an exact equality operator; it uses several
@@ -1010,6 +1018,19 @@ grouping clauses (s=X) and extra-field info (x=X).
                        discarding everything before (and including) the
                        first '; '.
 - size(<field>)       For comma-separated values, counts the number of values.
+
+
+Expressions
+-----------
+
+You may use more complex expressions wrapped in ${ }, or after a $:
+
+!lg * $ (ac + ev) * 2 > 15
+!lg * ${ac+ev}>15
+!lg * turn>0 s=${sc/turn}
+
+Inside expression forms, you may use + - * / % ** (exponentiation)
+operators in addition to the usual operators.
 
 
 User-Defined Commands

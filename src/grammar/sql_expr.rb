@@ -13,14 +13,14 @@ module Grammar
     }
 
     rule(:expr) {
-      (or_expr.as(:left) >>
+      (or_expr.as(:expr) >>
         (space? >> str("||") >> space? >>
-          or_expr.as(:right)).repeat(1)).as(:or) |
+          or_expr.as(:expr)).repeat(1)).as(:or) |
       or_expr
     }
 
     rule(:or_expr) {
-      (neg_expr.as(:left) >> (space >> neg_expr.as(:right)).repeat(1)).as(:and) |
+      (neg_expr.as(:expr) >> (space >> neg_expr.as(:expr)).repeat(1)).as(:and) |
       neg_expr
     }
 

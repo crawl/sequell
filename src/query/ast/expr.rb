@@ -107,6 +107,10 @@ module Query
         raise Sql::TypeError.new(e.message + " in '#{self}'")
       end
 
+      def sql_expr?
+        flags[:sql_expr]
+      end
+
       def << (term)
         self.arguments << term
         self
@@ -124,9 +128,9 @@ module Query
         elsif self.in_clause_transformable?
           self.in_clause_sql
         else
-          paren_wrapped(
-            arguments.map { |a| a.to_sql }.join(operator.to_sql),
-            arity > 1)
+          wrap_if(arity > 1, sql_expr? ? '(' : '((', sql_expr? ? ')' : '))') {
+            arguments.map { |a| a.to_sql }.join(operator.to_sql)
+          }
         end
       end
 
@@ -160,7 +164,7 @@ module Query
       end
 
       def to_query_string(wrapping_parens=true)
-        wrap_if(self.flags[:sql_expr], '${', '}') {
+        wrap_if(self.sql_expr?, '${', '}') {
           if self.operator.unary?
             "#{operator.display_string}#{self.arguments.first.to_query_string}"
           else

@@ -158,13 +158,13 @@ operators:
     precedence: 60
 
   - op: '*'
-    argtype: I
-    result: I
+    argtype: F
+    result: F
     precedence: 80
 
   - op: '/'
     argtype: I
-    result: I
+    result: F
     precedence: 80
 
   - op: '%'
@@ -174,7 +174,8 @@ operators:
     precedence: 80
 
   - op: '**'
-    argtype: I
-    result: I
+    sql_operator: '^'
+    argtype: F
+    result: F
     arity: 2
     precedence: 90

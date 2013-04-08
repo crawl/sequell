@@ -9,6 +9,7 @@ module Query
     end
 
     def with_flags(flags)
+      self.each_node { |node| node.with_flags(flags) unless node == self }
       self.flags.merge!(flags)
       self
     end
@@ -40,7 +41,7 @@ module Query
     end
 
     def aggregate?
-      false
+      arguments.any?(&:aggregate?)
     end
 
     def display_value(raw_value, display_format=nil)
