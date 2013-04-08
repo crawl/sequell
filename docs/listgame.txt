@@ -202,7 +202,8 @@ Where:
   single- or double- quoted.
 
   Recognised keyed options:
-  * fmt: For grouped (s=foo) queries, the display format of the innermost group.
+  * fmt/format:
+         For grouped (s=foo) queries, the display format of the innermost group.
          The default fmt is "${n_x}${.} ${%} [${n_ratio};${x}]", where
          ${n_x} produces the "45x " prefix in groups such as 45x HEFE,
          ${.} displays the actual group value, ${%} displays the percentage
