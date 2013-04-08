@@ -332,7 +332,8 @@ module Sql
           raise "Extra fields (#{@summary_extra}) contain non-aggregates"
         end
         extras = @summary_extra.fields.map { |f|
-          f.to_sql
+          STDERR.puts("Extra: #{f}")
+          Sql::AggregateExpression.aggregate_sql(@summary_tables, f)
         }.join(", ")
       end
       if basefields.empty? && extras.empty?
