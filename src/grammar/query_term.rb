@@ -12,6 +12,7 @@ module Grammar
     }
 
     rule(:option) {
+      (str("-").maybe >> keyed_option).as(:keyed_options) |
       (str("-") >> option_name >>
         (str(":") >> option_argument).repeat.as(:arguments)).as(:option)
     }
