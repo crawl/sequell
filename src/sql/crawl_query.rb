@@ -193,7 +193,7 @@ module Sql
           new_values << value.value unless value.null?
         }
       }
-      new_values + values
+      new_values + (values || [])
     end
 
     def query_columns
@@ -213,7 +213,7 @@ module Sql
                 "FROM #{@tables.to_sql} WHERE #{id_sql} = (#{id_subquery})")
       end
 
-      @values = self.with_values(query_columns, @values)
+      @values = self.with_values(query_fields, @values)
       "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " +
          where(@pred, with_sorts)
     end

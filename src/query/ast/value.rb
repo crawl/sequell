@@ -11,7 +11,7 @@ module Query
       end
 
       def initialize(value)
-        @value = value.to_s
+        @value = value
       end
 
       def kind
@@ -27,7 +27,7 @@ module Query
       end
 
       def to_s
-        display_value(@value)
+        display_value(@value).to_s
       end
 
       def null?
@@ -36,7 +36,15 @@ module Query
 
       def to_sql
         return 'NULL' if null?
-        '?'
+        '?' + self.sql_type_qualifier
+      end
+
+      def sql_type_qualifier
+        value_type = self.type
+        return '' if value_type == '*'
+        sql_type = value_type.to_sql
+        return '' unless sql_type
+        '::' + sql_type
       end
 
       def value_type(value)

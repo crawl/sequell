@@ -8,6 +8,11 @@ module Query
       @flags ||= { }
     end
 
+    def with_flags(flags)
+      self.flags.merge!(flags)
+      self
+    end
+
     def flag!(flag_name)
       self.flags[flag_name] = true
       self
@@ -140,6 +145,12 @@ module Query
 
     def without(&filter)
       Query::AST::ASTWalker.map_nodes(self.dup, filter) { nil }
+    end
+
+    def wrap_if(condition, left, right=left)
+      expr = yield
+      return left + expr + right if condition
+      expr
     end
 
     def to_query_string(paren=false)

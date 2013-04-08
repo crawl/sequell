@@ -615,11 +615,11 @@ lookup-tables:
   msg: [tmsg, vmsg]
 
 type-categories:
-  ET: I
+  ET: F
   VER: S
   MAP: S
-  I: I
-  F: I
+  I: F
+  F: F
   S: S
   '': S
   D: D

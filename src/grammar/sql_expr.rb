@@ -116,20 +116,20 @@ module Grammar
 
     rule(:function_call) {
       function_name >> space? >> str("(") >>
-      function_args >> space? >>
+      function_arguments.as(:arguments) >> space? >>
       str(")")
     }
 
     rule(:function_name) {
-      Atom.new.identifier.as(:fname)
+      Atom.new.identifier.as(:function_name)
     }
 
-    rule(:function_args) {
+    rule(:function_arguments) {
       function_arg >> (space? >> str(",") >> space? >> function_arg).repeat
     }
 
     rule(:function_arg) {
-      expr.as(:arg)
+      expr.as(:function_argument)
     }
 
     rule(:space) {

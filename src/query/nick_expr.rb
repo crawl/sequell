@@ -5,7 +5,7 @@ module Query
   class NickExpr < AST::Expr
     def self.nick(nick)
       return nick if nick.is_a?(self)
-      self.new(nick)
+      self.new(nick.to_s)
     end
 
     def self.negated(nick)
@@ -52,7 +52,7 @@ module Query
     attr_reader :nick
 
     def initialize(nick, negated=false)
-      nick = Query::AST::Value.value(nick)
+      nick = Query::AST::Value.value(nick.to_s)
       super(negated ? :'!=' : :'=', Sql::Field.field('name'), nick)
       @nick = nick
       @negated = negated

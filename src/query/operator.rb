@@ -85,15 +85,22 @@ module Query
     end
 
     def argtype(args)
-      Sql::Type.type(
+      first_type = Sql::Type.type((args.first && args.first.type) || '*')
+      chosen_type = Sql::Type.type(
         self.argtypes.find { |at|
-          args.first.type.type_match?(at)
-        }
+          first_type.type_match?(at)
+        } || raise("Type mismatch: cannot apply #{self} to #{args.first}")
       )
+      args.reduce(chosen_type) { |type, arg|
+        debug("Applying #{type} to #{arg.type} (#{arg})")
+        type.applied_to(arg.type)
+      }
     end
 
     def result_type(args)
-      Sql::Type.type(@options.result || args.first.type)
+      first_arg_type = (args.first && args.first.type) || '*'
+      Sql::Type.type(@options.result || first_arg_type).applied_to(
+        first_arg_type)
     end
 
     def equality?

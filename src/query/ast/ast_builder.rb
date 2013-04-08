@@ -105,7 +105,7 @@ module Query
       }
 
       rule(function_call: simple(:funcall)) { funcall }
-
+      rule(function_argument: simple(:argument)) { argument }
       rule(function_name: simple(:name),
            arguments: simple(:argument)) {
         Funcall.new(name.to_s, argument)
@@ -125,7 +125,7 @@ module Query
 
       rule(expr: simple(:expr)) { expr }
       rule(term: simple(:term)) { term }
-      rule(sql_expr: simple(:expr)) { expr }
+      rule(sql_expr: simple(:expr)) { expr.with_flags(sql_expr: true) }
 
       rule(keyword_expr: simple(:keyword)) {
         keyword
@@ -156,13 +156,15 @@ module Query
       rule(integer: simple(:num)) { Value.new(num.to_i) }
       rule(float: simple(:num)) { Value.new(num.to_f) }
 
-      rule(op: simple(:op),
-           right: simple(:value)) {
+      rule(op: simple(:op), right: simple(:value)) {
         OpenStruct.new(op: op.to_s, value: value)
       }
 
-      rule(left: simple(:left),
-           right_partial: sequence(:op_right)) {
+      rule(left: simple(:left), op: simple(:op), right: simple(:right)) {
+        Expr.new(op.to_s, left, right)
+      }
+
+      rule(left: simple(:left), right_partial: sequence(:op_right)) {
         op_right.reduce(left) { |term, right|
           Expr.new(right.op, term, right.value)
         }
@@ -170,16 +172,18 @@ module Query
 
       rule(
         term: {
-          field: { identifier: simple(:field) },
+          term_expr: simple(:expr),
           op: simple(:op),
           value: simple(:value)
         }) {
-        Expr.new(op.to_s, Field.new(field), Value.new(value.to_s))
+        Expr.new(op.to_s, expr, Value.new(value.to_s))
       }
 
       rule(
         term: {
-          and_field: sequence(:fields),
+          term_expr: {
+            and_field: sequence(:fields)
+          },
           op: simple(:op),
           value: simple(:value)
         }) {
@@ -191,7 +195,9 @@ module Query
 
       rule(
         term: {
-          or_field: sequence(:fields),
+          term_expr: {
+            or_field: sequence(:fields)
+          },
           op: simple(:op),
           value: simple(:value)
         }) {

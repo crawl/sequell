@@ -29,6 +29,14 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg * x=${hp}
+!lg * x=${hp + ac}
+!lg * win s=${hp + 500}
+!lg * win s=${hp + 500 / 500}
+E !lg * ${ac + ev} > 15
+!lg * ${ac + ev}>15 s=${ac+ev} x=max(ac+ev),max(ac),max(ev)
+!lg * $ ac + ev > 51 $ x=ac,ev,${ac+ev}
+
 !lm * urune=3 type=rune x=avg(turn) ::~ avg\(turn\)=\d+
 
 !lg * s=name,xl
@@ -298,9 +306,3 @@ E !lg * s=trunc99(sc)
 !kw lava
 
 !lg * status=para,slow s=status ::~ 71x paralysed,slowed
-
-!lg * x=${hp}
-!lg * x=${hp + ac}
-!lg * win s=${hp + 500}
-!lg * win s=${hp + 500 / 500}
-!lg * ${ac + ev} > 15

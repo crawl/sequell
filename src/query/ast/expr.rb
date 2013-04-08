@@ -37,7 +37,7 @@ module Query
       end
 
       def dup
-        self.class.new(operator, *arguments.map { |a| a.dup })
+        self.class.new(operator, *arguments.map { |a| a.dup }).with_flags(flags)
       end
 
       def fields
@@ -99,10 +99,12 @@ module Query
       def convert_types!
         arg_type = self.operator.argtype(arguments)
         self.arguments = self.arguments.map { |arg|
-          STDERR.puts("Converting #{arg} to #{arg_type}")
+          debug("Converting #{arg} to #{arg_type}")
           arg.convert_to_type(arg_type)
         }.compact
         self
+      rescue Sql::TypeError => e
+        raise Sql::TypeError.new(e.message + " in '#{self}'")
       end
 
       def << (term)
@@ -158,20 +160,22 @@ module Query
       end
 
       def to_query_string(wrapping_parens=true)
-        if self.operator.unary?
-          "#{operator.display_string}#{self.arguments.first.to_query_string}"
-        else
-          if self.in_clause_transformable?
-            return self.to_in_clause_query_string
-          end
+        wrap_if(self.flags[:sql_expr], '${', '}') {
+          if self.operator.unary?
+            "#{operator.display_string}#{self.arguments.first.to_query_string}"
+          else
+            if self.in_clause_transformable?
+              return self.to_in_clause_query_string
+            end
 
-          wrap_with_parens = wrapping_parens && self.arity > 1
-          text = arguments.map { |a|
-            a.to_query_string(self.operator > a.operator)
-          }.compact.join(operator.display_string)
-          text = "((#{text}))" if wrap_with_parens
-          text
-        end
+            wrap_with_parens = wrapping_parens && self.arity > 1
+            text = arguments.map { |a|
+              a.to_query_string(self.operator > a.operator)
+            }.compact.join(operator.display_string)
+            text = "((#{text}))" if wrap_with_parens
+            text
+          end
+        }
       end
 
       def sql_values

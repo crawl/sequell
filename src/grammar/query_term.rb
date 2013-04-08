@@ -105,7 +105,7 @@ module Grammar
     }
 
     rule(:term) {
-      term_field_expr >> space? >> op >>
+      term_field_expr.as(:term_expr) >> space? >> op >>
       (space >> (field_value_boundary | body_expr).absent?).maybe >>
       field_value.as(:value) |
       SqlExpr.new
@@ -132,7 +132,7 @@ module Grammar
     }
 
     rule(:function_arguments) {
-      (field_expr >> (space? >> str(",") >> space? >> field_expr).repeat).as(:arguments)
+      SqlExpr.new.function_arguments.as(:arguments)
     }
 
     rule(:function_name) {

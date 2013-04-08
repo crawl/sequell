@@ -3,6 +3,9 @@ require 'sql/duration'
 require 'sql/version_number'
 
 module Sql
+  class TypeError < StandardError
+  end
+
   class Type
     def self.type(string_or_type)
       return string_or_type if string_or_type.is_a?(self)
@@ -24,8 +27,8 @@ module Sql
     end
 
     def convert(value)
-      return value.to_f if self.real?
-      return value.to_i if self.integer?
+      return float_value(value) if self.real?
+      return int_value(value) if self.integer?
       return value.to_i if self.numeric?
       dcvalue = value.downcase
       if self.boolean?
@@ -33,6 +36,24 @@ module Sql
           dcvalue == '1'
       end
       value
+    end
+
+    def value_is_number?(val)
+      val.to_s =~ /^[+-]?(?:\d+(?:[.]\d*)?|[.]\d+)$/
+    end
+
+    def int_value(val)
+      unless value_is_number?(val)
+        raise TypeError.new("'#{val}' is not an integer")
+      end
+      val.to_i
+    end
+
+    def float_value(val)
+      unless value_is_number?(val)
+        raise TypeError.new("#{val} is not a number")
+      end
+      val.to_f
     end
 
     def raw_type
@@ -139,6 +160,12 @@ module Sql
       raw_value
     end
 
+    def applied_to(other_type)
+      return other_type if self == '*'
+      return self if other_type == '*' || self == other_type
+      self.class.type(self.category)
+    end
+
     def compatible?(other)
       other = Type.type(other)
       return true if self.any? || other.any?
@@ -153,6 +180,12 @@ module Sql
 
     def to_s
       "Type[#{type}]"
+    end
+
+    def to_sql
+      return 'bigint' if self.integer?
+      return 'real' if self.real?
+      nil
     end
 
   private
