@@ -55,7 +55,7 @@ module Query
       def find_extra_field_index(extra, expr)
         index = 0
         for ef in extra.fields do
-          if ef.to_s == expr
+          if ef.to_s == expr.to_s
             return index
           end
           index += 1
@@ -110,8 +110,9 @@ module Query
         if term == '.' || (summarise && term.to_s == summarise.first.to_s)
           @use_grouped_value = true
         else
-          if term != 'n' && extra && extra.fields.any? { |x| x.to_s == term }
-            raise "Bad sort condition: '#{field}'"
+          if term.downcase != 'n' &&
+              (!extra || !extra.fields.any? { |x| x.to_s == term })
+            raise "Bad sort condition: '#{self}' (extra: #{extra})"
           end
         end
         @validated = true
