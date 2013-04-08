@@ -222,11 +222,13 @@ module Sql
         id_field = Sql::Field.field('id')
         id_sql = resolve_field(id_field, @tables).to_sql
         @values = self.with_values(query_fields, @values)
+        @values += self.with_values(@count_sorts)
         return ("SELECT #{query_columns.join(", ")} " +
                 "FROM #{@tables.to_sql} WHERE #{id_sql} = (#{id_subquery})")
       end
 
       @values = self.with_values(query_fields, @values)
+      @values += self.with_values(@sorts) if with_sorts
       "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " +
          where(@pred, with_sorts && @sorts)
     end

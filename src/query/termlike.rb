@@ -140,6 +140,10 @@ module Query
       Query::AST::ASTWalker.each_field(self, &block)
     end
 
+    def each(&block)
+      self.arguments.each(&block)
+    end
+
     def each_node(&block)
       Query::AST::ASTWalker.each_node(self, &block)
     end
