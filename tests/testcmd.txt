@@ -29,6 +29,8 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg * won urune<5 start>2012 max=turns
+
 !nick elynae elynae hyperelynae
 !lg * name=elynae s=name ::= 1702 games for * (name=elynae): 1702x Elynae
 !lg elynae s=name ::~ 1702x Elynae, 460x hyperelynae

@@ -30,11 +30,18 @@ module Sql
       return float_value(value) if self.real?
       return int_value(value) if self.integer?
       return value.to_i if self.numeric?
+      return timestamp_value(value) if self.date?
       dcvalue = value.downcase
       if self.boolean?
         return dcvalue == 'y' || dcvalue == 't' || dcvalue == 'true' ||
           dcvalue == '1'
       end
+      value
+    end
+
+    def timestamp_value(value)
+      return "#{value}0101" if value =~ /^\d{4}$/
+      return "#{value}01" if value =~ /^\d{4}\d{2}$/
       value
     end
 
