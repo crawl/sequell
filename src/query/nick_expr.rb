@@ -64,7 +64,7 @@ module Query
 
     def to_query_string(wrapping_parens=nil)
       return nil if @nick.value == '*'
-      @nick
+      @nick.value
     end
   end
 end

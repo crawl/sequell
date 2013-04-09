@@ -29,6 +29,8 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg * name=elynae s=name ::= 1702 games for * (name=elynae): 1702x Elynae
+
 !lg * won hp>0 min=${hp*1.0/turn}
 !lg * s=src x=max(cv) ::~ cdo [0.12-a]
 
