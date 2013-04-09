@@ -18,6 +18,7 @@ seen_update: true
 sigils: "!@#$%&="
 preferred_sigil: "!"
 
+sibling_bots: "Henzell Gretell Hehfiel Sizzell Sequell Cheibriados"
 channels: "##crawl ##crawl-dev"
 announce_channel: "##crawl"
 dev_channel: "##crawl-dev"

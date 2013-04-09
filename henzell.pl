@@ -34,11 +34,6 @@ my $MAX_PAGINATE_LENGTH = 3001;
 my @stonefiles;
 my @logfiles;
 
-# The other bots on the channel that might announce milestones and logfiles.
-# When Henzell sees such an announcement, it will fetch logfiles explicitly
-# within $sibling_fetch_delay seconds.
-my @sibling_bots     = qw/Henzell Gretell Hehfiel Sizzell Sequell/;
-
 # How long after a sibling announcement that Henzell will force-fetch
 # logfile records. This should be at least 5s because we don't want a badly-
 # behaved bot to cause us to hammer cdo with http requests.
@@ -58,6 +53,11 @@ local $SIG{CHLD} = 'IGNORE';
 local $| = 1;
 
 load_config($config_file);
+
+# The other bots on the channel that might announce milestones and logfiles.
+# When Henzell sees such an announcement, it will fetch logfiles explicitly
+# within $sibling_fetch_delay seconds.
+my @sibling_bots     = Henzell::Config::array('sibling_bots');
 
 my $nickname       = $CONFIG{bot_nick};
 my $ircname        = "$nickname the Crawl Bot";
