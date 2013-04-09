@@ -66,7 +66,9 @@ module Query
 
       if equality? && field === 'name'
         return nil if value == '*'
-        return ::Query::NickExpr.expr(value, !op.equal?)
+        if value =~ /^[@:]/
+          return ::Query::NickExpr.expr(value, !op.equal?)
+        end
       end
 
       if equality? && value =~ /[()|?]/ then
