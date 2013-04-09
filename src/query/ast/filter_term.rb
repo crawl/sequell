@@ -10,8 +10,9 @@ module Query
       def initialize(term, options={})
         @term = term
         @denominator = options[:denominator]
-        @ratio = options[:ratio] || @term == '%'
-        @term = 'n' if @term == '%'
+        @ratio = options[:ratio] || @term.to_s == '%'
+        @term = 'n' if @term.to_s == '%'
+        @term = @term.to_s if ['n', '%', '.'].index(@term.to_s.downcase)
       end
 
       def ratio?

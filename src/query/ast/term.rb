@@ -61,9 +61,9 @@ module Query
       end
 
       def == (other)
-        return false unless other && other.respond_to?(:kind)
-        return false unless self.kind == other.kind
-        operator == other.operator && arguments == other.arguments
+        return false unless other.is_a?(Termlike)
+        self.kind == other.kind &&
+          operator == other.operator && arguments == other.arguments
       end
     end
   end
