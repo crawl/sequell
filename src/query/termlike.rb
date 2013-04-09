@@ -98,6 +98,10 @@ module Query
       self.left if self.field_value?
     end
 
+    def field=(field)
+      self.arguments[0] = field
+    end
+
     def field_value_predicate?
       boolean? && field_value?
     end

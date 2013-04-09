@@ -59,7 +59,9 @@ module Query
     end
 
     def dup
-      self.class.new(@nick, @negated)
+      duplicate = self.class.new(@nick, @negated)
+      duplicate.field = self.field.dup
+      duplicate
     end
 
     def to_query_string(wrapping_parens=nil)
