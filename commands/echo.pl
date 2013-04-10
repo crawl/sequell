@@ -11,5 +11,5 @@ binmode STDOUT, ':utf8';
 help("Echoes the command to the channel");
 
 my $cmd = $ARGV[2];
-$cmd =~ s/^\S+ //;
+$cmd =~ s/^\S+\s*//;
 print "$cmd\n";
