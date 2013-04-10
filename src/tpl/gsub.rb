@@ -10,9 +10,11 @@ module Tpl
 
     def eval(provider)
       lookup(provider) { |match|
-        match.gsub(Regexp.quote(@pattern)) { |m|
+        if match == @pattern
           @replacement.eval(provider)
-        }
+        else
+          match
+        end
       }
     end
 

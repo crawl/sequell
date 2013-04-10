@@ -19,3 +19,4 @@
 !won won.rb
 !cmd cmd.rb
 !kw keyworddef.rb
+.echo echo.pl
