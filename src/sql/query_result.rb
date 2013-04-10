@@ -69,7 +69,7 @@ module Sql
       @fieldmap ||= row_fieldmap
     end
 
-    def extra_field_values(map=@fieldmap)
+    def extra_field_values(map=self.fieldmap)
       ev = map['extra']
       return nil unless ev
       ev.split(',').map { |v| "#{v}=#{map[v]}" }.join(';')
@@ -82,12 +82,24 @@ module Sql
       return nil unless @result
       rowmap = @query.row_to_fieldmap(@result)
 
-      rowmap.merge(
+      extra_hash = split_hash(rowmap['extra_values'])
+      extra_hash = extra_hash.merge(rowmap).merge(
         'qualified_index' => self.qualified_index,
         'index' => self.index,
         'n' => self.count,
-        'count' => self.count,
-        'x' => self.extra_field_values(rowmap))
+        'count' => self.count)
+      extra_hash.merge('x' => self.extra_field_values(extra_hash))
+    end
+
+    def split_hash(values)
+      return { } unless values
+      map = { }
+      values.split(';;;;').each { |kv|
+        if kv =~ /^(.*)=(.*)/
+          map[$1] = $2
+        end
+      }
+      map
     end
   end
 end
