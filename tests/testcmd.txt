@@ -29,6 +29,7 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg * x=sc fmt:"$x" ::~ sc=59
 !lg * fmt:"$name: $qualified_index" ::~ Vesto: 180017
 !lg * fmt:"$name: $qualified_index" -2 ::~ Gandelf: 180016/180017
 

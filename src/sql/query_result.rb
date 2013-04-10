@@ -70,9 +70,9 @@ module Sql
     end
 
     def extra_field_values(map=@fieldmap)
-      ev = map['extra_values']
+      ev = map['extra']
       return nil unless ev
-      ev.gsub(';;;;', ';')
+      ev.split(',').map { |v| "#{v}=#{map[v]}" }.join(';')
     end
 
     alias :game :fieldmap
