@@ -1,6 +1,7 @@
 require 'sql/summary_row_group'
 require 'sql/summary_row'
 require 'formatter/text_summary'
+require 'benchmark'
 
 module Sql
   class SummaryReporter

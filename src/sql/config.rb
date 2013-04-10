@@ -53,7 +53,7 @@ module Sql
     end
 
     def column_aliases
-      @cfg['column-aliases']
+      @column_aliases ||= @cfg['column-aliases']
     end
 
     def column_substitutes

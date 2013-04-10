@@ -16,7 +16,7 @@ module Query
       end
 
       def result
-        debug{"AST Fixup: #{ast}"}
+        #debug{"AST Fixup: #{ast}"}
         ast.game_number = -1
 
         fix_value_fields!

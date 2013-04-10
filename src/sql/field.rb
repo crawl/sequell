@@ -8,7 +8,7 @@ module Sql
   class Field < Query::AST::Term
     def self.field(name)
       return nil unless name
-      return name if self.field?(name)
+      return name if name.is_a?(self)
       self.new(name)
     end
 
@@ -22,18 +22,21 @@ module Sql
     attr_accessor :table
     attr_accessor :name
 
+    @@aliased_name_cache = { }
+
     # A (possibly-prefixed) field
     def initialize(field_name)
       @full_name = field_name.downcase
-      @aliased_name = field_name.downcase
+      @aliased_name = @full_name
       @prefix = nil
       @table = nil
-      if @aliased_name =~ /^(\w+):([\w.]+)$/
-        @prefix, @aliased_name = $1, $2
-      end
+      @prefix, @aliased_name = split_aliased_name(@aliased_name)
       @name = SQL_CONFIG.column_aliases[@aliased_name] || @aliased_name
       @canonical_name = @name
-      @oname = @name.dup
+    end
+
+    def split_aliased_name(aliased_name)
+      @@aliased_name_cache[aliased_name] ||= split_prefixed_name(aliased_name)
     end
 
     def fields
@@ -194,6 +197,15 @@ module Sql
 
     def to_s
       @name
+    end
+
+  private
+    def split_prefixed_name(name)
+      if name =~ /^(\w+):([\w.]+)$/
+        [$1, $2]
+      else
+        [nil, name]
+      end
     end
   end
 end

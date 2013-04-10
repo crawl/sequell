@@ -7,6 +7,8 @@ module Sql
   end
 
   class Type
+    @@raw_type_cache = { }
+
     def self.type(string_or_type)
       return string_or_type if string_or_type.is_a?(self)
       self.new(string_or_type || '')
@@ -213,15 +215,16 @@ module Sql
     end
 
     def find_raw_type
-      if @type_string =~ /([A-Z]+)/
-        $1
-      elsif @type_string =~ /!/
-        '!'
-      elsif @type_string =~ /\*/
-        '*'
-      else
-        ''
-      end
+      @@raw_type_cache[@type_string] ||=
+        if @type_string =~ /([A-Z]+)/
+          $1
+        elsif @type_string =~ /!/
+          '!'
+        elsif @type_string =~ /\*/
+          '*'
+        else
+          ''
+        end
     end
 
     def strip_padding_zeros(value)

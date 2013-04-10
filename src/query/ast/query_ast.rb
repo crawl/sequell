@@ -6,7 +6,7 @@ module Query
     class QueryAST
       attr_accessor :context, :context_name, :head, :tail, :filter
       attr_accessor :extra, :summarise, :options, :sorts
-      attr_accessor :game_number, :nick, :game
+      attr_accessor :game_number, :nick, :default_nick, :game
       attr_accessor :group_order, :keys
 
       def initialize(context_name, head, tail, filter)
@@ -64,7 +64,7 @@ module Query
         }.to_s.strip
       end
 
-      def description(default_nick=Query::NickExpr.default_nick,
+      def description(default_nick=self.default_nick,
                       options={})
         texts = []
         texts << self.context_name if options[:context]

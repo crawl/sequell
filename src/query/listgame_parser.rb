@@ -14,12 +14,12 @@ module Query
           reporter: Parslet::ErrorReporter::Deepest.new)
       debug{"Fragment raw_parse: #{raw_parse.inspect}"}
       ast = AST::ASTBuilder.new.apply(raw_parse)
-      debug{"Fragment AST: #{ast.inspect}"}
+      #debug{"Fragment AST: #{ast.inspect}"}
       if ast.is_a?(Hash)
         raise "Could not understand fragment '#{query_text}'. This is a bug."
       end
       ast = AST::ASTTranslator.apply(ast)
-      debug{"Fragment translated AST: #{ast.inspect}"}
+      #debug{"Fragment translated AST: #{ast.inspect}"}
       ast
     end
 
@@ -38,21 +38,23 @@ module Query
           ::Grammar::Query.new.parse(
             query_text,
             reporter: Parslet::ErrorReporter::Deepest.new)
-        debug{"raw_parse: #{raw_parse.inspect}"}
+        #debug{"raw_parse: #{raw_parse.inspect}"}
 
         ast = AST::ASTBuilder.new.apply(raw_parse)
-        debug{"AST: #{ast}"}
         if ast.is_a?(Hash)
+          debug{"AST: #{ast}"}
           raise "Could not understand query '#{query_text}'. This is a bug."
         end
 
         ast.with_context {
           ::Query::NickExpr.with_default_nick(default_nick) {
+            ast.default_nick = default_nick
+
             translated_ast = AST::ASTTranslator.apply(ast)
-            debug{"Resolved AST: #{translated_ast}"}
+            #debug{"Resolved AST: #{translated_ast}"}
 
             fixed_ast = AST::ASTFixup.result(default_nick, translated_ast)
-            debug{"Fixed AST: #{fixed_ast}, head: #{fixed_ast.head}"}
+            #debug{"Fixed AST: #{fixed_ast}, head: #{fixed_ast.head}"}
             fixed_ast
           }
         }
