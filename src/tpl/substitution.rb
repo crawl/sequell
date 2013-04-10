@@ -7,7 +7,7 @@ module Tpl
 
     def eval(provider)
       res = value_str(provider)
-      return @replacement.eval(provider) if res.nil?
+      return @replacement.eval(provider) if res.nil? || res.empty?
       res
     end
 
