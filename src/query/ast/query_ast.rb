@@ -18,6 +18,7 @@ module Query
         @head = head || Expr.and()
         @original_head = @head.dup
         @tail = tail
+        @original_tail = @tail && @tail.dup
 
         @filter = filter
         @options = []
@@ -35,7 +36,32 @@ module Query
         end
       end
 
+      def resolve_nick(nick)
+        nick == '.' ? default_nick : nick
+      end
+
+      # The first nick in the query, with . expanded to point at the
+      # user requesting.
+      def target_nick
+        resolve_nick(@nick)
+      end
+
+      # The first real nick in the query.
       def real_nick
+        @real_nick ||=
+          real_nick_in(@original_head) ||
+          real_nick_in(@original_tail) || target_nick
+      end
+
+      def real_nick_in(tree)
+        return nil unless tree
+        ASTWalker.find(tree) { |node|
+          if node.is_a?(NickExpr) && node.nick.value != '*'
+            resolve_nick(node.nick.value)
+          elsif node.kind == :keyword && node.value =~ /^[@:]/
+            resolve_nick(node.value.gsub(/^[@:]+/, ''))
+          end
+        }
       end
 
       def key_value(key)
@@ -80,10 +106,6 @@ module Query
         @original_head.without { |node|
           node.is_a?(Query::NickExpr) || (suppress_meta && node.meta?)
         }.to_s.strip
-      end
-
-      def actual_nick
-        @nick == '.' ? default_nick : @nick
       end
 
       def description(default_nick=self.default_nick,

@@ -6,10 +6,12 @@ module Query
 
     def [](key)
       case key
-      when 'name'
-        @ast.actual_nick
+      when 'target'
+        @ast.target_nick
       when 'user'
         @ast.default_nick
+      when 'name'
+        @ast.real_nick
       else
         nil
       end

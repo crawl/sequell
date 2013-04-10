@@ -8,8 +8,16 @@ module Tpl
       (text.as(:text) >> (template.as(:template) >> text.as(:text)).repeat).as(:tpl)
     }
 
+    rule(:subtpl) {
+      (safetext.as(:text) >> (template.as(:template) >> safetext.as(:text)).repeat).as(:tpl)
+    }
+
     rule(:text) {
-      tchar.repeat
+      (tchar | str("}").as(:char)).repeat
+    }
+
+    rule(:safetext) {
+      tchar.as(:char).repeat
     }
 
     rule(:tchar) {
@@ -27,10 +35,10 @@ module Tpl
     }
 
     rule(:template_with_options) {
-      (template_key >> str(":-") >> tpl.as(:tpl)).as(:substitution) |
+      (template_key >> str(":-") >> subtpl.as(:tpl)).as(:substitution) |
       (template_key >> str("//") >>
         (match["/}"].absent? >> tchar).repeat.as(:pattern) >> str("/") >>
-        tpl.as(:replacement)).as(:gsub) |
+        subtpl.as(:replacement)).as(:gsub) |
       # (template_key >> str("##") >> intext.as(:match)).as(:hash_greedy) |
       # (template_key >> str("#") >> intext.as(:match)).as(:hash) |
       # (template_key >> str("%%") >> intext.as(:match)).as(:perc_greedy) |
