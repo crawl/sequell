@@ -1,3 +1,5 @@
+require 'query/text_template'
+
 module Sql
   class SummaryGroupFormatter
     DEFAULT_FORMAT = '${n_x}${.} ${%} [${n_ratio};${x}]'
@@ -7,28 +9,27 @@ module Sql
       @format_cache ||= { }
     end
 
-    def self.parent_format(format=nil)
-      self.format(format || DEFAULT_PARENT_FORMAT)
+    def self.parent_format(format=nil, template_properties=nil)
+      self.format(format || DEFAULT_PARENT_FORMAT, template_properties)
     end
 
-    def self.child_format(format=nil)
-      self.format(format || DEFAULT_FORMAT)
+    def self.child_format(format=nil, template_properties=nil)
+      self.format(format || DEFAULT_FORMAT, template_properties)
     end
 
-    def self.format(format)
-      format_cache[format] ||= self.new(format)
+    def self.format(format, template_properties)
+      format_cache[format] ||= self.new(format, template_properties)
     end
 
-    def initialize(format)
-      @format = format or raise "No format?"
+    def initialize(format, expansion_provider=nil)
+      @format = ::Query::TextTemplate.new(format) or raise "No format?"
+      @expansion_provider = expansion_provider
     end
 
     def format(row)
-      @format.gsub(/\$\{([^}]+)\}/) { |m|
-        format_key_value($1, row)
-      }.gsub(/ +/, ' ').
-        gsub(/([\[(])[;,]/, '\1').gsub(/[;,]([\])])/, '\1').
-        gsub(/\(\s*\)|\[\s*\]/, '').strip
+      @format.expand { |key|
+        format_key_value(key, row)
+      }
     end
 
     def format_key_value(key, row)
@@ -46,7 +47,7 @@ module Sql
       when 'child'
         row.subrows_string
       else
-        "\${#{key}}"
+        @expansion_provider && @expansion_provider[key]
       end
     end
   end

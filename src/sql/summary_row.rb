@@ -43,12 +43,16 @@ module Sql
 
     def group_formatter
       @group_formatter ||=
-        SummaryGroupFormatter.child_format(query.ast.key_value(:fmt))
+        SummaryGroupFormatter.child_format(
+          query.ast.key_value(:fmt),
+          query.ast.template_properties)
     end
 
     def master_formatter
       @master_formatter ||=
-        SummaryGroupFormatter.parent_format(query.ast.key_value(:pfmt))
+        SummaryGroupFormatter.parent_format(
+          query.ast.key_value(:pfmt),
+          query.ast.template_properties)
     end
 
     def count

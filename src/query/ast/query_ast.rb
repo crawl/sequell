@@ -1,5 +1,7 @@
 require 'query/ast/ast_walker'
 require 'query/nick_expr'
+require 'query/text_template'
+require 'query/query_template_properties'
 
 module Query
   module AST
@@ -33,6 +35,9 @@ module Query
         end
       end
 
+      def real_nick
+      end
+
       def key_value(key)
         self.keys[key]
       end
@@ -41,9 +46,22 @@ module Query
         key_value(:title)
       end
 
+      def template_properties
+        ::Query::QueryTemplateProperties.new(self)
+      end
+
+      def stub_message_format
+        @stub_message_format ||= self.key_value(:stub)
+      end
+
+      def stub_message_template
+        @template ||=
+          stub_message_format && Tpl::Template.template(stub_message_format)
+      end
+
       def stub_message(nick)
-        stub = self.key_value(:stub)
-        return stub if stub
+        stub_template = self.stub_message_template
+        return stub_template.eval(self.template_properties) if stub_template
 
         entities = self.context.entity_name + 's'
         puts "No #{entities} for #{self.description(nick)}."
@@ -62,6 +80,10 @@ module Query
         @original_head.without { |node|
           node.is_a?(Query::NickExpr) || (suppress_meta && node.meta?)
         }.to_s.strip
+      end
+
+      def actual_nick
+        @nick == '.' ? default_nick : @nick
       end
 
       def description(default_nick=self.default_nick,
