@@ -91,6 +91,7 @@ sub handle_output
     $output =~ s/:([^:]*)$//;
     my $post = defined($1) ? $1 : '';
 
+    return '' unless $output;
     my $g = demunge_xlogline($output);
     my $str = $g->{milestone} ? milestone_string($g, 1) : pretty_print($g);
     $output = $pre . $str . $post;
