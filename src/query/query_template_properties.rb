@@ -5,7 +5,6 @@ module Query
     end
 
     def [](key)
-      STDERR.puts("Property requested: #{key}")
       case key
       when 'name'
         @ast.actual_nick

@@ -13,7 +13,7 @@ module Formatter
     end
 
     def default_result_prefix_title
-      query.ast.result_prefix_title
+      @default_prefix_title ||= find_default_prefix_title
     end
 
     def prefix
@@ -47,6 +47,26 @@ module Formatter
 
     def summary_details
       raise "Unimplemented"
+    end
+
+    def template_properties
+      ast_props = query.ast.template_properties
+      lambda { |key|
+        ast_props[key] ||
+        case key
+        when 'n'
+          self.count
+        else
+          nil
+        end
+      }
+    end
+
+  private
+    def find_default_prefix_title
+      template = query.ast.result_prefix_title
+      return nil unless template
+      Tpl::Template.template_eval(template, self.template_properties)
     end
   end
 end
