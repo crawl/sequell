@@ -8,8 +8,16 @@ module Tpl
       @text
     end
 
+    def collapsible?
+      false
+    end
+
     def collapse
       self
+    end
+
+    def empty?
+      !@text || @text.empty?
     end
 
     def to_s

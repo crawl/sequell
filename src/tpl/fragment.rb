@@ -10,20 +10,28 @@ module Tpl
       fragments.map { |f| f.eval(expansion_provider) }.join('')
     end
 
+    def empty?
+      false
+    end
+
+    def collapsible?
+      true
+    end
+
     def collapse
       args = []
       for fragment in fragments
-        if fragment.is_a?(Fragment)
+        if fragment.collapsible?
           args += fragment.collapse.fragments
         else
-          args << fragment
+          args << fragment unless fragment.empty?
         end
       end
       self.class.new(*args)
     end
 
     def to_s
-      "Fragment[" + fragments.map(&:to_s).join(', ') + "]"
+      fragments.map(&:to_s).join('')
     end
   end
 end

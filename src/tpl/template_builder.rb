@@ -24,20 +24,20 @@ module Tpl
         key: simple(:fragment),
         tpl: simple(:tpl)
       }) {
-      Substitution.new(fragment.identifier, tpl)
+      Substitution.new(fragment, tpl)
     }
     rule(gsub: {
         key: simple(:fragment),
         pattern: sequence(:pattern),
         replacement: simple(:replacement)
       }) {
-      Gsub.new(fragment.identifier, pattern.join(''), replacement)
+      Gsub.new(fragment, pattern.join(''), replacement)
     }
     rule(identifier: simple(:identifier)) {
       LookupFragment.new(identifier.to_s)
     }
     rule(key: simple(:fragment)) {
-      LookupFragment.new(fragment.identifier.to_s)
+      LookupFragment.fragment(fragment)
     }
   end
 end

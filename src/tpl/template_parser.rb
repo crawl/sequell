@@ -43,7 +43,7 @@ module Tpl
     }
 
     rule(:template_key) {
-      identifier.as(:key)
+      (identifier | template).as(:key)
     }
 
     rule(:identifier) {

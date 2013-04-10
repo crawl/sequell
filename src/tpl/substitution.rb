@@ -6,13 +6,17 @@ module Tpl
     end
 
     def eval(provider)
-      res = provider[@identifier]
+      res = value_str(provider)
       return @replacement.eval(provider) if res.nil?
       res
     end
 
+    def simple?
+      false
+    end
+
     def to_s
-      "${#{@identifier}:-#{@replacement}"
+      "${#{@identifier}:-#{@replacement}}"
     end
   end
 end

@@ -16,6 +16,10 @@ module Tpl
       }
     end
 
+    def simple?
+      false
+    end
+
     def to_s
       "${#{@identifier}//#{@pattern}/#{@replacement}}"
     end
