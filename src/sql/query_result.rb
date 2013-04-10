@@ -24,7 +24,10 @@ module Sql
     end
 
     def format_game
-      Tpl::Template.template_eval(ast.key_value(:fmt), self.fieldmap)
+      rowmap = self.fieldmap
+      rowmap.merge!(split_hash(rowmap['extra_values']))
+      extras = { 'x' => self.extra_field_values(rowmap) }
+      Tpl::Template.template_eval(ast.key_value(:fmt), rowmap.merge(extras))
     end
 
     def option(key)
@@ -81,14 +84,11 @@ module Sql
     def row_fieldmap
       return nil unless @result
       rowmap = @query.row_to_fieldmap(@result)
-
-      extra_hash = split_hash(rowmap['extra_values'])
-      extra_hash = extra_hash.merge(rowmap).merge(
+      rowmap.merge(
         'qualified_index' => self.qualified_index,
         'index' => self.index,
         'n' => self.count,
         'count' => self.count)
-      extra_hash.merge('x' => self.extra_field_values(extra_hash))
     end
 
     def split_hash(values)
