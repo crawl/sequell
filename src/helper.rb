@@ -381,7 +381,11 @@ def print_game_n(n, game)
 end
 
 def print_game_result(res)
-  print_game_n(res.qualified_index, res.game)
+  if res.has_format?
+    puts res.format_game
+  else
+    print_game_n(res.qualified_index, res.game)
+  end
 end
 
 def pretty_duration(durseconds)

@@ -29,6 +29,9 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg * fmt:"$name: $qualified_index" ::~ Vesto: 180017
+!lg * fmt:"$name: $qualified_index" -2 ::~ Gandelf: 180016/180017
+
 !cmd !puppet .echo $*
 !cmd %rc !puppet http://dobrazupa.org/rcfiles/crawl-${2:-git}/${1:-${user}}.rc
 %rc ::~ http://dobrazupa.org/rcfiles/crawl-git/hyperbolic.rc

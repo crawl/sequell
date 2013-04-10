@@ -3,8 +3,8 @@ require 'tpl/template_builder'
 
 module Tpl
   class Template
-    def self.template_eval(text, provider)
-      template(text).eval(provider)
+    def self.template_eval(text, provider=nil, &block)
+      template(text).eval(provider || block)
     end
 
     def self.template(text)

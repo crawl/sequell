@@ -217,6 +217,10 @@ Where:
          query (which may be *), while $name will look for the first
          non-* name referenced in the query. So in !lg * s=name / @foo,
          $target will be "*", but $name will be "foo".
+
+         For ungrouped queries, this is the display format for the
+         game itself. You may use any of the game fields ($name,
+         $turn, $sc), $x to display x=foo values, and so on.
          
   * pfmt: For nested (s=foo,bar) queries, the display format of non-inner
           groups. Defaults to "${n_x}${.} ${%} (${child})", with ${child}
