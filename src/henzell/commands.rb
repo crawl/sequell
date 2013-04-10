@@ -59,7 +59,7 @@ module Henzell
         if self.user_defined?(command)
           command, args = Cmd::UserDefinedCommand.expand(command)
           arguments =
-            Query::QueryStringTemplate.substitute(args, [arguments])
+            Query::QueryStringTemplate.substitute(args, [arguments], default_nick)
           STDERR.puts("Cmd: " + [command, arguments].join(' '))
           next
         end
