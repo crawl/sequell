@@ -49,7 +49,7 @@ $ rm dat/user_commands.db
 %rc greensnark 0.11 ::~ http://dobrazupa.org/rcfiles/crawl-0.11/greensnark.rc
 %rc greensnark 0.11 pow ::~ http://dobrazupa.org/rcfiles/crawl-0.11/greensnark.rc
 
-!cmd !testlg !lg ${1:-.} win s=name title="Wins by ${name}"
+!cmd !testlg !lg ${1:-.} win s=name title:"Wins by ${name}"
 !testlg . ::~ Wins by hyperbolic
 !testlg elliptic ::~ Wins by elliptic
 !testlg * ::~ Wins by *

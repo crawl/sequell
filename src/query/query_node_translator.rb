@@ -71,10 +71,6 @@ module Query
         end
       end
 
-      if equality? && value =~ /[()|?]/ then
-        return reexpand(AST::Expr.new(op.equal? ? '~~' : '!~~', field, value))
-      end
-
       if field.multivalue? && op.equality? && value.index(',')
         values = value.split(',').map { |s| s.strip }
         operator = (op.equal? ? :and : :or)

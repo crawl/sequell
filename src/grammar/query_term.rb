@@ -73,7 +73,7 @@ module Grammar
     }
 
     rule(:keyed_option) {
-      keyed_option_name >> space? >> match[":="] >> space? >>
+      keyed_option_name >> space? >> match[":"] >> space? >>
       keyed_option_value
     }
 
