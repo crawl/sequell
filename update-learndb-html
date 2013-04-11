@@ -1,7 +1,0 @@
-#! /bin/bash
-
-# Drop process priority.
-renice +19 $$ &>/dev/null
-
-cd /home/henzell/henzell
-./learndb-html.pl > dat/learndb.html
