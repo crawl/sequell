@@ -75,7 +75,7 @@ module Sql
     def extra_field_values(map=self.fieldmap)
       ev = map['extra']
       return nil unless ev
-      ev.split(',').map { |v| "#{v}=#{map[v]}" }.join(';')
+      ev.split(';;;;').map { |v| "#{v}=#{map[v]}" }.join(';')
     end
 
     alias :game :fieldmap
@@ -95,7 +95,7 @@ module Sql
       return { } unless values
       map = { }
       values.split(';;;;').each { |kv|
-        if kv =~ /^(.*)=(.*)/
+        if kv =~ /^(.*)@=@(.*)/
           map[$1] = $2
         end
       }

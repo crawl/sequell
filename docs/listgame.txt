@@ -83,8 +83,14 @@ Where:
   More complex expressions may be expressed by enclosing them in ${ }.
   For instance: ${ac + ev}>50. See "Expressions" for details.
 
-  Values may contain embedded spaces. Underscores in values are
-  converted to spaces before running listgame queries.
+  Values may not contain embedded spaces. Underscores in values are
+  converted to spaces before running listgame queries. You may use use
+  underscores or quotes for values containing spaces. These forms are
+  identical:
+
+              !lg * killer='steam dragon'
+              !lg * killer="steam dragon"
+              !lg * killer=steam_dragon
 
   A simple function call may be used on a field, such as day(end).
   See "Non-Aggregate Functions" for a list of functions.
@@ -916,7 +922,7 @@ that maxed skill as:
 Multiple statuses can be matched using commas:
 
   maxskills=fighting,ice magic
-  => maxskills~~(?:^|,)fighting\y maxskills~~(?:^|,)ice magic\y
+  => maxskills~~(?:^|,)fighting\y maxskills~~'(?:^|,)ice magic\y'
 
 In addition, common skill abbreviations such as "fi" for "Fighting" will be
 expanded to their full forms:
@@ -936,7 +942,7 @@ god:
 Queries of the form god=<god-abbr> are transformed to god=<god-full-name>,
 so for instance:
 
- god=nemelex => god=Nemelex Xobeh
+ god=nemelex => god='Nemelex Xobeh'
  god=oka     => god=Okawaru
  
 
@@ -1053,11 +1059,17 @@ grouping clauses (s=X) and extra-field info (x=X).
 Expressions
 -----------
 
-You may use more complex expressions wrapped in ${ }, or after a $:
+You may use more complex expressions wrapped in ${ }, or after a $
+(optionally terminated by another $):
 
 !lg * $ (ac + ev) * 2 > 15
+!lg * $ (ac + ev) * 2 > 15 $ s=hp
 !lg * ${ac+ev}>15
 !lg * turn>0 s=${sc/turn}
+
+Function call arguments are always expressions:
+
+!lg * turn>0 x=avg(sc/turn)
 
 Inside expression forms, you may use + - * / % ** (exponentiation)
 operators in addition to the usual operators.

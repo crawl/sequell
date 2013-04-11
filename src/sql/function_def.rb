@@ -14,7 +14,7 @@ module Sql
     end
 
     attr_reader :name
-    attr_accessor :type, :summarisable, :expr, :display_format
+    attr_accessor :argtypes, :summarisable, :expr, :display_format
 
     def initialize(name, cfg)
       @name = name
@@ -22,13 +22,27 @@ module Sql
       if @cfg.is_a?(String)
         @cfg = { 'type' => @cfg }
       end
-      @type = Type.type(@cfg['type'])
+      @argtypes = argument_types(@cfg['type'])
       @summarisable = @cfg['summarisable']
       @display_format = @cfg['display-format']
       @preserve_unit = @cfg['preserve-unit']
       @unit = @cfg['unit']
       @expr = @cfg['expr']
       @return_type = Type.type(@cfg['return'] || '*')
+    end
+
+    def arity
+      @arity ||= @argtypes.size
+    end
+
+    def type
+      @return_type
+    end
+
+    def argument_types(types)
+      types = ['*'] if types.nil?
+      types = [types] unless types.is_a?(Array)
+      types.map { |t| Type.type(t) }
     end
 
     def return_type(expr)

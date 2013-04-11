@@ -111,7 +111,7 @@ sub format_date {
 
 sub formatted_game_field {
   my ($g, $field) = @_;
-  if ($field =~ /\bk?map\b/) {
+  if ($field =~ /\b(?:killer)?map\b/) {
     my $val = $$g{$field};
     $val =~ s/(?<!;) /_/g;
     $val
@@ -135,7 +135,7 @@ sub parse_extras {
   if ($$game_ref{extra}) {
     $extra = "[" . join(";",
                         map("$_=" . formatted_game_field($game_ref, $_),
-                            split(/,/, $$game_ref{extra}))) . "] ";
+                            split(/;;;;/, $$game_ref{extra}))) . "] ";
   }
   $extra
 }

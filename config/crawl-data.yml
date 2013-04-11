@@ -570,6 +570,9 @@ value-functions:
     type: 'S'
     expr: "split_part(%s, '; ', 1)"
     summarisable: true
+  part:
+    type: ['S', 'S', 'I']
+    expr: "split_part(%s, :2, :3)"
   subvault:
     type: 'S'
     expr: "regexp_replace(%s, '^.*?; ', '')"

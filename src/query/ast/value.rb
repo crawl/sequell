@@ -27,11 +27,20 @@ module Query
       end
 
       def to_s
-        (flags[:display_value] || @value).to_s
+        (flags[:display_value] || single_quote_string(@value)).to_s
+      end
+
+      def single_quote_string(str)
+        return str unless str.is_a?(String) && (str.index(' ') || sql_expr?)
+        "'" + str.gsub(/([\\\\'])/, '\\\1') + "'"
       end
 
       def null?
         value.nil?
+      end
+
+      def big_integer?
+        self.integer? && (self.value > 2147483647 || self.value < -2147483648)
       end
 
       def to_sql
@@ -43,6 +52,8 @@ module Query
         value_type = self.type
         return '' if value_type == '*'
         sql_type = value_type.to_sql
+        sql_type = 'int' if self.integer?
+        sql_type = 'bigint' if self.big_integer?
         return '' unless sql_type
         '::' + sql_type
       end

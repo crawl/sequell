@@ -41,7 +41,7 @@ module Query
           ::Grammar::Query.new.parse(
             query_text,
             reporter: Parslet::ErrorReporter::Deepest.new)
-        #debug{"raw_parse: #{raw_parse.inspect}"}
+        debug{"raw_parse: #{raw_parse.inspect}"}
 
         ast = AST::ASTBuilder.new.apply(raw_parse)
         if ast.is_a?(Hash)

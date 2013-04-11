@@ -26,6 +26,32 @@ module Query
         @aggregate
       end
 
+      def argtypes
+        @argtypes ||= @fn.argtypes
+      end
+
+      def typecheck!
+        if @fn.arity != self.arity
+          raise "Function #{@name} requires #{@fn.arity} arguments, called with #{arity}"
+        end
+        self.arguments.each_with_index { |arg, i|
+          argtypes[i].type_match?(arg.type) or
+            raise "Type mismatch in #{self}: for argument #{i + 1} (#{arg})"
+        }
+      end
+
+      def convert_types!
+        if @fn.arity != self.arity
+          raise "Function '#{@name}' requires #{@fn.arity} arguments, called with #{arity}"
+        end
+        argtypes = @fn.argtypes
+        i = -1
+        self.arguments = self.arguments.map { |arg|
+          i += 1
+          arg.convert_to_type(argtypes[i])
+        }
+      end
+
       def kind
         :funcall
       end

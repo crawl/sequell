@@ -197,7 +197,7 @@ module Sql
     end
 
     def to_sql
-      return 'bigint' if self.integer?
+      return 'int' if self.integer?
       return 'real' if self.real?
       nil
     end

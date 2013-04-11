@@ -111,7 +111,7 @@ end
 def add_extra_fields_to_xlog_record(extra, xlog_record)
   if extra && !extra.empty? && xlog_record
     context = Sql::QueryContext.context
-    xlog_record['extra'] = extra.fields.map(&:to_s).join(',')
+    xlog_record['extra'] = extra.fields.map(&:to_s).join(';;;;')
   end
   xlog_record
 end

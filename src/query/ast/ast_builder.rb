@@ -107,7 +107,13 @@ module Query
       }
 
       rule(function_call: simple(:funcall)) { funcall }
-      rule(function_argument: simple(:argument)) { argument }
+      rule(function_argument: simple(:argument)) {
+        if argument.is_a?(String) || argument.is_a?(Numeric)
+          Value.new(argument)
+        else
+          argument
+        end
+      }
       rule(function_name: simple(:name),
            arguments: simple(:argument)) {
         Funcall.new(name.to_s, argument)
@@ -157,6 +163,9 @@ module Query
 
       rule(integer: simple(:num)) { Value.new(num.to_i) }
       rule(float: simple(:num)) { Value.new(num.to_f) }
+
+      rule(plus: simple(:number)) { number }
+      rule(arithmetic_negated: simple(:number)) { Value.new(-number.value) }
 
       rule(op: simple(:op), right: simple(:value)) {
         OpenStruct.new(op: op.to_s, value: value)

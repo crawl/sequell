@@ -64,7 +64,7 @@ module Grammar
     }
 
     rule(:expterm) {
-      str("-") >> simple_expr.as(:negated) |
+      str("-") >> simple_expr.as(:arithmetic_negated) |
       str("+") >> simple_expr.as(:plus) |
       (str("~").as(:op) >> expterm.as(:expr)).as(:complement) |
       simple_expr

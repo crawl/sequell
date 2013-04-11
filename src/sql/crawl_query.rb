@@ -72,7 +72,7 @@ module Sql
       end
       map['sql_table'] = @ctx.table
       unless extras.empty?
-        map['extra_values'] = extras.map { |k, v| "#{k}=#{v}" }.join(";;;;")
+        map['extra_values'] = extras.map { |k, v| "#{k}@=@#{v}" }.join(";;;;")
       end
       add_extra_fields_to_xlog_record(self.extra, map)
     end
