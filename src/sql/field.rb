@@ -161,6 +161,13 @@ module Sql
       end
     end
 
+    def == (other)
+      return false unless other
+      return self === other if other.is_a?(String) || other.is_a?(Enumerable)
+      return false unless other.is_a?(self.class)
+      self.name == other.name && self.alias == other.alias
+    end
+
     def sort?
       max? or min?
     end

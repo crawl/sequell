@@ -40,6 +40,11 @@ module Query
         asc?
       end
 
+      def == (other)
+        return false unless other.is_a?(Extra)
+        other.kind == :extra && other.expr == self.expr
+      end
+
       def to_s
         (asc? ? '-' : '') + expr.to_s
       end
