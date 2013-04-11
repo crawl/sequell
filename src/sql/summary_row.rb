@@ -41,6 +41,13 @@ module Sql
       @summary_reporter.query
     end
 
+    def aggregate_formatter
+      @aggregate_formatter ||=
+        SummaryGroupFormatter.aggregate_format(
+          query.ast.key_value(:fmt),
+          query.ast.template_properties)
+    end
+
     def group_formatter
       @group_formatter ||=
         SummaryGroupFormatter.child_format(
@@ -147,7 +154,11 @@ module Sql
     end
 
     def subrows_string
-      @subrows.map { |s| s.to_s }.join(", ")
+      @subrows_string ||= subrows_array.join(", ")
+    end
+
+    def subrows_array
+      @subrows_array ||= @subrows.map { |s| s.to_s }
     end
 
     def master_group_to_s
@@ -156,11 +167,16 @@ module Sql
 
     def to_s
       if @subrows
+        # This is a parent group that has subgroups, for instance in:
+        # !lg * s=name,char, 13x someperson (13x HEFE),
+        # the "13x someperson" is a parent group, and ["13x HEFE"] is its
+        # @subrows.
         master_group_to_s
       elsif !@key.nil?
         group_formatter.format(self)
       else
-        annotated_extra_val_string
+        # For non-grouping aggregate queries, like !lg * x=avg(sc)
+        aggregate_formatter.format(self)
       end
     end
 
@@ -174,7 +190,7 @@ module Sql
     end
 
     def count_prefix
-      if count_string == '1'
+      if count_string.empty? || count_string == '1'
         ''
       else
         "#{count_string}x "
@@ -186,21 +202,26 @@ module Sql
     end
 
     def count_string
-      @counts.reverse.join("/")
+      return '' unless @counts
+      @count_string ||= @counts.reverse.join("/")
     end
 
     def count_ratio_percentage
-      if @counts.size > 1
+      if @counts && @counts.size > 1
         percentage(@counts[1], @counts[0])
       else
         ''
       end
     end
 
-    def extra_field_value_string
-      @extra_values.each_with_index.map { |x, i|
+    def extra_field_value_array
+      @extra_field_value_array ||= @extra_values.each_with_index.map { |x, i|
         value_string(x, @extra_fields.fields[i])
-      }.join(";")
+      }
+    end
+
+    def extra_field_value_string
+      @extra_field_value_string ||= extra_field_value_array.join(", ")
     end
 
     def extra_val_string
@@ -211,15 +232,8 @@ module Sql
       es.empty? ? es : "[" + es + "]"
     end
 
-    def annotated_extra_val_string
-      res = []
-      index = 0
-      fields = @extra_fields && @extra_fields.fields
-      @extra_values.each do |ev|
-        res << annotated_value(fields && fields[index], ev)
-        index += 1
-      end
-      res.join("; ")
+    def annotated_extra_val_array
+      @annotated_extra_val_array ||= build_annotated_extra_val_array
     end
 
     def annotated_value(field, value)
@@ -256,6 +270,18 @@ module Sql
 
     def percentage(num, den)
       den == 0 ? "-" : sprintf("%.2f%%", num.to_f * 100.0 / den.to_f)
+    end
+
+  private
+    def build_annotated_extra_val_array
+      res = []
+      index = 0
+      fields = @extra_fields && @extra_fields.fields
+      @extra_values.each do |ev|
+        res << annotated_value(fields && fields[index], ev)
+        index += 1
+      end
+      res
     end
   end
 end

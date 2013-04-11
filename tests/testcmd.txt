@@ -29,16 +29,22 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
-!lg * x=$ part('cow:bar', ':', 1) $ ::~ part\('cow::bar','::',1\)@=@cow
-!lg elliptic x=kmap ::~ extra=killermap
+!lg * x=turn,sc fmt:"$x; turn=${x[0]}, sc=${x[1]}" ::~ turn=449;sc=59; turn=449, sc=59
+!lg * x=avg(sc),max(sc) title:'' fmt:"avg.sc ${x[0]} max.sc ${x[1]}" ::~ avg.sc 26858.97 max.sc 35019863
+
+!lg * x=avg(sc),max(sc) ::~ avg\(sc\)=26858.97; max\(sc\)=35019863
+
+!lg * x=$ part('cow:bar', ':', 1) $ ::~ part\('cow:bar',':',1\)=cow
+!lg elliptic x=kmap ::~ \[killermap=\]
+
 
 !kw playable:job ::!~ Jester
 
 !kw dragon => killer~~(dragon|draconian|drake|tiamat|xtahua)
 !kw recent cv>=0.11
 !lm . abyss.enter recent s=lg:place x=cdist(gid) o=cdist(gid)
-!lg * map~~^hell_ ::~ hell entry
-!lg * x=${2+2} ::~ 2\+2@=@4
+!lg * map~~^hell_ ::~ hell_entry
+!lg * x=${2+2} ::~ 2\+2=4
 !lg * x=sc fmt:"$x" ::~ sc=59
 !lg * fmt:"$name: $qualified_index" ::~ Vesto: 180017
 !lg * fmt:"$name: $qualified_index" -2 ::~ Gandelf: 180016/180017
@@ -371,7 +377,7 @@ E !lg * s=trunc99(sc)
 !lgyak * / win
 
 !lg * cßo
-!lg * @@@elliptic ::~ name=elliptic
+!lg * @@@elliptic ::~ elliptic the Archmage
 !kw t9
 !kw lava
 

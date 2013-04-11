@@ -26,7 +26,10 @@ module Sql
     def format_game
       rowmap = self.fieldmap
       rowmap.merge!(split_hash(rowmap['extra_values']))
-      extras = { 'x' => self.extra_field_values(rowmap) }
+      extras = {
+        'x' => self.extra_field_values(rowmap),
+        '@x' => self.extra_value_array(rowmap)
+      }
       Tpl::Template.template_eval(ast.key_value(:fmt), rowmap.merge(extras))
     end
 
@@ -72,10 +75,18 @@ module Sql
       @fieldmap ||= row_fieldmap
     end
 
-    def extra_field_values(map=self.fieldmap)
+    def extra_fields(map=self.fieldmap)
       ev = map['extra']
-      return nil unless ev
-      ev.split(';;;;').map { |v| "#{v}=#{map[v]}" }.join(';')
+      return [] unless ev
+      ev.split(';;;;')
+    end
+
+    def extra_value_array(map=self.fieldmap)
+      extra_fields(map).map { |v| map[v] }
+    end
+
+    def extra_field_values(map=self.fieldmap)
+      extra_fields(map).map { |v| "#{v}=#{map[v]}" }.join(';')
     end
 
     alias :game :fieldmap

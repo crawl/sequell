@@ -3,7 +3,13 @@ require 'formatter/summary'
 module Formatter
   class TextSummary < Summary
     def format
-      ("#{result_prefix_title}: #{summary_details}")
+      ("#{result_desc}#{summary_details}")
+    end
+
+    def result_desc
+      title = self.result_prefix_title
+      return '' if !title || title.empty?
+      "#{title}: "
     end
 
     def result_prefix_title

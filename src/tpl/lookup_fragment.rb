@@ -7,12 +7,21 @@ module Tpl
       self.new(thing)
     end
 
-    def initialize(identifier)
+    def initialize(identifier, subscript=nil)
       @identifier = identifier
+      @subscript = subscript
       if @identifier.is_a?(LookupFragment) && @identifier.simple?
         @identifier = @identifier.identifier
       end
       @stringy = @identifier.is_a?(String)
+    end
+
+    def subscripted?
+      @subscript
+    end
+
+    def subscript
+      @subscript
     end
 
     def simple?
@@ -23,8 +32,22 @@ module Tpl
       false
     end
 
+    def subscripted(value)
+      return value unless value && subscripted?
+      value = value.split(';;;;') if value.is_a?(String)
+      value[subscript]
+    end
+
+    def raw_value(provider)
+      if subscripted?
+        provider["@#{@identifier}"] || provider[@identifier]
+      else
+        provider[@identifier]
+      end
+    end
+
     def value_str(provider)
-      @stringy ? provider[@identifier] : @identifier.eval(provider)
+      subscripted(@stringy ? raw_value(provider) : @identifier.eval(provider))
     end
 
     def lookup(provider)
@@ -47,7 +70,8 @@ module Tpl
     end
 
     def to_s
-      "${#{@identifier}}"
+      qualifier = "[#{@subscript}]" if @subscript
+      "${#{@identifier}#{qualifier}}"
     end
   end
 end

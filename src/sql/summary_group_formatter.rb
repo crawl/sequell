@@ -4,6 +4,7 @@ module Sql
   class SummaryGroupFormatter
     DEFAULT_FORMAT = '${n_x}${.} ${%} [${n_ratio};${x}]'
     DEFAULT_PARENT_FORMAT = '${n_x}${.} ${%} (${child})'
+    DEFAULT_AGGREGATE_FORMAT = '$keyed_x'
 
     def self.format_cache
       @format_cache ||= { }
@@ -15,6 +16,10 @@ module Sql
 
     def self.child_format(format=nil, template_properties=nil)
       self.format(format || DEFAULT_FORMAT, template_properties)
+    end
+
+    def self.aggregate_format(format=nil, template_properties=nil)
+      self.format(format || DEFAULT_AGGREGATE_FORMAT, template_properties)
     end
 
     def self.format(format, template_properties)
@@ -44,6 +49,14 @@ module Sql
         row.count_ratio_percentage
       when 'x'
         row.extra_field_value_string
+      when '@x'
+        row.extra_field_value_array
+      when 'keyed_x'
+        row.annotated_extra_val_array.join('; ')
+      when '@keyed_x'
+        row.annotated_extra_val_array
+      when '@child'
+        row.subrows_array
       when 'child'
         row.subrows_string
       else

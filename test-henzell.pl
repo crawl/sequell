@@ -296,6 +296,7 @@ TESTREPORT
   }
 
   my ($exitcode, $output, $cmd) = execute_cmd($$test{line});
+  $output = handle_output($output, 1);
   chomp $output;
   $$test{cmdline} = $cmd;
   print $logf <<TESTREPORT;

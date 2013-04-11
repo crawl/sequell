@@ -51,12 +51,21 @@ module Tpl
     }
 
     rule(:template_key) {
-      (identifier | template).as(:key)
+      ((identifier | template).as(:key) >>
+        subscript.maybe).as(:key_expr)
+    }
+
+    rule(:subscript) {
+      str("[") >> space? >> integer.as(:subscript) >> space? >> str("]")
     }
 
     rule(:identifier) {
       (match["a-zA-Z_0-9*"] >> match["a-zA-Z_0-9*+"].repeat |
        str(".") | str("*") | str("%")).as(:identifier)
+    }
+
+    rule(:integer) {
+      (match["+-"].maybe >> match["0-9"].repeat(1)).as(:integer)
     }
 
     rule(:space) { match('\s').repeat(1) }
