@@ -3,12 +3,30 @@ require 'set'
 module Query
   module AST
     class ASTWalker
+      @@debugging = false
+      def self.debugging
+        old_debug = @debugging
+        begin
+          @@debugging = true
+          yield
+        ensure
+          @@debugging = old_debug
+        end
+      end
+
+      def self.debugging?
+        @@debugging
+      end
+
       def self.map_nodes(ast, condition=nil, &block)
         return nil if ast.nil?
+        debug{"map_nodes: #{ast}: #{ast.class}"} if debugging?
         ast.arguments = ast.arguments.map { |arg|
           map_nodes(arg, condition, &block)
         }.compact
+        debug{ "Post-map: #{ast}"} if debugging?
         if !condition || condition.call(ast)
+          debug{ "Self-call: #{ast}"} if debugging?
           return block.call(ast)
         end
         ast

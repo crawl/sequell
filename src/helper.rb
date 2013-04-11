@@ -7,6 +7,8 @@ require 'yaml'
 require 'fileutils'
 require 'henzell/config'
 
+DEBUG_HENZELL = ENV['DEBUG_HENZELL']
+
 # Directory containing player directories that contain morgues.
 DGL_MORGUE_DIR = '/var/www/crawl/rawdata'
 

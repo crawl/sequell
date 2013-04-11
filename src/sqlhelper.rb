@@ -4,8 +4,6 @@ if !ENV['HENZELL_SQL_QUERIES']
   raise Exception.new("sqlhelper: HENZELL_SQL_QUERIES is not set")
 end
 
-DEBUG_HENZELL = ENV['DEBUG_HENZELL']
-
 require 'dbi'
 require 'set'
 require 'yaml'

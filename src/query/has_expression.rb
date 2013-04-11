@@ -25,7 +25,8 @@ module Query
     end
 
     def type
-      expr.type
+      ep = self.expr
+      Sql::Type.type(ep && ep.type)
     end
 
     def to_sql

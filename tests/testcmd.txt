@@ -31,6 +31,8 @@ $ rm dat/user_commands.db
 
 !kw playable:job ::!~ Jester
 
+!kw recent cv>=0.11
+!lm . abyss.enter recent s=lg:place x=cdist(gid) o=cdist(gid)
 !lg * map~~^hell_ ::~ hell entry
 !lg * x=${2+2} ::~ 2\+2=4
 !lg * x=sc fmt:"$x" ::~ sc=59

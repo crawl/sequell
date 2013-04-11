@@ -93,7 +93,7 @@ module Query
 
         return node unless node.meta?
         case node.kind
-        when :summary, :extra, :group_order, :keyed_option
+        when :summary, :extra, :group_order, :keyed_option, :filter_term
           # Don't cull these nodes, cull the parent.
           return node
         when :keyed_option_list
@@ -112,7 +112,7 @@ module Query
         when :extra_list
           ast.extra = node.merge(ast.extra)
         else
-          raise "Unknown meta: #{node}"
+          raise "Unknown meta: #{node} (#{node.kind})"
         end
         nil
       end

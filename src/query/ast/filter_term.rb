@@ -1,18 +1,27 @@
 module Query
   module AST
     class FilterTerm < Term
+      include HasExpression
+
       def self.term(term, options={})
         return term if term.is_a?(self)
         self.new(term, options)
       end
 
-      attr_reader :term
       def initialize(term, options={})
-        @term = term
+        if term.is_a?(Termlike)
+          self.expr = term
+        else
+          @term = term
+        end
         @denominator = options[:denominator]
         @ratio = options[:ratio] || @term.to_s == '%'
         @term = 'n' if @term.to_s == '%'
         @term = @term.to_s if ['n', '%', '.'].index(@term.to_s.downcase)
+      end
+
+      def term
+        @term || @arguments[0]
       end
 
       def ratio?
@@ -113,7 +122,7 @@ module Query
         else
           if term.to_s.downcase != 'n' &&
               (!extra || !extra.fields.any? { |x| x.to_s == term.to_s })
-            raise "Bad sort condition: '#{self}' (extra: #{extra})"
+            raise "Bad filter condition: '#{self}' (extra: #{extra})"
           end
         end
         @validated = true
