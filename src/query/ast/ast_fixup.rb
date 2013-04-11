@@ -148,6 +148,10 @@ module Query
       end
 
       def fix_node(node)
+        if node.value?
+          node.value = node.value.gsub('_', ' ') if node.value.is_a?(String)
+        end
+
         # Fix LIKE expressions:
         if (node.operator == '=~' || node.operator == '!~') &&
             node.right.value? && !node.right.flags[:display_value]
