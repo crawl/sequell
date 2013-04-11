@@ -124,7 +124,9 @@ module Query
         elsif self.in_clause_transformable?
           self.in_clause_sql
         else
-          wrap_if(arity > 1, '(', ')') {
+          parens = ['(', ')']
+          parens = ['((', '))'] if sql_expr?
+          wrap_if(arity > 1, *parens) {
             arguments.map { |a| a.to_sql }.join(operator.to_sql)
           }
         end

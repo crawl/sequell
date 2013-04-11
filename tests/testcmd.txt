@@ -33,6 +33,7 @@ $ rm dat/user_commands.db
 
 !kw playable:job ::!~ Jester
 
+!kw dragon => killer~~(dragon|draconian|drake|tiamat|xtahua)
 !kw recent cv>=0.11
 !lm . abyss.enter recent s=lg:place x=cdist(gid) o=cdist(gid)
 !lg * map~~^hell_ ::~ hell entry
@@ -42,7 +43,7 @@ $ rm dat/user_commands.db
 !lg * fmt:"$name: $qualified_index" -2 ::~ Gandelf: 180016/180017
 
 !lg * x=${1+2} fmt:"$x" ::~ 1\+2=3
-
+E !lg * killer=tentacled monstrosity
 !cmd !puppet .echo $*
 !cmd %rc !puppet http://dobrazupa.org/rcfiles/crawl-${2:-git}/${1:-${user}}.rc
 %rc ::~ http://dobrazupa.org/rcfiles/crawl-git/hyperbolic.rc
@@ -149,7 +150,7 @@ E !lg * ${ac + ev} > 15
 !lg * race=DS god=Xom ktyp=water
 !lg * DS Xom drown
 !lg * killer=uniq s=-killer
-!lg * (killer=goblin ||killer=centaur) s=killer
+!lg * ((killer=goblin ||killer=centaur)) s=killer
 !lg * DS x=ckaux
 !lg * !DS
 !lg * ((xom || nemelex))

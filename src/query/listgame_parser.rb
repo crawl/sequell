@@ -21,6 +21,9 @@ module Query
       ast = AST::ASTTranslator.apply(ast)
       #debug{"Fragment translated AST: #{ast.inspect}"}
       ast
+    rescue Parslet::ParseFailed => error
+      raise("Broken query near '" +
+        fragment.to_s[error_place(error.cause)..-1] + "'")
     end
 
     def self.parse(default_nick, query, add_context=false)

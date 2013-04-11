@@ -141,7 +141,7 @@ module Grammar
     }
 
     rule(:field_value_boundary) {
-      str("||") | str(")") | str("/") | str("?:")
+      str("||") | str("))") | str("/") | str("?:")
     }
 
     rule(:field_value) {

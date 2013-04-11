@@ -74,7 +74,6 @@ module Sql
       unless extras.empty?
         map['extra_values'] = extras.map { |k, v| "#{k}=#{v}" }.join(";;;;")
       end
-      STDERR.puts("extra fields: #{self.extra}")
       add_extra_fields_to_xlog_record(self.extra, map)
     end
 
@@ -118,13 +117,11 @@ module Sql
 
     def resolve_query_fields
       if @extra
-        STDERR.puts("Preresolve: #{@extra}")
         res = @extra.fields.each { |extra|
           extra.each_field { |field|
             resolve_field(field, @tables)
           }
         }
-        STDERR.puts("Postresolve: #{@extra}")
         res
       end
       self.select_query_fields.each { |field|
@@ -336,7 +333,6 @@ module Sql
           raise "Extra fields (#{@summary_extra}) contain non-aggregates"
         end
         extras = @summary_extra.fields.map { |f|
-          STDERR.puts("Extra: #{f}")
           Sql::AggregateExpression.aggregate_sql(@summary_tables, f)
         }.join(", ")
       end
