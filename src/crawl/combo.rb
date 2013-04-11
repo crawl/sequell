@@ -45,7 +45,7 @@ module Crawl
     end
 
     def hash
-      abbr.hash
+      @hash ||= abbr.hash
     end
 
     def to_s

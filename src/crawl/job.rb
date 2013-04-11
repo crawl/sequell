@@ -16,16 +16,25 @@ module Crawl
       }
     end
 
+    def self.class_map
+      Config['classes']
+    end
+
+    def self.dead_jobs
+      class_map.values.select { |x| x.index('*') }.map { |x| x.gsub('*', '') }.
+        map { |x| self.new(x) }
+    end
+
     def self.available_jobs
       require 'crawl/source'
       @available_jobs ||=
         JobReader.read_jobs(Source.file_path('enum.h')).map { |name|
           self.new(name)
-        }
+        } - dead_jobs
     end
 
     def self.job_abbr_name_map
-      @job_abbr_name_map ||= Hash[ Config['classes'].map { |abbr, job|
+      @job_abbr_name_map ||= Hash[ class_map.map { |abbr, job|
         [abbr, job.sub('*', '')]
       } ]
     end
@@ -52,7 +61,7 @@ module Crawl
     end
 
     def hash
-      @name.hash
+      @job ||= @name.hash
     end
 
     def to_s

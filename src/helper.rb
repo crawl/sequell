@@ -403,6 +403,17 @@ def pretty_duration(durseconds)
   timestr
 end
 
+def logger
+  $logger ||= File.open('debug.log', 'w')
+end
+
+def filelog
+  if DEBUG_HENZELL
+    logger.puts(yield)
+    logger.flush
+  end
+end
+
 def debug
   if DEBUG_HENZELL
     STDERR.puts(yield)

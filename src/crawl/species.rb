@@ -19,8 +19,18 @@ module Crawl
       }
     end
 
+    def self.species_map
+      Config['species']
+    end
+
+    def self.dead_species
+      species_map.values.select { |x| x.index('*') }.map { |x| x.gsub('*', '') }.
+        map { |x| self.new(x) }
+    end
+
     def self.available_species
-      @available_species = read_available_species
+      @available_species =
+        read_available_species - dead_species
     end
 
     def self.species_abbr_name_map
@@ -52,7 +62,7 @@ module Crawl
     end
 
     def hash
-      @name.hash
+      @hash ||= @name.hash
     end
 
     def to_s

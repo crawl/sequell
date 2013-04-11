@@ -29,6 +29,8 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!kw playable:job ::!~ Jester
+
 !lg * x=${2+2} ::~ 2\+2=4
 !lg * x=sc fmt:"$x" ::~ sc=59
 !lg * fmt:"$name: $qualified_index" ::~ Vesto: 180017

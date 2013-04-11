@@ -92,7 +92,10 @@ module Query
     end
 
     def field_value?
-      self.arity == 2 && self.left.kind == :field && self.right.kind == :value
+      filelog { "Caller: #{caller}" }
+      arguments.size == 2 &&
+        self.left.kind == :field &&
+        self.right.kind == :value
     end
 
     def field
