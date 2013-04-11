@@ -37,6 +37,8 @@ module Query
         ast = ASTWalker.map_nodes(ast) { |node|
           value_fixup(node)
         }
+
+        ast
       end
 
       def value_fixup(node)

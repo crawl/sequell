@@ -124,7 +124,7 @@ module Query
         elsif self.in_clause_transformable?
           self.in_clause_sql
         else
-          wrap_if(arity > 1, sql_expr? ? '(' : '((', sql_expr? ? ')' : '))') {
+          wrap_if(arity > 1, '(', ')') {
             arguments.map { |a| a.to_sql }.join(operator.to_sql)
           }
         end
@@ -177,7 +177,7 @@ module Query
           text = arguments.map { |a|
             child_query(a, self.operator > a.operator)
           }.compact.join(operator.display_string)
-          text = "((#{text}))" if wrap_with_parens
+          text = "(#{text})" if wrap_with_parens
           text
         end
       end

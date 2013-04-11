@@ -60,7 +60,7 @@ module Sql
       # name may be part of different joins and have different
       # aliases. See QueryTable.
       field.table = reference_table
-      field.name  = column.lookup_field_name
+      field.sql_name  = column.lookup_field_name
 
       field
     end

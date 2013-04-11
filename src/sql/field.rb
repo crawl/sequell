@@ -19,7 +19,7 @@ module Sql
     include FieldPredicates
 
     attr_reader :prefix, :aliased_name, :full_name, :canonical_name
-    attr_accessor :table
+    attr_accessor :table, :sql_name
     attr_accessor :name
 
     @@aliased_name_cache = { }
@@ -112,6 +112,7 @@ module Sql
       copy = Field.new(@full_name.dup)
       copy.table = @table.dup if @table
       copy.name = self.name.dup
+      copy.sql_name = @sql_name
       copy
     end
 
@@ -126,7 +127,11 @@ module Sql
     alias :resolved? :qualified?
 
     def sql_column_name
-      SQL_CONFIG.sql_field_name_map[self.name] || self.name
+      SQL_CONFIG.sql_field_name_map[sql_name] || sql_name
+    end
+
+    def sql_name
+      @sql_name || self.name
     end
 
     def assert_valid!

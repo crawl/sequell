@@ -132,7 +132,6 @@ module Grammar
 
     rule(:term) {
       term_field_expr.as(:term_expr) >> space? >> op >>
-      (space >> (field_value_boundary | body_expr).absent?).maybe >>
       field_value.as(:value) |
       SqlExpr.new
     }
@@ -142,14 +141,13 @@ module Grammar
     }
 
     rule(:field_value_boundary) {
-      str("||") | str("))") | str("/") | str("?:")
+      str("||") | str(")") | str("/") | str("?:")
     }
 
     rule(:field_value) {
       (SqlExpr.new |
         Atom.new.quoted_string |
-        (match('\s') >> (field_value_boundary | body_expr).absent? |
-          field_value_boundary.absent? >> Atom.new.safe_value).repeat).as(:field_value)
+        (field_value_boundary.absent? >> Atom.new.safe_value).repeat.as(:field_value))
     }
 
     rule(:function_expr) {

@@ -29,6 +29,8 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg elliptic x=kmap ::~ extra=killermap
+
 !kw playable:job ::!~ Jester
 
 !kw recent cv>=0.11
@@ -89,7 +91,8 @@ E !lg . won x=runes
 !lg * win s=-name
 !lg * win s=name x=-max(sc)
 !lg * sp ev<${ac}
-E !tv * ce killer=elephant slug xl=max ::~ not an integer
+E !tv * ce killer='elephant slug' xl=max ::~ not an integer
+E !tv * ce killer=elephant_slug xl=max ::~ not an integer
 E !lg jeanjacques !win XL>=25 s=killer x=xl ::~ non-aggregates
 !tv * map=~grunt
 !lg * x=${hp}
@@ -146,9 +149,11 @@ E !lg * ${ac + ev} > 15
 !lg * race=DS god=Xom ktyp=water
 !lg * DS Xom drown
 !lg * killer=uniq s=-killer
+!lg * (killer=goblin ||killer=centaur) s=killer
 !lg * DS x=ckaux
 !lg * !DS
 !lg * ((xom || nemelex))
+!lg * (xom|nemelex)
 !lg * god=Xom|Nemelex
 !lg * win min=turn
 !lg * xl>20 min=turn
@@ -177,7 +182,7 @@ E !lg * ${ac + ev} > 15
 !lm * rune=obsidian lg:place=Coc
 
 # Argument with space:
-!log . char=ddbe killer=electric golem
+!log . char=ddbe killer='electric golem'
 
 # Tourney selector:
 !hs * ddbe when=t
@@ -213,13 +218,13 @@ E !gkills * deathonacow
 # Game is a quit / leave
 !lg * quitting|leaving
 
-# Killer is a hobgoblin or an imp (superfluous parens ignored)
-!lg * killer=(hobgoblin|imp)
-!lg * killer!=(hobgoblin|imp)
+# Killer is a hobgoblin or an imp
+!lg * killer=hobgoblin|imp
+!lg * killer!=hobgoblin|imp
 
 !lm crate t !ktyp s=rune
 
-E !lg * won god=xom urune=15 sp -2
+!lg * won god=xom urune=15 sp -2
 
 !lm * t9 won type=god.renounce x=cdist(gid)
 
@@ -323,7 +328,7 @@ E !lg * s=trunc99(sc)
 !lg * s=char x=avg(turn) ::~ \d[.]\d
 !lg * s=char x=avg(dur) ::~ \d{1,2}:\d{2}:\d{2}
 
-!lg * ((cv=0.10 || cv=0.11-a)) ikiller!~'s ghost killer~~Duvessa s=ckiller
+!lg * ((cv=0.10 || cv=0.11-a)) ikiller!~"'s ghost" killer~~Duvessa s=ckiller
 !lm elliptic s=uniq / won
 
 !lg * !boring rstart>=2013 s=src x=cdist(name) / tiles
@@ -334,11 +339,11 @@ E !lg * s=trunc99(sc)
 !cmd !lgs !lg* sprint
 !lgs @elliptic
 
-!kw tmons killer=tentacled monstrosity
+!kw tmons killer='tentacled monstrosity'
 !lg * tmons ::~ a tentacled monstrosity
 !lg * !tmons ::!~ a tentacled monstrosity
 
-!lg * !((killer=tentacled monstrosity)) ::!~ a tentacled monstrosity
+!lg * !((killer=tentacled_monstrosity)) ::!~ a tentacled monstrosity
 
 !kw dying !(boring|winning)
 !lg * dying

@@ -38,8 +38,8 @@ module Grammar
     }
 
     rule(:parenthesized_body_unprefixed) {
-      str("((") >> space? >> body_root.as(:parentheses) >>
-       space? >> str("))")
+      str("(") >> space? >> body_root.as(:parentheses) >>
+       space? >> str(")")
     }
 
     rule(:body_term) {

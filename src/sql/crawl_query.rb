@@ -74,6 +74,7 @@ module Sql
       unless extras.empty?
         map['extra_values'] = extras.map { |k, v| "#{k}=#{v}" }.join(";;;;")
       end
+      STDERR.puts("extra fields: #{self.extra}")
       add_extra_fields_to_xlog_record(self.extra, map)
     end
 
@@ -117,11 +118,14 @@ module Sql
 
     def resolve_query_fields
       if @extra
-        @extra.fields.each { |extra|
+        STDERR.puts("Preresolve: #{@extra}")
+        res = @extra.fields.each { |extra|
           extra.each_field { |field|
             resolve_field(field, @tables)
           }
         }
+        STDERR.puts("Postresolve: #{@extra}")
+        res
       end
       self.select_query_fields.each { |field|
         resolve_field(field, @tables)
