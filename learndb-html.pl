@@ -60,7 +60,7 @@ for(split /\n/, `find dat/learndb/ -type f ! -name '*.html*'`)
     $timestamp = $st[10] if @st=stat $_ and $st[10]>$timestamp;
 }
 
-my $embedded_css = do { local (@ARGV, $/) = 'learndb.css'; <> };
+my $embedded_css = do { local (@ARGV, $/) = 'config/data/learndb.css'; <> };
 
 print <<EOF;
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
