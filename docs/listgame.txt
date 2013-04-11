@@ -1171,10 +1171,12 @@ Once a nick mapping is established, all listgame commands will use the
 mapping.
 
 You can bypass nick mappings in listgame queries by using an explicit
-name=foo expression:
+name=foo expression or by prefixing the name with ":":
 
   "!lg * name=elliptic"  finds games by elliptic, without applying nick
                          mappings.
+  "!lg * :elliptic"      does likewise as does
+  "!lg :elliptic"
 
 You can delete a nick mapping using:
 
