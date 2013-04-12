@@ -62,7 +62,11 @@ module Cmd
     def self.kill_recursive_keyword
       previous = @@tracking_recursion
       begin
-        @@tracking_recursion = { } unless @@tracking_recursion
+        if @@tracking_recursion
+          @@tracking_recursion = @@tracking_recursion.dup
+        else
+          @@tracking_recursion = { }
+        end
         yield
       ensure
         @@tracking_recursion = previous
