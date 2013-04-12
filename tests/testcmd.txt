@@ -226,6 +226,7 @@ E !gkills * deathonacow
 !deathsin Tomb
 
 !killsby hobgoblin
+!killsby storm dragon ::~ 2x aspy
 
 !won elliptic 10
 
