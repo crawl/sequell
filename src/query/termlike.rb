@@ -152,6 +152,10 @@ module Query
       self.arguments.each(&block)
     end
 
+    def each_predicate(&block)
+      # Do nothing
+    end
+
     def each_node(&block)
       Query::AST::ASTWalker.each_node(self, &block)
     end
@@ -168,6 +172,10 @@ module Query
       expr = yield
       return left + expr + right if condition
       expr
+    end
+
+    def sql_values
+      []
     end
 
     def to_query_string(paren=false)
