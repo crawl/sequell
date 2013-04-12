@@ -359,7 +359,7 @@ module Sql
     def build_query(predicates, with_sorts=nil)
       @query, @values = predicates.to_sql, predicates.sql_values
       @query = "WHERE #{@query}" unless @query.empty?
-      if with_sorts
+      if with_sorts && !with_sorts.empty?
         @query << " " unless @query.empty?
         @query << "ORDER BY " << with_sorts.first.to_sql
 

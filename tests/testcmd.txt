@@ -29,6 +29,7 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!won mikee x=cdist(char)
 .echo å ::~ å
 !lg * / ${tiles}
 !lg * / tiles
