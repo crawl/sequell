@@ -69,7 +69,7 @@ module Query
       end
 
       def convert_to_type(type)
-        self.value = type.convert(self.value)
+        self.value = type.convert(self.value) unless self.null?
         self
       end
     end

@@ -29,6 +29,7 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lm * type=demonic rune
 !lg * troll air elementalist
 !lg * high elf fire elementalist 
 !lg * pale draconian earth elementalist ::~ Vyt the Geomancer
