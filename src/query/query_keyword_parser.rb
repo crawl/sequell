@@ -18,7 +18,7 @@ module Query
 
   class KeywordParseError < Sql::ParseError
     def initialize(kw)
-      super("Malformed argument: #{kw}")
+      super("No keyword '#{kw}'")
     end
   end
 
