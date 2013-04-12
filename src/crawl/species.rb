@@ -1,4 +1,5 @@
 require 'crawl/config'
+require 'set'
 
 module Crawl
   class Species
@@ -21,6 +22,30 @@ module Crawl
 
     def self.species_map
       Config['species']
+    end
+
+    def self.lower_species_name_set
+      @lower_species_name_set ||=
+        Set.new(species_map.values.map(&:downcase).map { |c|
+          c.gsub('*', '')
+        }.map(&:strip))
+    end
+
+    def self.lower_flavoured_species
+      Set.new(Config['species-flavours'].map { |sp, values|
+        values.map { |flavour|
+          flavour.downcase + ' ' + sp.downcase
+        }
+      }.flatten)
+    end
+
+    def self.species_exists?(sp)
+      return false unless sp
+      lower_species_name_set.include?(sp.downcase.gsub('_', ' ').strip)
+    end
+
+    def self.flavoured_species?(sp)
+      lower_flavoured_species.include?(sp.downcase.gsub('_', ' ').strip)
     end
 
     def self.dead_species

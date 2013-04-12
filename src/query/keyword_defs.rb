@@ -13,6 +13,19 @@ module Query
     'char' if is_charabbrev?(arg)
   }
 
+  KeywordMatcher.matcher(:full_cls) {
+    require 'crawl/job'
+    'cls' if Crawl::Job.job_exists?(arg)
+  }
+
+  KeywordMatcher.matcher(:full_sp) {
+    require 'crawl/species'
+    if Crawl::Species.species_exists?(arg) ||
+        Crawl::Species.flavoured_species?(arg)
+      'sp'
+    end
+  }
+
   KeywordMatcher.matcher(:playable_species) {
     if arg =~ /^playable:(?:sp|race|s|r)$/i
       require 'crawl/species'

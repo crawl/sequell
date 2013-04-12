@@ -2,14 +2,15 @@ require 'query/nick_expr'
 
 module Query
   class QueryNodeTranslator
-    def self.translate(node)
-      self.new(node).translate
+    def self.translate(node, parent)
+      self.new(node, parent).translate
     end
 
-    attr_reader :node
+    attr_reader :node, :parent
 
-    def initialize(node)
+    def initialize(node, parent)
       @node = node
+      @parent = parent
     end
 
     def value

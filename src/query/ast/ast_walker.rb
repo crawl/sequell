@@ -18,27 +18,31 @@ module Query
         @@debugging
       end
 
-      def self.map_nodes(ast, condition=nil, &block)
+      def self.block_call(block, node, parent)
+        block.call(node, parent)
+      end
+
+      def self.map_nodes(ast, parent=nil, condition=nil, &block)
         return nil if ast.nil?
         debug{"map_nodes: #{ast}: #{ast.class}"} if debugging?
         ast.arguments = ast.arguments.map { |arg|
-          map_nodes(arg, condition, &block)
+          map_nodes(arg, ast, condition, &block)
         }.compact
         debug{ "Post-map: #{ast}"} if debugging?
         if !condition || condition.call(ast)
           debug{ "Self-call: #{ast}"} if debugging?
-          return block.call(ast)
+          return block_call(block, ast, parent)
         end
         ast
       end
 
-      def self.each_node(ast, condition=nil, &block)
+      def self.each_node(ast, parent=nil, condition=nil, &block)
         return nil if ast.nil?
         ast.arguments.each { |arg|
-          each_node(arg, condition, &block)
+          each_node(arg, ast, condition, &block)
         }
         if !condition || condition.call(ast)
-          return block.call(ast)
+          return block_call(block, ast, parent)
         end
         ast
       end
@@ -52,17 +56,17 @@ module Query
       end
 
       def self.map_predicates(ast, &block)
-        map_nodes(ast, lambda { |node| node.type.boolean? }, &block)
+        map_nodes(ast, nil, Proc.new { |node| node.type.boolean? }, &block)
       end
 
       def self.map_kinds(ast, kinds, &block)
         kinds = Set.new([kinds]) unless kinds.is_a?(Set)
-        map_nodes(ast, lambda { |node| kinds.include?(node.kind) }, &block)
+        map_nodes(ast, nil, Proc.new { |node| kinds.include?(node.kind) }, &block)
       end
 
       def self.each_kind(ast, kinds, &block)
         kinds = Set.new([kinds]) unless kinds.is_a?(Set)
-        each_node(ast, lambda { |node| kinds.include?(node.kind) }, &block)
+        each_node(ast, nil, Proc.new { |node| kinds.include?(node.kind) }, &block)
       end
 
       def self.map_fields(ast, &block)

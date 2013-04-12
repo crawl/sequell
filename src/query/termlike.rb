@@ -4,6 +4,22 @@ module Query
   module Termlike
     attr_accessor :arguments
 
+    def next_sibling(parent)
+      return nil unless parent
+      parent.child_offset_from(self, 1)
+    end
+
+    def child_offset_from(child, offset)
+      return nil unless arguments
+      index = arguments.find_index { |arg| arg.eql?(child) }
+      return nil unless index
+      arguments[index + offset]
+    end
+
+    def flag(key)
+      @flags && @flags[key]
+    end
+
     def flags
       @flags ||= { }
     end
@@ -26,7 +42,7 @@ module Query
     end
 
     def sql_expr?
-      flags[:sql_expr]
+      flag(:sql_expr)
     end
 
     def negatable?
@@ -165,7 +181,7 @@ module Query
     end
 
     def without(&filter)
-      Query::AST::ASTWalker.map_nodes(self.dup, filter) { nil }
+      Query::AST::ASTWalker.map_nodes(self.dup, nil, filter) { nil }
     end
 
     def wrap_if(condition, left, right=left)

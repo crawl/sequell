@@ -1,4 +1,5 @@
 require 'crawl/config'
+require 'set'
 
 module Crawl
   class Job
@@ -18,6 +19,18 @@ module Crawl
 
     def self.class_map
       Config['classes']
+    end
+
+    def self.lower_class_name_set
+      @lower_class_name_set ||=
+        Set.new(class_map.values.map(&:downcase).map { |c|
+          c.gsub('*', '')
+        }.map(&:strip))
+    end
+
+    def self.job_exists?(cls)
+      return false unless cls
+      lower_class_name_set.include?(cls.downcase.gsub('_', ' ').strip)
     end
 
     def self.dead_jobs
