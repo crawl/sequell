@@ -29,11 +29,14 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!kw foo defe
+E !kw foo foo
+
 E !lg * killer=crazy yiuf ::~ No keyword 'yiuf'
 !lm * type=demonic rune
-!lg * troll air elementalist
-!lg * high elf fire elementalist 
-!lg * pale draconian earth elementalist ::~ Vyt the Geomancer
+!lg * troll air_elementalist
+!lg * high_elf fire_elementalist 
+!lg * pale_draconian earth_elementalist ::~ Vyt the Geomancer
 
 !lg @* ::~ Vesto the Covered
 !lg @. ::~ hyperbolic

@@ -30,23 +30,9 @@ module Query
           if kw.flag(:keyword_consumed)
             nil
           else
-            begin
+            Cmd::UserKeyword.kill_recursive_keyword {
               ::Query::QueryKeywordParser.parse(kw.value)
-            rescue ::Query::KeywordParseError => e
-              next_sibling = kw.next_sibling(parent)
-              if next_sibling && next_sibling.kind == :keyword
-                begin
-                  res = ::Query::QueryKeywordParser.parse(
-                    kw.value + ' ' + next_sibling.value)
-                  next_sibling.flag!(:keyword_consumed)
-                  res
-                rescue ::Query::KeywordParseError => e1
-                  raise e
-                end
-              else
-                raise e
-              end
-            end
+            }
           end
         }
 

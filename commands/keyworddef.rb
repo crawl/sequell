@@ -25,8 +25,8 @@ def main
     show_help(true)
   end
 rescue
-  STDERR.puts("#$!: " + $!.backtrace.join("\n"))
   puts $!
+  raise
 end
 
 def list_keywords
@@ -56,6 +56,7 @@ def display_keyword(name)
       puts "#{kwtype}: #{name} => #{parse.to_query_string(false)}"
     rescue Query::KeywordParseError
       puts "No keyword '#{name}'"
+      raise
     end
   else
     puts("Keyword: #{keyword}")

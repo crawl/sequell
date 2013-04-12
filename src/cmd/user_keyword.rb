@@ -5,12 +5,24 @@ require 'query/query_keyword_parser'
 require 'query/listgame_parser'
 
 module Cmd
+  class RecursiveKeywordError < StandardError
+    attr_reader :name
+    def initialize(name)
+      super("Recursive definition for '#{name}'")
+      @name = name
+    end
+  end
+
   class UserKeyword
     KEYWORD_REGEX = /^[\w@_.:+*&#$~`'"-]+$/
+
+    @@tracking_recursion = nil
 
     def self.define(name, definition)
       name = canonicalize_name(name)
       assert_name_valid!(name)
+
+      UserCommandDb.db.delete_keyword(name)
       assert_definition_parseable!(definition)
 
       existing_keyword = self.keyword(name)
@@ -37,12 +49,32 @@ module Cmd
     def self.keyword(name)
       definition = UserCommandDb.db.query_keyword(canonicalize_name(name))
       return nil unless definition
+      track_recursion(definition[0])
       UserDef.new(definition[0], definition[1])
+    end
+
+    def self.track_recursion(name)
+      return unless @@tracking_recursion
+      raise RecursiveKeywordError.new(name) if @@tracking_recursion[name]
+      @@tracking_recursion[name] = true
+    end
+
+    def self.kill_recursive_keyword
+      previous = @@tracking_recursion
+      begin
+        @@tracking_recursion = { } unless @@tracking_recursion
+        yield
+      ensure
+        @@tracking_recursion = previous
+      end
     end
 
     def self.delete(name)
       name = canonicalize_name(name)
-      assert_name_valid!(name)
+      begin
+        assert_name_valid!(name)
+      rescue RecursiveKeywordError => ignored
+      end
       existing_keyword = self.keyword(name)
       raise "No user keyword '#{name}'" if existing_keyword.nil?
       UserCommandDb.db.delete_keyword(name)
