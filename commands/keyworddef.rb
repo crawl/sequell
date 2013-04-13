@@ -16,10 +16,12 @@ def main
   if $ctx[:ls]
     list_keywords
   elsif $ctx[:rm] && name
+    forbid_private_messaging! "Cannot delete keywords in PM."
     delete_keyword(name)
   elsif name && expansion.empty?
     display_keyword(name)
   elsif name && !expansion.empty?
+    forbid_private_messaging! "Cannot define keywords in PM."
     define_keyword(name, expansion)
   else
     show_help(true)

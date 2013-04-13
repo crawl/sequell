@@ -15,10 +15,12 @@ def main
   if $ctx[:ls]
     list_user_commands
   elsif $ctx[:rm] && name
+    forbid_private_messaging! "Cannot delete commands in PM."
     delete_user_command(name)
   elsif name && command.empty?
     display_user_command(name)
   elsif name && !command.empty?
+    forbid_private_messaging! "Cannot define commands in PM."
     define_user_command(name, command)
   else
     show_help(true)
