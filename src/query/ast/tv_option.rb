@@ -16,6 +16,20 @@ module Query
         @opts[key.to_sym]
       end
 
+      def []=(key, val)
+        @opts[key.to_sym] = val
+      end
+
+      def valid_channel_name?(name)
+        name && name =~ /^[^\s\/\\]{2,}$/
+      end
+
+      def channel_name(g)
+        name = self[:channel]
+        return name if self.valid_channel_name?(name)
+        "#{g['name']}:#{g['char']}@#{g['xl']}.T#{@g['turn']}"
+      end
+
       def seek_to_game_end?
         @opts[:seekafter] == '>'
       end
@@ -23,13 +37,21 @@ module Query
     private
       def parse_tv_opts!
         option_arguments.each { |key|
-          parse_option(key.downcase)
+          parse_option(key)
         }
       end
 
-      def parse_option(key)
+      def parse_option(raw_key)
+        key = raw_key.downcase
         if key == 'cancel' or key == 'nuke'
           @opts[key.to_sym] = 'y'
+        elsif key == 'new'
+          @opts[:channel] = ''
+        elsif raw_key =~ /channel=(.*)/i
+          self[:channel] = $1.to_s
+          unless self.valid_channel_name?(self[:channel])
+            raise "Invalid channel name: #{self[:channel]}"
+          end
         else
           prefix = key[0..0].downcase
           rest = key[1 .. -1].strip

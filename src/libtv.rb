@@ -209,11 +209,14 @@ module TV
 
   def self.request_game_verbosely(n, g, who, tv_opt)
     summary = short_game_summary(g)
-    tv = 'FooTV'
+    if tv_opt[:channel]
+      tv_opt[:channel] = tv_opt.channel_name(g)
+    end
+    tv = tv_opt[:channel] || 'FooTV'
 
     unless TV.channel_server?
       if tv_opt && tv_opt[:nuke]
-        puts "FooTV playlist clear requested by #{who}."
+        puts "#{tv} playlist clear requested by #{who}."
       else
         suffix = tv_opt && tv_opt[:cancel] ? ' cancel' : ''
         puts "#{n}. #{summary}#{suffix} requested for #{tv_description(tv)}."

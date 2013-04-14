@@ -1196,9 +1196,12 @@ to watch) that plays games requested using the -tv option.
 
 TV options
 ==========
--tv               starts playback of the selected game on FooTV
--tv:cancel        cancels playback of the selected game on FooTV
--tv:nuke          cancels playback of *all* previous games selected for FooTV
+-tv                starts playback of the selected game on FooTV
+-tv:cancel         cancels playback of the selected game on FooTV
+-tv:nuke           cancels playback of *all* previous games selected for FooTV
+-tv:new            requests a new TV channel (automatically named) instead of
+                   FooTV
+-tv:channel=<name> requests a specifically named TV channel instead of FooTV
 -tv:<N            starts playback N times farther from the end. -tv normally
                   starts playback a little way before the end of game, or
                   a little way before the milestone (when used with !lm).
@@ -1254,6 +1257,9 @@ There is a subtle difference between <T1 and <T0: <T0 starts playback
 from the beginning of the first ttyrec, whereas <T1 starts at the game
 start time recorded by Crawl, i.e. <T1 will skip the character
 selection screens, but <T0 will not.
+
+If your playback is long, please use -tv:new so that you don't block
+FooTV for the duration of the playback.
 
 
 Graphs (Experimental)
