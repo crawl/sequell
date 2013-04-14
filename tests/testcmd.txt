@@ -29,6 +29,8 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg * cv=0.9|0.11-a s=cv ::~ 27275x 0.11-a, 4806x 0.9
+
 !kw foo defe
 E !kw foo foo
 

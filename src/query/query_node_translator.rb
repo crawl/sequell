@@ -56,7 +56,7 @@ module Query
     end
 
     def translate_simple_predicate(node)
-      if equality? && value =~ /^\(?[\w. ]+(?:\|[\w. ]+)+\)?$/
+      if equality? && value =~ /^\(?[^| ]+(?:\|[^| ]+)+\)?$/
         values = value.gsub(/^\(|\)$/, '').split('|')
         operator = (op.equal? ? :or : :and)
         return reexpand(
