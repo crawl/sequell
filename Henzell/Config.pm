@@ -90,7 +90,7 @@ sub load_commands($$) {
   foreach my $line (@command_lines)
   {
     my ($command, $file, $direct) =
-      $line =~ /^(\S+)\s+(\S+)(?:\s+(:direct))?\s*$$/;
+      $line =~ /^(\S+)\s+(\S+)(?:\s+(:direct))?\s*$/;
     #print "Loading $command from $file...\n";
 
     $CMD{$command} = $direct ? $procmaker->($command_dir, $file) :
