@@ -5,6 +5,8 @@ require 'tpl/text_fragment'
 require 'tpl/lookup_fragment'
 require 'tpl/substitution'
 require 'tpl/gsub'
+require 'tpl/subcommand'
+require 'tpl/funcall'
 
 module Tpl
   class TemplateBuilder < Parslet::Transform
@@ -15,7 +17,13 @@ module Tpl
       Fragment.new(*fragments).collapse
     }
     rule(char: simple(:c)) { c.to_s }
+    rule(leftquot: simple(:c)) { c.to_s }
+    rule(rightquot: simple(:c)) { c.to_s }
+
     rule(text: sequence(:c)) { TextFragment.new(c.join('')) }
+    rule(raw: simple(:raw)) {
+      TextFragment.new(raw.to_s)
+    }
     rule(template: simple(:template),
          text: sequence(:text)) {
       Fragment.new(template, TextFragment.new(text.join('')))
@@ -47,6 +55,44 @@ module Tpl
     }
     rule(key: simple(:fragment)) {
       LookupFragment.fragment(fragment)
+    }
+    rule(subcommand: simple(:command),
+         command_line: simple(:command_line)) {
+      Subcommand.new(command, command_line)
+    }
+    rule(function: simple(:function), function_arguments: sequence(:args)) {
+      Funcall.new(function.identifier, *args)
+    }
+    rule(argument: simple(:arg)) { arg }
+    rule(argument: sequence(:args)) { Fragment.new(*args).collapse }
+    rule(string: sequence(:c)) { c.join('') }
+    rule(string: simple(:c)) { c.to_s }
+    rule(leftquot: simple(:left),
+         rightquot: simple(:right)) {
+      left.to_s + right.to_s
+    }
+
+    rule(embedded_template: simple(:template)) { template }
+    rule(quoted_template: sequence(:fragments)) {
+      pieces = fragments.map { |c|
+        if c.is_a?(String)
+          TextFragment.new(c)
+        else
+          c
+        end
+      }
+      Fragment.new(*pieces).collapse
+    }
+
+    rule(word: sequence(:fragments)) {
+      pieces = fragments.map { |c|
+        if c.is_a?(String)
+          TextFragment.new(c)
+        else
+          c
+        end
+      }
+      Fragment.new(*pieces).collapse
     }
   end
 end

@@ -237,6 +237,7 @@ Where:
            instance:
              !lg * win s=name -opt:title="Winners"
               => Winners: 392x ...
+  * join: The string used to join individual groups, defaulting to ", "
   
 - <option>
   Some options modify the behaviour of !lg:
@@ -1291,6 +1292,121 @@ Graph types:
  - Scatter -- only if the X-axis is numeric or a date.
  - Area -- same restrictions as Scatter
  - Pie
+
+ 
+Command-Line Expansion
+----------------------
+
+Any command you issue to Sequell is expanded before execution. For
+instance, if user "jake" runs a command as follows:
+
+<jake > .echo User is: $user
+
+Sequell will respond with: "User is: jake"
+
+The syntax used for command-line expansion is:
+
+1. Variables:
+
+References such as $user, $name, etc. Any reference that Sequell does not
+know how to expand will be canonicalized and echoed.
+
+   <jake > .echo Hi $user => Hi jake
+   <jake > .echo Hi $nobody => Hi ${nobody}
+
+The variables that Sequell recognizes depend on the context:
+
+ - Any context:
+
+   $user: The name of the requesting user.
+
+ - Listgame queries (!lg, etc.)
+
+   $name: The name of the player (this may be a guess)
+   $target: The first nick referenced in the query, possibly *
+            !lg * fmt:"Name: $name, Target: $target"
+         => Name: <whoever>, Target: *
+
+2. Subcommands:
+
+A subcommand may be referenced as $(<commandline>). For instance:
+
+    .echo Characters played by * $(!lg * s=char join:", ")
+  => Characters played by foo SpEn, MiFi, ...
+
+    .echo Hi $(.echa there) => Hi there
+
+To see wins by characters that player 'foo' has played but not won:
+
+    !lg * win char=$(!lg foo !won s=char join:"|")
+
+Note: any command executing as a subcommand has no default title:
+    .echo Chars: $(!lg . s=char) => MuPr, ...
+
+An unknown subcommand will trigger an immediate error, unlike other
+expansions, which will ignore unexpanded values.
+
+Note that subcommands are left expanded in summary group formats:
+    !lg * s=char fmt:'$(.echo hi)' => $(.echo hi), $(.echo hi), ...
+
+3. Functions:
+
+Functions may be used as $(fn ...). 
+
+   - $(join [<joiner>] <text>)
+     .echo $(join " and " a,b,c) => a and b and c
+
+     The join function splits text on commas and joins it with the given
+     join string. If omitted, the join string defaults to ", "
+
+   - $(split [<splitter>] <text>)
+
+     The split function splits text into an array on the given delimiter:
+
+     .echo $(join $(split & a&b&c)) => a, b, c
+
+   - $(replace <string> [<replacement>] <text>)
+
+     The replace function replaces occurrences of <string> in <text> with
+     <replacement>, the replacement defaulting to the empty string:
+
+     .echo $(replace & ! a&b&c) => a!b!c
+     .echo $(replace & a&b&c) => abc
+
+Unknown functions will be ignored:
+
+     .echo $(foobar) => $(foobar)
+
+Multiple command-line expansions:
+=================================
+
+!lg can use templates to format its output. These templates are also
+expanded using the rules described above.
+
+For instance, given the command
+
+    !lg * win char=$(.echo HESk) stub:'$(!hs * HESk)'
+
+The first expansion (before !lg runs):
+
+    !lg * win char=HESk stub:'$(!hs * HESk)'
+
+If !lg runs and finds no results, it will then evaluate the stub, viz.
+
+    !hs * HESK
+
+
+Suppressing command-line expansion:
+===================================
+Single-quoted strings are not be expanded by default. This can be
+used to defer costly subcommands until they're actually needed:
+
+     !lg * stub:'No results, but look: $(!expensive-query)'
+
+Although the default command-line expansion does not expand
+single-quoted strings, !lg will still expand any string used as a
+format, title, or stub.
+
 
 Examples
 --------

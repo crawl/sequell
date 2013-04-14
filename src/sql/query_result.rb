@@ -30,7 +30,8 @@ module Sql
         'x' => self.extra_field_values(rowmap),
         '@x' => self.extra_value_array(rowmap)
       }
-      Tpl::Template.template_eval(ast.key_value(:fmt), rowmap.merge(extras))
+      Tpl::Template.template_eval(ast.key_value(:fmt),
+        ast.template_properties.merge(rowmap).merge(extras))
     end
 
     def option(key)

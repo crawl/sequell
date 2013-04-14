@@ -10,11 +10,9 @@ module Tpl
 
     def eval(provider)
       lookup(provider) { |match|
-        if match == @pattern
+        match.gsub(@pattern) {
           @replacement.eval(provider)
-        else
-          match
-        end
+        }
       }
     end
 

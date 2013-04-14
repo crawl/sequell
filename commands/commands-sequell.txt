@@ -15,8 +15,8 @@
 !ttyrec ttr.rb
 !ttr ttr.rb
 !tv tvreq.rb
-!tvdef tvdef.rb
+!tvdef tvdef.rb :direct
 !won won.rb
-!cmd cmd.rb
+!cmd cmd.rb :direct
 !kw keyworddef.rb
 .echo echo.pl

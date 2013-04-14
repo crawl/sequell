@@ -13,16 +13,22 @@ module Grammar
       single_quoted_string | double_quoted_string
     }
 
+    def quoted_body(quote)
+      (str('\\') >> str('\\').as(:char) |
+        str('\\') >> str(quote).as(:char) |
+        match["^#{quote}"].as(:char))
+    end
+
+    rule(:wrapped_single_quoted_string) {
+      (str("'").as(:leftquot) >> quoted_body("'").repeat >> str("'").as(:rightquot)).as(:string)
+    }
+
     rule(:single_quoted_string) {
-      str("'") >> (str('\\') >> str('\\').as(:char) |
-                   str('\\') >> str("'").as(:char) |
-                   match["^'"].as(:char)).repeat.as(:string) >> str("'")
+      str("'") >> quoted_body("'").repeat.as(:string) >> str("'")
     }
 
     rule(:double_quoted_string) {
-      str('"') >> (str('\\') >> str('\\').as(:char) |
-                   str('\\') >> str('"').as(:char) |
-                   match['^"'].as(:char)).repeat.as(:string) >> str('"')
+      str('"') >> quoted_body('"').repeat.as(:string) >> str('"')
     }
 
     rule(:safe_value) {

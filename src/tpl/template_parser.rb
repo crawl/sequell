@@ -1,4 +1,6 @@
 require 'parslet'
+require 'grammar/atom'
+require 'henzell/config'
 
 module Tpl
   class TemplateParser < Parslet::Parser
@@ -12,26 +14,74 @@ module Tpl
       (safetext.as(:text) >> (template.as(:template) >> safetext.as(:text)).repeat).as(:tpl)
     }
 
+    rule(:wordtpl) {
+      word.as(:word) >> (template.as(:template) >> word.as(:word)).repeat
+    }
+
+    rule(:word) {
+      (single_quoted_string | double_quoted_template.as(:quoted_template) |
+        str(" ").absent? >> tchar).repeat
+    }
+
+    rule(:double_quoted_template) {
+      str('"') >>
+      (str("\\") >> str("\\").as(:char) |
+        str("\\") >> str("\"").as(:char) |
+        template.as(:embedded_template) |
+        match['^"'].as(:char)).repeat >>
+      str('"')
+    }
+
+    rule(:single_quoted_string) {
+      ::Grammar::Atom.new.single_quoted_string
+    }
+
     rule(:text) {
-      (tchar | str("}").as(:char)).repeat
+      (single_quoted_text | tchar | match["})"].as(:char)).repeat
     }
 
     rule(:safetext) {
-      tchar.as(:char).repeat
+      (single_quoted_text | tchar.as(:char)).repeat
+    }
+
+    rule(:single_quoted_text) {
+      ::Grammar::Atom.new.wrapped_single_quoted_string
     }
 
     rule(:tchar) {
       str("\\") >> str("}").as(:char) |
+      str("\\") >> str(")").as(:char) |
       str("\\") >> str("\\").as(:char) |
       str("\\") >> str("$").as(:char) |
-      str("$").as(:char) >> (match['^{A-Za-z0-9*_'].present? | any.absent?) |
-      match['^\\\$}'].as(:char)
+      str("$").as(:char) >> (match['^({A-Za-z0-9*_'].present? | any.absent?) |
+      match['^$})'].as(:char)
     }
 
     rule(:template) {
       str("$") >> identifier |
-      str("${") >> space? >> template_with_options >> space? >>
-      str("}")
+      str("${") >> space? >> template_with_options >> space? >> str("}") |
+      str("$(") >> space? >> (template_subcommand | template_funcall) >>
+        space? >> str(")") |
+      (str("${") >> match['^}'].repeat >> str("}")).as(:raw) |
+      (str("$(") >> match['^)'].repeat >> str(")")).as(:raw)
+    }
+
+    rule(:template_subcommand) {
+      sigils = Regexp.quote(::Henzell::Config.default[:sigils])
+      (match[sigils] >> subcommand_name_part).as(:subcommand) >>
+        subcommand_line.as(:command_line)
+    }
+
+    rule(:subcommand_line) {
+      subtpl
+    }
+
+    rule(:template_funcall) {
+      identifier.as(:function) >> funargs.as(:function_arguments)
+    }
+
+    rule(:funargs) {
+      (space >> wordtpl.as(:argument)).repeat
     }
 
     rule(:template_with_options) {
@@ -60,8 +110,12 @@ module Tpl
     }
 
     rule(:identifier) {
-      (match["a-zA-Z_0-9*"] >> match["a-zA-Z_0-9*+"].repeat |
+      (match["a-zA-Z_0-9*"] >> match["a-zA-Z_0-9*+-"].repeat |
        str(".") | str("*") | str("%")).as(:identifier)
+    }
+
+    rule(:subcommand_name_part) {
+      match['^ )'].repeat
     }
 
     rule(:integer) {

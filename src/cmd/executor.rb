@@ -11,6 +11,10 @@ module Cmd
       @options[key]
     end
 
+    def suppress_stderr
+      self[:suppress_stderr]
+    end
+
     def default_nick
       self[:default_nick]
     end
@@ -50,7 +54,8 @@ module Cmd
     end
 
     def execute
-      @command.execute(@config, @options.default_nick || '???')[1] || 'ERROR'
+      @command.execute(@config, @options.default_nick || '???',
+                       @options.suppress_stderr) || [1, '']
     end
   end
 end

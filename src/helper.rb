@@ -40,14 +40,24 @@ end
 
 def forbid_private_messaging!(msg=nil)
   forbid_proxying!
+  forbid_subcommand!
   if ENV['PRIVMSG'] == 'y'
     puts(msg) if msg
     exit 1
   end
 end
 
+def forbid_subcommand!
+  if ENV['SUBCOMMAND'] == 'y'
+    puts "This command may not be used as a subcommand"
+    exit 1
+  end
+end
+
 def forbid_proxying!
-  raise StandardError, "Proxying forbidden" if ENV['HENZELL_PROXIED'] == 'y'
+  if ENV['HENZELL_PROXIED'] == 'y'
+    puts "Proxying forbidden"
+  end
 end
 
 def die(msg)

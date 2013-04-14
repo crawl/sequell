@@ -30,21 +30,21 @@ module Henzell
       [0, Henzell::LearnDBQuery.query(arguments), '']
     end
 
-    def execute(command_line, default_nick='???')
+    def execute(command_line, default_nick='???', suppress_stderr=false)
       unless command_line =~ /^(\S+)(?:(\s+(.*)))?/
         raise StandardError, "Bad command line: #{command_line}"
       end
       command = $1.downcase
-      arguments = $2 || ''
+      arguments = ($2 || '').strip
 
       if command == '??'
         return learndb_query(arguments)
       end
 
-      execute_command(command, arguments, default_nick)
+      execute_command(command, arguments, default_nick, suppress_stderr)
     end
 
-    def execute_command(command, arguments, default_nick)
+    def execute_command(command, arguments, default_nick, suppress_stderr=false)
       seen_commands = Set.new
       while true
         if seen_commands.include?(command)
@@ -60,17 +60,30 @@ module Henzell
           command, args = Cmd::UserDefinedCommand.expand(command)
           arguments =
             Query::QueryStringTemplate.substitute(args, [arguments], default_nick)
-          STDERR.puts("Cmd: " + [command, arguments].join(' '))
+          unless ENV['HENZELL_TEST']
+            STDERR.puts("Cmd: " + [command, arguments].join(' '))
+          end
           next
         end
 
-        command_script = File.join(Config.root, "commands", @commands[command])
+        command_script =
+          File.join(Config.root, "commands", @commands[command][:file])
         target = default_nick
+
+        unless @commands[command][:direct]
+          arguments = Query::QueryStringTemplate.substitute(arguments, [''],
+            default_nick)
+        end
+
         command_line = [command, arguments].join(' ')
-        STDERR.puts("Cmd: " + command_line)
+        unless ENV['HENZELL_TEST']
+          STDERR.puts("Cmd: " + command_line)
+        end
+
+        redirect = suppress_stderr ? '2>/dev/null' : ''
         system_command_line =
           %{#{command_script} #{quote(target)} #{quote(default_nick)} } +
-          %{#{quote(command_line)} ''}
+          %{#{quote(command_line)} '' #{redirect}}
         output = %x{#{system_command_line}}
         exit_code = $? >> 8
         return [exit_code, output, system_command_line]
@@ -88,8 +101,8 @@ module Henzell
         file.each { |line|
           line = line.strip
           next if line =~ /^#/
-          if line =~ /^(\S+) (.*)/
-            @commands[$1.downcase] = $2
+          if line =~ /^(\S+) (\S+)(?:\s+(:direct))?\s*$/
+            @commands[$1.downcase] = { file: $2, direct: $3 }
           end
         }
       }

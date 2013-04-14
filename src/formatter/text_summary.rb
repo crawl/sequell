@@ -14,11 +14,14 @@ module Formatter
 
     def result_prefix_title
       return default_result_prefix_title if default_result_prefix_title
+      return '' if CommandContext.subcommand?
       "#{summary_count} #{summary_entities} for #{@summary.query.argstr}"
     end
 
     def summary_details
-      @summary.sorted_row_values.join(", ")
+      Tpl::Template.without_subcommands {
+        @summary.sorted_row_values.join(default_join)
+      }
     end
   end
 end

@@ -21,13 +21,23 @@ module Tpl
     def collapse
       args = []
       for fragment in fragments
+        fragment = fragment.collapse if fragment.collapsible?
         if fragment.collapsible?
-          args += fragment.collapse.fragments
-        else
-          args << fragment unless fragment.empty?
+          args += fragment.fragments
+        elsif !fragment.empty?
+          if fragment.is_a?(TextFragment) && !args.empty? &&
+              args[-1].is_a?(TextFragment)
+            args[-1].text += fragment.text
+          else
+            args << fragment
+          end
         end
       end
-      self.class.new(*args)
+      if args.size == 1
+        args.first
+      else
+        self.class.new(*args)
+      end
     end
 
     def to_s

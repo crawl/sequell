@@ -41,6 +41,10 @@ module Sql
       @summary_reporter.query
     end
 
+    def default_join
+      query.ast.default_join
+    end
+
     def aggregate_formatter
       @aggregate_formatter ||=
         SummaryGroupFormatter.aggregate_format(
@@ -154,7 +158,7 @@ module Sql
     end
 
     def subrows_string
-      @subrows_string ||= subrows_array.join(", ")
+      @subrows_string ||= subrows_array.join(default_join)
     end
 
     def subrows_array

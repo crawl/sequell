@@ -1,8 +1,31 @@
 require 'json'
+require 'env'
 
 class CommandContext
   def self.extra_argument_lists
     @extra_args ||= find_extra_arglists
+  end
+
+  def self.subcommand?
+    ENV['SUBCOMMAND']
+  end
+
+  def self.subcommand_context
+    Env.with(subcommand: 'y') {
+      yield
+    }
+  end
+
+  def self.show_title?
+    !subcommand?
+  end
+
+  def self.default_join
+    ', '
+  end
+
+  def self.default_nick
+    ARGV[1]
   end
 
   def self.command_words

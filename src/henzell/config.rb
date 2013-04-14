@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Henzell
   class Config
     DEFAULTS_FILEPATH = 'rc/henzell.defaults'

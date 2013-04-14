@@ -16,6 +16,10 @@ module Formatter
       @default_prefix_title ||= find_default_prefix_title
     end
 
+    def default_join
+      query.ast.default_join
+    end
+
     def prefix
       "#{summary_count} #{summary_entities} for #{@summary.query.argstr}: "
     end

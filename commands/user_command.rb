@@ -4,5 +4,8 @@ require 'helper'
 require 'cmd/executor'
 
 help("No help for user-defined commands")
-puts Cmd::Executor.execute(ARGV[2], default_nick: ARGV[1],
-                           forbidden_commands: ['??'])
+exit_code, output = Cmd::Executor.execute(ARGV[2], default_nick: ARGV[1],
+  forbidden_commands: ['??'])
+
+puts(output)
+exit(exit_code)

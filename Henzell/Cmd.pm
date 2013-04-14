@@ -19,8 +19,8 @@ sub load_commands_from_file($) {
   open my $inf, '<', $file or die "Can't read $file: $!\n";
   while (<$inf>) {
     chomp;
-    if (/^\s*(\S+)\s+(\S+)\s*$/) {
-      $CMD{$1} = $2;
+    if (/^\s*(\S+)\s+(\S+)(?:\s+(:direct))?\s*$/) {
+      $CMD{$1} = { file => $2, direct => $3 };
     }
   }
 }
@@ -48,7 +48,7 @@ sub execute_cmd($$;$) {
   my ($cmd) = $cmdline =~ /^(\S+)/;
   my ($target) = $cmdline =~ /^\S+ (\S+)/;
   $target = $nick if !$target || $target !~ /^\w+$/;
-  my $script = $CMD{$cmd};
+  my $script = $CMD{$cmd}{file};
 
   if (!$script && $USER_CMD{$cmd}) {
     $script = 'user_command.rb';
@@ -58,6 +58,7 @@ sub execute_cmd($$;$) {
     return (1, "Command not found: $cmd", $cmd);
   }
 
+  $script = 'user_command.rb' unless $CMD{$cmd}{direct};
   my $executable_command =
     "./commands/$script \Q$target\E \Q$nick\E \Q$cmdline\E ''";
   print "Exec: $executable_command\n";

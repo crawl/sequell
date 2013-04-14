@@ -2,6 +2,7 @@ require 'query/ast/ast_walker'
 require 'query/nick_expr'
 require 'query/text_template'
 require 'query/query_template_properties'
+require 'command_context'
 
 module Query
   module AST
@@ -73,7 +74,11 @@ module Query
       end
 
       def template_properties
-        ::Query::QueryTemplateProperties.new(self)
+        ::Query::QueryTemplateProperties.properties(self)
+      end
+
+      def default_join
+        @default_join ||= self.key_value(:join) || CommandContext.default_join
       end
 
       def stub_message_format

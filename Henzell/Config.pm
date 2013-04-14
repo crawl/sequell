@@ -89,10 +89,12 @@ sub load_commands($$) {
 
   foreach my $line (@command_lines)
   {
-    my ($command, $file) = $line =~ /^(\S+)\s+(.+)$/;
+    my ($command, $file, $direct) =
+      $line =~ /^(\S+)\s+(\S+)(?:\s+(:direct))?\s*$$/;
     #print "Loading $command from $file...\n";
 
-    $CMD{$command} = $procmaker->($command_dir, $file) if $procmaker;
+    $CMD{$command} = $direct ? $procmaker->($command_dir, $file) :
+      $procmaker->($command_dir, 'user_command.rb');
     $CMDPATH{$command} = "$command_dir/$file";
 
     #print "Loaded $command.\n";
