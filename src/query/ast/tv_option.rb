@@ -27,7 +27,7 @@ module Query
       def channel_name(g)
         name = self[:channel]
         return name if self.valid_channel_name?(name)
-        "#{g['name']}:#{g['char']}@#{g['xl']}.T#{@g['turn']}"
+        "#{g['name']}:#{g['char']}@#{g['xl']}.T#{g['turn']}"
       end
 
       def seek_to_game_end?
