@@ -93,8 +93,10 @@ sub load_commands($$) {
       $line =~ /^(\S+)\s+(\S+)(?:\s+(:direct))?\s*$/;
     #print "Loading $command from $file...\n";
 
-    $CMD{$command} = $direct ? $procmaker->($command_dir, $file) :
-      $procmaker->($command_dir, 'user_command.rb');
+    if ($procmaker) {
+      $CMD{$command} = $direct ? $procmaker->($command_dir, $file) :
+        $procmaker->($command_dir, 'user_command.rb');
+    }
     $CMDPATH{$command} = "$command_dir/$file";
 
     #print "Loaded $command.\n";
