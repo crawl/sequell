@@ -57,7 +57,7 @@ module Cmd
   private
     def query(table, name)
       db.execute("SELECT name, definition FROM #{table} WHERE name = ?",
-                 name.downcase) { |row|
+                 "_" + name.downcase) { |row|
         return [row[0].to_s[1..-1], row[1]]
       }
       nil

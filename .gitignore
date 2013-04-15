@@ -45,3 +45,4 @@ henzell.out
 henzell.out.*
 .rvmrc.*
 *.cow
+backup/
