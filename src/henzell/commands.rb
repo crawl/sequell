@@ -46,6 +46,7 @@ module Henzell
 
     def execute_command(command, arguments, default_nick, suppress_stderr=false)
       seen_commands = Set.new
+      pre_expanded = false
       while true
         if seen_commands.include?(command)
           raise "Bad command (recursive): #{command}"
@@ -63,6 +64,7 @@ module Henzell
           unless ENV['HENZELL_TEST']
             STDERR.puts("Cmd: " + [command, arguments].join(' '))
           end
+          pre_expanded = true
           next
         end
 
@@ -70,7 +72,7 @@ module Henzell
           File.join(Config.root, "commands", @commands[command][:file])
         target = default_nick
 
-        unless @commands[command][:direct]
+        unless @commands[command][:direct] || pre_expanded
           arguments = Query::QueryStringTemplate.substitute(arguments, [''],
             default_nick)
         end

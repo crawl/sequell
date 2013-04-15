@@ -37,6 +37,10 @@ $ rm dat/user_commands.db
 
 !cmd !spfoo !lg * SpEn|SpSk|SpFi s=char join:"|"
 
+!kw alive !ktyp
+!cmd !srcfixup => .echo $(replace cao CAO $(replace cdo CDO $(replace cszo CSZO $*)))
+!cmd .locate => !lm ${*:-.} alive fmt:"${*:-${user}} was last seen on \$(!srcfixup $src) ($name, L$xl $char of ${god:-No God})." stub:"Failed to locate ${*:-${user}}."
+.locate greensnark ::~ greensnark was last seen on CDO
 
 !lg * char=$(!spfoo) s=char ::~ 4519x SpEn, 40x SpFi, 29x SpSk
 

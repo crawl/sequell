@@ -7,7 +7,7 @@ module Tpl
     include Tplike
 
     def initialize(command, command_line)
-      @command = command
+      @command = command.to_s
       @command_line = command_line
     end
 
@@ -15,7 +15,7 @@ module Tpl
       return self.to_s unless Template.allow_subcommands?
       CommandContext.subcommand_context {
         exec = Cmd::Executor.execute(
-          self.full_command_line,
+          self.eval_command_line(provider),
           default_nick: CommandContext.default_nick,
           forbidden_commands: ['??'],
           suppress_stderr: true)
@@ -23,6 +23,10 @@ module Tpl
                                 (exec[1] || '').strip) unless exec[0] == 0
         (exec[1] || '').strip
       }
+    end
+
+    def eval_command_line(provider)
+      @command + @command_line.eval(provider).to_s
     end
 
     def full_command_line
