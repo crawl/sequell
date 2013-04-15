@@ -20,8 +20,8 @@ module Tpl
           forbidden_commands: ['??'],
           suppress_stderr: true)
         raise StandardError.new("Subcommand #{self} failed: " +
-                                exec[1]) unless exec[0] == 0
-        exec[1]
+                                (exec[1] || '').strip) unless exec[0] == 0
+        (exec[1] || '').strip
       }
     end
 

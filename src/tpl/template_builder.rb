@@ -84,6 +84,17 @@ module Tpl
       Fragment.new(*pieces).collapse
     }
 
+    rule(template: simple(:tpl), word: sequence(:fragments)) {
+      pieces = fragments.map { |c|
+        if c.is_a?(String)
+          TextFragment.new(c)
+        else
+          c
+        end
+      }
+      Fragment.new(tpl, *pieces).collapse
+    }
+
     rule(word: sequence(:fragments)) {
       pieces = fragments.map { |c|
         if c.is_a?(String)

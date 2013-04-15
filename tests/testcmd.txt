@@ -29,7 +29,12 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!cmd .ebc .echo Hi $(replace b c $1)
+.ebc b ::~ Hi c
+.echo $(join $(split & a&b&c)) ::~ a, b, c
+
 !cmd !spfoo !lg * SpEn|SpSk|SpFi s=char join:"|"
+
 
 !lg * char=$(!spfoo) s=char ::~ 4519x SpEn, 40x SpFi, 29x SpSk
 
