@@ -6,7 +6,6 @@ module Tpl
     mapper = self.raw_arg(0)
     prov = self.provider
     autosplit(self[-1]).map { |part|
-      STDERR.puts("mapper: #{mapper.inspect} (#{mapper.class})")
       mapper.eval(lambda { |key|
           if key == '_'
             part

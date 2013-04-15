@@ -20,6 +20,7 @@ module Tpl
     end
 
     def eval
+      STDERR.puts("Evaluating: #{@fn}")
       @evaluator.eval_with(self)
     end
 

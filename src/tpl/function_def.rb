@@ -6,14 +6,20 @@ module Tpl
     end
 
     def self.evaluator(name)
-      REGISTRY[name]
+      evaluator = REGISTRY[name]
+      evaluator && evaluator.dup
     end
 
     attr_reader :executor
     def initialize(name, evaluator, arity)
       @name = name
+      @evaluator = evaluator
       @supported_arity = arity
       (class << self; self; end).send(:define_method, :eval, &evaluator)
+    end
+
+    def dup
+      self.class.new(@name, @evaluator, @supported_arity)
     end
 
     def arguments
