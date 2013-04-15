@@ -1248,6 +1248,14 @@ the milestone:
 
 !lm * rune=golden -tv:T+3000
 
+Play a full game:
+
+!lg * win max=sc -tv:<T0
+
+Play a full game given a milestone:
+
+!lm * orb min=turn -tv:<T0:>>
+
 Turn-based playback will work only for relatively recent Crawl games.
 Games from very old versions lack the timestamp files that FooTV needs
 to match turn counts to UTC times. Using <T0 or <T1 to play back from
