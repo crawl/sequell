@@ -18,7 +18,9 @@ sub user_commands {
 
   my %cmd;
   while (my $row = $st->fetchrow_arrayref) {
-    $cmd{$row->[0]} = $row->[1];
+    my $key = $row->[0];
+    $key =~ s/^_//;
+    $cmd{$key} = $row->[1];
   }
   $st->finish;
   %cmd

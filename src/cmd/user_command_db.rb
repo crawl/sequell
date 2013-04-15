@@ -58,7 +58,7 @@ module Cmd
     def query(table, name)
       db.execute("SELECT name, definition FROM #{table} WHERE name = ?",
                  name.downcase) { |row|
-        return [row[0], row[1]]
+        return [row[0].to_s[1..-1], row[1]]
       }
       nil
     end
@@ -66,13 +66,14 @@ module Cmd
     def query_all(table)
       commands = []
       db.execute("SELECT name, definition FROM #{table}") { |row|
-        commands << [row[0], row[1]]
+        commands << [row[0].to_s[1..-1], row[1]]
       }
       commands
     end
 
     def exists?(table, name)
-      db.execute("SELECT * FROM #{table} WHERE name = ?", name.downcase) { |row|
+      db.execute("SELECT * FROM #{table} WHERE name = ?",
+        "_" + name.downcase) { |row|
         return true
       }
       false
@@ -80,11 +81,11 @@ module Cmd
 
     def insert(table, name, definition)
       db.execute("INSERT INTO #{table} (name, definition) VALUES (?, ?)",
-                 name.downcase, definition)
+        "_" + name.downcase, definition)
     end
 
     def delete(table, name)
-      db.execute("DELETE FROM #{table} WHERE name = ?", name.downcase)
+      db.execute("DELETE FROM #{table} WHERE name = ?", "_" + name.downcase)
     end
 
     def db
@@ -93,6 +94,7 @@ module Cmd
 
     def open_db
       new_db = SQLite3::Database.new(@db_file)
+      new_db.type_translation = false
       begin
         new_db.execute(<<SCHEMA)
 CREATE TABLE user_keywords (name STRING PRIMARY KEY, definition STRING);
