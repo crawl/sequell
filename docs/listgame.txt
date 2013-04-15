@@ -1337,8 +1337,8 @@ The variables that Sequell recognizes depend on the context:
 
 A subcommand may be referenced as $(<commandline>). For instance:
 
-    .echo Characters played by * $(!lg * s=char join:", ")
-  => Characters played by foo SpEn, MiFi, ...
+    .echo Characters played by *: $(!lg * s=char join:", ")
+  => Characters played by *: SpEn, MiFi, ...
 
     .echo Hi $(.echa there) => Hi there
 
@@ -1352,7 +1352,7 @@ Note: any command executing as a subcommand has no default title:
 An unknown subcommand will trigger an immediate error, unlike other
 expansions, which will ignore unexpanded values.
 
-Note that subcommands are left un-expanded in summary group formats:
+Note that subcommands are left unexpanded in summary group formats:
     !lg * s=char fmt:'$(.echo hi)' => $(.echo hi), $(.echo hi), ...
 
 3. Functions:
@@ -1412,7 +1412,7 @@ If !lg runs and finds no results, it will then evaluate the stub, viz.
 
 Suppressing command-line expansion:
 ===================================
-Single-quoted strings are not be expanded by default. This can be
+Single-quoted strings are not expanded by default. This can be
 used to defer costly subcommands until they're actually needed:
 
      !lg * stub:'No results, but look: $(!expensive-query)'
