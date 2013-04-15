@@ -1379,6 +1379,14 @@ Functions may be used as $(fn ...).
      .echo $(replace & ! a&b&c) => a!b!c
      .echo $(replace & a&b&c) => abc
 
+   - $(upper <str>), $(lower <str>)
+
+     upper/lower-case text
+
+   - $(length <string|array>) String or array length
+   - $(sub <start> [<exclusive-end>] <string|array>) Substring or array slice
+   
+
 Unknown functions will be ignored:
 
      .echo $(foobar) => $(foobar)

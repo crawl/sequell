@@ -35,6 +35,13 @@ $ rm dat/user_commands.db
 
 .echo Hello $(replace b c $(replace a b a)) ::~ Hello c
 
+
+.echo Length: $(length abcd) ::~ Length: 4
+.echo Length: $(length $(split a,b,c,d,e)) ::~ Length: 5
+.echo Upper: $(upper upper) ::~ Upper: UPPER
+.echo Lower: $(upper LoWeR) ::~ Lower: lower
+.echo Sub: x$(sub 3 5 abcdef)y ::~ xdey
+
 !cmd !spfoo !lg * SpEn|SpSk|SpFi s=char join:"|"
 
 !kw alive !ktyp

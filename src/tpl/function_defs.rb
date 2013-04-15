@@ -39,4 +39,25 @@ module Tpl
       self[-1].gsub(self[0]) { self[1] }
     end
   }
+
+  FunctionDef.define('upper', 1) { self[-1].upcase }
+  FunctionDef.define('lower', 1) { self[-1].downcase }
+
+  FunctionDef.define('length', 1) {
+    val = self[-1]
+    if val.is_a?(Array)
+      val.size
+    else
+      val.to_s.size
+    end
+  }
+  FunctionDef.define('sub', [2,3]) {
+    val = self[-1]
+    val = val.to_s unless val.is_a?(Array)
+    if arity == 2
+      val[self[0].to_i .. -1]
+    else
+      val[self[0].to_i ... self[1].to_i]
+    end
+  }
 end
