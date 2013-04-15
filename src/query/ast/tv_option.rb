@@ -12,6 +12,10 @@ module Query
         parse_tv_opts!
       end
 
+      def builtin_channel?(channel)
+        channel.downcase == 'footv'
+      end
+
       def [](key)
         @opts[key.to_sym]
       end
@@ -48,9 +52,12 @@ module Query
         elsif key == 'new'
           @opts[:channel] = ''
         elsif raw_key =~ /channel=(.*)/i
-          self[:channel] = $1.to_s
-          unless self.valid_channel_name?(self[:channel])
-            raise "Invalid channel name: #{self[:channel]}"
+          channel = $1.to_s
+          unless builtin_channel?(channel)
+            self[:channel] = channel
+            unless self.valid_channel_name?(self[:channel])
+              raise "Invalid channel name: #{self[:channel]}"
+            end
           end
         else
           prefix = key[0..0].downcase
