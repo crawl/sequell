@@ -41,7 +41,7 @@ module Tpl
     }
 
     rule(:safetext) {
-      (single_quoted_text | tchar.as(:char)).repeat
+      (balanced_group | single_quoted_text | tchar.as(:char)).repeat
     }
 
     rule(:single_quoted_text) {
@@ -74,6 +74,18 @@ module Tpl
 
     rule(:subcommand_line) {
       subtpl
+    }
+
+    rule(:balanced_group) {
+      balanced_curly | balanced_paren
+    }
+
+    rule(:balanced_curly) {
+      (str("{").as(:leftquot) >> subtpl.as(:body) >> str("}").as(:rightquot)).as(:balanced)
+    }
+
+    rule(:balanced_paren) {
+      (str("(").as(:leftquot) >> subtpl.as(:body) >> str(")").as(:rightquot)).as(:balanced)
     }
 
     rule(:template_funcall) {

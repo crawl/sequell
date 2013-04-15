@@ -72,6 +72,14 @@ module Tpl
       left.to_s + right.to_s
     }
 
+    rule(leftquot: simple(:left),
+         body: simple(:body),
+         rightquot: simple(:right)) {
+      Fragment.new(left, body, right)
+    }
+
+    rule(balanced: simple(:balanced)) { balanced }
+
     rule(embedded_template: simple(:template)) { template }
     rule(quoted_template: sequence(:fragments)) {
       pieces = fragments.map { |c|
