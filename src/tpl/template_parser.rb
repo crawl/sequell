@@ -79,7 +79,7 @@ module Tpl
 
     rule(:template_subcommand) {
       sigils = Regexp.quote(::Henzell::Config.default[:sigils])
-      ((reserved_name >> space).absent? >> match[sigils] >>
+      ((reserved_name >> space | str("$(")).absent? >> match[sigils] >>
         subcommand_name_part).as(:subcommand) >>
         subcommand_line.as(:command_line)
     }
@@ -132,9 +132,8 @@ module Tpl
 
     rule(:template_funcall) {
       str("let").absent? >>
-      (identifier | reserved_name |
-       str("(") >> space? >> function_def >>
-          space? >> str(")")).as(:function) >>
+      (str("$").maybe >> str("(") >> space? >> function_def >>
+          space? >> str(")") | identifier | reserved_name).as(:function) >>
       funargs.as(:function_arguments)
     }
 

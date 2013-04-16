@@ -61,4 +61,8 @@ describe Tpl::Template do
     name = "fact#{rand(10000)}"
     tpl_eval("$((fn #{name} (n) $(if (> $n 1) (* $n (#{name} (- $n 1))) 1)) 5)").should == 120
   end
+
+  it 'will parse direct lambda funcalls' do
+    tpl('$($(fn (x) $x) $y)').should be_an_instance_of(Tpl::Funcall)
+  end
 end
