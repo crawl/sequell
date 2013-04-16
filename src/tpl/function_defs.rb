@@ -66,7 +66,9 @@ module Tpl
   FunctionDef.define('/', -1) { reduce_numbers(1, &:/) }
   FunctionDef.define('mod', 2) { self[0].to_i % self[1].to_i }
   FunctionDef.define('**', 2) { self[0].to_f ** self[1].to_f }
-  FunctionDef.define('str', 1) { self[0].to_s }
+  FunctionDef.define('str', [0, 1]) {
+    Tpl::Template.string(self[0])
+  }
   FunctionDef.define('int', 1) { self[0].to_i }
   FunctionDef.define('float', 1) { self[0].to_f }
 

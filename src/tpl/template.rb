@@ -42,7 +42,7 @@ module Tpl
   class Template
     def self.string(result)
       return result.to_a.join(' ') if result.is_a?(Enumerable)
-      result
+      result.to_s
     end
 
     def self.template_eval(text, provider=nil, &block)
