@@ -19,9 +19,7 @@ module Formatter
     end
 
     def summary_details
-      Tpl::Template.without_subcommands {
-        @summary.sorted_row_values.join(default_join)
-      }
+      @summary.sorted_row_values.join(default_join)
     end
   end
 end

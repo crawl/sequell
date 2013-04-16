@@ -6,7 +6,7 @@ require 'timeout'
 
 help("No help for user-defined commands")
 
-TIME_LIMIT = 45
+TIME_LIMIT = 60
 
 begin
   Timeout.timeout(TIME_LIMIT) {

@@ -1360,9 +1360,6 @@ Note: any command executing as a subcommand has no default title:
 An unknown subcommand will trigger an immediate error, unlike other
 expansions, which will ignore unexpanded values.
 
-Note that subcommands are left unexpanded in summary group formats:
-    !lg * s=char fmt:'$(.echo hi)' => $(.echo hi), $(.echo hi), ...
-
 3. Functions:
 
 Functions may be used as $(fn ...). 
