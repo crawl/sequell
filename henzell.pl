@@ -402,7 +402,7 @@ sub raw_message_post {
 
 sub respond_with_message {
   my ($m, $output) = @_;
-  return unless $output;
+  return unless defined($output) && $output =~ /\S/;
 
   my $private = $$m{channel} eq 'msg';
 
@@ -833,7 +833,7 @@ sub say {
   # work out who we're going to send the message to
   my $who = ( $args->{channel} eq "msg" ) ? $args->{who} : $args->{channel};
 
-  unless ( $who && $body ) {
+  unless ( $who && defined($body) ) {
     print STDERR "Can't PRIVMSG without target and body\n";
     print STDERR " called from ".([caller]->[0])." line ".([caller]->[2])."\n";
     print STDERR " who = '$who'\n body = '$body'\n";
