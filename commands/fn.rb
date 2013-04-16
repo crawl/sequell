@@ -48,7 +48,7 @@ end
 def display_function(name)
   function = Cmd::UserFunction.function(name)
   if function.nil?
-    puts "No user function '#{function}'"
+    puts "No user function '#{name}'"
   else
     puts("#{function}")
   end
