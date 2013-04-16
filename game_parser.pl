@@ -82,7 +82,7 @@ sub handle_output
   my $output = shift;
   my $full_output = shift;
 
-  return unless $output;
+  return unless $output =~ /\S/;
 
   if ($output =~ s/^\n//)
   {
@@ -91,7 +91,7 @@ sub handle_output
     $output =~ s/:([^:]*)$//;
     my $post = defined($1) ? $1 : '';
 
-    return '' unless $output;
+    return '' unless $output =~ /\S/;
     my $g = demunge_xlogline($output);
     my $str = $g->{milestone} ? milestone_string($g, 1) : pretty_print($g);
     $output = $pre . $str . $post;
