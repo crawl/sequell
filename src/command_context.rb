@@ -14,9 +14,9 @@ class CommandContext
 
   def self.subcommand_context
     depth = (ENV['SUBCOMMAND_DEPTH'] || '0').to_i + 1
-    if depth > SUBCOMMAND_NESTING_LIMIT
-      raise "Subcommand recursion limit exceeded"
-    end
+    # if depth > SUBCOMMAND_NESTING_LIMIT
+    #   raise "Subcommand recursion limit exceeded"
+    # end
     Env.with(subcommand: 'y', subcommand_depth: (depth + 1).to_s) {
       yield
     }

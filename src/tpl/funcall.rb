@@ -33,9 +33,9 @@ module Tpl
 
     def eval(provider)
       return to_s unless Template.allow_functions?
-      if @@funcall_depth > RECURSE_MAX
-        raise "Recursion too deep"
-      end
+      # if @@funcall_depth > RECURSE_MAX
+      #   raise "Recursion too deep"
+      # end
       funcall_scope {
         res = Template.function_executor.funcall(self, provider)
         res
