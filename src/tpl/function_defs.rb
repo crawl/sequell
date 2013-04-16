@@ -63,7 +63,7 @@ module Tpl
   FunctionDef.define('+', -1) { reduce_numbers(0, &:+) }
   FunctionDef.define('-', -1) { reduce_numbers(&:-) }
   FunctionDef.define('*', -1) { reduce_numbers(1, &:*) }
-  FunctionDef.define('/', -1) { reduce_numbers(1, &:/) }
+  FunctionDef.define('/', -1) { reduce_numbers(&:/) }
   FunctionDef.define('mod', 2) { self[0].to_i % self[1].to_i }
   FunctionDef.define('**', 2) { self[0].to_f ** self[1].to_f }
   FunctionDef.define('str', [0, 1]) {
