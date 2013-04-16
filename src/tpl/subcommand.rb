@@ -6,6 +6,7 @@ module Tpl
   class Subcommand
     include Tplike
 
+    attr_reader :command, :command_line
     def initialize(command, command_line)
       @command = command.to_s
       @command_line = command_line

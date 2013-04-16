@@ -28,7 +28,7 @@ module Query
            nil
          end
        }
-      res = Tpl::Template.template_eval(query_string, arg_provider)
+      res = Tpl::Template.template_eval_string(query_string, arg_provider)
       if max_index == 0 && !rest_args_used && !arglist.empty?
         res.gsub(%r{(\?:.*)?$}, ' ' + arglist + ' \1')
       else

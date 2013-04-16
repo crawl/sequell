@@ -19,4 +19,5 @@
 !won won.rb
 !cmd cmd.rb :direct
 !kw keyworddef.rb
+!fn fn.rb :direct
 .echo echo.pl

@@ -45,6 +45,7 @@ $ rm dat/user_commands.db
 
 .echo Test: $(replace "a b " "" "a b c") ::~ Test: c
 .echo Hello $(replace b c $(replace a b a)) ::~ Hello c
+.echo $(let (x (+ 1 2 3 4)) Hello, $x!) ::~ Hello, 10!
 
 
 .echo Length: $(length abcd) ::~ Length: 4
@@ -74,7 +75,13 @@ $ rm dat/user_commands.db
 .echo $(if $(= 1 1 1) YES NO) ::~ YES
 .echo $(let (x yak) Hello, $x!) ::~ Hello, yak!
 .echo $(let (x (+ 1 2 3 4)) Hello, $x!) ::~ Hello, 10!
-$(let (x 20 y 5) $(* $x $y)) ::~ 100
+
+.echo $((fn (x) $(* $x 10)) 5) ::~ 50
+!fn double (x) $(* $x 2)
+.echo $(map $double 1,2,3,4,5) ::~ 2 4 6 8 10
+
+!fn fact (n) $(if (> $n 1) (* $n (fact (- $n 1))) 1)
+.echo $(fact 10) ::~ 3628800
 
 E .echo Hi $(!nick -rm greensnark) ::~ may not be used as a subcommand
 .echo '$(!lg)' ::~ '\$\(!lg\)'
@@ -456,4 +463,4 @@ E !lg * s=trunc99(sc)
 
 !lg * status=para,slow s=status ::~ 71x paralysed,slowed
 
-.echo $(map "Hello $_!" a|b|c) ::~ Hello a! Hello b! Hello c!
+.echo $(map (fn Hello $_!) a|b|c) ::~ Hello a! Hello b! Hello c!

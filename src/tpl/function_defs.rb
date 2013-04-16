@@ -1,13 +1,62 @@
 require 'henzell/config'
+require 'tpl/function_def'
 require 'command_context'
 
 module Tpl
+  FunctionDef.define('apply', [2,-1]) {
+    arglist = self.raw_args[1 .. -2].dup
+    Funcall.new(self[0], *(arglist + autosplit(self[-1]).to_a)).eval(scope)
+  }
+
+  FunctionDef.define('call', [1, -1]) {
+    arglist = self.raw_args[1..-1].dup
+    Funcall.new(self[0], *arglist).eval(scope)
+  }
+
+  FunctionDef.define('cons', [0,2]) {
+    case arity
+    when 0
+      []
+    when 1
+      [self[0]]
+    when 2
+      [self[0]] + autosplit(self[-1]).to_a
+    end
+  }
+
+  FunctionDef.define('typeof', 1) { self[0].class.to_s }
+
+  FunctionDef.define('list', -1) {
+    self.arguments.dup
+  }
+
+  FunctionDef.define('reverse', 1) {
+    autosplit(self[0]).to_a.reverse
+  }
+
+  FunctionDef.define('range', [2, 3]) {
+    low = self[0].to_i
+    high = self[1].to_i
+    step = arity == 3 ? self[2].to_i : 1
+    Range.new(low, high).step(step)
+  }
+
+  FunctionDef.define('concat', -1) {
+    if arity == 0
+      nil
+    else
+      self.arguments.reduce(&:+)
+    end
+  }
+
   FunctionDef.define('=', -1) {
     if arity <= 1
       true
     else
-      first = self[0]
-      (1...arity).all? { |index| self[index] == first }
+      first = canonicalize(self[0])
+      (1...arity).all? { |index|
+        canonicalize(self[index]) == first
+      }
     end
   }
 
@@ -15,13 +64,18 @@ module Tpl
   FunctionDef.define('-', -1) { reduce_numbers(&:-) }
   FunctionDef.define('*', -1) { reduce_numbers(1, &:*) }
   FunctionDef.define('/', -1) { reduce_numbers(1, &:/) }
+  FunctionDef.define('mod', 2) { self[0].to_i % self[1].to_i }
   FunctionDef.define('**', 2) { self[0].to_f ** self[1].to_f }
   FunctionDef.define('str', 1) { self[0].to_s }
   FunctionDef.define('int', 1) { self[0].to_i }
   FunctionDef.define('float', 1) { self[0].to_f }
 
+  FunctionDef.define('and', -1) { lazy_all?(true) { |a| a } }
+  FunctionDef.define('or', -1) { lazy_any?(false) { |a| a } }
+  FunctionDef.define('not', 1) { !self[-1] }
+
   FunctionDef.define('/=', 2) {
-    self[0] != self[1]
+    canonicalize(self[0]) != canonicalize(self[1])
   }
   FunctionDef.define('<', -1) {
     lazy_neighbour_all?(true, &:<)
@@ -48,24 +102,15 @@ module Tpl
   }
 
   FunctionDef.define('map', 2) {
-    mapper = self.raw_arg(0)
-    funcall = false
-    if mapper.is_a?(Function)
-      funcall = true
-      mapper = Funcall.new(mapper)
-    end
+    mapper = self[0]
+    scope = self.scope
+    autosplit(self[-1]).map { |part| mapper.call(scope, part) }
+  }
 
-    prov = self.provider
-    autosplit(self[-1]).map { |part|
-      mapper.arguments[0] = part if funcall
-      mapper.eval(lambda { |key|
-          if key == '_'
-            part
-          else
-            prov[key]
-          end
-        })
-    }
+  FunctionDef.define('filter', 2) {
+    mapper = self[0]
+    scope = self.scope
+    autosplit(self[-1]).filter { |part| mapper.call(scope, part) }
   }
 
   FunctionDef.define('join', [1,2]) {

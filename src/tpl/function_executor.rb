@@ -3,13 +3,16 @@ require 'tpl/function_def'
 module Tpl
   class FunctionExecutor
     def self.fnexists?(fn, scope)
-      FunctionDef.evaluator(fn.name, scope)
+      FunctionDef.find_definition(fn.name, scope)
     end
 
-    def self.funcall(fn, scope)
-      evaluator = FunctionDef.evaluator(fn.name, scope) or
-        raise "Unknown function: #{fn.name}"
-      self.new(fn, evaluator, scope).eval()
+    def self.funcall(fncall, scope)
+      evaluator = FunctionDef.evaluator(fncall.name, scope)
+      if !evaluator
+        fncall.to_s
+      else
+        self.new(fncall, evaluator, scope).eval()
+      end
     end
 
     attr_reader :provider, :funcall
@@ -31,10 +34,22 @@ module Tpl
       @fn.arity
     end
 
+    def argvalue(arg)
+      arg.is_a?(Tplike) ? arg.eval(@provider) : arg
+    end
+
     def arguments
       @arguments ||= @fn.arguments.map { |arg|
-        arg.eval(@provider)
+        argvalue(arg)
       }
+    end
+
+    def arguments=(args)
+      @arguments = args
+    end
+
+    def raw_args
+      @fn.arguments
     end
 
     def raw_arg(index)
@@ -42,8 +57,7 @@ module Tpl
     end
 
     def [](index)
-      arg = @fn.arguments[index]
-      arg && arg.eval(@provider)
+      argvalue(@fn.arguments[index])
     end
 
     def to_s

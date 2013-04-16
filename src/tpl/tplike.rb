@@ -4,6 +4,11 @@ module Tpl
       true
     end
 
+    def string(result)
+      return result.to_a.join(' ') if result.is_a?(Enumerable)
+      result
+    end
+
     def simple?
       false
     end

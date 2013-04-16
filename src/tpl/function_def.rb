@@ -1,33 +1,82 @@
 require 'tpl/function'
+require 'cmd/user_function'
 
 module Tpl
+  class FunctionValue
+    def self.value(fvalue)
+      return nil unless fvalue
+      return fvalue if fvalue.is_a?(self)
+      self.new(fvalue.name)
+    end
+
+    attr_reader :name
+    def initialize(name)
+      @name = name
+    end
+
+    def to_s
+      "#fn:#{@name}"
+    end
+  end
+
   class FunctionDef
     REGISTRY = { }
     def self.define(name, arity=1, &evaluator)
       REGISTRY[name] = self.new(name, evaluator, arity)
     end
 
+    def self.callable?(thing)
+      thing.is_a?(Function) || thing.is_a?(self)
+    end
+
+    def self.find_definition(name, scope)
+      scope_def = scope && scope[name]
+      scope_def = nil if scope_def.is_a?(FunctionValue) || scope_def.is_a?(String)
+      scope_def ||
+        ::Cmd::UserFunction.function_definition(name) ||
+        REGISTRY[name]
+    end
+
+    def self.global_function_value(name)
+      ::Cmd::UserFunction.function_definition(name) ||
+        FunctionValue.value(REGISTRY[name])
+    end
+
     def self.evaluator(name, scope=nil)
-      evaluator = name.is_a?(Function)? name : REGISTRY[name]
-      if !evaluator && scope
-        fdef = scope[name]
-        self.new(name, fdef, fdef.arity) if fdef
-      elsif evaluator.is_a?(Function)
-        self.new(evaluator.name, evaluator, evaluator.arity)
+      return name if name.is_a?(self)
+      name = name.name if name.is_a?(FunctionValue)
+      evaluator_for(name.is_a?(Function)? name : find_definition(name, scope))
+    end
+
+    def self.evaluator_for(function_def)
+      return nil unless function_def
+      if function_def.is_a?(Function)
+        self.new(function_def.name, function_def, function_def.arity)
+      elsif function_def.is_a?(self)
+        function_def && function_def.dup
       else
-        evaluator && evaluator.dup
+        raise "Invalid function def: #{function_def} (#{function_def.class})"
       end
     end
 
-    attr_reader :executor
+    def self.builtin?(name)
+      fdef = find_definition(name, nil)
+      fdef && !fdef.is_a?(Function)
+    end
+
+    attr_reader :name, :executor
     def initialize(name, evaluator, arity)
       @name = name
       @evaluator = evaluator
       @supported_arity = arity
       @user_function = @evaluator.is_a?(Function)
       unless @user_function
-        (class << self; self; end).send(:define_method, :eval, &evaluator)
+        (class << self; self; end).send(:define_method, :eval_def, &evaluator)
       end
+    end
+
+    def builtin?
+      !user_function?
     end
 
     def user_function?
@@ -50,14 +99,22 @@ module Tpl
       @executor.raw_arg(index)
     end
 
+    def raw_args
+      @executor.raw_args
+    end
+
     def provider
       @executor.provider
     end
     alias :scope :provider
 
+    def number(arg)
+      arg.is_a?(String) ? (arg.index('.') ? arg.to_f : arg.to_i) : arg
+    end
+
     def number_arguments
       self.arguments.map { |arg|
-        arg.is_a?(String) ? (arg.index('.') ? arg.to_f : arg.to_i) : arg
+        number(arg)
       }
     end
 
@@ -69,6 +126,32 @@ module Tpl
       end
     end
 
+    def lazy_all?(default)
+      if arity == 0
+        default
+      else
+        res = nil
+        (0...arity).each { |index|
+          res = yield(self[index])
+          return res unless res
+        }
+        res
+      end
+    end
+
+    def lazy_any?(default)
+      if arity == 0
+        default
+      else
+        res = nil
+        (0...arity).each { |index|
+          res = yield(self[index])
+          return res if res
+        }
+        res
+      end
+    end
+
     def lazy_neighbour_all?(default)
       if arity <= 1
         default
@@ -76,6 +159,10 @@ module Tpl
         last = self[0]
         (1...arity).all? { |index|
           curr = self[index]
+          if last.kind_of?(Numeric) || curr.kind_of?(Numeric)
+            last = number(last)
+            curr = number(curr)
+          end
           res = yield(last, curr)
           last = curr
           res
@@ -87,9 +174,13 @@ module Tpl
       @cache[index] ||= @executor[index]
     end
 
+    def canonicalize(val)
+      val.is_a?(Enumerable) ? val.to_a : val
+    end
+
     def autosplit(word, split_by=nil)
       return [] unless word
-      return word if word.is_a?(Array)
+      return word if word.is_a?(Enumerable)
       word = word.to_s
       (if split_by
          word.split(split_by)
@@ -112,6 +203,14 @@ module Tpl
       @executor.funcall
     end
 
+    def call(scope, *args)
+      Funcall.new(self, *args).eval(scope)
+    end
+
+    def eval(scope)
+      self
+    end
+
     def eval_with(executor)
       @cache = { }
       @executor = executor
@@ -121,7 +220,7 @@ module Tpl
       result = if user_function?
         eval_user_function
       else
-        eval
+        eval_def
       end
       result.nil? ? @executor.to_s : result
     end
@@ -139,6 +238,7 @@ module Tpl
         map[p] = raw_arg(i)
       }
       map[fn.rest] = funcall.arguments[fn.parameters.size .. -1]
+      map[fn.name] = fn if fn.name
       dynamic_scope = lambda { |key|
         if map.include?(key)
           evaluated[key] ||= evaluate(map[key], scope)

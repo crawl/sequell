@@ -12,7 +12,7 @@ module Query
 
     def expand(provider=nil, &block)
       provider ||= block
-      @template.eval(provider).gsub(/ +/, ' ').
+      Tpl::Template.eval_string(@template, provider).gsub(/ +/, ' ').
         gsub(/([\[(])[;,]/, '\1').gsub(/[;,]([\])])/, '\1').
         gsub(/\(\s*\)|\[\s*\]/, '').strip
     end

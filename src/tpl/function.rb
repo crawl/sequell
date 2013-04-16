@@ -1,3 +1,5 @@
+require 'tpl/tplike'
+
 module Tpl
   class Function
     include Tplike
@@ -6,13 +8,18 @@ module Tpl
 
     def initialize(name, parameters, rest, body)
       @name = name
-      @parameters = parameters.map(&:identifier)
-      @rest = rest
+      @name = @name.identifier if @name.respond_to?(:identifier)
+      @parameters = parameters ? parameters.map(&:identifier) : ['_']
+      @rest = Tpl::Fragment.identifier(rest)
       @body = body
     end
 
     def arity
       [@parameters.size, @rest ? -1 : @parameters.size]
+    end
+
+    def call(scope, *args)
+      Funcall.new(self, *args).eval(scope)
     end
 
     # A function evaluates to itself; it must be funcalled to do

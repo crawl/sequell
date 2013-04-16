@@ -61,10 +61,14 @@ module Tpl
     }
     rule(subcommand: simple(:command),
          command_line: simple(:command_line)) {
-      Subcommand.new(command, command_line)
+      Subcommand.new(command, command_line.collapse)
     }
     rule(function: simple(:function), function_arguments: sequence(:args)) {
-      Funcall.new(function.identifier, *args)
+      if function.is_a?(Function)
+        Funcall.new(function, *args)
+      else
+        Funcall.new(function.identifier, *args)
+      end
     }
     rule(argument: simple(:arg)) { arg }
     rule(argument: sequence(:args)) { Fragment.new(*args).collapse }
@@ -86,7 +90,7 @@ module Tpl
     rule(embedded_template: simple(:template)) { template }
     rule(quoted_template: sequence(:fragments)) {
       pieces = fragments.map { |c|
-        if c.is_a?(String)
+        if !c.is_a?(Tplike)
           TextFragment.new(c)
         else
           c
@@ -101,7 +105,7 @@ module Tpl
 
     rule(template: simple(:tpl), word: sequence(:fragments)) {
       pieces = fragments.map { |c|
-        if c.is_a?(String)
+        if !c.is_a?(Tplike)
           TextFragment.new(c)
         else
           c
@@ -112,7 +116,7 @@ module Tpl
 
     rule(word: sequence(:fragments)) {
       pieces = fragments.map { |c|
-        if c.is_a?(String)
+        if !c.is_a?(Tplike)
           TextFragment.new(c)
         else
           c
@@ -145,5 +149,37 @@ module Tpl
          body: simple(:template)) {
       Function.new(name, pars, rest, template)
     }
+
+    rule(function_name: simple(:name),
+         parameters: {
+           parameters: sequence(:pars),
+           rest_parameter: simple(:rest)
+         },
+         body: simple(:template)) {
+      Function.new(name, pars, rest, template)
+    }
+
+    rule(parameters: {
+           parameters: sequence(:pars),
+           rest_parameter: simple(:rest)
+         },
+         body: simple(:template)) {
+      Function.new(nil, pars, rest, template)
+    }
+
+    rule(parameters: simple(:none),
+         body: simple(:template)) {
+      Function.new(nil, nil, nil, template)
+    }
+
+    rule(function_name: simple(:name),
+         parameters: simple(:empty),
+         body: simple(:template)) {
+      Function.new(name, nil, nil, template)
+    }
+
+    rule(integer: simple(:i)) { i.to_i }
+    rule(float: simple(:f)) { f.to_f }
+    rule(number: simple(:n)) { n }
   end
 end

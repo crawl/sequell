@@ -1,5 +1,6 @@
 require 'tpl/template_parser'
 require 'tpl/template_builder'
+require 'tpl/function_defs'
 
 module Tpl
   class TemplateOptions
@@ -22,20 +23,59 @@ module Tpl
     alias :subcommands? :subcommands
   end
 
+  class TemplateError < StandardError
+  end
+
+  class TemplateParseError < TemplateError
+    attr_reader :template
+    def initialize(template)
+      super("Template parse failed: #{template} (this is a bug)")
+    end
+  end
+  class InvalidTemplateError < TemplateError
+    attr_reader :template
+    def initialize(template)
+      super("Invalid template: #{template}")
+    end
+  end
+
   class Template
+    def self.string(result)
+      return result.to_a.join(' ') if result.is_a?(Enumerable)
+      result
+    end
+
     def self.template_eval(text, provider=nil, &block)
-      template(text).eval(provider || block)
+      provider ||= block
+      eval(template(text), provider)
+    end
+
+    def self.template_eval_string(text, scope=nil, &block)
+      string(template_eval(text, scope, &block))
+    end
+
+    def self.eval(template, scope)
+      scope_with_function_lookup = lambda { |key|
+        val = scope[key]
+        val.nil? ? FunctionDef.global_function_value(key) : val
+      }
+      template.eval(scope_with_function_lookup)
+    end
+
+    def self.eval_string(template, scope)
+      string(eval(template, scope))
     end
 
     def self.template(text)
-      template = TemplateBuilder.new.apply(TemplateParser.new.parse(text))
+      parse = TemplateParser.new.parse(text)
+      template = TemplateBuilder.new.apply(parse)
       if template.is_a?(Hash)
         STDERR.puts("Broken template parse: #{template.inspect}")
         raise "Could not parse template: #{text}"
       end
       template
     rescue Parslet::ParseFailed
-      raise "Invalid template: #{text}"
+      raise TemplateError.new(text)
     end
 
     def self.allow_subcommands?

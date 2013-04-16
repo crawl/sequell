@@ -105,6 +105,9 @@ module Henzell
           system_command_line =
             %{#{command_script} #{quote(target)} #{quote(default_nick)} } +
             %{#{quote(command_line)} '' #{redirect}}
+          File.open('cmd.log', 'a') { |f|
+            f.puts("Executing: #{system_command_line}")
+          }
           output = %x{#{system_command_line}}
           exit_code = $? >> 8
           return [exit_code, output, system_command_line]

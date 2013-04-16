@@ -70,7 +70,8 @@ module Formatter
     def find_default_prefix_title
       template = query.ast.result_prefix_title
       return nil unless template
-      Tpl::Template.template_eval(template, self.template_properties)
+      Tpl::Template.string(
+        Tpl::Template.template_eval(template, self.template_properties))
     end
   end
 end

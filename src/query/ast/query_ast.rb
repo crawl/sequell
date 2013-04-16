@@ -92,7 +92,7 @@ module Query
 
       def stub_message(nick)
         stub_template = self.stub_message_template
-        return stub_template.eval(self.template_properties) if stub_template
+        return Tpl::Template.eval_string(stub_template, self.template_properties) if stub_template
 
         entities = self.context.entity_name + 's'
         puts "No #{entities} for #{self.description(nick)}."

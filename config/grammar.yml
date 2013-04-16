@@ -17,6 +17,7 @@ reserved-names:
   - '-'
   - '*'
   - '/'
+  - mod
   - float
   - int
   - str

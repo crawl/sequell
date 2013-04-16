@@ -13,7 +13,11 @@ module Tpl
       @arguments = arguments
     end
 
-    def funcall
+    def [](index)
+      @arguments[index]
+    end
+
+    def funcall_scope
       @@funcall_depth += 1
       begin
         yield
@@ -22,16 +26,19 @@ module Tpl
       end
     end
 
+    def call(scope, *arguments)
+      @arguments = arguments
+      eval(scope)
+    end
+
     def eval(provider)
-      if !Template.allow_functions? ||
-          !Template.function_executor.fnexists?(self, provider)
-        return self.to_s
-      end
+      return to_s unless Template.allow_functions?
       if @@funcall_depth > RECURSE_MAX
         raise "Recursion too deep"
       end
-      funcall {
-        Template.function_executor.funcall(self, provider)
+      funcall_scope {
+        res = Template.function_executor.funcall(self, provider)
+        res
       }
     end
 

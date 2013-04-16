@@ -25,6 +25,10 @@ module Tpl
         str(" ").absent? >> tchar).repeat
     }
 
+    rule(:number) {
+      ::Grammar::Atom.new.number.as(:number)
+    }
+
     rule(:word_paren_form) {
       str("(") >> space? >> (template_subcommand | template_paren_form) >>
       space? >> str(")")
@@ -128,12 +132,17 @@ module Tpl
 
     rule(:template_funcall) {
       str("let").absent? >>
-      (identifier | reserved_name).as(:function) >>
+      (identifier | reserved_name |
+       str("(") >> space? >> function_def >>
+          space? >> str(")")).as(:function) >>
       funargs.as(:function_arguments)
     }
 
     rule(:funargs) {
-      (space >> wordtpl.as(:argument)).repeat
+      (space >>
+        ((number >> ((space | str(")")).present? | any.absent?)) |
+          wordtpl)
+      ).as(:argument).repeat
     }
 
     rule(:template_with_options) {
@@ -153,9 +162,12 @@ module Tpl
     }
 
     rule(:function_def) {
-      (str("fn") >> (space >> identifier).maybe.as(:function_name) >>
-       space >> function_parameters.as(:parameters) >> space? >>
-       subcommand_line.as(:body)).as(:function_def)
+      (str("fn") >>
+        (((space >> identifier).maybe.as(:function_name) >> space >>
+          function_parameters.as(:parameters)) |
+         space >> function_parameters.maybe.as(:parameters)) >>
+        space? >>
+        subcommand_line.as(:body)).as(:function_def)
     }
 
     rule(:function_parameters) {
@@ -163,12 +175,12 @@ module Tpl
     }
 
     rule(:function_parameter_list) {
-      (space? >> identifier.as(:parameter)).repeat.as(:parameters) >>
+      (space? >> str(".").absent? >> identifier.as(:parameter)).repeat.as(:parameters) >>
       (space? >> str(".") >> space >> identifier).maybe.as(:rest_parameter)
     }
 
     rule(:template_key) {
-      ((identifier | template).as(:key) >>
+      ((identifier | template | reserved_name).as(:key) >>
         subscript.maybe).as(:key_expr)
     }
 
@@ -177,7 +189,7 @@ module Tpl
     }
 
     rule(:identifier) {
-      (match["a-zA-Z_0-9*"] >> match["a-zA-Z_0-9*+-"].repeat |
+      (match["a-zA-Z_0-9*"] >> match["a-zA-Z_0-9*+-"].repeat >> str("?").maybe |
        str(".") | str("*") | str("%")).as(:identifier)
     }
 

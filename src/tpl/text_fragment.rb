@@ -1,5 +1,9 @@
+require 'tpl/tplike'
+
 module Tpl
   class TextFragment
+    include Tplike
+
     attr_accessor :text
 
     def initialize(text)

@@ -20,12 +20,24 @@ module Cmd
       query_all('user_keywords')
     end
 
+    def functions
+      query_all('user_functions')
+    end
+
+    def function_exists?(function_name)
+      exists?('user_functions', function_name)
+    end
+
     def command_exists?(command_name)
       exists?('user_commands', command_name)
     end
 
     def keyword_exists?(keyword)
       exists?('user_keywords', keyword)
+    end
+
+    def query_function(function_name)
+      query('user_functions', function_name)
     end
 
     def query_command(command_name)
@@ -36,6 +48,11 @@ module Cmd
       query('user_keywords', keyword)
     end
 
+    def define_function(name, definition)
+      delete_function(name)
+      insert('user_functions', name, definition)
+    end
+
     def define_command(name, definition)
       delete_command(name)
       insert('user_commands', name, definition)
@@ -44,6 +61,10 @@ module Cmd
     def define_keyword(name, definition)
       delete_keyword(name)
       insert('user_keywords', name, definition)
+    end
+
+    def delete_function(name)
+      delete('user_functions', name)
     end
 
     def delete_command(name)
@@ -96,6 +117,10 @@ module Cmd
       new_db = SQLite3::Database.new(@db_file)
       new_db.type_translation = false
       begin
+        new_db.execute(<<SCHEMA)
+CREATE TABLE user_functions (name STRING PRIMARY KEY, definition STRING);
+SCHEMA
+
         new_db.execute(<<SCHEMA)
 CREATE TABLE user_keywords (name STRING PRIMARY KEY, definition STRING);
 SCHEMA

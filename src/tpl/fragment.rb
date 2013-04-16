@@ -1,10 +1,19 @@
+require 'tpl/tplike'
+
 module Tpl
   class Fragment
+    include Tplike
+
+    def self.identifier(fragment)
+      return fragment unless fragment.respond_to?(:identifier)
+      fragment.identifier
+    end
+
     attr_reader :fragments
 
     def initialize(*fragments)
       @fragments = fragments.map { |frag|
-        frag.is_a?(String) ? TextFragment.new(frag) : frag
+        !frag.is_a?(Tplike) ? TextFragment.new(frag) : frag
       }
     end
 
@@ -13,7 +22,7 @@ module Tpl
     end
 
     def eval(expansion_provider)
-      fragments.map { |f| f.eval(expansion_provider) }.join('')
+      fragments.map { |f| string(f.eval(expansion_provider)) }.join('')
     end
 
     def empty?
