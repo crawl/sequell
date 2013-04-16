@@ -92,6 +92,10 @@ module Tpl
       Fragment.new(*pieces).collapse
     }
 
+    rule(quoted_template: simple(:text)) {
+      TextFragment.new('')
+    }
+
     rule(template: simple(:tpl), word: sequence(:fragments)) {
       pieces = fragments.map { |c|
         if c.is_a?(String)
