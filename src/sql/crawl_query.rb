@@ -155,11 +155,7 @@ module Sql
     end
 
     def random_game?
-      @random_game
-    end
-
-    def random_game=(random_game)
-      @random_game = random_game
+      @ast.random?
     end
 
     def resolve_field(field, table=@tables)

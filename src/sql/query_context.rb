@@ -21,7 +21,7 @@ module Sql
       @@global_context = ctx
     end
 
-    attr_accessor :entity_name
+    attr_accessor :entity_name, :name
     attr_accessor :fields, :synthetic, :defsort
     attr_accessor :table_alias
     attr_reader   :raw_time_field

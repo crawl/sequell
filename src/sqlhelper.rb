@@ -272,10 +272,9 @@ def field_pred(value, op, field)
 end
 
 def sql_game_by_id(id, index, count, original_query)
-  query = Sql::CrawlQuery.new(
-    Query::QueryStruct.new('AND', field_pred(id, '=', 'id')),
-    nil, '*', 1, original_query.argstr)
-  sql_each_row_matching(query) { |row|
+  query_text = "#{Sql::QueryContext.context.name} * id=#{id}"
+  q = Query::ListgameQuery.parse('.', query_text).primary_query
+  sql_each_row_matching(q) { |row|
     return Sql::QueryResult.new(index, count, row, original_query)
   }
   return Sql::QueryResult.none(original_query)

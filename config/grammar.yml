@@ -4,6 +4,7 @@ options:
   - log
   - game
   - graph
+  - random
 
 operators:
   - op: or

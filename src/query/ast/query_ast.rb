@@ -134,6 +134,10 @@ module Query
         @opt_map[name.to_sym]
       end
 
+      def random?
+        option(:random)
+      end
+
       def head
         @head ||= Expr.and()
       end
