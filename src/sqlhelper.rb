@@ -35,10 +35,6 @@ include HenzellConfig
 
 CFG = Crawl::Config.config
 
-# Don't use more than this much memory (bytes)
-MAX_MEMORY_USED = 768 * 1024 * 1024
-Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
-
 include Query::Grammar
 
 PLACE_FIXUPS = StringFixup.new(CFG['place-fixups'])

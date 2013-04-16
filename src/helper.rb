@@ -7,6 +7,10 @@ require 'yaml'
 require 'fileutils'
 require 'henzell/config'
 
+# Don't use more than this much memory (bytes)
+MAX_MEMORY_USED = 768 * 1024 * 1024
+Process.setrlimit(Process::RLIMIT_AS, MAX_MEMORY_USED)
+
 DEBUG_HENZELL = ENV['DEBUG_HENZELL']
 
 # Directory containing player directories that contain morgues.
