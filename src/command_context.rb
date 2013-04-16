@@ -2,6 +2,8 @@ require 'json'
 require 'env'
 
 class CommandContext
+  SUBCOMMAND_NESTING_LIMIT = 30
+
   def self.extra_argument_lists
     @extra_args ||= find_extra_arglists
   end
@@ -11,7 +13,11 @@ class CommandContext
   end
 
   def self.subcommand_context
-    Env.with(subcommand: 'y') {
+    depth = (ENV['SUBCOMMAND_DEPTH'] || '0').to_i + 1
+    if depth > SUBCOMMAND_NESTING_LIMIT
+      raise "Subcommand recursion limit exceeded"
+    end
+    Env.with(subcommand: 'y', subcommand_depth: (depth + 1).to_s) {
       yield
     }
   end
