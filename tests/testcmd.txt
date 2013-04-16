@@ -33,6 +33,7 @@ $ rm dat/user_commands.db
 .ebc b ::~ Hi c
 .echo $(join $(split & a&b&c)) ::~ a, b, c
 
+.echo Test: $(replace "a b " "" "a b c") ::~ Test: c
 .echo Hello $(replace b c $(replace a b a)) ::~ Hello c
 
 

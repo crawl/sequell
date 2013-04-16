@@ -34,14 +34,14 @@ module Tpl
 
   FunctionDef.define('replace', [2, 3]) {
     if arity == 2
-      self[-1].gsub(self[0], '')
+      self[-1].to_s.gsub(self[0], '')
     else
-      self[-1].gsub(self[0]) { self[1] }
+      self[-1].to_s.gsub(self[0]) { self[1] }
     end
   }
 
-  FunctionDef.define('upper', 1) { self[-1].upcase }
-  FunctionDef.define('lower', 1) { self[-1].downcase }
+  FunctionDef.define('upper', 1) { self[-1].to_s.upcase }
+  FunctionDef.define('lower', 1) { self[-1].to_s.downcase }
 
   FunctionDef.define('length', 1) {
     val = self[-1]

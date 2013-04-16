@@ -45,6 +45,7 @@ module Tpl
     def autosplit(word, split_by=nil)
       return [] unless word
       return word if word.is_a?(Array)
+      word = word.to_s
       (if split_by
          word.split(split_by)
        elsif word.index('|')

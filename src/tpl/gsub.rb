@@ -10,7 +10,7 @@ module Tpl
 
     def eval(provider)
       lookup(provider) { |match|
-        match.gsub(@pattern) {
+        match.to_s.gsub(@pattern) {
           @replacement.eval(provider)
         }
       }
