@@ -1394,7 +1394,7 @@ Functions may be used as $(fn ...).
    - $(length <string|array>) String or array length
    - $(sub <start> [<exclusive-end>] <string|array>) Substring or array slice
    - $(rand n) => random integers in [0,n)
-   - $(random n m) => random integers in [n,m]
+   - $(rand n m) => random integers in [n,m]
    
 
 Unknown functions will be ignored:
