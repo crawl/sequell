@@ -112,6 +112,11 @@ module Tpl
       arg.is_a?(String) ? (arg.index('.') ? arg.to_f : arg.to_i) : arg
     end
 
+    def truthy?(val)
+       val && val != 0 && ((!val.is_a?(String) && !val.is_a?(Array)) ||
+        !val.empty?)
+    end
+
     def number_arguments
       self.arguments.map { |arg|
         number(arg)
@@ -130,12 +135,13 @@ module Tpl
       if arity == 0
         default
       else
-        res = nil
+        val = nil
         (0...arity).each { |index|
-          res = yield(self[index])
-          return res unless res
+          val = self[index]
+          res = yield(val)
+          return val unless res
         }
-        res
+        val
       end
     end
 
@@ -143,10 +149,11 @@ module Tpl
       if arity == 0
         default
       else
-        res = nil
+        val = nil
         (0...arity).each { |index|
-          res = yield(self[index])
-          return res if res
+          val = self[index]
+          res = yield(val)
+          return val if res
         }
         res
       end
@@ -222,7 +229,7 @@ module Tpl
       else
         eval_def
       end
-      result.nil? ? @executor.to_s : result
+      result
     end
 
     def evaluate(value, scope)

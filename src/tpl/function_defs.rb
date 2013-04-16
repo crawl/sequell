@@ -72,8 +72,8 @@ module Tpl
   FunctionDef.define('int', 1) { self[0].to_i }
   FunctionDef.define('float', 1) { self[0].to_f }
 
-  FunctionDef.define('and', -1) { lazy_all?(true) { |a| a } }
-  FunctionDef.define('or', -1) { lazy_any?(false) { |a| a } }
+  FunctionDef.define('and', -1) { lazy_all?(true) { |a| truthy?(a) } }
+  FunctionDef.define('or', -1) { lazy_any?(false) { |a| truthy?(a) } }
   FunctionDef.define('not', 1) { !self[-1] }
 
   FunctionDef.define('/=', 2) {
@@ -94,7 +94,7 @@ module Tpl
 
   FunctionDef.define('if', [2,3]) {
     check = self[0]
-    if check && check != 0 && (!check.is_a?(String) || !check.empty?)
+    if truthy?(check)
       self[1]
     elsif arity == 3
       self[2]
@@ -158,6 +158,15 @@ module Tpl
     else
       val[self[0].to_i ... self[1].to_i]
     end
+  }
+  FunctionDef.define('nth', 2) {
+    autosplit(self[-1])[self[0]]
+  }
+  FunctionDef.define('car', 1) {
+    autosplit(self[-1])[0]
+  }
+  FunctionDef.define('cdr', 1) {
+    autosplit(self[-1])[1..-1]
   }
 
   FunctionDef.define('rand', [1, 2]) {

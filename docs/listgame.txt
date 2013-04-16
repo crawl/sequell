@@ -1390,6 +1390,9 @@ Functions may be used as $(fn ...).
 
    - $(length <string|array>) String or array length
    - $(sub <start> [<exclusive-end>] <string|array>) Substring or array slice
+   - $(nth <index> <array>) Index into array
+   - $(car <array>) First element
+   - $(cdr <array>) Array slice (identical to $(sub 1 <array>))
    - $(rand n) => random integers in [0,n)
    - $(rand n m) => random integers in [n,m]
    - Prefix operators: + - / * = /= < > <= >= ** mod not
