@@ -3,7 +3,13 @@ module Tpl
     attr_reader :fragments
 
     def initialize(*fragments)
-      @fragments = fragments
+      @fragments = fragments.map { |frag|
+        frag.is_a?(String) ? TextFragment.new(frag) : frag
+      }
+    end
+
+    def [](index)
+      @fragments[index]
     end
 
     def eval(expansion_provider)

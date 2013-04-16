@@ -38,6 +38,34 @@ module Tpl
       @executor.provider
     end
 
+    def number_arguments
+      self.arguments.map { |arg|
+        arg.is_a?(String) ? (arg.index('.') ? arg.to_f : arg.to_i) : arg
+      }
+    end
+
+    def reduce_numbers(identity=nil, &block)
+      if identity
+        self.number_arguments.reduce(identity, &block)
+      else
+        self.number_arguments.reduce(&block)
+      end
+    end
+
+    def lazy_neighbour_all?(default)
+      if arity <= 1
+        default
+      else
+        last = self[0]
+        (1...arity).all? { |index|
+          curr = self[index]
+          res = yield(last, curr)
+          last = curr
+          res
+        }
+      end
+    end
+
     def [](index)
       @cache[index] ||= @executor[index]
     end

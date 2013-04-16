@@ -7,6 +7,8 @@ require 'tpl/substitution'
 require 'tpl/gsub'
 require 'tpl/subcommand'
 require 'tpl/funcall'
+require 'tpl/binding'
+require 'tpl/let_form'
 
 module Tpl
   class TemplateBuilder < Parslet::Transform
@@ -116,6 +118,19 @@ module Tpl
         end
       }
       Fragment.new(*pieces).collapse
+    }
+
+    rule(binding_name: simple(:binding), value: simple(:value)) {
+      Binding.new(binding.identifier, value)
+    }
+    rule(binding_name: simple(:binding), value: sequence(:values)) {
+      Binding.new(binding.identifier, Fragment.new(*values).collapse)
+    }
+
+    rule(let_form: simple(:name),
+         bindings: sequence(:bindings),
+         body: simple(:body)) {
+      LetForm.new(name.to_s, bindings, body)
     }
   end
 end

@@ -44,9 +44,23 @@ module Henzell
       execute_command(command, arguments, default_nick, suppress_stderr)
     end
 
+    def direct_command?(command)
+      (@commands[command] || { })[:direct]
+    end
+
+    def echo?(command)
+      (@commands[command] || { })[:file] =~ /echo.pl/
+    end
+
     def execute_command(command, arguments, default_nick, suppress_stderr=false)
       seen_commands = Set.new
-      pre_expanded = false
+
+      unless direct_command?(command)
+        arguments = Query::QueryStringTemplate.substitute(arguments, [''],
+          default_nick)
+        arguments = arguments.join(' ') if arguments.is_a?(Array)
+      end
+
       while true
         if seen_commands.include?(command)
           raise "Bad command (recursive): #{command}"
@@ -58,13 +72,18 @@ module Henzell
         end
 
         if self.user_defined?(command)
+          old_command = command
+          old_arguments = arguments
           command, args = Cmd::UserDefinedCommand.expand(command)
+          unless ENV['HENZELL_TEST']
+            STDERR.puts("Expanded #{old_command} => #{command} #{args}")
+          end
           arguments =
             Query::QueryStringTemplate.substitute(args, [arguments], default_nick)
+          arguments = arguments.join(' ') if arguments.is_a?(Array)
           unless ENV['HENZELL_TEST']
-            STDERR.puts("Cmd: " + [command, arguments].join(' '))
+            STDERR.puts("Expanded #{args} with #{old_arguments} => #{arguments}")
           end
-          pre_expanded = true
           next
         end
 
@@ -72,23 +91,24 @@ module Henzell
           File.join(Config.root, "commands", @commands[command][:file])
         target = default_nick
 
-        unless @commands[command][:direct] || pre_expanded
-          arguments = Query::QueryStringTemplate.substitute(arguments, [''],
-            default_nick)
-        end
-
         command_line = [command, arguments].join(' ')
         unless ENV['HENZELL_TEST']
           STDERR.puts("Cmd: " + command_line)
         end
 
-        redirect = suppress_stderr ? '2>/dev/null' : ''
-        system_command_line =
-          %{#{command_script} #{quote(target)} #{quote(default_nick)} } +
-          %{#{quote(command_line)} '' #{redirect}}
-        output = %x{#{system_command_line}}
-        exit_code = $? >> 8
-        return [exit_code, output, system_command_line]
+        if echo?(command)
+          debug{"Echo: #{arguments}"}
+          arguments = arguments.join(' ') if arguments.is_a?(Array)
+          return [0, arguments.to_s]
+        else
+          redirect = suppress_stderr ? '2>/dev/null' : ''
+          system_command_line =
+            %{#{command_script} #{quote(target)} #{quote(default_nick)} } +
+            %{#{quote(command_line)} '' #{redirect}}
+          output = %x{#{system_command_line}}
+          exit_code = $? >> 8
+          return [exit_code, output, system_command_line]
+        end
       end
     end
 

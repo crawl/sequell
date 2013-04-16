@@ -1395,7 +1395,13 @@ Functions may be used as $(fn ...).
    - $(sub <start> [<exclusive-end>] <string|array>) Substring or array slice
    - $(rand n) => random integers in [0,n)
    - $(rand n m) => random integers in [n,m]
-   
+
+   - $(if <cond> <then> [<else>])
+   - $(let (var1 value1 var2 value2 ...) <body>)
+     => $(let (x 2 y 5) $(* $x $y)) => 10
+
+   - Prefix operators + - / * = /= < > <= >= **
+   - Type-casts: str, float, int
 
 Unknown functions will be ignored:
 

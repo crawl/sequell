@@ -1,5 +1,6 @@
 require 'parslet'
 require 'grammar/atom'
+require 'grammar/config'
 require 'henzell/config'
 
 module Tpl
@@ -20,7 +21,13 @@ module Tpl
 
     rule(:word) {
       (single_quoted_string | double_quoted_template.as(:quoted_template) |
+        word_paren_form |
         str(" ").absent? >> tchar).repeat
+    }
+
+    rule(:word_paren_form) {
+      str("(") >> space? >> (template_subcommand | template_paren_form) >>
+      space? >> str(")")
     }
 
     rule(:double_quoted_template) {
@@ -60,7 +67,7 @@ module Tpl
     rule(:template) {
       str("$") >> identifier |
       str("${") >> space? >> template_with_options >> space? >> str("}") |
-      str("$(") >> space? >> (template_subcommand | template_funcall) >>
+      str("$(") >> space? >> (template_subcommand | template_paren_form) >>
         space? >> str(")") |
       (str("${") >> match['^}'].repeat >> str("}")).as(:raw) |
       (str("$(") >> match['^)'].repeat >> str(")")).as(:raw)
@@ -68,8 +75,13 @@ module Tpl
 
     rule(:template_subcommand) {
       sigils = Regexp.quote(::Henzell::Config.default[:sigils])
-      (match[sigils] >> subcommand_name_part).as(:subcommand) >>
+      ((reserved_name >> space).absent? >> match[sigils] >>
+        subcommand_name_part).as(:subcommand) >>
         subcommand_line.as(:command_line)
+    }
+
+    rule(:reserved_name) {
+      ::Grammar::Config['reserved-names'].map { |name| str(name) }.reduce(&:|).as(:identifier)
     }
 
     rule(:subcommand_line) {
@@ -88,8 +100,36 @@ module Tpl
       (str("(").as(:leftquot) >> subtpl.as(:body) >> str(")").as(:rightquot)).as(:balanced)
     }
 
+    rule(:template_paren_form) {
+      template_special_form | template_funcall
+    }
+
+    rule(:template_special_form) {
+      let_form
+    }
+
+    rule(:let_form) {
+      str("let").as(:let_form) >> space? >>
+      binding_form >>
+      space? >> subcommand_line.as(:body)
+    }
+
+    rule(:binding_form) {
+      str("(") >> bindings.as(:bindings) >> space? >> str(")")
+    }
+
+    rule (:bindings) {
+      binding.repeat
+    }
+
+    rule (:binding) {
+      space? >> identifier.as(:binding_name) >> space >> wordtpl.as(:value)
+    }
+
     rule(:template_funcall) {
-      identifier.as(:function) >> funargs.as(:function_arguments)
+      str("let").absent? >>
+      (identifier | reserved_name).as(:function) >>
+      funargs.as(:function_arguments)
     }
 
     rule(:funargs) {

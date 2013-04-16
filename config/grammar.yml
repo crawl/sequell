@@ -6,6 +6,23 @@ options:
   - graph
   - random
 
+reserved-names:
+  - '='
+  - '/='
+  - '<'
+  - '>'
+  - '<='
+  - '>='
+  - '+'
+  - '-'
+  - '*'
+  - '/'
+  - float
+  - int
+  - str
+  - and
+  - or
+
 operators:
   - op: or
     negated: and

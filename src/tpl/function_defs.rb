@@ -2,6 +2,51 @@ require 'henzell/config'
 require 'command_context'
 
 module Tpl
+  FunctionDef.define('=', 0) {
+    if arity <= 1
+      true
+    else
+      first = self[0]
+      (1...arity).all? { |index| self[index] == first }
+    end
+  }
+
+  FunctionDef.define('+', 0) { reduce_numbers(0, &:+) }
+  FunctionDef.define('-', 0) { reduce_numbers(&:-) }
+  FunctionDef.define('*', 0) { reduce_numbers(1, &:*) }
+  FunctionDef.define('/', 0) { reduce_numbers(1, &:/) }
+  FunctionDef.define('**', 2) { self[0].to_f ** self[1].to_f }
+  FunctionDef.define('str', 1) { self[0].to_s }
+  FunctionDef.define('int', 1) { self[0].to_i }
+  FunctionDef.define('float', 1) { self[0].to_f }
+
+  FunctionDef.define('/=', 2) {
+    self[0] != self[1]
+  }
+  FunctionDef.define('<', 0) {
+    lazy_neighbour_all?(true, &:<)
+  }
+  FunctionDef.define('<=', 0) {
+    lazy_neighbour_all?(true, &:<)
+  }
+  FunctionDef.define('>', 0) {
+    lazy_neighbour_all?(true, &:>)
+  }
+  FunctionDef.define('>=', 0) {
+    lazy_neighbour_all?(true, &:>=)
+  }
+
+  FunctionDef.define('if', [2,3]) {
+    check = self[0]
+    if check && check != 0 && (!check.is_a?(String) || !check.empty?)
+      self[1]
+    elsif arity == 3
+      self[2]
+    else
+      ''
+    end
+  }
+
   FunctionDef.define('map', 2) {
     mapper = self.raw_arg(0)
     prov = self.provider
