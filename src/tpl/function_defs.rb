@@ -2,7 +2,7 @@ require 'henzell/config'
 require 'command_context'
 
 module Tpl
-  FunctionDef.define('=', 0) {
+  FunctionDef.define('=', -1) {
     if arity <= 1
       true
     else
@@ -11,10 +11,10 @@ module Tpl
     end
   }
 
-  FunctionDef.define('+', 0) { reduce_numbers(0, &:+) }
-  FunctionDef.define('-', 0) { reduce_numbers(&:-) }
-  FunctionDef.define('*', 0) { reduce_numbers(1, &:*) }
-  FunctionDef.define('/', 0) { reduce_numbers(1, &:/) }
+  FunctionDef.define('+', -1) { reduce_numbers(0, &:+) }
+  FunctionDef.define('-', -1) { reduce_numbers(&:-) }
+  FunctionDef.define('*', -1) { reduce_numbers(1, &:*) }
+  FunctionDef.define('/', -1) { reduce_numbers(1, &:/) }
   FunctionDef.define('**', 2) { self[0].to_f ** self[1].to_f }
   FunctionDef.define('str', 1) { self[0].to_s }
   FunctionDef.define('int', 1) { self[0].to_i }
@@ -23,16 +23,16 @@ module Tpl
   FunctionDef.define('/=', 2) {
     self[0] != self[1]
   }
-  FunctionDef.define('<', 0) {
+  FunctionDef.define('<', -1) {
     lazy_neighbour_all?(true, &:<)
   }
-  FunctionDef.define('<=', 0) {
+  FunctionDef.define('<=', -1) {
     lazy_neighbour_all?(true, &:<)
   }
-  FunctionDef.define('>', 0) {
+  FunctionDef.define('>', -1) {
     lazy_neighbour_all?(true, &:>)
   }
-  FunctionDef.define('>=', 0) {
+  FunctionDef.define('>=', -1) {
     lazy_neighbour_all?(true, &:>=)
   }
 
@@ -49,8 +49,15 @@ module Tpl
 
   FunctionDef.define('map', 2) {
     mapper = self.raw_arg(0)
+    funcall = false
+    if mapper.is_a?(Function)
+      funcall = true
+      mapper = Funcall.new(mapper)
+    end
+
     prov = self.provider
     autosplit(self[-1]).map { |part|
+      mapper.arguments[0] = part if funcall
       mapper.eval(lambda { |key|
           if key == '_'
             part

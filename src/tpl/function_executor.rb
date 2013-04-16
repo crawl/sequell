@@ -2,21 +2,25 @@ require 'tpl/function_def'
 
 module Tpl
   class FunctionExecutor
-    def self.fnexists?(fn)
-      FunctionDef.evaluator(fn.name)
+    def self.fnexists?(fn, scope)
+      FunctionDef.evaluator(fn.name, scope)
     end
 
-    def self.funcall(fn, provider)
-      evaluator = FunctionDef.evaluator(fn.name) or
+    def self.funcall(fn, scope)
+      evaluator = FunctionDef.evaluator(fn.name, scope) or
         raise "Unknown function: #{fn.name}"
-      self.new(fn, evaluator, provider).eval()
+      self.new(fn, evaluator, scope).eval()
     end
 
-    attr_reader :provider
+    attr_reader :provider, :funcall
     def initialize(fn, evaluator, provider)
       @fn = fn
       @evaluator = evaluator
       @provider = provider
+    end
+
+    def funcall
+      @fn
     end
 
     def eval

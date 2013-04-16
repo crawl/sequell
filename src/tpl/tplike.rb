@@ -1,5 +1,9 @@
 module Tpl
   module Tplike
+    def tpl?
+      true
+    end
+
     def simple?
       false
     end

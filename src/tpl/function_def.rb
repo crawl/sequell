@@ -1,3 +1,5 @@
+require 'tpl/function'
+
 module Tpl
   class FunctionDef
     REGISTRY = { }
@@ -5,9 +7,16 @@ module Tpl
       REGISTRY[name] = self.new(name, evaluator, arity)
     end
 
-    def self.evaluator(name)
-      evaluator = REGISTRY[name]
-      evaluator && evaluator.dup
+    def self.evaluator(name, scope=nil)
+      evaluator = name.is_a?(Function)? name : REGISTRY[name]
+      if !evaluator && scope
+        fdef = scope[name]
+        self.new(name, fdef, fdef.arity) if fdef
+      elsif evaluator.is_a?(Function)
+        self.new(evaluator.name, evaluator, evaluator.arity)
+      else
+        evaluator && evaluator.dup
+      end
     end
 
     attr_reader :executor
@@ -15,7 +24,14 @@ module Tpl
       @name = name
       @evaluator = evaluator
       @supported_arity = arity
-      (class << self; self; end).send(:define_method, :eval, &evaluator)
+      @user_function = @evaluator.is_a?(Function)
+      unless @user_function
+        (class << self; self; end).send(:define_method, :eval, &evaluator)
+      end
+    end
+
+    def user_function?
+      @user_function
     end
 
     def dup
@@ -37,6 +53,7 @@ module Tpl
     def provider
       @executor.provider
     end
+    alias :scope :provider
 
     def number_arguments
       self.arguments.map { |arg|
@@ -84,8 +101,15 @@ module Tpl
     end
 
     def arity_match?
-      @supported_arity == 0 || arity == @supported_arity ||
-        (@supported_arity.is_a?(Array) && @supported_arity.include?(arity))
+      @supported_arity == -1 || arity == @supported_arity ||
+        (@supported_arity.is_a?(Array) &&
+         (@supported_arity.include?(arity) ||
+          @supported_arity[0] <= arity &&
+           (@supported_arity[1] == -1 || @supported_arity[1] >= arity)))
+    end
+
+    def funcall
+      @executor.funcall
     end
 
     def eval_with(executor)
@@ -94,8 +118,35 @@ module Tpl
       unless arity_match?
         raise "Bad number of arguments to #{@name}, must be #{@supported_arity}"
       end
-      return @executor.to_s unless self[-1]
-      eval
+      result = if user_function?
+        eval_user_function
+      else
+        eval
+      end
+      result.nil? ? @executor.to_s : result
+    end
+
+    def evaluate(value, scope)
+      return value.eval(scope) if value.respond_to?(:tpl?)
+      value
+    end
+
+    def eval_user_function
+      map = { }
+      evaluated = { }
+      fn = @evaluator
+      fn.parameters.each_with_index { |p, i|
+        map[p] = raw_arg(i)
+      }
+      map[fn.rest] = funcall.arguments[fn.parameters.size .. -1]
+      dynamic_scope = lambda { |key|
+        if map.include?(key)
+          evaluated[key] ||= evaluate(map[key], scope)
+        else
+          scope[key]
+        end
+      }
+      fn.body.eval(dynamic_scope)
     end
   end
 end

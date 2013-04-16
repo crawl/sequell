@@ -9,6 +9,7 @@ require 'tpl/subcommand'
 require 'tpl/funcall'
 require 'tpl/binding'
 require 'tpl/let_form'
+require 'tpl/function'
 
 module Tpl
   class TemplateBuilder < Parslet::Transform
@@ -131,6 +132,18 @@ module Tpl
          bindings: sequence(:bindings),
          body: simple(:body)) {
       LetForm.new(name.to_s, bindings, body)
+    }
+
+    rule(parameter: simple(:p)) { p }
+    rule(function_def: simple(:fn)) { fn }
+
+    rule(function_name: simple(:name),
+         parameters: {
+           parameters: sequence(:pars),
+           rest_parameter: simple(:rest)
+         },
+         body: simple(:template)) {
+      Function.new(name, pars, rest, template)
     }
   end
 end

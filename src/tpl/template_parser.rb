@@ -101,7 +101,7 @@ module Tpl
     }
 
     rule(:template_paren_form) {
-      template_special_form | template_funcall
+      template_special_form | function_def | template_funcall
     }
 
     rule(:template_special_form) {
@@ -150,6 +150,21 @@ module Tpl
 
     rule(:intext) {
       text
+    }
+
+    rule(:function_def) {
+      (str("fn") >> (space >> identifier).maybe.as(:function_name) >>
+       space >> function_parameters.as(:parameters) >> space? >>
+       subcommand_line.as(:body)).as(:function_def)
+    }
+
+    rule(:function_parameters) {
+      str("(") >> function_parameter_list >> space? >> str(")")
+    }
+
+    rule(:function_parameter_list) {
+      (space? >> identifier.as(:parameter)).repeat.as(:parameters) >>
+      (space? >> str(".") >> space >> identifier).maybe.as(:rest_parameter)
     }
 
     rule(:template_key) {
