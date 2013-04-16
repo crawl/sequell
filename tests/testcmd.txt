@@ -54,6 +54,12 @@ $ rm dat/user_commands.db
 
 !lg * char=$(!spfoo) s=char ::~ 4519x SpEn, 40x SpFi, 29x SpSk
 
+!lg * -random
+!lm * -random
+
+.echo 0=$(rand 1) ::~ 0=0
+.echo 5=$(rand 5 5)  ::~ 5=5
+
 E .echo Hi $(!nick -rm greensnark) ::~ may not be used as a subcommand
 .echo '$(!lg)' ::~ '\$\(!lg\)'
 .echo \$(!lg)  ::~ \$\(!lg\)

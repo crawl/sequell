@@ -60,4 +60,12 @@ module Tpl
       val[self[0].to_i ... self[1].to_i]
     end
   }
+
+  FunctionDef.define('rand', [1, 2]) {
+    if arity == 2
+      rand(self[0].to_i .. self[1].to_i)
+    else
+      rand(self[0].to_i)
+    end
+  }
 end
