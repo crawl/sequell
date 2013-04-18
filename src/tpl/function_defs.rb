@@ -8,6 +8,13 @@ module Tpl
     Funcall.new(self[0], *(arglist + autosplit(self[-1]).to_a)).eval(scope)
   }
 
+  FunctionDef.define('inc', 1) { self[0] + 1 }
+  FunctionDef.define('dec', 1) { self[0] - 1 }
+  FunctionDef.define('value', 1) {
+    val = self[0]
+    val.is_a?(String) ? scope[val] : val
+  }
+
   FunctionDef.define('call', [1, -1]) {
     arglist = self.raw_args[1..-1].dup
     Funcall.new(self[0], *arglist).eval(scope)
@@ -104,13 +111,13 @@ module Tpl
   }
 
   FunctionDef.define('map', 2) {
-    mapper = self[0]
+    mapper = FunctionDef.evaluator(self[0], scope)
     scope = self.scope
     autosplit(self[-1]).map { |part| mapper.call(scope, part) }
   }
 
   FunctionDef.define('filter', 2) {
-    mapper = self[0]
+    mapper = FunctionDef.evaluator(self[0], scope)
     scope = self.scope
     autosplit(self[-1]).filter { |part| mapper.call(scope, part) }
   }
