@@ -155,7 +155,7 @@ module Tpl
           res = yield(val)
           return val if res
         }
-        res
+        val
       end
     end
 

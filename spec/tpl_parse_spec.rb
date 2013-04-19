@@ -65,4 +65,13 @@ describe Tpl::Template do
   it 'will parse direct lambda funcalls' do
     tpl('$($(fn (x) $x) $y)').should be_an_instance_of(Tpl::Funcall)
   end
+
+  it 'will interpret (or) expressions' do
+    tpl_eval('$(or (or) (and))').should be_true
+    tpl_eval('$(or (list) 1)').should == 1
+  end
+
+  it 'will interpret (and) expressions' do
+    tpl_eval('$(and 1 2 3)').should == 3
+  end
 end
