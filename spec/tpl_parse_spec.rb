@@ -74,4 +74,101 @@ describe Tpl::Template do
   it 'will interpret (and) expressions' do
     tpl_eval('$(and 1 2 3)').should == 3
   end
+
+  context 'ranges' do
+    it 'will create ranges' do
+      tpl_eval('$(split (range 1 4))').should == [1,2,3,4]
+      tpl_eval('$(split (range 1 8 2))').should == [1,3,5,7]
+    end
+  end
+
+  context 'hash' do
+    it 'will create hashes' do
+      tpl_eval('$(hash)').should == { }
+    end
+
+    it 'will evaluate empty hashes as falsy' do
+      tpl_eval('$(or (hash) 22)').should == 22
+    end
+
+    it 'will create hashes with the specified keys and values' do
+      tpl_eval('$(hash a b c d)').should == { 'a' => 'b', 'c' => 'd' }
+    end
+
+    it 'will parse hash access' do
+      tpl('$x[a]').should be_an_instance_of(Tpl::LookupFragment)
+    end
+
+    it 'will permit access to hash keys' do
+      tpl_eval('$(let (x (hash a b c d)) $x[a])').should == 'b'
+      tpl_eval('$(let (x (hash a b c d)) $x[c])').should == 'd'
+    end
+
+    it 'will permit access to hash keys' do
+      tpl_eval('$(let (x (hash a b c d)) $(elt a $x))').should == 'b'
+      tpl_eval('$(let (x (hash a b c d)) $(elt c $x))').should == 'd'
+      tpl_eval('$(let (x (hash a b c d)) $(elts c a $x))').should == ['d', 'b']
+    end
+
+    it 'will support adding keys to hashes' do
+      tpl_eval('$(hash-put e f g h (hash a b c d))').should == {
+        'a' => 'b',
+        'c' => 'd',
+        'e' => 'f',
+        'g' => 'h'
+      }
+    end
+  end
+
+  context 'concat' do
+    it 'will merge hashes' do
+      tpl_eval('$(concat (hash a b c d) (hash 1 2 3 4))').should == {
+        'a' => 'b',
+        'c' => 'd',
+        1 => 2,
+        3 => 4
+      }
+    end
+
+    it 'will join lists' do
+      tpl_eval('$(concat (list 1 2) (cons) (range 4 6))').should ==
+        [1, 2, 4, 5, 6]
+    end
+
+    it 'will join strings' do
+      tpl_eval('$(concat "ab" "cd" "" "e")').should == "abcde"
+    end
+  end
+
+  context 'flatten' do
+    it 'will flatten lists to the supplied depth' do
+      tpl_eval('$(flatten (list (list 1 2 (list 3))))').should == [1,2,3]
+      tpl_eval('$(flatten 1 (list (list 1 2 (list 3))))').should == [1,2,[3]]
+    end
+  end
+
+  context 'sorting' do
+    it 'will sort list-like objects' do
+      tpl_eval('$(sort (list 4 3 2 1))').should == [1, 2, 3, 4]
+      tpl_eval('$(sort (fn (a b) $(<=> $b $a)) (list 1 2 3 4))').should ==
+        [4, 3, 2, 1]
+      tpl_eval('$(sort (fn (a b) $(<=> $b $a)) (range 1 4))').should ==
+        [4, 3, 2, 1]
+    end
+  end
+
+  context 'reverse' do
+    it 'will reverse lists' do
+      tpl_eval('$(reverse (list a b c d))').should == ['d', 'c', 'b', 'a']
+    end
+    it 'will reverse ranges' do
+      tpl_eval('$(reverse (range 1 4))').should == [4,3,2,1]
+    end
+    it 'will reverse strings' do
+      tpl_eval('$(reverse abcd)').should == 'dcba'
+    end
+    it 'will invert hashes' do
+      tpl_eval('$(reverse (hash a b c d))').should == { 'b' => 'a', 'd' => 'c' }
+    end
+  end
 end

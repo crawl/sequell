@@ -1362,7 +1362,9 @@ expansions, which will ignore unexpanded values.
 
 3. Functions:
 
-Functions may be used as $(fn ...). 
+Functions may be used as $(fn ...).
+
+   - $(typeof <val>)  returns the type of the given value
 
    - $(join [<joiner>] <text>)
      .echo $(join " and " a,b,c) => a and b and c
@@ -1395,7 +1397,10 @@ Functions may be used as $(fn ...).
    - $(cdr <array>) Array slice (identical to $(sub 1 <array>))
    - $(rand n) => random integers in [0,n)
    - $(rand n m) => random integers in [n,m]
-   - Prefix operators: + - / * = /= < > <= >= ** mod not
+   - Prefix operators: + - / * = /= < > <= >= <=> ** mod not
+       $(<=> 1 5) => -1
+       $(<=> 1 1) => 0
+       $(<=> 5 1) => 1
    - Type-casts: str, float, int
 
    - $(list 1 2 3 4) => [1, 2, 3, 4]
@@ -1407,7 +1412,7 @@ Functions may be used as $(fn ...).
    - $(let (var1 value1 var2 value2 ...) <body>)
      => $(let (x 2 y 5) $(* $x $y)) => 10
 
-     Note that expressions in the body must be wrapped in $( )
+     Note that expressions in the body of a let must be wrapped in $( )
 
    - $(fn (par1 par2 . rest_parameter) body) 
      Define a function
@@ -1443,6 +1448,23 @@ Functions may be used as $(fn ...).
 
    - $(map <fn> <list>)
    - $(filter <predicate-fn> <list>)
+   - $(sort [<fn>] <list>)
+
+   - $(hash [<key> <value> ...]) create a dictionary
+   - $(hash-put <key> <value> ... <hash>) add keys and values to hash
+   - $(elt <key> <hash>) get value of <hash>[<key>]
+   - $hash[key] same as $(elt key $hash)
+   - $(elts <key> ... <hash>) get list of hash values for keys
+            Note: (reverse <hash>) will invert the hash, converting keys
+                  to values and vice-versa.
+
+   - $(sort <list>)
+     $(sort <comparator> <list>)
+            <comparator> must be a fn (a, b) that returns -1, 0, 1 if
+            a < b, a == b, a > b
+
+   - $(flatten [<depth>] <list>)
+            Flattens nested lists inside list.
 
 Unknown functions will be ignored:
 

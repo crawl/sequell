@@ -21,8 +21,8 @@ module Tpl
 
     rule(:word) {
       (single_quoted_string | double_quoted_template.as(:quoted_template) |
-        word_paren_form |
-        str(" ").absent? >> tchar).repeat
+        word_paren_form | balanced_brackets(word.as(:body)) |
+        match[' \]'].absent? >> tchar).repeat
     }
 
     rule(:number) {
@@ -69,7 +69,7 @@ module Tpl
     }
 
     rule(:template) {
-      str("$") >> identifier |
+      str("$") >> (identifier.as(:key) >> subscript.maybe).as(:key_expr) |
       str("${") >> space? >> template_with_options >> space? >> str("}") |
       str("$(") >> space? >> (template_subcommand | template_paren_form) >>
         space? >> str(")") |
@@ -93,7 +93,7 @@ module Tpl
     }
 
     rule(:balanced_group) {
-      balanced_curly | balanced_paren
+      balanced_curly | balanced_paren | balanced_brackets(subtpl.as(:body))
     }
 
     rule(:balanced_curly) {
@@ -103,6 +103,10 @@ module Tpl
     rule(:balanced_paren) {
       (str("(").as(:leftquot) >> subtpl.as(:body) >> str(")").as(:rightquot)).as(:balanced)
     }
+
+    def balanced_brackets(body)
+      (str("[").as(:leftquot) >> body >> str("]").as(:rightquot)).as(:balanced)
+    end
 
     rule(:template_paren_form) {
       template_special_form | function_def | template_funcall
@@ -184,7 +188,8 @@ module Tpl
     }
 
     rule(:subscript) {
-      str("[") >> space? >> integer.as(:subscript) >> space? >> str("]")
+      str("[") >> space? >> (integer | wordtpl).as(:subscript) >> space? >>
+      str("]")
     }
 
     rule(:identifier) {

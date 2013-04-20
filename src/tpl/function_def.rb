@@ -113,8 +113,7 @@ module Tpl
     end
 
     def truthy?(val)
-       val && val != 0 && ((!val.is_a?(String) && !val.is_a?(Array)) ||
-        !val.empty?)
+      val && val != 0 && (!val.respond_to?(:empty?) || !val.empty?)
     end
 
     def number_arguments
@@ -187,7 +186,7 @@ module Tpl
 
     def autosplit(word, split_by=nil)
       return [] unless word
-      return word if word.is_a?(Enumerable)
+      return word.to_a if word.is_a?(Enumerable)
       word = word.to_s
       (if split_by
          word.split(split_by)
@@ -222,7 +221,7 @@ module Tpl
       @cache = { }
       @executor = executor
       unless arity_match?
-        raise "Bad number of arguments to #{@name}, must be #{@supported_arity}"
+        raise "Bad number of arguments (#{arity}) to #{@name} in #{funcall}, must be #{@supported_arity}"
       end
       result = if user_function?
         eval_user_function

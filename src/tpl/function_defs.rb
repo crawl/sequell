@@ -8,6 +8,18 @@ module Tpl
     Funcall.new(self[0], *(arglist + autosplit(self[-1]).to_a)).eval(scope)
   }
 
+  FunctionDef.define('sort', [1,2]) {
+    thing_to_sort = autosplit(self[-1])
+    if arity == 1
+      thing_to_sort.sort
+    else
+      funcall = Funcall.new(self[0])
+      thing_to_sort.sort { |a, b|
+        funcall.call(scope, a, b)
+      }
+    end
+  }
+
   FunctionDef.define('inc', 1) { self[0] + 1 }
   FunctionDef.define('dec', 1) { self[0] - 1 }
   FunctionDef.define('value', 1) {
@@ -18,6 +30,33 @@ module Tpl
   FunctionDef.define('call', [1, -1]) {
     arglist = self.raw_args[1..-1].dup
     Funcall.new(self[0], *arglist).eval(scope)
+  }
+
+  FunctionDef.define('hash', -1) {
+    res = { }
+    (0 ... self.raw_args.size).step(2).each { |i|
+      res[self[i]] = self[i + 1]
+    }
+    res
+  }
+
+  FunctionDef.define('hash-put', [1, -1]) {
+    res = self[-1].dup
+    (0 ... (self.raw_args.size - 1)).step(2).each { |i|
+      res[self[i]] = self[i + 1]
+    }
+    res
+  }
+
+  FunctionDef.define('elt', 2) {
+    self[-1][self[0]]
+  }
+
+  FunctionDef.define('elts', [2, -1]) {
+    indexable = self[-1]
+    (0...(self.raw_args.size - 1)).map { |i|
+      indexable[self[i]]
+    }
   }
 
   FunctionDef.define('cons', [0,2]) {
@@ -37,8 +76,22 @@ module Tpl
     self.arguments.dup
   }
 
+  FunctionDef.define('flatten', [1,2]) {
+    if arity == 1
+      autosplit(self[-1]).flatten
+    else
+      autosplit(self[-1]).flatten(self[0])
+    end
+  }
+
   FunctionDef.define('reverse', 1) {
-    autosplit(self[0]).to_a.reverse
+    val = self[0]
+    if val.is_a?(Hash)
+      val.invert
+    else
+      val = val.to_a if val.is_a?(Enumerable)
+      val.reverse
+    end
   }
 
   FunctionDef.define('range', [2, 3]) {
@@ -52,7 +105,15 @@ module Tpl
     if arity == 0
       nil
     else
-      self.arguments.reduce(&:+)
+      self.arguments.reduce { |a, b|
+        if a.is_a?(Hash)
+          a.merge(b)
+        elsif a.is_a?(String) || a.is_a?(Numeric)
+          a.to_s + b.to_s
+        else
+          a.to_a + b.to_a
+        end
+      }
     end
   }
 
@@ -91,6 +152,9 @@ module Tpl
   }
   FunctionDef.define('<=', -1) {
     lazy_neighbour_all?(true, &:<)
+  }
+  FunctionDef.define('<=>', 2) {
+    self[0] <=> self[1]
   }
   FunctionDef.define('>', -1) {
     lazy_neighbour_all?(true, &:>)
