@@ -30,6 +30,7 @@ sources:
       - logfile09
       - logfile10*
       - logfile11{,-sprint,-zotdef}*
+      - logfile12{,-sprint,-zotdef}*
       - logfile-git{,-sprint,-zotdef}*
       - logfile-lorcs: lorcs
     milestones:
@@ -43,6 +44,7 @@ sources:
       - milestones09
       - milestones10*
       - milestones11{,-sprint,-zotdef}*
+      - milestones12{,-sprint,-zotdef}*
       - milestones-git{,-sprint,-zotdef}*
       - milestones-lorcs: lorcs
 
