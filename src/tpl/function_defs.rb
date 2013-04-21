@@ -151,7 +151,7 @@ module Tpl
     lazy_neighbour_all?(true, &:<)
   }
   FunctionDef.define('<=', -1) {
-    lazy_neighbour_all?(true, &:<)
+    lazy_neighbour_all?(true, &:<=)
   }
   FunctionDef.define('<=>', 2) {
     self[0] <=> self[1]
