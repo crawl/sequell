@@ -183,7 +183,7 @@ module Tpl
   FunctionDef.define('filter', 2) {
     mapper = FunctionDef.evaluator(self[0], scope)
     scope = self.scope
-    autosplit(self[-1]).filter { |part| mapper.call(scope, part) }
+    autosplit(self[-1]).select { |part| mapper.call(scope, part) }
   }
 
   FunctionDef.define('join', [1,2]) {

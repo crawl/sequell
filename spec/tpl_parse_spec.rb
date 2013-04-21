@@ -171,4 +171,12 @@ describe Tpl::Template do
       tpl_eval('$(reverse (hash a b c d))').should == { 'b' => 'a', 'd' => 'c' }
     end
   end
+
+  context 'filter' do
+    it 'will filter lists' do
+      tpl_eval('$(filter (fn (z) $(= (mod $z 2) 1)) (list 1 2 3 4 5))').should ==
+        [1, 3, 5]
+
+    end
+  end
 end
