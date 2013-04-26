@@ -9,7 +9,7 @@ describe Grammar::QueryBody do
     "@78291",
     "!winning",
     "xom|nemelex",
-    "!(xom|nemelex|(@78291|!winning))"
+    "!(xom|nemelex|(D:1|!winning))"
   ]
 
   KEYWORD_EXPRESSIONS.each { |keywords|

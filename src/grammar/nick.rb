@@ -27,7 +27,7 @@ module Grammar
     }
     rule(:nick_name_loose) { nick_char.repeat(1) }
     rule(:nick_char) {
-      match['0-9a-zA-Z_`\[\]{}\\^[^\x00-\x7f]-']
+      match['0-9a-zA-Z_`\[\]{}\\^[^\x00-\x7f]|-']
     }
     rule(:nick_alpha_char) {
       match['\p{Alpha}a-zA-Z_`\[\]{}\\|^-']

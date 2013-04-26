@@ -79,5 +79,6 @@ describe Grammar::Query do
   it 'should recognize nicks' do
     nick(q.parse('!lg *')).should == '*'
     nick(q.parse('!lg 22')).should == '22'
+    nick(q.parse('!lg |amethyst')).should == '|amethyst'
   end
 end
