@@ -542,6 +542,8 @@ Listgame keywords may be one of:
     t<N> :: Select games played in the tournament for year 200<N>.
             For instance t9 selects the 2009 tourney, t8 selects the 2008
             tourney
+    t<V> :: Select games played in the tournament for version V. For instance
+            t0.10 selects the 0.10 tourney (2012a).
 
 14. Milestone Types:
     In !lm queries ONLY (i.e. not in !lg, !hs, etc.) you may use the

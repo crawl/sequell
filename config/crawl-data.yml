@@ -899,7 +899,7 @@ tournament-prefixes:
   - tournament
 
 tournament-data:
-  default-tourney: '2012'
+  default-tourney: '2013a'
   crawl:
     '2008':
       version: "0.4"
@@ -913,16 +913,19 @@ tournament-data:
     '2011a':
       version: "0.8"
       time: [20110514, 20110530]
-    '2011':
+    '2011b':
       version: ["0.9", "0.9-a"]
       time: [20110813, 20110829]
     '2012a':
       version: "0.10"
       # Account for CDO clock being 14s slow
       time: [20120224235946, 20120312]
-    '2012':
+    '2012b':
       version: "0.11"
       time: [20121020, 20121105]
+    '2013a':
+      version: "0.12"
+      time: [20130511, 20130527]
 
   sprint:
     '2010':

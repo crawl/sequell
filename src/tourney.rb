@@ -9,7 +9,7 @@ module Tourney
   TOURNEY_DATA = CFG['tournament-data']
 
   TOURNEY_REGEXES = TOURNEY_PREFIXES.map do |p|
-    %r/^(#{p})(\d*)([a-z]?)$/i
+    %r/^(#{p})(?:(\d*)([a-z]?)|(\d*[.]\d+))$/i
   end
 
   def tourney_keyword?(argument)
@@ -64,15 +64,33 @@ module Tourney
       }
     end
 
+    def tourney_for_version(version)
+      tourneys = TOURNEY_DATA['crawl']
+      tourneys.keys.each { |key|
+        tourney = tourneys[key]
+        versions = tourney['version']
+        versions = [versions] unless versions.is_a?(Enumerable)
+        if versions.any? { |v| v.index(version) }
+          return key
+        end
+      }
+      raise "Unknown tourney version: #{version}"
+    end
+
     def resolve_year(val)
       year = TOURNEY_DATA['default-tourney']
       for reg in TOURNEY_REGEXES
-        if val =~ reg && $2 && !$2.empty?
-          year = $2.to_i
-          suffix = $3
-          year += 2000 if year < 100
-          year = "#{year}#{suffix}"
-          break
+        if val =~ reg
+          if $2 && !$2.empty?
+            year = $2.to_i
+            suffix = $3
+            year += 2000 if year < 100
+            year = "#{year}#{suffix}"
+            break
+          elsif $4
+            version = $4
+            return tourney_for_version(version)
+          end
         end
       end
       year
