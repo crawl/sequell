@@ -132,7 +132,7 @@ module Query
         liftup_possible = ast.operator && ast.operator.can_coalesce?
         ast.arguments = ast.arguments.map { |child|
           child = collapse_empty_nodes(child)
-          if child && liftup_possible && child.operator == ast.operator
+          if child && liftup_possible && child.operator == ast.operator && ast.operator.commutative?
             lifted_nodes << child
             nil
           else

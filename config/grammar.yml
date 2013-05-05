@@ -176,6 +176,7 @@ operators:
     result: I
     arity: 2
     precedence: 60
+    non_commutative: true
 
   - op: '*'
     argtype: F
@@ -186,6 +187,7 @@ operators:
     argtype: I
     result: F
     precedence: 80
+    non_commutative: true
 
   - op: '%'
     argtype: I
