@@ -70,6 +70,7 @@ module Sql
           extras[field.to_s] = field.log_value(row[i])
         end
       end
+      map['cv2'] = (map['cv'] || '').sub(/-.*$/, '')
       map['sql_table'] = @ctx.table
       unless extras.empty?
         map['extra_values'] = extras.map { |k, v| "#{k}@=@#{v}" }.join(";;;;")
