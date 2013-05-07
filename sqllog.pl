@@ -695,35 +695,57 @@ sub insert_record {
   die "Couldn't insert record for line: $line\nError: $@\n" if $@;
 }
 
-sub add_milestone {
+sub build_fields_from_milestone {
   my ($lf, $offset, $line) = @_;
+
   chomp $line;
   my $m = logfield_hash($line);
 
   return if broken_record($m);
-  ($m->{file} = $lf->{file}) =~ s{.*/}{};
-  $m->{offset} = $offset;
-  $m->{src} = $lf->{server};
-  $m->{alpha} = record_is_alpha_version($lf, $m);
-  $m->{verb} = $m->{type};
-  return if $$m{type} eq 'orb' && game_is_zotdef($m);
+  return if $m->{type} eq 'orb' && game_is_zotdef($m);
+
+  ($m->{file}   = $lf->{file}) =~ s{.*/}{};
+  $m->{offset}	= $offset;
+  $m->{src}	= $lf->{server};
+  $m->{alpha}	= record_is_alpha_version($lf, $m);
+  $m->{verb}	= $m->{type};
+
   $m->{milestone} ||= '?';
-  $m->{noun} = $m->{milestone};
-  $m = fixup_logfields($m);
+  $m->{noun}        = $m->{milestone};
+
+  return fixup_logfields($m);
+}
+
+sub add_milestone {
+  my ($lf, $offset, $line) = @_;
+
+  my $m = build_fields_from_milestone($lf, $offset, $line)
+    or return;
 
   insert_record($m, $line)
 }
 
-sub add_logline {
+sub build_fields_from_logline {
   my ($lf, $offset, $line) = @_;
+
   chomp $line;
+
   my $fields = logfield_hash($line);
   return if broken_record($fields);
+
   $fields->{src} = $lf->{server};
   $fields->{alpha} = record_is_alpha_version($lf, $fields);
-  ($fields->{file} = $lf->{file}) =~ s{.*/}{};
+  ($fields->{file} = $lf->{file} || '') =~ s{.*/}{};
   $fields->{offset} = $offset;
-  $fields = fixup_logfields($fields);
+
+  return fixup_logfields($fields);
+}
+
+sub add_logline {
+  my ($lf, $offset, $line) = @_;
+
+  my $fields = build_fields_from_logline($lf, $offset, $line)
+    or return;
 
   insert_record($fields, $line)
 }
