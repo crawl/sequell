@@ -13,7 +13,6 @@
 !learn learn.pl :direct
 !messages message/messages.pl
 !nick nickmap.rb
-!rc rc.pl
 !rng rng.pl
 !seen seen.pl
 !send send.rb
