@@ -17,6 +17,17 @@
 # Any line starting with $ describes shell commands to run; the command will
 # be echoed to stderr; the command exit code will not be checked.
 
+$ rm -r dat/learndb
+?? cow ::~ I don't have a page labeled cow
+!learn add cow MOOOOOO
+??cow ::~ MOOOO
+!learn add pow see {cow}
+??pow ::~ MOOOO
+!learn add cow cowcowcow
+??pow[2] ::~ cowcowcow
+??pow[-1] ::~ cowcowcow
+!learn add cow How now
+??pow[-1] ::~ How now
 
 $ rm dat/nicks-test.map
 $ rm dat/user_commands.db

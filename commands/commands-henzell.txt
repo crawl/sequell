@@ -10,8 +10,7 @@
 !function source.pl
 !help help.pl
 !idle idle.pl
-!learn learn.pl
-!macro macro.pl
+!learn learn.pl :direct
 !messages message/messages.pl
 !nick nickmap.rb
 !rc rc.pl
