@@ -7,7 +7,8 @@ game statistics for Crawl games played on the public Crawl servers
 CAO (crawl.akrasiac.org), CDO (crawl.develz.org),
 CSN (crawlus.somatika.net), and CSZO (crawl.s-z.org).
 
-The bot Sequell responds to listgame queries on ##crawl, and on PM.
+The bot Sequell responds to listgame queries on ##crawl and can also
+be /msged privately.
 
 This document describes listgame: specifically, it covers the !lg and
 !lm commands, as well as the specialised listgame commands !hs, !won,
@@ -21,8 +22,9 @@ explicitly as "!lg", "!lm", etc.
 ---
 Mnemonic: lg = Last Game or List Game
 
-The !lg command queries completed games (i.e. games in the logfile)
-on the public servers.
+The !lg command queries completed games (i.e. games in the logfile) on
+the public servers. !lg does not know about games that are still in
+progress.
 
 Syntax
 ======
@@ -46,9 +48,9 @@ Where:
   2. * to consider games by all players
   3. . to consider games by the person issuing the !lg command.
   4. Omitted altogether to consider games by the player issuing the
-     !lg command. Using . is preferred when selecting your own games --
-     !lg will not recognise keyword arguments correctly if you skip the
-     target-player-name.
+     !lg command. Use . unless your !lg command line is empty. i.e.
+     "!lg" is fine, but anything more complicated should use a nick,
+     viz. "!lg . -tv", "!lg . HEFE", etc.
 
   The player nick may be negated by prefixing it with !. For instance:
      !lg elliptic  (find elliptic's last game)
@@ -56,9 +58,6 @@ Where:
 
   The nick may optionally be prefixed by @. For instance:
      !lg @78291 (78291's last game)
-
-  This is mainly useful for names that would otherwise be treated as
-  game numbers.
 
   The nick may be prefixed with : to ignore nick aliases:
      !lg :hugeterm => !lg * name=hugeterm
@@ -118,10 +117,6 @@ Where:
   Technical Note: s=<field> uses a SQL query that does "GROUP BY
   field" and shows the grouped field and COUNT(*) for each group.
 
-  Not all fields can by used to summarise: fields with too many
-  distinct values (such as timestamp fields) are not allowed as
-  summary fields.
-
   When summarising, results are sorted in descending order of the
   count for each group by default. To sort by ascending order instead,
   use s=-field instead of s=field
@@ -164,8 +159,6 @@ Where:
   See the "Aggregate Functions" section for a list of aggregate
   functions.
 
-  You may use only one x=A,B,C form per query.
-
 - o=<aggregate-expr> or o=-<aggregate-expr> or o=.
   Mnemonic: o = Order By
 
@@ -202,10 +195,10 @@ Where:
   not combine it with o=, or s=
 
 - <keyed_option>
+
   Some options modify the display format for listgame. Keyed options
-  are expressed as -opt:key="val" or -opt:(key1:"val1" key2:"val2"
-  ...) or key:"val". Note that values must be present and are always
-  single- or double- quoted.
+  are expressed as key:"val". Note that values must be present and are
+  always single- or double- quoted.
 
   Recognised keyed options:
   * fmt/format:
@@ -235,7 +228,7 @@ Where:
   * stub: Displayed when no results match the query condition.
   * title: Displayed as a prefix to grouped and aggregate queries. For
            instance:
-             !lg * win s=name -opt:title="Winners"
+             !lg * win s=name title:"Winners"
               => Winners: 392x ...
   * join: The string used to join individual groups, defaulting to ", "
   
@@ -284,12 +277,8 @@ Where:
   !lg * max=dur -2  (find the second longest game by real time spent)
   !lg * win min=turn -3 (find the third fastest win by turn count)
 
-Experimental Syntax
-===================
-
-The syntax used in this section is available for !lg and !lm, but is
-experimental, and may be buggy. Syntax described here may be
-reworked/removed at any time without warning.
+Ratio Queries
+=============
 
 !lg may also be used to calculate ratios using queries of the form:
 
@@ -427,9 +416,6 @@ Examples:
 
 "!won elliptic"  elliptic's winning games
 "!won *"         winning games for all players
-
-!won accepts most of the filters that !lg does, but currently does not
-accept the game type selection keyword ("sprint").
 
 In addition to basic win stats, you can specify a number of wins to
 skip. For instance:
