@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys, string
 import re
 import helper
@@ -7,13 +7,16 @@ helper.help("Expands race/role abbreviations. Example usage: !wtf TrBe")
 
 def expand_any(what, lookup, expanded):
     if what in lookup:
-        return expanded[ lookup.index(what) ]
+        return pick_first(expanded[ lookup.index(what) ])
     else:
         llookup = [ x.lower() for x in lookup ]
         lwhat = what.lower()
         if lwhat in llookup:
-            return expanded[ llookup.index(lwhat) ]
+            return pick_first(expanded[ llookup.index(lwhat) ])
     return None
+
+def pick_first(thing_or_list):
+    return thing_or_list[0] if isinstance(thing_or_list, list) else thing_or_list
 
 def expand_race(what):
     return expand_any(what, helper.SPECIES_ABBR, helper.SPECIES)

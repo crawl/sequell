@@ -14,6 +14,11 @@ module Henzell
       self.load
     end
 
+    def to_s
+      "Commands[builtin:#{@commands.keys.sort}, " +
+        "user:#{@user_commands.keys.sort}]"
+    end
+
     def builtin?(command_name)
       @commands[command_name] || command_name == '??'
     end

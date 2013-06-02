@@ -442,3 +442,9 @@ def pretty_date(date)
   end
   date
 end
+
+class Object
+  def as_array
+    self.is_a?(Array) ? self : [self]
+  end
+end

@@ -3,6 +3,7 @@
 require 'helper'
 require 'sqlhelper'
 require 'cmd/user_keyword'
+require 'query/ast/ast_translator'
 
 $ctx = CommandContext.new
 $ctx.extract_options!('rm', 'ls')
@@ -50,7 +51,7 @@ def display_keyword(name)
   if keyword.nil?
     begin
       parse = CTX_STONE.with do
-        Query::QueryKeywordParser.parse(name)
+        Query::AST::ASTTranslator.apply(Query::QueryKeywordParser.parse(name))
       end
       kwtype =
         Cmd::UserKeyword.valid_keyword_name?(name) ? 'Built-in' :

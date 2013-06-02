@@ -153,17 +153,19 @@ module Query
         node.operator = op.equal? ? '=~' : '!~'
       end
 
-      if field === 'race' || field === 'crace'
-        if value.downcase == 'dr' && op.equality?
+      if (field === 'race' || field === 'crace') && op.equality?
+        if value.downcase == 'dr'
           node.operator = op.equal? ? '=~' : '!~'
           node.value = "*draconian"
         else
-          node.value = RACE_EXPANSIONS[value.downcase] || value
+          return AST::Expr.field_predicate(op, field,
+            RACE_EXPANSIONS[value.downcase] || value)
         end
       end
 
-      if field === 'cls'
-        node.value = CLASS_EXPANSIONS[value.downcase] || value
+      if field === 'cls' && op.equality?
+        return AST::Expr.field_predicate(op, field,
+          CLASS_EXPANSIONS[value.downcase] || value)
       end
 
       if field === ['place', 'oplace'] && op.equality? then

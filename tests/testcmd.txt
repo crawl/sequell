@@ -76,6 +76,9 @@ $ rm dat/user_commands.db
 
 !lg * char=$(!spfoo) s=char ::~ 4519x SpEn, 40x SpFi, 29x SpSk
 
+!lg * gr
+!kw gr ::~ crace=Gargoyle.Grotesk
+
 !lg * -random
 !lm * -random
 

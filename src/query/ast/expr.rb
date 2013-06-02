@@ -15,7 +15,15 @@ module Query
       end
 
       def self.field_predicate(op, field, value)
-        self.new(op, Sql::Field.field(field), value)
+        op = Query::Operator.op(op)
+        if value.is_a?(Array) && op.equality?
+          self.new(op.equal? ? :or : :and,
+            *value.map { |v|
+              field_predicate(op, field, v)
+            })
+        else
+          self.new(op, Sql::Field.field(field), value)
+        end
       end
 
       attr_reader :operator, :arguments

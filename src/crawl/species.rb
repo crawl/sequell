@@ -26,7 +26,8 @@ module Crawl
 
     def self.lower_species_name_set
       @lower_species_name_set ||=
-        Set.new(species_map.values.map(&:downcase).map { |c|
+        Set.new(species_map.values.map(&:as_array).flatten.map(&:downcase).map {
+          |c|
           c.gsub('*', '')
         }.map(&:strip))
     end
@@ -60,7 +61,7 @@ module Crawl
 
     def self.species_abbr_name_map
       @species_abbr_name_map ||= Hash[ Config['species'].map { |abbr, sp|
-        [abbr, sp.sub('*', '')]
+        [abbr, sp.as_array.first.sub('*', '')]
       } ]
     end
 

@@ -23,7 +23,8 @@ module Crawl
 
     def self.lower_class_name_set
       @lower_class_name_set ||=
-        Set.new(class_map.values.map(&:downcase).map { |c|
+        Set.new(class_map.values.map(&:as_array).flatten.map(&:downcase).map {
+          |c|
           c.gsub('*', '')
         }.map(&:strip))
     end
@@ -48,7 +49,7 @@ module Crawl
 
     def self.job_abbr_name_map
       @job_abbr_name_map ||= Hash[ class_map.map { |abbr, job|
-        [abbr, job.sub('*', '')]
+        [abbr, job.as_array.first.sub('*', '')]
       } ]
     end
 

@@ -367,7 +367,7 @@ species:
   SE: Sludge Elf
   HO: Hill Orc
   LO: Lava Orc
-  Gr: Gargoyle
+  Gr: [Gargoyle, Grotesk]
   Dj: Djinni
   Op: Octopode
   Te: Tengu

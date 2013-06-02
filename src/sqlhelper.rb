@@ -45,9 +45,9 @@ GODS = Crawl::Gods.new(CFG['god'])
 SOURCES = Henzell::Sources.instance
 
 CLASS_EXPANSIONS =
-  Hash[CFG['classes'].map { |abbr, cls| [abbr, cls.sub('*', '')] }]
+  Hash[CFG['classes'].map { |abbr, cls| [abbr, cls.as_array.map { |x| x.sub('*', '') }] }]
 RACE_EXPANSIONS =
-  Hash[CFG['species'].map { |abbr, sp| [abbr, sp.sub('*', '')] }]
+  Hash[CFG['species'].map { |abbr, sp| [abbr, sp.as_array.map { |x| x.sub('*', '') }] }]
 
 BOOL_FIELDS = CFG['boolean-fields']
 
