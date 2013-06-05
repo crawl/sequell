@@ -35,8 +35,17 @@ module Crawl
     end
 
     def self.dead_jobs
-      class_map.values.select { |x| x.index('*') }.map { |x| x.gsub('*', '') }.
+      @dead_jobs ||=
+        class_map.values.select { |x| x.index('*') }.map { |x| x.gsub('*', '') }.
         map { |x| self.new(x) }
+    end
+
+    def self.dead_job_names
+      @dead_job_names ||= Set.new(self.dead_jobs.map(&:name))
+    end
+
+    def self.dead_job?(job_name)
+      self.dead_job_names.include?(job_name)
     end
 
     def self.available_jobs
@@ -60,6 +69,10 @@ module Crawl
     attr_reader :name
     def initialize(name)
       @name = name
+    end
+
+    def dead?
+      self.class.dead_job?(self.name)
     end
 
     def abbr

@@ -32,6 +32,10 @@ module Crawl
       end
     end
 
+    def dead?
+      @species.dead? || @job.dead?
+    end
+
     def abbr
       @abbr ||= @species.abbr + @job.abbr
     end
@@ -123,7 +127,7 @@ module Crawl
       species = @available_species if !species || species.empty?
       species.map { |sp|
         Combo.new(sp, job)
-      }
+      }.select { |c| !c.dead? }
     end
   end
 end

@@ -50,8 +50,17 @@ module Crawl
     end
 
     def self.dead_species
-      species_map.values.select { |x| x.index('*') }.map { |x| x.gsub('*', '') }.
+      @dead_species ||=
+        species_map.values.select { |x| x.index('*') }.map { |x| x.gsub('*', '') }.
         map { |x| self.new(x) }
+    end
+
+    def self.dead_species_names
+      @dead_species_names ||= Set.new(self.dead_species.map(&:name))
+    end
+
+    def self.dead_species?(species_name)
+      self.dead_species_names.include?(species_name)
     end
 
     def self.available_species
@@ -73,6 +82,10 @@ module Crawl
 
     def initialize(name)
       @name = name
+    end
+
+    def dead?
+      self.class.dead_species?(self.name)
     end
 
     def abbr
