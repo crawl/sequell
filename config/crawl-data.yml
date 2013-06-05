@@ -198,6 +198,8 @@ uniques:
   - "Cigotuvi's Monster"
   - Jorgrun
   - Lamia
+  - Pan
+  - Sojobo
 
 # Only used by !apt at the moment.
 skills:
@@ -295,6 +297,7 @@ branches:
   - 'Zot:'
   - 'Ziggurat:'
   - 'Zig:'
+  - 'Forest:'
   - Lab
   - Pan
   - Bazaar
@@ -394,6 +397,9 @@ genus-species:
   dwarven:
     - mountain dwarf
     - deep dwarf
+  orcish:
+    - hill orc
+    - lava orc
   ogre: ogre
 
 species-enum-map-override: {}
