@@ -364,7 +364,7 @@ species:
   DE: Deep Elf
   GE: Grey Elf*
   HE: High Elf
-  SE: Sludge Elf
+  SE: Sludge Elf*
   HO: Hill Orc
   LO: Lava Orc
   Gr: [Gargoyle, Grotesk]
@@ -413,7 +413,7 @@ classes:
   Mo: Monk
   Ne: Necromancer
   Pa: Paladin*
-  Pr: Priest
+  Pr: Priest*
   Re: Reaver*
   St: Stalker*
   Su: Summoner
