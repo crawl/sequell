@@ -90,6 +90,7 @@ sub read_entry
   return $contents if $just_the_entry;
 
   $term =~ y/_/ /;
+  $term = uc $term if $term =~ /^xtahua$/;
 
   return sprintf '%s[%d/%d]: %s', $term, $entry_num, $total, $contents;
 }
