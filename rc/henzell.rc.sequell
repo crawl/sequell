@@ -6,7 +6,7 @@ announce_channel:
 seen_update:
 channels: "##crawl ##crawl-dev ##crawl-sequell"
 
-sigils: "!@#$%&=;.,\\"
+sigils: "!@#$%&=;.,\\-"
 preferred_sigil: "!"
 
 startup_services:
