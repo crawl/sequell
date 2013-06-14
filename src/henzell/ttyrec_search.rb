@@ -95,7 +95,7 @@ module Henzell
     end
 
     def game_ttyrec_datetime(game, key=nil)
-      time = morgue_time(game, key)
+      time = ::morgue_time(game, key)
       return nil if time.nil?
       dt = DateTime.strptime(time + "+0000", MORGUE_DATEFORMAT + '%z')
       if self.utc_epoch && dt < self.utc_epoch
