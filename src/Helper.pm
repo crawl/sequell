@@ -142,7 +142,8 @@ sub species_flavours($) {
 
 sub find_species_list() {
   my @species = values %{$CFG->{species}};
-  map(species_flavours($_), grep($_ !~ /\*$/, map(lc, @species)))
+  map(species_flavours($_), grep($_ !~ /\*$/, map {
+      lc(ref $_ eq "ARRAY" ? $_->[0] : $_) } @species))
 }
 
 our @races = find_species_list();
@@ -185,6 +186,11 @@ my %code_races = map {
 
 my %race_map = %{$CFG->{species}};
 delete @race_map{grep($CFG->{species}{$_} =~ /\*$/, keys %{$CFG->{species}})};
+for my $k (keys %race_map) {
+  if (ref $race_map{$k} eq "ARRAY") {
+    $race_map{$k} = $race_map{$k}[0];
+  }
+}
 
 my %short_races;
 @short_races{map(lc, values %race_map)} = keys %race_map;
