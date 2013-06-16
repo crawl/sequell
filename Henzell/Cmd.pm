@@ -26,7 +26,7 @@ sub load_commands_from_file($) {
 }
 
 sub load_all_commands() {
-  my @command_files = glob('commands/commands-*.txt');
+  my @command_files = glob('config/commands-*.txt');
   for my $file (@command_files) {
     load_commands_from_file($file);
   }

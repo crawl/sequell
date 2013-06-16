@@ -12,6 +12,7 @@ $ENV{IRC_NICK_AUTHENTICATED} = 'y';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{RUBYOPT} = '-rubygems -Isrc';
 $ENV{HENZELL_ROOT} = '.';
+$ENV{HENZELL_ALL_COMMANDS} = 'y';
 Henzell::Cmd::load_all_commands();
 
 sub runcmd($) {

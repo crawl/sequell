@@ -103,7 +103,7 @@ This is more complicated than a simple announcement bot:
 
    sql_store = 1
    sql_queries = 1
-   commands_file = commands/commands-sequell.txt
+   commands_file = config/commands-sequell.txt
 
 If you want the bot to do both announcements and SQL queries, you must
 merge the commands files into one big list of commands.

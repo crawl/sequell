@@ -40,11 +40,18 @@ module Henzell
       @config[key.to_s]
     end
 
+    def commands_files
+      if ENV['HENZELL_ALL_COMMANDS']
+        Dir[Henzell::Config.file_path('config/commands*.txt')]
+      else
+        Henzell::Config.file_path(self[:commands_file])
+      end
+    end
+
     def commands
       require 'henzell/commands'
 
-      @commands ||= Henzell::Commands.new(
-        Henzell::Config.file_path(self[:commands_file]))
+      @commands ||= Henzell::Commands.new(self.commands_files)
     end
 
     def load

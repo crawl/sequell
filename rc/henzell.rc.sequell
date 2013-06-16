@@ -1,7 +1,7 @@
 bot_nick: Sequell
 sql_store: 1
 sql_queries: 1
-commands_file: commands/commands-sequell.txt
+commands_file: config/commands-sequell.txt
 announce_channel:
 seen_update:
 channels: "##crawl ##crawl-dev ##crawl-sequell"

@@ -40,9 +40,7 @@ my @MILEFILES = qw/remote.cdo-milestones-svn
                    remote.cdo-milestones-spr
                    remote.cdo-milestones-zd/;
 
-my @COMMAND_FILES = ('commands/commands-henzell.txt',
-                     'commands/commands-sequell.txt');
-
+my @COMMAND_FILES = glob('config/commands-*.txt');
 
 my @FAILED_TESTS;
 my @OK_TESTS;
@@ -296,7 +294,7 @@ TESTREPORT
   }
 
   my ($exitcode, $output, $cmd) = execute_cmd($$test{line});
-  $output = handle_output($output, 1);
+  $output = handle_output($output, 1) || '';
   chomp $output;
   $$test{cmdline} = $cmd;
   print $logf <<TESTREPORT;
