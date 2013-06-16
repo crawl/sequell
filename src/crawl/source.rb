@@ -10,7 +10,7 @@ module Crawl
 
   class Source
     SOURCE_ROOT = 'current'
-    SOURCES_PATH = 'crawl-ref/source'
+    SOURCES_PATH = 'source'
 
     def self.file_path(filename)
       file = File.join(SOURCE_ROOT, SOURCES_PATH, filename)
