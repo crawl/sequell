@@ -12,6 +12,7 @@ $Henzell::XlogSrc::TARGET_BASE = 'tests/data';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{HENZELL_TEST} = 'y';
 $ENV{RUBYOPT} = '-rubygems -Isrc';
+$ENV{HENZELL_ALL_COMMANDS} = 'y';
 
 require 'sqllog.pl';
 

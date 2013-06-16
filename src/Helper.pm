@@ -142,11 +142,20 @@ sub species_flavours($) {
 
 sub find_species_list() {
   my @species = values %{$CFG->{species}};
-  map(species_flavours($_), grep($_ !~ /\*$/, map {
-      lc(ref $_ eq "ARRAY" ? $_->[0] : $_) } @species))
+  map(species_flavours(lc $_),
+      grep($_ !~ /\*$/,
+           map(ref($_) eq "ARRAY" ? @$_ : $_, @species)))
+}
+
+sub canonical_race_name_map() {
+  map {
+    my $species = $_;
+    ref($species) eq 'ARRAY'? map((lc($_) => lc($species->[0])), @$species) : (lc($_) => lc($_))
+  } values(%{$CFG->{species}})
 }
 
 our @races = find_species_list();
+our %canonical_race_names = canonical_race_name_map();
 
 # }}}
 # genuses {{{
@@ -209,7 +218,7 @@ for my $race_name (keys %short_races) {
 # }}}
 # race normalization {{{
 my %normalize_race = (
-    (map { ($_, $_) } @races),
+    (%canonical_race_names),
     (map { lc } (reverse %code_races)),
     (map { lc } (reverse %short_races)),
     'draconian' => 'base draconian',

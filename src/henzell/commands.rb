@@ -7,11 +7,13 @@ require 'json'
 
 module Henzell
   class Commands
-    def initialize(commands_file)
-      @commands_file = commands_file
+    attr_reader :command_files
+
+    def initialize(command_files)
+      @command_files = command_files.as_array
       @user_commands = { }
       @commands = { }
-      self.load
+      load_commands!
     end
 
     def to_s
@@ -126,8 +128,19 @@ module Henzell
       }
     end
 
-    def load
-      File.open(@commands_file, 'r') { |file|
+  private
+    def load_commands!
+      command_files.each { |command_file|
+        load_commands_in_file(command_file)
+      }
+
+      Cmd::UserDefinedCommand.each { |command|
+        @user_commands[command.name] = command
+      }
+    end
+
+    def load_commands_in_file(command_file)
+      File.open(command_file, 'r') { |file|
         file.each { |line|
           line = line.strip
           next if line =~ /^#/
@@ -135,10 +148,6 @@ module Henzell
             @commands[$1.downcase] = { file: $2, direct: $3 }
           end
         }
-      }
-
-      Cmd::UserDefinedCommand.each { |command|
-        @user_commands[command.name] = command
       }
     end
   end

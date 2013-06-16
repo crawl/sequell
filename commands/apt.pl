@@ -17,7 +17,7 @@ sub parse_apt_file { # {{{
     while (<$fh>) {
         if (/^\s*APT\(\s*(\w+)\s*,\s*(\w+)\s*,\s*(-?\d+)/) {
             my ($raw_race, $raw_aptname, $raw_aptvalue) = ($1, $2, $3);
-            $race = normalize_race($raw_race);
+            $race = normalize_race($raw_race) or next;
             my $apt = $raw_aptvalue;
             my $skill = normalize_skill($raw_aptname);
             $apts{$race}{$skill} = $apt;
@@ -42,6 +42,7 @@ sub add_extra_apts { # {{{
             }
             elsif (/return (-?\d+);/) {
                 for my $race (@races) {
+                    next unless $race;
                     $apts{$race}{experience} = $1;
                     $apts{$race}{hp} = 0;
                     $apts{$race}{mp} = 0;
@@ -58,6 +59,7 @@ sub add_extra_apts { # {{{
             }
             elsif (/return (-?\d+);/) {
                 for my $race (@races) {
+                    next unless $race;
                     $apts{$race}{hp} = $1;
                 }
                 @races = ();
@@ -72,6 +74,7 @@ sub add_extra_apts { # {{{
             }
             elsif (/return (-?\d+);/) {
                 for my $race (@races) {
+                    next unless $race;
                     $apts{$race}{mp} = $1;
                 }
                 @races = ();
@@ -85,15 +88,15 @@ sub add_extra_apts { # {{{
 sub is_best_apt { # {{{
     my ($skill, $apt) = @_;
     for (@races) {
-        return 0 if $apts{$_}{$skill} > $apt;
+        return 0 if ($apts{$_}{$skill} || 0) > $apt;
     }
     return 1;
 } # }}}
 sub is_worst_apt { # {{{
     my ($skill, $apt) = @_;
     for (@races) {
-        next if $apts{$_}{$skill} == -99;
-        return 0 if $apt > $apts{$_}{$skill};
+        next if ($apts{$_}{$skill} || 0) == -99;
+        return 0 if $apt > ($apts{$_}{$skill} || 0);
     }
     return 1;
 } # }}}
