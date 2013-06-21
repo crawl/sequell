@@ -133,7 +133,8 @@ sources:
       - remote.rhf-logfile-trunk
       - remote.rhf-logfile-spr
       - meta/crawl-0.12/logfile{,-sprint,-zotdef}*
-      - meta/crawl-git/logfile{,-sprint,-zotdef}*
+      - meta/crawl-git/logfile{-sprint,-zotdef}*
+      - meta/crawl-git/logfile: rhfnewgit
     milestones:
       - remote.rhf-milestones-0.5
       - remote.rhf-milestones-0.6
@@ -141,7 +142,8 @@ sources:
       - remote.rhf-milestones-spr
       - remote.rhf-milestones-trunk
       - meta/crawl-0.12/milestones{,-sprint,-zotdef}*
-      - meta/crawl-git/milestones{,-sprint,-zotdef}*
+      - meta/crawl-git/milestones{-sprint,-zotdef}*
+      - meta/crawl-git/milestones: rhfnewgit
     morgues:
       - http://rl.heh.fi/morgue
     ttyrecs:
