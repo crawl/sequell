@@ -125,19 +125,27 @@ sources:
       - http://crawlus.somatika.net/dumps
 
   - name: rhf
-    local-only: true
+    base: http://rl.heh.fi/
     logfiles:
       - remote.rhf-logfile-0.5
       - remote.rhf-logfile-0.6
       - remote.rhf-logfile-0.7
       - remote.rhf-logfile-trunk
       - remote.rhf-logfile-spr
+      - meta/crawl-0.12/logfile{,-sprint,-zotdef}*
+      - meta/crawl-git/logfile{,-sprint,-zotdef}*
     milestones:
       - remote.rhf-milestones-0.5
       - remote.rhf-milestones-0.6
       - remote.rhf-milestones-0.7
       - remote.rhf-milestones-spr
       - remote.rhf-milestones-trunk
+      - meta/crawl-0.12/milestones{,-sprint,-zotdef}*
+      - meta/crawl-git/milestones{,-sprint,-zotdef}*
+    morgues:
+      - http://rl.heh.fi/morgue
+    ttyrecs:
+      - http://rl.heh.fi/ttyrec
 
   - name: clan
     aliases:
