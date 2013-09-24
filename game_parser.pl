@@ -6,7 +6,11 @@ use lib 'src';
 use Helper qw/demunge_xlogline serialize_time/;
 
 my %adjective_skill_title =
-  map(($_ => 1), ('Deadly Accurate', 'Spry', 'Covert', 'Unseen'));
+  map(($_ => 1),
+      ('Deadly Accurate', 'Spry', 'Covert', 'Unseen', 'Ignorant',
+       'Cutthroat', 'Adept', 'Devout', 'Orthodox',
+       'Immaculate', 'Meek', 'Gusty', 'Puny', 'Rampant', 'Pure',
+       'Omniscient'));
 
 # Uncool words intended to cause offence will be righteously filtered.
 my $BANNED_WORDS_FILE = 'banned_words.txt';
@@ -61,7 +65,7 @@ sub game_skill_title
 
 sub skill_title_is_adjective($) {
   my $title = shift;
-  $adjective_skill_title{$title} || $title =~ /(?:ed|ble|ous|id)$/
+  $adjective_skill_title{$title} || $title =~ /(?:ly|ed|ble|ous|ish|id|ic|less|ing)$/
 }
 
 sub skill_farming
@@ -69,8 +73,8 @@ sub skill_farming
   my $title = shift;
   if (skill_title_is_adjective($title)) {
     return "$title Farmer";
-  } elsif ($title =~ /Crazy /) {
-    $title =~ s/Crazy/Crazy Farming/;
+  } elsif ($title =~ /(Crazy|\w+'s) /) {
+    $title =~ s/\Q($1)/$1 Farming/;
     return $title;
   } else {
     return "Farming $title";
