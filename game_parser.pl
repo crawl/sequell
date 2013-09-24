@@ -6,7 +6,7 @@ use lib 'src';
 use Helper qw/demunge_xlogline serialize_time/;
 
 my %adjective_skill_title =
-  map(($_ => 1), ('Deadly Accurate', 'Spry', 'Covert', 'Unseen'));
+  map(($_ => 1), ('Deadly Accurate', 'Spry', 'Covert', 'Unseen', 'Farmer'));
 
 # Uncool words intended to cause offence will be righteously filtered.
 my $BANNED_WORDS_FILE = 'banned_words.txt';
