@@ -46,8 +46,9 @@ class Tournament (object):
     def game_version(self):
         return self.data['version']
 
-    def date_from_string(self, date_string):
-        return datetime(*(time.strptime(str(date_string), '%Y%m%d')[0:6]))
+    def date_from_string(self, raw_date_string):
+        date_string = str(raw_date_string).ljust(14, '0')
+        return datetime(*(time.strptime(str(date_string), '%Y%m%d%H%M%S')[0:6]))
 
     def raw_start_date(self):
         return self.raw_time_range()[0]
