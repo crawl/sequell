@@ -5,6 +5,7 @@ use warnings;
 
 use Henzell::Cmd qw/load_all_commands execute_cmd/;
 do 'sqllog.pl';
+do 'game_parser.pl';
 
 my $DEFAULT_NICK = $ENV{NICK} || 'greensnark';
 
