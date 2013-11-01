@@ -1559,44 +1559,69 @@ Examples
 --------
 
 `!lg`                               Show your most recent game.
+
 `!lg .`                             (ditto)
 
 `!lg . DEFE`                        Your most recent DEFE game.
+
 `!lg test`                          test's most recent game.
+
 `!hs * GhEn`                        Highest scoring GhEn game.
+
 `!hs * !win -3`                     Third-highest scoring non-winning game.
+
 `!lg * s=name`                      Number of games played by each player
+
 `!lg * race=Gh s=name`              Number of ghoul games played by each player
+
 `!lg @78291 s=char`                 Characters played by 78291
+
 `!lg * race=DS god=Xom ktyp=water`  Last Xom-worshipping Demonspawn drowning
+
 `!lg * DS Xom drown`                (ditto)
+
 `!lg * killer=uniq s=-killer`       Kills by uniques, rarest uniques first.
+
 `!lg * DS x=ckaux`                  Last DS game, showing ckaux value.
+
 `!lg * !DS`                         Last non-DS game
+
 `!lg * ((xom || nemelex))`          Last Xom or Nemelex game.
+
 `!lg * god=Xom|Nemelex`             (ditto)
+
 `!lg * win min=turn`                Fastest win (turncount)
+
 `!lg * xl>20 min=turn`              Fastest win (turncount) for characters with
-                                  XL>20.
+                                    XL>20.
+                                    
 `!lm * rune s=god`                  Summary of gods worshipped at the time of
-                                  finding runes.
+                                    finding runes.
+                                    
 `!lg * s=ktyp`                      Show all the different types of death
+
 `!lg * s=ckiller`                   Show all the different monsters/types of death
+
 `!lg qwqw D:10 -log`                Get the character dump for qwqw's last game
                                   that ended on D:10
+                                  
 `!lg @78291 Zot 1 -log`             Get the character dump for 78291's first
                                   Zot death.
+                                  
 `!lm * orb min=turn -tv`            Watch the fastest Orb grab (turn count) on
                                   FooTV.
+                                  
 `!lm * rune=golden min=xl -tv`      Watch the lowest-experience character to
                                   fetch the golden rune doing their rune grab
                                   on FooTV.
+                                  
 `!lm * br.enter=Tomb -tv:<0:>20`    Watch the last character to reach Tomb:3,
                                   but start playback as the character descends
                                   the stairs and play 20 times more of the
                                   ttyrec than FooTV normally would.
+                                  
 `!lm * rune=obsidian lg:place=Coc`  Last obsidian-rune (Geh) milestone for a game
                                   that ended in Cocytus.
-
+                                  
 `!lg * !boring s=day(end) -graph`   Graph games by date completed.
 
