@@ -85,10 +85,6 @@ module Query
         :expr
       end
 
-      def typecheck!
-        operator.typecheck!(args)
-      end
-
       def type
         operator.result_type(args)
       end
@@ -105,11 +101,7 @@ module Query
       end
 
       def convert_types!
-        arg_type = self.operator.argtype(arguments)
-        self.arguments = self.arguments.map { |arg|
-          #debug{"Converting #{arg} (#{arg.class}) to #{arg_type}"}
-          arg.convert_to_type(arg_type)
-        }.compact
+        self.arguments = self.operator.coerce_argument_types(arguments)
         self
       rescue Sql::TypeError => e
         raise Sql::TypeError.new(e.message + " in '#{self}'")

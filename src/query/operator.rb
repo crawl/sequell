@@ -1,4 +1,5 @@
 require 'ostruct'
+require 'query/operator_type_map'
 
 module Query
   class Operator
@@ -67,40 +68,11 @@ module Query
     end
 
     def argtypes
-      @argtypes ||=
-        (if @options.argtype.is_a?(Array)
-           @options.argtype
-         elsif @options.argtype
-           [@options.argtype]
-         end).map { |type| Sql::Type.type(type) }
-    end
-
-    def typecheck!(args)
-      !self.argtypes ||
-      self.argtypes.any { |argtype|
-        args.all? { |arg|
-          arg.type.type_match?(argtype)
-        }
-      }
-    end
-
-    def argtype(args)
-      first_type = Sql::Type.type((args.first && args.first.type) || '*')
-      chosen_type = Sql::Type.type(
-        self.argtypes.find { |at|
-          first_type.type_match?(at)
-        } || raise(Sql::TypeError.new("Type mismatch: cannot apply #{self} to #{args.first}"))
-      )
-      args.reduce(chosen_type) { |type, arg|
-        #debug{"Applying #{type} to #{arg.type} (#{arg})"}
-        type.applied_to(arg.type)
-      }
+      @argtypes ||= OperatorTypeMap[@options.argtypes || @options.argtype, @options.result]
     end
 
     def result_type(args)
-      first_arg_type = (args.first && args.first.type) || '*'
-      Sql::Type.type(@options.result || first_arg_type).applied_to(
-        first_arg_type)
+      argtypes.result_type(args)
     end
 
     def equality?
@@ -138,6 +110,26 @@ module Query
 
     def to_s
       @name.to_s
+    end
+
+    def coerce_argument_types(args)
+      argtypes.coerce(args, arity)
+    end
+
+  private
+
+    def lookup_types(type_map)
+      OperatorTypeMap[type_map]
+    end
+
+    def polymorphic?
+    end
+
+    def polymorphic_coerce!(args)
+
+    end
+
+    def simple_coerce!(args)
     end
   end
 end

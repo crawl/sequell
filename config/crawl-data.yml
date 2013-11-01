@@ -501,12 +501,15 @@ aggregate-functions:
     expr: "COUNT(DISTINCT %s)"
     return: I
   avg:
-    type: I
-    return: F
+    types:
+      - type: ETD
+        return: '*'
+      - type: I
+        return: F
     preserve-unit: true
   median:
     type: I
-    return: I
+    return: '*'
     preserve-unit: true
   max: '*'
   min: '*'
@@ -523,6 +526,31 @@ aggregate-functions:
     return: F
 
 value-functions:
+  now:
+    types:
+      - type: []
+        return: D
+    expr: "current_timestamp"
+  int:
+    type: '*'
+    return: 'I'
+    expr: "CAST(%s AS BIGINT)"
+    summarisable: true
+  interval:
+    type: 'S'
+    return: 'ETD'
+    expr: "CAST(%s AS INTERVAL)"
+    summarisable: true
+  seconds_interval:
+    type: ET
+    return: ETD
+    expr: "(%s * INTERVAL '1s')"
+    summarisable: true
+  interval_seconds:
+    type: 'ETD'
+    return: ET
+    expr: "EXTRACT(EPOCH FROM %s)"
+    summarisable: true
   length:
     type: 'S'
     return: 'I'
@@ -579,7 +607,9 @@ value-functions:
     expr: "split_part(%s, '; ', 1)"
     summarisable: true
   part:
-    type: ['S', 'S', 'I']
+    types:
+      - type: ['S', 'S', 'I']
+        result: 'S'
     expr: "split_part(%s, :2, :3)"
   subvault:
     type: 'S'
@@ -626,6 +656,7 @@ lookup-tables:
   msg: [tmsg, vmsg]
 
 type-categories:
+  ETD: ETD
   ET: F
   VER: S
   MAP: S
@@ -635,6 +666,12 @@ type-categories:
   '': S
   D: D
   '!': '!'
+
+type-promotions:
+  - [ETD, F]
+
+sticky-types:
+  - ETD
 
 column-substitutes:
   ordered:

@@ -1,5 +1,6 @@
 require 'sql/type'
 require 'sql/type_predicates'
+require 'sql/function_type'
 
 module Sql
   class FunctionDef
@@ -22,31 +23,36 @@ module Sql
       if @cfg.is_a?(String)
         @cfg = { 'type' => @cfg }
       end
-      @argtypes = argument_types(@cfg['type'])
+      @argtypes = Sql::FunctionType.new(@cfg['type'] || @cfg['types'],
+                                        @cfg['return'])
       @summarisable = @cfg['summarisable']
       @display_format = @cfg['display-format']
       @preserve_unit = @cfg['preserve-unit']
       @unit = @cfg['unit']
       @expr = @cfg['expr']
-      @return_type = Type.type(@cfg['return'] || '*')
     end
 
     def arity
       @arity ||= @argtypes.size
     end
 
-    def type
-      @return_type
+    def return_type(args)
+      @argtypes.return_type(args)
+    end
+
+    def typecheck!(args)
+      @argtypes.type_match(args) or
+        raise Sql::TypeError.new("Cannot apply to #{args}")
+    end
+
+    def coerce_argument_types(args)
+      @argtypes.coerce_argument_types(args)
     end
 
     def argument_types(types)
       types = ['*'] if types.nil?
       types = [types] unless types.is_a?(Array)
       types.map { |t| Type.type(t) }
-    end
-
-    def return_type(expr)
-      find_return_type(expr).with_unit(unit(expr))
     end
 
     def preserve_unit?

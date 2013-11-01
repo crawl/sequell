@@ -14,6 +14,20 @@ module Sql
       self.new(string_or_type || '')
     end
 
+    def self.promoted_type(a, b)
+      return a unless a.compatible?(b)
+      promotion = promotion_map[a.type] || promotion_map[b.type]
+      if promotion && promotion.category.compatible?(a) &&
+          promotion.category.compatible?(b)
+        return self.type(promotion.target).with_unit(a.unit || b.unit)
+      end
+      self.type(a.category).with_unit(a.unit || b.unit)
+    end
+
+    def self.promotion_map
+      @promotion_map ||= build_promotion_map
+    end
+
     def self.type_categories
       @type_categories ||= SQL_CONFIG['type-categories']
     end
@@ -28,7 +42,13 @@ module Sql
       @type ||= find_type
     end
 
+    def coerce_expr(sql)
+      return "EXTRACT(EPOCH FROM #{sql})" if interval?
+      sql
+    end
+
     def convert(value)
+      return value if self.any? || self.duration_type?
       return float_value(value) if self.real?
       return int_value(value) if self.integer?
       return value.to_i if self.numeric?
@@ -74,6 +94,7 @@ module Sql
     end
 
     def with_unit(unit)
+      return self if unit == self.unit
       clone = self.dup
       clone.unit = unit
       clone
@@ -102,7 +123,11 @@ module Sql
     end
 
     def duration_type?
-      self.type == 'ET'
+      self.type == 'ET' || self.type == 'ETD'
+    end
+
+    def interval?
+      self.type == 'ETD'
     end
 
     def duration?
@@ -149,12 +174,14 @@ module Sql
 
     def log_value(raw_value)
       case
+      when self.date?
+        Sql::Date.log_date(raw_value)
+      when self.duration?
+        display_value(raw_value)
       when self.real?
         strip_padding_zeros(sprintf("%.2f", raw_value.to_f))
       when self.numeric?
         raw_value.to_i
-      when self.date?
-        Sql::Date.log_date(raw_value)
       else
         raw_value
       end
@@ -175,9 +202,12 @@ module Sql
     end
 
     def applied_to(other_type)
-      return other_type if self == '*'
-      return self if other_type == '*' || self == other_type
-      self.class.type(self.category)
+      return other_type if self.any?
+      return self if !other_type || other_type.any?
+
+      unit = self.unit || other_type.unit
+      return self.with_unit(unit) if other_type == '*' || self == other_type
+      self.class.type(self.category).with_unit(self.unit || other_type.unit)
     end
 
     def compatible?(other)
@@ -192,8 +222,13 @@ module Sql
       self.type == Type.type(other).type
     end
 
+    def + (other)
+      self.class.promoted_type(self, other).with_unit(self.unit || other.unit)
+    end
+
     def to_s
-      "Type[#{type}]"
+      identifiers = [type, unit].compact.join(';')
+      "Type[#{identifiers}]"
     end
 
     def to_sql
@@ -233,6 +268,13 @@ module Sql
 
     def vault_name(value)
       value.gsub(/(?<!;) /, '_')
+    end
+
+    def self.build_promotion_map
+      Hash[ SQL_CONFIG['type-promotions'].map { |promotion_target, category|
+          [promotion_target, OpenStruct.new(target: promotion_target,
+                                            category: self.type(category))]
+      } ]
     end
   end
 end

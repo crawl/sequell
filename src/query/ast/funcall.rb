@@ -26,30 +26,15 @@ module Query
         @aggregate
       end
 
-      def argtypes
-        @argtypes ||= @fn.argtypes
-      end
-
       def typecheck!
-        if @fn.arity != self.arity
-          raise "Function #{@name} requires #{@fn.arity} arguments, called with #{arity}"
-        end
-        self.arguments.each_with_index { |arg, i|
-          argtypes[i].type_match?(arg.type) or
-            raise "Type mismatch in #{self}: for argument #{i + 1} (#{arg})"
-        }
+        @fn.typecheck!(arguments)
+      rescue Sql::TypeError => e
+        raise Sql::TypeError.new("#{self}: #{e}")
       end
 
       def convert_types!
-        if @fn.arity != self.arity
-          raise "Function '#{@name}' requires #{@fn.arity} arguments, called with #{arity}"
-        end
-        argtypes = @fn.argtypes
-        i = -1
-        self.arguments = self.arguments.map { |arg|
-          i += 1
-          arg.convert_to_type(argtypes[i])
-        }
+        typecheck!
+        self.arguments = @fn.coerce_argument_types(self.arguments)
       end
 
       def kind
@@ -57,7 +42,7 @@ module Query
       end
 
       def type
-        @fn.return_type(self.first)
+        @fn.return_type(self.arguments)
       end
 
       def to_s

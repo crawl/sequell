@@ -114,9 +114,12 @@ module Query
           argument
         end
       }
+      rule(function_name: simple(:name)) {
+        Funcall.new(name.to_s)
+      }
       rule(function_name: simple(:name),
            arguments: simple(:argument)) {
-        Funcall.new(name.to_s, argument)
+        Funcall.new(name.to_s, *([argument].compact))
       }
       rule(function_name: simple(:name),
            arguments: sequence(:arguments)) {

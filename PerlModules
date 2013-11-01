@@ -2,3 +2,4 @@ DBI
 DBD::Pg
 Bot::BasicBot
 YAML::Any
+Tie::Cache

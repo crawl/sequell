@@ -167,7 +167,12 @@ E !lg * killer=tentacled monstrosity
 !cmd %rc !puppet http://dobrazupa.org/rcfiles/crawl-${2:-git}/${${1:-${user}}//./${user}}.rc
 %rc . ::~ http://dobrazupa.org/rcfiles/crawl-git/hyperbolic.rc
 
+!lg * won max=${end - start}
+!lg * won end>${start + interval('1y')} s=${end - start}
+!lg greensnark won x=avg(end-start) ::~ 18d
+!lg * 
 !lg * won urune<5 start>2012 max=turns
+!ttyrec elliptic win turn<20000
 
 !nick elynae elynae hyperelynae
 !lg * name=elynae s=name ::= 1702 games for * (name=elynae): 1702x Elynae
@@ -474,6 +479,8 @@ E !lg * s=trunc99(sc)
 !cmd !lgyak !lg
 !lgyak * / win
 
+!lg * x=now()
+!lg * x=${now() - interval('1y')}
 !lg * cßo
 !lg * @@@elliptic ::~ elliptic the Archmage
 !kw t9

@@ -4,6 +4,7 @@ use warnings;
 
 use lib 'src';
 use Helper qw/demunge_xlogline serialize_time/;
+use Henzell::Crawl;
 
 my %adjective_skill_title =
   map(($_ => 1),
@@ -108,9 +109,14 @@ sub handle_output
 
 sub format_date {
   my $date = shift;
-  return '' unless $date;
-  $date =~ /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/;
+  return $date || '' unless value_is_date($date) &&
+                     $date =~ /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/;
   return $1 . "-" . sprintf("%02d", $2 + 1) . "-" . $3 . " $4:$5:$6";
+}
+
+sub value_is_date {
+  my $value = shift;
+  $value && $value =~ /^\d{4}\d{2}\d{2}\d{2}\d{2}\d{2}[SD]$/
 }
 
 sub formatted_game_field {
@@ -120,11 +126,12 @@ sub formatted_game_field {
     $val =~ s/(?<!;) /_/g;
     $val
   } elsif (grep($_ eq $field, 'end', 'start', 'rend', 'rstart', 'time') ||
-      $field =~ /^(?:day|year|month)\(/)
+      $field =~ /^(?:day|year|month)\(/ ||
+        value_is_date($$g{$field}))
   {
     return format_date($$g{$field}) . " [$$g{$field}]";
   }
-  elsif ($field eq 'dur') {
+  elsif ($field eq 'dur' && $$g{field} =~ /^\d+$/) {
     return serialize_time($$g{$field}) . " [$$g{$field}]";
   }
   else {
@@ -157,13 +164,15 @@ sub game_place($) {
   my $loc_string = "";
   my $place = $g->{place};
 
-  $place = 'Sprint' if game_is_sprint($g) && $place eq 'D';
+  my $sprint = Henzell::Crawl::game_is_sprint($g);
+
+  $place = 'Sprint' if $sprint && $place eq 'D';
 
   my $qualifier = '';
   if ($$g{map}) {
     my $map = vault_name_transform($$g{map});
     $map = "$$g{mapdesc} : $map" if $$g{mapdesc};
-    $map = $$g{mapdesc} if $$g{mapdesc} && game_is_sprint($g);
+    $map = $$g{mapdesc} if $$g{mapdesc} && $sprint;
     $qualifier = " ($map)"
   }
 

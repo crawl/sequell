@@ -14,7 +14,7 @@ module Sql
 
     def to_sql
       return version_maxmin_sql if version_column? && max_min_expr?
-      @expr.to_sql
+      @expr.to_sql_output
     end
 
     def version_column?

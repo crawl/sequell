@@ -131,6 +131,24 @@ sub game_type_prefixes {
   config_hash('game-type-prefixes')
 }
 
+sub game_type($) {
+  my $g = shift;
+  my ($type) = ($$g{lv} || '') =~ /-(\w+)/;
+  $type || 'crawl'
+}
+
+sub game_type_name($) {
+  game_type(shift);
+}
+
+sub game_is_sprint($) {
+  game_type(shift) eq 'sprint'
+}
+
+sub game_is_zotdef($) {
+  game_type(shift) eq 'zotdef'
+}
+
 sub crawl_unique {
   my $name = shift;
   $UNIQUES{$name}

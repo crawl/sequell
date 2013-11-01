@@ -319,31 +319,13 @@ sub game_type_table_name($$) {
 
 sub game_table_name($$) {
   my ($game, $base_tablename) = @_;
-  my $game_type = game_type($game);
+  my $game_type = Henzell::Crawl::game_type($game);
   game_type_table_name($game_type, $base_tablename)
 }
 
 sub cat_logfile {
   my ($lf, $offset) = @_;
   cat_xlog(logfile_table($$lf{file}), $lf, \&add_logline, $offset)
-}
-
-sub game_type($) {
-  my $g = shift;
-  my ($type) = ($$g{lv} || '') =~ /-(\w+)/;
-  $type || 'crawl'
-}
-
-sub game_type_name($) {
-  game_type(shift);
-}
-
-sub game_is_sprint($) {
-  game_type(shift) eq 'sprint'
-}
-
-sub game_is_zotdef($) {
-  game_type(shift) eq 'zotdef'
 }
 
 sub cat_stonefile {
@@ -431,7 +413,7 @@ sub fixup_logfields {
     $g->{tiles} = "y";
   }
 
-  my $game_type = game_type($g);
+  my $game_type = Henzell::Crawl::game_type($g);
   if ($game_type) {
     $$g{game_type} = $game_type;
   }
@@ -661,20 +643,20 @@ sub record_is_alpha_version {
 
 sub milestone_insert_st($) {
   my $m = shift;
-  my $game_type = game_type($m);
+  my $game_type = Henzell::Crawl::game_type($m);
   $INSERT_STATEMENTS{$game_type . "_milestone"}
 }
 
 sub logfile_insert_st($) {
   my $g = shift;
-  my $game_type = game_type($g);
+  my $game_type = Henzell::Crawl::game_type($g);
   $INSERT_STATEMENTS{$game_type}
 }
 
 sub logfile_loader($) {
   my $g = shift;
   my $base_table = $$g{milestone} ? 'milestone' : 'logrecord';
-  my $table = game_type_table_name(game_type($g), $base_table);
+  my $table = game_type_table_name(Henzell::Crawl::game_type($g), $base_table);
   $TABLE_LOADERS{$table} ||=
     Henzell::TableLoader->new(db => $dbh,
                               table => $table,
@@ -702,7 +684,7 @@ sub build_fields_from_milestone {
   my $m = logfield_hash($line);
 
   return if broken_record($m);
-  return if $m->{type} eq 'orb' && game_is_zotdef($m);
+  return if $m->{type} eq 'orb' && Henzell::Crawl::game_is_zotdef($m);
 
   ($m->{file}   = $lf->{file}) =~ s{.*/}{};
   $m->{offset}	= $offset;

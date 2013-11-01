@@ -167,25 +167,55 @@ operators:
     relational: true
 
   - op: '+'
-    argtype: I
-    result: I
+    argtypes:
+      - argtype:
+          - D
+          - ETD
+        result: D
+      - argtype:
+          - ETD
+          - F
+        result: ETD
+      - argtype: I
+        result: I
     precedence: 60
 
   - op: '-'
-    argtype: I
-    result: I
+    argtypes:
+      - argtype: I
+        result: I
+      - argtype:
+          - D
+          - ETD
+        result: D
+      - argtype: D
+        result: ETD
     arity: 2
     precedence: 60
     non_commutative: true
 
   - op: '*'
-    argtype: F
-    result: F
+    argtypes:
+      - argtype:
+          - D
+          - ETD
+        result: D
+      - argtype:
+          - ETD
+          - F
+        result: ETD
+      - argtype: I
+        result: I
     precedence: 80
 
   - op: '/'
-    argtype: I
-    result: F
+    argtypes:
+      - argtype:
+          - ETD
+          - I
+        result: ETD
+      - argtype: I
+        result: F
     precedence: 80
     non_commutative: true
 

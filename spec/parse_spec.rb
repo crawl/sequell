@@ -7,6 +7,8 @@ describe Grammar::Query do
 
   QUERIES = [
     '!lg *',
+    '!lg * x=now()',
+    '!lg * x=${now() - interval("1y")}',
     '!lg xl>15',
     '!lm *',
     '!lg @78291',

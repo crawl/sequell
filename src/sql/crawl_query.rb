@@ -209,7 +209,9 @@ module Sql
 
     def query_columns
       with_contexts {
-        self.query_fields.map { |f| f.to_sql }
+        self.query_fields.map { |f|
+          f.to_sql_output
+        }
       }
     end
 
@@ -218,7 +220,7 @@ module Sql
         resolve_sort_fields(@count_sorts, @count_tables)
         id_subquery = self.select_id(with_sorts, single_record_index)
         id_field = Sql::Field.field('id')
-        id_sql = resolve_field(id_field, @tables).to_sql
+        id_sql = resolve_field(id_field, @tables).to_sql_output
         @values = self.with_values(query_fields, @values)
         @values += self.with_values(@count_sorts)
         return ("SELECT #{query_columns.join(", ")} " +
@@ -290,7 +292,7 @@ module Sql
     def summary_db_fields
       summarise.arguments.map { |arg|
         if arg.simple?
-          arg.to_sql
+          arg.to_sql_output
         else
           aliased_summary_field(arg)
         end
@@ -301,7 +303,7 @@ module Sql
       expr_alias = @aliases[expr.to_s]
       return expr_alias if expr_alias
       expr_alias = unique_alias(expr)
-      expr.to_sql + " AS #{expr_alias}"
+      expr.to_sql_output + " AS #{expr_alias}"
     end
 
     def unique_alias(expr)
@@ -354,7 +356,7 @@ module Sql
     end
 
     def build_query(predicates, with_sorts=nil)
-      @query, @values = predicates.to_sql, predicates.sql_values
+      @query, @values = predicates.to_sql_output, predicates.sql_values
       @query = "WHERE #{@query}" unless @query.empty?
       if with_sorts && !with_sorts.empty?
         @query << " " unless @query.empty?

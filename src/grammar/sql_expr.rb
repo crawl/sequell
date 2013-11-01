@@ -116,7 +116,7 @@ module Grammar
 
     rule(:function_call) {
       function_name >> space? >> str("(") >>
-      function_arguments.as(:arguments) >> space? >>
+      function_arguments.maybe.as(:arguments) >> space? >>
       str(")")
     }
 

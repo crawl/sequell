@@ -194,6 +194,10 @@ module Query
       []
     end
 
+    def to_sql_output
+      type.coerce_expr(to_sql)
+    end
+
     def to_query_string(paren=false)
       to_s
     end
