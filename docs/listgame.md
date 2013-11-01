@@ -1382,7 +1382,7 @@ A subcommand may be referenced as `$(<commandline>)`. For instance:
     .echo Characters played by *: $(!lg * s=char join:", ")
     => Characters played by *: SpEn, MiFi, ...
 
-    .echo Hi $(.echa there) => Hi there
+    .echo Hi $(.echo there) => Hi there
 
 To see wins by characters that player 'foo' has played but not won:
 
@@ -1478,7 +1478,7 @@ Functions may be used as `$(fn ...)`.
      prefixed
      
          $(apply ${+} (list 1 2 3 4 5)) => 15
-         $(apply ${+} 6 (list 1 2 3 4 5)) => 90
+         $(apply ${+} 6 (list 1 2 3 4 5)) => 21
 
    - `$(range <low> <high> [<step>])` range of numbers from low to high
      inclusive, with step defaulting to 1.
