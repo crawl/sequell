@@ -86,6 +86,11 @@ E !lg * fe ::~ \(Felid\).*\(Fire Elementalist\)
 !lg * -random
 !lm * -random
 
+!lg * win s=char x=+avg(turn) ::~ : 2x MuCj
+!lg * win s=char x=-avg(turn) ::~ : TeSu
+!lg * win s=char x=avg(xl),+avg(turn) ::~ : 2x MuCj
+!lg * win s=char x=avg(xl),-avg(turn) ::~ : TeSu
+
 .echo 0=$(rand 1) ::~ 0=0
 .echo 5=$(rand 5 5)  ::~ 5=5
 

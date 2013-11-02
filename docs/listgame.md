@@ -177,6 +177,12 @@ Where:
 
   You may use only one o=X form per query.
 
+  As a shortcut for x=aggregate(field) o=aggregate(field), you may specify
+  the ordering on the aggregate expression itself:
+
+      x=+avg(turn) => x=avg(turn) o=avg(turn)
+      x=-avg(turn) => x=avg(turn) o=-avg(turn)
+
 - `max=<field>` or `min=<field>`
 
   By default listgame finds the most recently completed game matching

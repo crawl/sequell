@@ -18,6 +18,12 @@ module Query
         :extra_list
       end
 
+      def default_group_order
+        return nil unless self.arguments
+        arg = self.arguments.find { |a| a.explicit_ordering? }
+        GroupOrderTerm.new(FilterTerm.new(arg), arg.ordering) if arg
+      end
+
       def to_s
         "x=" + arguments.map(&:to_s).join(',')
       end

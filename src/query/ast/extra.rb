@@ -36,6 +36,10 @@ module Query
         ordering == '-'
       end
 
+      def explicit_ordering?
+        ordering == '-' || ordering == '+'
+      end
+
       def reverse?
         asc?
       end
