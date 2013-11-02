@@ -114,15 +114,21 @@ module Query
       if field === ['killer', 'ckiller', 'ikiller'] && !value.empty? &&
           !node.flags[:killer_expanded]
         if equality? && value !~ /^an? /i && !UNIQUES.include?(value) then
-          if value.downcase == 'uniq' and field === ['killer', 'ikiller']
+          if value.downcase == 'uniq' and field === ['killer', 'ikiller', 'ckiller']
             # Handle check for uniques.
             uniq = op.equal?
             operator = (uniq ? :and : :or)
             return reexpand(
               AST::Expr.new(operator,
                 AST::Expr.new(op.negate, field, ''),
+                AST::Expr.new(operator,
+                  *Crawl::Config['orcs'].map { |orc|
+                    AST::Expr.new(uniq ? '!=' : '=', field, orc)
+                  }),
+                AST::Expr.new(uniq ? '~~' : '!~~', field, "(?c)^[A-Z]"),
                 AST::Expr.new(uniq ? '!~~' : '~~', field, "^an? |^the "),
                 AST::Expr.new(uniq ? '!~' : '~~', field, "ghost"),
+                AST::Expr.new(uniq ? '!~' : '~~', field, "pandemonium lord"),
                 AST::Expr.new(uniq ? '!~' : '~~', field, "illusion")).recursive_flag!(:killer_expanded))
           else
             return AST::Expr.new(op.equal? ? :or : :and,

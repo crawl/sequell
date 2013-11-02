@@ -131,7 +131,7 @@ sub formatted_game_field {
   {
     return format_date($$g{$field}) . " [$$g{$field}]";
   }
-  elsif ($field eq 'dur' && $$g{field} =~ /^\d+$/) {
+  elsif ($field eq 'dur' && ($$g{field} || '') =~ /^\d+$/) {
     return serialize_time($$g{$field}) . " [$$g{$field}]";
   }
   else {
