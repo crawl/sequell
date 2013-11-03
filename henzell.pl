@@ -6,6 +6,7 @@ use Fcntl qw/:flock SEEK_END/;
 use IPC::Open2;
 
 use Henzell::Config qw/%CONFIG %CMD %USER_CMD %PUBLIC_CMD/;
+use Henzell::Crawl;
 use Henzell::Utils;
 use Henzell::IRC;
 use Getopt::Long;
@@ -179,7 +180,7 @@ sub newsworthy
 
   # Suppress all Sprint events <300 turns.
   return 0
-    if game_type($g) && ($$g{ktyp} || '') ne 'winning'
+    if Henzell::Crawl::game_type($g) && ($$g{ktyp} || '') ne 'winning'
       && $$g{turn} < 300;
 
   return 0
@@ -187,7 +188,7 @@ sub newsworthy
                                      @BORING_UNIQUES);
 
   return 0
-    if game_is_sprint($g)
+    if Henzell::Crawl::game_is_sprint($g)
       and milestone_is_uniq($g)
         and (grep {index($g->{milestone}, $_) > -1}
              qw/Ijyb Sigmund Sonja/);
