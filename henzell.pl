@@ -11,8 +11,6 @@ use Henzell::Utils;
 use Henzell::IRC;
 use Getopt::Long;
 use Cwd;
-use utf8;
-use open qw/:std :encoding(UTF-8)/;
 
 END {
   kill TERM => -$$;
@@ -27,7 +25,6 @@ GetOptions("daemon!" => \$daemon,
 
 $ENV{LC_ALL} = 'en_US.UTF-8';
 $ENV{RUBYOPT} = "-rubygems -I" . File::Spec->catfile(getcwd(), 'src');
-$ENV{PERL_UNICODE} = 'AS';
 
 my $SERVER = 'cao';     # Local server.
 my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
