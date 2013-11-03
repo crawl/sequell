@@ -397,7 +397,7 @@ sub serialize_time # {{{
 {
   my $time = shift;
   return $time unless $time =~ /^\d+$/;
-  my $seconds = int shift;
+  my $seconds = int $time;
   my $long = shift;
 
   if (not $long)
