@@ -7,7 +7,6 @@ use lib 'src';
 use Helper;
 use utf8;
 
-binmode STDOUT, ':utf8';
 help("Brews a delicious mug of coffee!");
 
 my $nick = shift;

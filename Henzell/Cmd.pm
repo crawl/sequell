@@ -10,6 +10,8 @@ our @EXPORT_OK = qw/load_commands_from_file clear_commands load_all_commands
 
 use lib '..';
 use Henzell::UserCommandDb;
+use utf8;
+use open qw/:std :encoding(UTF-8)/;
 
 our %CMD;
 our %USER_CMD;

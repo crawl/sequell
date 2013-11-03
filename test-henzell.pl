@@ -7,12 +7,15 @@ use File::stat;
 use Henzell::Cmd;
 use Henzell::SourceServer;
 use Henzell::XlogSrc;
+use utf8;
+use open qw/:std :encoding(UTF-8)/;
 
 $Henzell::XlogSrc::TARGET_BASE = 'tests/data';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{HENZELL_TEST} = 'y';
 $ENV{RUBYOPT} = '-rubygems -Isrc';
 $ENV{HENZELL_ALL_COMMANDS} = 'y';
+$ENV{PERL_UNICODE} = 'AS';
 
 require 'sqllog.pl';
 

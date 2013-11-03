@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use Henzell::Cmd qw/load_all_commands execute_cmd/;
+use utf8;
+
 do 'sqllog.pl';
 do 'game_parser.pl';
 
@@ -12,6 +14,7 @@ my $DEFAULT_NICK = $ENV{NICK} || 'greensnark';
 $ENV{IRC_NICK_AUTHENTICATED} = 'y';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{RUBYOPT} = '-rubygems -Isrc';
+$ENV{PERL_UNICODE} = 'AS';
 $ENV{HENZELL_ROOT} = '.';
 $ENV{HENZELL_ALL_COMMANDS} = 'y';
 Henzell::Cmd::load_all_commands();
