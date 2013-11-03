@@ -19,7 +19,7 @@ sigils: "!@#$%&=-"
 preferred_sigil: "!"
 
 sibling_bots: "Henzell Gretell Hehfiel Sizzell Sequell Cheibriados Lantell Ruffell"
-channels: "##crawl ##crawl-dev"
+channels: "##crawl ##crawl-dev ##crawl-sequell"
 announce_channel: "##crawl"
 dev_channel: "##crawl-dev"
 
