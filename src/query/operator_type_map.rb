@@ -47,7 +47,7 @@ module Query
       arguments.each { |arg|
         arg.type.type_match?(coerce_to) or
           raise Sql::TypeError.new("Type mismatch: #{arg}")
-        arg.convert_to_type(coerce_to)
+        arg.type.any? ? arg.convert_to_type(coerce_to) : arg
       }
     end
 
@@ -71,12 +71,9 @@ module Query
 
     def typemap_coerce(typemap, arguments)
       coercible = typemap.argtype.size == 1
+      coerce_to = typemap.argtype.first
       res = arguments.map { |a|
-        if coercible
-          a.convert_to_type(typemap.argtype.first)
-        else
-          a
-        end
+        coercible && a.type.any? ? a.convert_to_type(coerce_to) : a
       }
       res
     end

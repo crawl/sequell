@@ -409,6 +409,9 @@ E !lg * s=trunc99(sc)
 !lg * --fe
 !lg * __he
 
+!lg * x=${2.0/3} ::~ 0.67
+!lg * x=${2/3} ::!~ 0.67
+
 !lg * v:1
 !lg * s=src x=max(cv),max(v),min(cv),min(v)
 !lg * x=max(trunc500(turn))
