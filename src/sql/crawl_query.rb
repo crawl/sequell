@@ -44,7 +44,8 @@ module Sql
     end
 
     def title
-      @ast.description(@nick, context: true, meta: true, no_parens: true)
+      @ast.description(@nick, context: true, meta: true, tail: true,
+                       no_parens: true)
     end
 
     def option(key)

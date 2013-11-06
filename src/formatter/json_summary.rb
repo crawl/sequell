@@ -29,6 +29,10 @@ module Formatter
       @summary.query_group.group_count == 2
     end
 
+    def ratio_query?
+      @summary.ratio_query?
+    end
+
     # The stacked grouping field in a multi-field s=foo,bar,baz form
     # (i.e. 'bar' in the example).
     def stacked_group
@@ -39,10 +43,6 @@ module Formatter
     # axis series.
     def count_field_names
       count_fields.map(&:to_s)
-    end
-
-    def ratio_query?
-      @summary.ratio_query?
     end
 
     def primary_grouping_field
@@ -74,6 +74,11 @@ module Formatter
         lambda { |row|
           [Formatter.ratio(row.count, @summary.count)]
         }
+      elsif ratio_query?
+        @perc = true
+        lambda  { |row|
+          [Formatter.ratio(row.counts[1], row.counts[0])]
+        }
       else
         lambda { |row|
           [row.counts[0]]
@@ -93,7 +98,7 @@ module Formatter
         f.numeric?
       }
       if @extra_numeric_fields.empty? && ratio_query?
-        return ["#{ratio_title} %"]
+        return ["#{ratio_series_title} %"]
       end
       @extra_numeric_fields.empty? ? ['N'] :
                                      @extra_numeric_fields
@@ -141,8 +146,8 @@ module Formatter
       }
     end
 
-    def ratio_title
-      @summary.query_group[1].argstr
+    def ratio_series_title
+      @summary.query_group[0].ast.tail_desc(true, false)
     end
 
     def data_row(row, extractor)

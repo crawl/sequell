@@ -108,8 +108,19 @@ module Query
       end
 
       def head_desc(suppress_meta=true)
-        @original_head.without { |node|
-          node.is_a?(Query::NickExpr) || (suppress_meta && node.meta?)
+        stripped_ast_desc(@original_head, true, suppress_meta)
+      end
+
+      def tail_desc(suppress_meta=true, slash_prefix=true)
+        return '' unless @original_tail
+        tail_text = stripped_ast_desc(@original_tail, false, suppress_meta)
+        slash_prefix ? "/ " + tail_text : tail_text
+      end
+
+      def stripped_ast_desc(ast, suppress_nick=true, suppress_meta=true)
+        ast.without { |node|
+          (suppress_nick && node.is_a?(Query::NickExpr)) ||
+            (suppress_meta && node.meta?)
         }.to_s.strip
       end
 
@@ -122,7 +133,8 @@ module Query
         if !desc.empty?
           texts << (!options[:no_parens] ? "(#{desc})" : desc)
         end
-        texts.join(' ')
+        texts << tail_desc(!options[:meta]) if options[:tail]
+        texts.join(' ').strip
       end
 
       def add_option(option)
