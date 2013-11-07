@@ -217,9 +217,7 @@ skills:
   - Armour
   - Dodging
   - Stealth
-  - Stabbing
   - Shields
-  - Traps
   - Unarmed Combat
   - Spellcasting
   - Conjurations
@@ -244,7 +242,6 @@ skill-abbreviations:
   crossbows: Xbows
   throwing: Throw
   dodging: Dodge
-  stabbing: Stab
   spellcasting: Splcast
   conjurations: Conj
   enchantments: Ench
@@ -266,7 +263,6 @@ skill-expansions:
   invo: invocations
   necro: necromancy
   tmut: transmutations
-  doors: traps & doors
   armor: armour
   uc: unarmed combat
 
@@ -374,6 +370,7 @@ species:
   Dj: Djinni
   Op: Octopode
   Te: Tengu
+  Fo: Formicid
 
 species-flavours:
   draconian:
@@ -865,9 +862,7 @@ field-transforms:
     enc: Enchantments
     bow: Bows
     poi: Poison Magic
-    t&d: Traps & Doors
     stav: Staves
-    stab: Stabbing
     div: Divinations
     sli: Slings
     cross: Crossbows
