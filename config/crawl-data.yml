@@ -862,6 +862,8 @@ field-transforms:
     enc: Enchantments
     bow: Bows
     poi: Poison Magic
+    t&d: Traps & Doors
+    stab: Stabbing
     stav: Staves
     div: Divinations
     sli: Slings
