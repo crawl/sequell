@@ -175,3 +175,14 @@ sources:
       - http://crawl.lantea.net/crawl/morgue
     ttyrecs:
       - http://crawl.lantea.net/crawl/ttyrec
+
+  - name: ckr
+    base: http://kr.dobrazupa.org
+    logfiles:
+      - www/logfile
+    milestones:
+      - www/milestones
+    morgues:
+      - http://kr.dobrazupa.org/morgue/0.13
+    ttyrecs:
+      - http://kr.dobrazupa.org/ttyrecs
