@@ -9,6 +9,12 @@ use Henzell::Config qw/%CONFIG %CMD %USER_CMD %PUBLIC_CMD/;
 use Henzell::Crawl;
 use Henzell::Utils;
 use Henzell::IRC;
+use Henzell::IRCAuth;
+use Henzell::SeenService;
+use Henzell::AnnounceService;
+use Henzell::CommandService;
+use Henzell::LogParse;
+use Henzell::LogReader;
 use Getopt::Long;
 use Cwd;
 
@@ -89,22 +95,16 @@ if ($CONFIG{startup_services}) {
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
 Henzell::Utils::daemonify() if $daemon;
 
-require 'sqllog.pl';
+my $log_reader = Henzell::LogReader->new(logfiles => \@logfiles,
+                                         milestones => \@stonefiles);
 
-my @loghandles = open_handles(@logfiles);
-my @stonehandles = open_handles(@stonefiles);
-
-my $announce_handle = tailed_handle($ANNOUNCEMENTS_FILE);
+my $announce_handle = Henzell::Utils::tailed_handle($ANNOUNCEMENTS_FILE);
 
 if ($CONFIG{sql_store}) {
-  initialize_sqllog();
-  if (@loghandles >= 1) {
-    catchup_logfiles();
-    catchup_stonefiles();
-  }
-  # And once again, because creating indexes takes time.
-  catchup_stonefiles();
-  catchup_logfiles();
+  # Run catchup twice, since processing a large backlog will produce another
+  # backlog in the processing time of the first:
+  $log_reader->catchup_logs();
+  $log_reader->catchup_logs();
 }
 
 my $HENZELL;
@@ -115,17 +115,56 @@ my %PENDING_AUTH;
 
 if ($irc) {
   print "Connecting to $ircserver as $nickname, channels: @CHANNELS\n";
-  $HENZELL = Henzell->new(nick     => $nickname,
-                          server   => $ircserver,
-                          port     => $port,
-                          name     => $ircname,
-                          channels => [ @CHANNELS ],
-                          flood    => 1,
-                          charset  => "utf-8")
-    or die "Unable to create Henzell\n";
+  $HENZELL = Henzell::IRC->new(nick     => $nickname,
+                               server   => $ircserver,
+                               port     => $port,
+                               name     => $ircname,
+                               channels => [ @CHANNELS ],
+                               flood    => 1,
+                               charset  => "utf-8")
+    or die "Unable to create Henzell IRC bot\n";
+  $HENZELL->configure_services(
+    services => irc_services($HENZELL),
+    periodic_actions => periodic_actions());
   $HENZELL->run();
 }
 exit 0;
+
+sub irc_services {
+  my $irc_bot = shift;
+
+  my @services;
+  my $reg = sub { push @services, shift() };
+  my $feat = sub { Henzell::Config::feat_enabled(shift()) };
+  $reg->(Henzell::SeenService->new(irc => $irc_bot)) if $feat->('seen_update');
+
+  if ($feat->('announce')) {
+    $reg->(Henzell::AnnounceService->new(
+      irc => $irc_bot,
+      host => Henzell::Config::get()->{host},
+      announce_channel => $ANNOUNCE_CHANNEL,
+      crash_channel => $DEV_CHANNEL));
+  }
+
+  # All bots have the command processor; no announce-only bots.
+  $reg->(Henzell::CommandService->new(
+    irc => $irc_bot,
+    auth => Henzell::IRCAuth->new($irc_bot),
+    config => $config_file));
+
+  \@services
+}
+
+sub periodic_actions {
+  my $sql_store = Henzell::Config::feat_enabled('sql_store');
+  my $announce = Henzell::Config::feat_enabled('announce');
+  return unless $sql_store || $announce;
+  [
+    sub {
+      $log_reader->tail_logs();
+    }
+  ]
+}
 
 sub catchup_files {
   my ($proc, @files) = @_;
@@ -654,19 +693,10 @@ sub process_config() {
   @stonefiles = @Henzell::Config::MILESTONES unless @stonefiles;
 }
 
-sub command_proc
-{
-  my ($command_dir, $file) = @_;
-  return sub {
-    my ($args, @args) = @_;
-    handle_output(run_command($command_dir, $file, $args, @args));
-  };
-}
-
 sub load_config
 {
   my $config_file = shift;
-  my $loaded = Henzell::Config::read($config_file, \&command_proc);
+  my $loaded = Henzell::Config::read($config_file);
   process_config();
   $loaded
 }

@@ -5,6 +5,7 @@ use warnings;
 
 use base 'Exporter';
 
+use lib '..';
 use Henzell::ServerConfig;
 use YAML::Any;
 use Cwd;
@@ -13,7 +14,10 @@ use Henzell::UserCommandDb;
 our @EXPORT_OK = qw/read get %CONFIG %CMD %USER_CMD %CMDPATH %PUBLIC_CMD
                     @LOGS @MILESTONES/;
 
-my $DEFAULTS_FILE = 'rc/henzell.defaults';
+use File::Basename;
+use File::Spec;
+my $DEFAULTS_FILE = File::Spec->catfile(dirname(__FILE__), '..',
+                                        'rc/henzell.defaults');
 
 my %DEFAULT_CONFIG = %{YAML::Any::LoadFile($DEFAULTS_FILE)};
 our %CONFIG = %DEFAULT_CONFIG;
@@ -32,6 +36,10 @@ my %ABBRMAP;
 
 sub get() {
   \%CONFIG
+}
+
+sub feat_enabled($) {
+  $CONFIG{shift()}
 }
 
 sub sigils {

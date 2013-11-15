@@ -5,8 +5,10 @@ use warnings;
 use Fcntl qw/SEEK_SET SEEK_CUR SEEK_END/;
 use IO::Handle;
 
+use lib '..';
 use DBI;
 use Henzell::Crawl;
+use Henzell::Config;
 use Henzell::DB;
 use Henzell::TableLoader;
 
@@ -271,7 +273,7 @@ sub milefile_table($) {
 }
 
 sub cat_xlog {
-  my ($table, $lf, $fadd, $offset) = @_;
+  my ($table, $lf, $fadd, $offset, $event_publisher) = @_;
 
   my $loghandle = $lf->{handle};
   my $lfile = $lf->{file};
@@ -298,7 +300,7 @@ sub cat_xlog {
     # Skip blank lines.
     next unless $line =~ /\S/;
     ++$rows;
-    $fadd->($lf, $linestart, $line);
+    $fadd->($lf, $linestart, $line, $event_publisher);
     if (!($rows % $COMMIT_INTERVAL)) {
       $dbh->commit;
       $dbh->begin_work;
@@ -323,16 +325,25 @@ sub game_table_name($$) {
   game_type_table_name($game_type, $base_tablename)
 }
 
+sub cat_typed_xlogfile {
+  my ($lf, $offset, $event_publisher) = @_;
+  my $milestone = $lf->{milestones};
+  cat_xlog(logfile_table($$lf{file}), $lf,
+           $milestone ? \&add_milestone : \&add_logline,
+           $offset,
+           $event_publisher)
+}
+
 sub cat_logfile {
-  my ($lf, $offset) = @_;
-  cat_xlog(logfile_table($$lf{file}), $lf, \&add_logline, $offset)
+  my ($lf, $offset, $event_publisher) = @_;
+  cat_xlog(logfile_table($$lf{file}), $lf, \&add_logline, $offset,
+           $event_publisher)
 }
 
 sub cat_stonefile {
-  my ($lf, $offset) = @_;
-  my $res = cat_xlog(milefile_table($$lf{file}),
-                     $lf, \&add_milestone, $offset);
-  $res
+  my ($lf, $offset, $event_publisher) = @_;
+  cat_xlog(milefile_table($$lf{file}),
+           $lf, \&add_milestone, $offset, $event_publisher)
 }
 
 sub logfield_hash {
@@ -699,12 +710,13 @@ sub build_fields_from_milestone {
 }
 
 sub add_milestone {
-  my ($lf, $offset, $line) = @_;
+  my ($lf, $offset, $line, $event_publisher) = @_;
 
   my $m = build_fields_from_milestone($lf, $offset, $line)
     or return;
 
-  insert_record($m, $line)
+  $event_publisher->($m) if $event_publisher;
+  insert_record($m, $line) if $dbh;
 }
 
 sub build_fields_from_logline {
@@ -724,12 +736,13 @@ sub build_fields_from_logline {
 }
 
 sub add_logline {
-  my ($lf, $offset, $line) = @_;
+  my ($lf, $offset, $line, $event_publisher) = @_;
 
   my $fields = build_fields_from_logline($lf, $offset, $line)
     or return;
 
-  insert_record($fields, $line)
+  $event_publisher->($fields) if $event_publisher;
+  insert_record($fields, $line) if $dbh;
 }
 
 sub xlog_escape {

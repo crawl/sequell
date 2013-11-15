@@ -7,8 +7,7 @@ use warnings;
 use Fcntl qw/:flock SEEK_SET SEEK_END/;
 use POSIX;
 
-our @EXPORT = qw/tailed_handle/;
-our @EXPORT_OK = qw/lock_or_die lock daemonify/;
+our @EXPORT_OK = qw/lock_or_die lock daemonify tailed_handle/;
 
 sub service_def {
   my $service_def = shift;

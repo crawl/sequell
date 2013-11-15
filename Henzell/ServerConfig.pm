@@ -6,9 +6,13 @@ package Henzell::ServerConfig;
 use base 'Exporter';
 use YAML::Any qw/LoadFile/;
 
+use lib '..';
 use Henzell::SourceServer;
 
-my $SERVER_CONFIG_FILE = 'config/sources.yml';
+use File::Spec;
+use File::Basename;
+my $SERVER_CONFIG_FILE = File::Spec->catfile(dirname(__FILE__), '..',
+                                             'config/sources.yml');
 my $SERVERCFG = LoadFile($SERVER_CONFIG_FILE);
 
 my @SERVERS = map(Henzell::SourceServer->new($_),
