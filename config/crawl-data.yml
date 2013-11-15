@@ -275,6 +275,7 @@ branches:
   - 'Orc:'
   - 'Elf:'
   - 'Lair:'
+  - 'Depths:'
   - 'Swamp:'
   - 'Shoal:'
   - 'Shoals:'
@@ -461,6 +462,7 @@ column-aliases:
 
 place-fixups:
   '^shoals?\b(.*)': 'Shoals$1'
+  '^dep(?:th)?\b(.*)': 'Depths$1'
   '^vaults?\b(.*)': 'Vaults$1'
   '^v\b(.*)': 'Vaults$1'
   '^ice$': 'IceCv'
