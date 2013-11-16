@@ -3,3 +3,5 @@ DBD::Pg
 Bot::BasicBot
 YAML::Any
 Tie::Cache
+File::Next
+App::Nopaste

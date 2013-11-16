@@ -3,7 +3,7 @@ sql_store: 1
 sql_queries: 1
 commands_file: config/commands-sequell.txt
 announce_channel:
-seen_update:
+seen_update: 1
 
 sigils: "!@#$%&=;.,\\-"
 preferred_sigil: "!"

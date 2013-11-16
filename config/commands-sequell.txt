@@ -1,23 +1,42 @@
+!abyss abyss.py :direct
+!apt apt.pl
+!cheers cheers.py :direct
+!cdefine source.pl
+!cmd cmd.rb :direct
 !cmdinfo cmdinfo.pl
+!coffee coffee.pl :direct
 !help help.pl
 !chars chars.rb
 !deathsin deathsin.rb
+.echo echo.pl
+!echo echo.pl
+!fn fn.rb :direct
+!ftw ftw.pl
+!function source.pl
 !gamesby gamesby.rb
 !gkills gkills.rb
 !hs hsn.rb
 !killsby killsby.rb
+!kw keyworddef.rb
+!learn learn.pl :direct
 !log lastlog.rb
 !listgame listgame.rb
 !lg listgame.rb
 !lm milestone.rb
+!messages message/messages.pl
 !nick nickmap.rb
+!rng rng.pl
+!seen seen.pl :direct
+!send send.rb
+!source source.pl
+!skill skill.pl
 !streak streak.rb
+!tell message/tell.pl
+!time xtime.py
 !ttyrec ttr.rb
 !ttr ttr.rb
 !tv tvreq.rb
 !tvdef tvdef.rb :direct
+!vault source.pl
 !won won.rb
-!cmd cmd.rb :direct
-!kw keyworddef.rb
-!fn fn.rb :direct
-.echo echo.pl
+!wtf wtf.py
