@@ -11,8 +11,7 @@ use Henzell::Crawl;
 use Henzell::Config;
 use Henzell::DB;
 use Henzell::TableLoader;
-
-do 'game_parser.pl';
+use Henzell::Game;
 
 my @LOGFIELDS_DECORATED = Henzell::Crawl::logfields_decorated();
 my %GAME_TYPE_PREFIXES = Henzell::Crawl::game_type_prefixes();

@@ -1,11 +1,14 @@
-#!/usr/bin/perl
+package Henzell::Tell;
+
 use strict;
 use warnings;
 
-use lib 'src';
+use File::Spec;
+use File::Basename;
+use lib File::Spec->catfile(dirname(__FILE__), '..', 'src');
+use lib File::Spec->catfile(dirname(__FILE__), '..');
 use Helper;
 use Henzell::IRCUtil;
-use File::Path;
 
 our $message_dir = 'dat/messages';
 
@@ -27,7 +30,6 @@ sub message_handle
 {
   my ($nick, $mode, $error) = @_;
   $nick = cleanse_nick($nick);
-  File::Path::make_path($message_dir);
   open my $handle, $mode, "$message_dir/$nick" or do
   {
     print "$error\n";
@@ -59,3 +61,5 @@ sub message_notify
   chmod 0777, "$message_dir/$nick";
   return 1;
 }
+
+1

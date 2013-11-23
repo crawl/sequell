@@ -1,47 +1,17 @@
 package Henzell::IRC;
 
-use base 'Bot::BasicBot';
-
 use strict;
 use warnings;
 
 use lib '..';
+use parent 'Bot::BasicBot', 'Henzell::BotService';
+
 use Henzell::Config;
 
 # Utilities
 
-sub cleanse_nick {
-  my $nick = shift;
-  $nick =~ tr{'<>/}{}d;
-  lc($nick)
-}
-
-sub bot_nick {
-  Henzell::Config::get()->{bot_nick}
-}
-
-sub sibling_bots {
-  Henzell::Config::array('sibling_bots')
-}
-
 ############################################################################
 # IRC bot
-
-sub nick_is_sibling {
-  my ($self, $nick) = @_;
-  return unless $nick;
-  $nick = lc $nick;
-
-  ($nick ne lc($self->nick())) &&
-    scalar(grep($_ eq $nick, map(lc, sibling_bots())))
-}
-
-sub configure_services {
-  my ($self, %opt) = @_;
-  $self->{henzell_services} = $opt{services} || [];
-  $self->{henzell_periodic_actions} = $opt{periodic_actions} || [];
-  $self
-}
 
 sub connected {
   my $self = shift;
@@ -136,58 +106,6 @@ sub say {
   }
 
   $self->privmsg($who, $body);
-}
-
-
-sub _message_metadata {
-  my ($self, $m) = @_;
-  my $nick = $$m{who};
-  my $channel = $$m{channel};
-  my $private = $channel eq 'msg';
-
-  my $verbatim = $$m{body};
-  $nick     =~ y/'//d;
-  my $sibling = $self->nick_is_sibling($nick);
-
-  if (force_private($verbatim) && !is_always_public($verbatim)) {
-    $private = 1;
-    $$m{channel} = 'msg';
-  }
-
-  {
-    m => $m,
-    who => $$m{who},
-    body => $$m{body},
-    nick => $nick,
-    channel => $channel,
-    private => $private,
-    verbatim => $verbatim,
-    sibling => $sibling
-  }
-}
-
-sub _services {
-  @{shift()->{henzell_services}}
-}
-
-sub _periodic_actions {
-  @{shift()->{henzell_periodic_actions}}
-}
-
-sub _each_service_call {
-  my ($self, $action, @args) = @_;
-  for my $service ($self->_services()) {
-    if ($service->can($action)) {
-      $service->$action(@args);
-    }
-  }
-}
-
-sub _call_periodic_actions {
-  my ($self, @args) = @_;
-  for my $periodic_action ($self->_periodic_actions()) {
-    $periodic_action->(@args);
-  }
 }
 
 1

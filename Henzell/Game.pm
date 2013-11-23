@@ -1,8 +1,14 @@
-#!/usr/bin/perl
+package Henzell::Game;
+
 use strict;
 use warnings;
 
-use lib 'src';
+use File::Basename;
+use File::Spec;
+
+use lib File::Spec->catfile(dirname(__FILE__), '../src');
+use lib File::Spec->catfile(dirname(__FILE__), '..');
+
 use Helper qw/demunge_xlogline serialize_time/;
 use Henzell::Crawl;
 
@@ -80,31 +86,6 @@ sub skill_farming
   } else {
     return "Farming $title";
   }
-}
-
-sub handle_output
-{
-  my $output = shift;
-  my $full_output = shift;
-
-  return unless $output =~ /\S/;
-
-  if ($output =~ s/^\n//)
-  {
-    $output =~ s/^([^ ]* )://;
-    my $pre = defined($1) ? $1 : '';
-    $output =~ s/:([^:]*)$//;
-    my $post = defined($1) ? $1 : '';
-
-    return '' unless $output =~ /\S/;
-    my $g = demunge_xlogline($output);
-    my $str = $g->{milestone} ? milestone_string($g, 1) : pretty_print($g);
-    $output = $pre . $str . $post;
-  }
-
-  $output =~ s/\n.*//s unless $full_output;
-  chomp $output;
-  return $output;
 }
 
 sub format_date {
@@ -195,8 +176,7 @@ sub kmap_is_significant
   $kmap && $kmap !~ /^uniq[ _]/;
 }
 
-sub pretty_print
-{
+sub game_string {
   my $game_ref = shift;
   my $extra = parse_extras($game_ref);
 

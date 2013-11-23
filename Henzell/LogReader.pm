@@ -16,7 +16,7 @@ sub new {
   }, $cls;
   $self->_open_handles();
 
-  if ($self->_active() && Henzell::Config::feat_enabled('sql_store')) {
+  if ($self->active() && Henzell::Config::feat_enabled('sql_store')) {
     Henzell::LogParse::initialize_sqllog();
   }
   $self
@@ -36,7 +36,7 @@ sub _open_handles {
                     scalar($self->_loghandles());
 }
 
-sub _active {
+sub active {
   shift()->{active}
 }
 

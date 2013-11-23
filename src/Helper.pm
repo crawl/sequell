@@ -8,9 +8,15 @@ use base 'Exporter';
 
 use YAML::Any qw/LoadFile/;
 use Data::Dumper;
-use Henzell::IRC;
+use File::Spec;
+use File::Basename;
 
-my $CONFIG_FILE = 'config/crawl-data.yml';
+use lib File::Spec->catfile(dirname(__FILE__), '..');
+
+use Henzell::IRCUtil;
+
+my $CONFIG_FILE = File::Spec->catfile(dirname(__FILE__), '..',
+                                      'config/crawl-data.yml');
 
 our $CFG = LoadFile($CONFIG_FILE);
 
@@ -477,7 +483,7 @@ sub nick_alias {
 }
 
 sub cleanse_nick {
-  Henzell::IRC::cleanse_nick(shift)
+  Henzell::IRCUtil::cleanse_nick(shift)
 }
 
 
