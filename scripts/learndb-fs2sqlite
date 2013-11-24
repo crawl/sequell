@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+use lib 'lib';
+use Henzell::FSLearnDB;
 use Henzell::SQLLearnDB;
 
 my $dbdir = shift() || 'dat/learndb';
@@ -17,14 +19,8 @@ $fs->each_term(
     my $term = shift;
     my @definitions = $fs->definitions($term);
     if (@definitions) {
-      $fs->add($term, $_) for @definitions;
+      $db->add($term, $_) for @definitions;
     }
   });
 
-my $SCHEMA = <<SCHEMA;
-CREATE TABLE terms (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    term STRING);
-
-CREATE TABLE definitions (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                          term
-SCHEMA
+warn "Converted $dbdir to $file\n";
