@@ -66,6 +66,21 @@ QUERY
   @definitions
 }
 
+sub definition_exists {
+  my ($self, $term, $index) = @_;
+  defined($self->definition_at($term, $index))
+}
+
+sub definition_at {
+  my ($self, $term, $index) = @_;
+  $index ||= 1;
+  $self->query_val(<<QUERY, $term, $index)
+SELECT definition FROM definitions
+ WHERE term_id = (SELECT id FROM terms WHERE term = ?)
+   AND seq = ?
+QUERY
+}
+
 sub definition {
   my ($self, $term, $index) = @_;
   $index ||= 1;
@@ -73,11 +88,7 @@ sub definition {
   $index += $defcount + 1 if $index < 0;
   $index = $defcount if $index > $defcount;
   return if $index < 0;
-  $self->query_val(<<QUERY, $term, $index)
-SELECT definition FROM definitions
- WHERE term_id = (SELECT id FROM terms WHERE term = ?)
-   AND seq = ?
-QUERY
+  $self->definition_at($term, $index)
 }
 
 sub term_id {
@@ -166,6 +177,16 @@ UPDATE terms SET term = ? WHERE term = ?
 UPDATE_TERM
 }
 
+sub _normalize_index_for_insert {
+  my ($self, $count, $index) = @_;
+  return 1 unless $count && $count > 0;
+  $index ||= $count + 1;
+  $index += $count + 2 if $index < 0;
+  return 1 if $index <= 0;
+  return $count + 1 if $index > $count;
+  $index
+}
+
 sub add {
   my ($self, $term, $value, $index) = @_;
   my $db = $self->dbh();
@@ -185,15 +206,12 @@ sub add {
   if (!defined($index)) {
     $index = ($entry_count || 0) + 1;
   } else {
-    $index = 1 if $index <= 0 || !$entry_count;
-    if ($entry_count) {
-      $index = $entry_count + 1 if $index > $entry_count;
-      if ($index <= $entry_count) {
-        $self->exec(<<UPDATE_INDICES, $term_id, $index)
+    $index = $self->_normalize_index_for_insert($entry_count, $index);
+    if ($entry_count && $index <= $entry_count) {
+      $self->exec(<<UPDATE_INDICES, $term_id, $index)
 UPDATE definitions SET seq = seq + 1
  WHERE term_id = ? AND seq >= ?
 UPDATE_INDICES
-      }
     }
   }
   $self->exec(<<INSERT_SQL, $term_id, $value, $index);

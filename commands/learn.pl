@@ -13,6 +13,7 @@ my $args;
 my %filenames =
 (
   query  => "query.pl",
+  q      => "query.pl",
 
   add    => "add.pl",
   insert => 'add.pl',

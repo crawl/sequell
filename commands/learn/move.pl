@@ -10,9 +10,7 @@ use warnings;
 #  move A B       -> rename all entries in A as B
 
 use lib "commands/learn";
-use LearnDB;
-
-our ($RTERM_INDEXED, $RTERM);
+use LearnDB qw/$RTERM_INDEXED $RTERM/;
 
 eval {
   if ($ARGV[1] =~ /^$RTERM_INDEXED\s+$RTERM_INDEXED\s*$/) {
@@ -29,5 +27,5 @@ eval {
   }
 };
 if ($@) {
-  report_error($@);
+  LearnDB::report_error($@);
 }

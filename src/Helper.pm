@@ -11,8 +11,7 @@ use Data::Dumper;
 use File::Spec;
 use File::Basename;
 
-use lib File::Spec->catfile(dirname(__FILE__), '..');
-
+use lib File::Spec->catfile(dirname(__FILE__), '../lib');
 use Henzell::IRCUtil;
 
 my $CONFIG_FILE = File::Spec->catfile(dirname(__FILE__), '..',

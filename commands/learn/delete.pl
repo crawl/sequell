@@ -3,10 +3,10 @@ use strict;
 use warnings;
 
 use lib "commands/learn";
-use LearnDB;
+use LearnDB qw/cleanse_term num_entries read_entry del_entry/;
 
 $ARGV[1] =~ y/ /_/;
-$ARGV[1] =~ /^([\w!]+)(?:\[(\d+)\])?/ or do
+$ARGV[1] =~ /^([\w!]+)(?:\[([+-]?\d+)\])?/ or do
 {
   print "Syntax is: !learn delete TERM[NUM] (you may omit [NUM] if TERM has only one entry)";
   exit;

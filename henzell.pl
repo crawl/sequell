@@ -31,6 +31,7 @@ GetOptions("daemon!" => \$daemon,
            "rc=s" => \$config_file) or die "Invalid options\n";
 
 $ENV{LC_ALL} = 'en_US.UTF-8';
+$ENV{HENZELL_ROOT} = getcwd();
 $ENV{RUBYOPT} = "-rubygems -I" . File::Spec->catfile(getcwd(), 'src');
 
 my $SERVER = 'cao';     # Local server.

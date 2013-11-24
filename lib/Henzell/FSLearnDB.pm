@@ -11,8 +11,7 @@ sub new {
   bless { dir => $dir }, $cls
 }
 
-sub cleanse_term
-{
+sub cleanse_term {
   my $term = lc(shift);
 
   $term =~ y/ /_/;
@@ -21,18 +20,6 @@ sub cleanse_term
 
   $term =~ y/a-z0-9_!//cd;
   return $term;
-}
-
-sub num_entries
-{
-  my ($self, $term) = @_;
-  $term = cleanse_term($term);
-
-  return 0 unless $term;
-  opendir(my $dir, term_directory($term)) or return 0;
-  my @files = grep {$_ ne "." and $_ ne ".." and $_ ne "contrib"}
-              readdir $dir;
-  return scalar @files;
 }
 
 sub dir {

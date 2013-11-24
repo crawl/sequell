@@ -4,11 +4,8 @@ use strict;
 use warnings;
 
 use lib "commands/learn";
-use LearnDB;
-
-our $RTERM_INDEXED;
-our $RTERM;
-our $RTEXT;
+use LearnDB qw/$RTERM_INDEXED $RTERM $RTEXT report_error insert_entry/;
+use File::Basename;
 
 eval {
   if ($ARGV[1] =~ /^$RTERM_INDEXED $RTEXT/) {
@@ -16,7 +13,8 @@ eval {
   } elsif ($ARGV[1] =~ /^$RTERM $RTEXT/) {
     print insert_entry($1, -1, $2);
   } else {
-    print "Syntax is: !learn $0 TERM TEXT or !learn $0 TERM[n] TEXT\n";
+    (my $cmd = basename($0)) =~ s/\.pl$//;
+    print "Syntax is: !learn $cmd TERM TEXT or !learn $cmd TERM[n] TEXT\n";
     exit 1;
   };
 };

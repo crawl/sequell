@@ -6,15 +6,23 @@ use strict;
 use warnings;
 use File::Temp qw/tempfile/;
 use File::Path qw/mkpath/;
+use File::Spec;
+use File::Basename;
+
+use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
+use Henzell::SQLLearnDB;
 
 use base 'Exporter';
 
-our @EXPORT = qw/cleanse_term num_entries read_entry print_to_entry
-                 entries_for del_entry replace_entry swap_entries
-                 check_entry_exists report_error
-                 insert_entry $RTERM $RTERM_INDEXED $RTEXT/;
+my $DB_PATH = $ENV{LEARNDB} ||
+  File::Spec->catfile($ENV{HENZELL_ROOT} || '.', 'dat/learn.db');
 
-our $learn_dir = 'dat/learndb/';
+my $DB = Henzell::SQLLearnDB->new($DB_PATH);
+
+our @EXPORT_OK = qw/cleanse_term num_entries read_entry print_to_entry
+                    del_entry replace_entry swap_entries query_entry
+                    check_entry_exists report_error parse_query
+                    insert_entry $RTERM $RTERM_INDEXED $RTEXT/;
 
 our $RTERM = qr/([\w!]+)/;
 our $RTERM_INDEXED = qr/([\w!]+)\[(\d+)\]/;
@@ -23,25 +31,12 @@ our $RTEXT = qr/(.+)/;
 our $TERM_MAX_LENGTH = 30;
 our $TEXT_MAX_LENGTH = 350;
 
-sub term_directory($) {
-  my ($term) = @_;
-  $term = cleanse_term($term);
-  "$learn_dir$term"
-}
-
-sub term_filename($;$) {
-  my ($term, $num) = @_;
-  $num ||= '1';
-  term_directory($term) . "/$num"
-}
-
 sub term_exists($;$) {
   my ($term, $num) = @_;
-  -r term_filename($term, $num)
+  $DB->definition_exists($term, $num)
 }
 
-sub cleanse_term
-{
+sub cleanse_term {
   my $term = lc(shift);
 
   $term =~ y/ /_/;
@@ -52,19 +47,13 @@ sub cleanse_term
   return $term;
 }
 
-sub num_entries
-{
-  my $term = cleanse_term(shift);
-
-  opendir(my $dir, term_directory($term)) or return 0;
-  my @files = grep {$_ ne "." and $_ ne ".." and $_ ne "contrib"}
-              readdir $dir;
-  return scalar @files;
+sub num_entries {
+  $DB->definition_count(cleanse_term(shift))
 }
 
 sub check_entry_exists($;$) {
   my ($term, $num) = @_;
-  if (!-r term_filename($term, $num)) {
+  if (!$DB->definition_exists($term, $num)) {
     if ($num) {
       die "I don't have a page labeled $term\[$num] in my learndb.";
     }
@@ -74,51 +63,91 @@ sub check_entry_exists($;$) {
   }
 }
 
-sub read_entry
-{
-  my $term = cleanse_term(shift);
+sub normalize_index {
+  my ($term, $num, $normalize_for_insert) = @_;
+  $term = cleanse_term($term);
+  $num ||= 1;
   my $total = num_entries($term);
-  my $entry_num = shift;
-  if ($entry_num < 0) {
-    $entry_num = $total + 1 + $entry_num;
+  if ($num < 0) {
+    $num += $total + 1;
+    $num = 1 if $num <= 0;
   }
-  my $just_the_entry = shift || 0;
+  if ($num > $total) {
+    $num = $total;
+    ++$num if $normalize_for_insert;
+  }
+  $num
+}
 
-  my $file = "$learn_dir$term/$entry_num";
-  return '' if not -r $file;
-  my $contents = do {local @ARGV = $file; <>};
-  return $contents if $just_the_entry;
+sub parse_query {
+  my $query = shift;
+  my $num;
+  $num = $1 if $query =~ s/\[([+-]?\d+|\$)\]? *$//;
+  $num ||= 1;
+  if ($num eq '$') {
+    $num = -1;
+  }
+  return (cleanse_term($query), $num);
+}
+
+sub entry_redirect {
+  my $entry = shift;
+  return unless $entry && $entry =~ /: see \{(.*)?\}\Z/i;
+  parse_query($1)
+}
+
+sub query_entry_with_redirects {
+  my ($term, $num, $tried) = @_;
+
+  $tried ||= { };
+  my $previous_redirecting_entry = '';
+  my $res = '';
+  for (;;) {
+    return $res || $previous_redirecting_entry
+      if !defined($term) || $$tried{$term};
+    $$tried{$term} = 1;
+    $previous_redirecting_entry = $res;
+    $res = read_entry($term, $num);
+
+    # Assuming foo[1] redirects to bar[1], pretend that foo[2] ->
+    # bar[2], etc. This will behave confusingly if foo contains more
+    # entries on foo[2], etc., so don't do that.
+    if ((!$res && $num != 1) || $num == -1) {
+      my $root_entry = read_entry($term, 1);
+      my ($redirect_term, $redirect_num) = entry_redirect($root_entry);
+      if ($redirect_num && $redirect_num == 1) {
+        $res = query_entry_with_redirects($redirect_term, $num, $tried);
+      }
+    }
+
+    return $res || $previous_redirecting_entry if $res !~ /: see \{.*\}\Z/i;
+    my ($redirect) = $res =~ /\{(.*)\}/;
+    ($term, $num) = parse_query($redirect);
+  }
+}
+
+# Porcelain: parses a query and retrieves an entry, following redirects, etc.
+sub query_entry {
+  my ($term, $num) = @_;
+  return unless $term && $term =~ /\S/;
+  unless (defined $num) {
+    ($term, $num) = parse_query($term);
+  }
+  query_entry_with_redirects($term, $num)
+}
+
+sub read_entry {
+  my ($term, $entry_num, $just_the_entry) = @_;
+  $term = cleanse_term($term);
+  $entry_num = normalize_index($term, $entry_num);
+  my $definition = $DB->definition($term, $entry_num);
+  return '' unless defined $definition;
+  return $definition if $just_the_entry;
 
   $term =~ y/_/ /;
   $term = uc $term if $term =~ /^xtahua$/;
-
-  return sprintf '%s[%d/%d]: %s', $term, $entry_num, $total, $contents;
-}
-
-sub print_to_entry
-{
-  my $term = cleanse_term(shift);
-  my $entry_num = shift;
-  my $text = shift;
-
-  my $file = "$learn_dir$term/$entry_num";
-  open(my $handle, ">", $file) or die "Unable to open $file for writing: $!";
-  print {$handle} $text;
-}
-
-sub entries_for
-{
-  my $term = cleanse_term(shift);
-  my @entries;
-  my $num = 0;
-  my $entries = num_entries($term);
-
-  foreach my $num (1..$entries)
-  {
-    $entries[$num] = read_entry($term, $num);
-  }
-
-  return \@entries;
+  return sprintf '%s[%d/%d]: %s', $term, $entry_num, num_entries($term),
+                 $definition;
 }
 
 sub check_thing_length($$$) {
@@ -139,72 +168,20 @@ sub check_text_length($) {
   check_thing_length("Entry text", shift, $TEXT_MAX_LENGTH);
 }
 
-sub renumber_entry_item($$$) {
-  my ($term, $num, $newnum) = @_;
-  my $old_filename = term_filename($term, $num);
-  my $new_filename = term_filename($term, $newnum);
-  die "Cannot find $term\[$num]\n" unless -f $old_filename;
-  die "Cannot move $term\[$num] to $term\[$newnum]: target exists\n"
-    if -f $new_filename;
-  rename($old_filename, $new_filename)
-    or die "Could not rename $term\[$num] to $term\[$newnum]: $!\n"
-}
-
 sub insert_entry {
   my ($term, $num, $text) = @_;
   $term = cleanse_term($term);
   check_term_length($term);
   check_text_length($text);
-  mkpath(term_directory($term));
-  my $entrycount = num_entries($term);
-  $num = $entrycount + 1 if $num > $entrycount || $num < 1;
-  for (my $i = $entrycount; $i >= $num; --$i) {
-    renumber_entry_item($term, $i, $i + 1);
-  }
-  print_to_entry($term, $num, $text);
+
+  $DB->add($term, $text, $num);
   return read_entry($term, $num);
 }
 
-sub del_entry
-{
+sub del_entry {
   my $term = cleanse_term(shift);
-  my $entry_num = shift;
-  my $moves = 0;
-
-  my @files = (1..num_entries($term));
-
-  #if ($term == "bad_ideas")
-  #{
-  #  return read_entry('raxvulpine', 2);
-  #}
-
-  return -1 if $entry_num > $files[-1];
-
-  if ($entry_num == $files[-1])
-  {
-    if ($entry_num == 1)
-    {
-      system("rm -r '$learn_dir$term/'");
-    }
-    else
-    {
-      system("rm '$learn_dir$term/$entry_num'");
-    }
-    return 0;
-  }
-
-  foreach my $file (@files)
-  {
-    if ($file > $entry_num)
-    {
-      my $src = "$learn_dir$term/$file";
-      my $dest = "$learn_dir$term/" . ($file-1);
-      system("mv '$src' '$dest'");
-      $moves++;
-    }
-  }
-
-  return $moves;
+  my $entry_num = normalize_index(num_entries($term), shift());
+  $DB->remove($term, $entry_num);
 }
 
 sub replace_entry
@@ -212,46 +189,25 @@ sub replace_entry
   my $term = cleanse_term(shift);
   my $entry_num = shift;
   my $new_text = shift;
-
-  opendir(my $dir, "$learn_dir$term") or return undef;
-  foreach my $file (readdir $dir)
-  {
-    next if $file eq "." or $file eq "..";
-    next if $file eq "contrib";
-    if ($file == $entry_num)
-    {
-      print_to_entry($term, $entry_num, $new_text);
-      return 1;
-    }
-  }
-
-  return 0;
+  $DB->update_value($term, $entry_num, $new_text);
 }
 
-sub swap_entries
-{
-  my $term1 = cleanse_term(shift);
-  my $entry_num1 = shift;
-  my $term2 = cleanse_term(shift);
-  my $entry_num2 = shift;
+sub swap_entries {
+  my ($term1, $num1, $term2, $num2) = @_;
+  $_ = cleanse_term($_) for ($term1, $term2);
+  $num1 = normalize_index($term1, $num1);
+  $num2 = normalize_index($term2, $num2);
 
-  my $file1 = "$learn_dir$term1/$entry_num1";
-  my $file2 = "$learn_dir$term2/$entry_num2";
-  my ($fh, $tempfile) = tempfile;
-  close $fh;
-
-  system("cp '$file1' '$tempfile'") and return;
-  system("cp '$file2' '$file1'") and return;
-  system("cp '$tempfile' '$file2'") and return;
-  system("rm '$tempfile'");
-
+  my $def1 = $DB->definition($term1, $num1);
+  my $def2 = $DB->definition($term2, $num2);
+  $DB->update_value($term1, $num1, $def2);
+  $DB->update_value($term2, $num2, $def1);
   return 1;
 }
 
 sub rename_entry($$) {
   my ($src, $dst) = @_;
-  rename(term_directory($src), term_directory($dst))
-    or die "Couldn't move $src to $dst\n";
+  $DB->update_term(cleanse_term($src), cleanse_term($dst));
 }
 
 sub move_entry($$$;$) {
@@ -259,7 +215,7 @@ sub move_entry($$$;$) {
   check_term_length($src);
   check_term_length($dst);
   if (!$snum) {
-    check_entry_exists($src, 0);
+    check_entry_exists($src, 1);
     die "$dst exists, cannot overwrite it.\n" if term_exists($dst);
     rename_entry($src, $dst);
     return "$src -> " . read_entry($dst, 1);
