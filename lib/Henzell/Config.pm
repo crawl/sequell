@@ -16,7 +16,7 @@ our @EXPORT_OK = qw/read get %CONFIG %CMD %USER_CMD %CMDPATH %PUBLIC_CMD
 
 use File::Basename;
 use File::Spec;
-my $DEFAULTS_FILE = File::Spec->catfile(dirname(__FILE__), '..',
+my $DEFAULTS_FILE = File::Spec->catfile(dirname(__FILE__), '../..',
                                         'rc/henzell.defaults');
 
 my %DEFAULT_CONFIG = %{YAML::Any::LoadFile($DEFAULTS_FILE)};

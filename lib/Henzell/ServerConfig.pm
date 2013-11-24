@@ -11,7 +11,7 @@ use Henzell::SourceServer;
 
 use File::Spec;
 use File::Basename;
-my $SERVER_CONFIG_FILE = File::Spec->catfile(dirname(__FILE__), '..',
+my $SERVER_CONFIG_FILE = File::Spec->catfile(dirname(__FILE__), '../..',
                                              'config/sources.yml');
 my $SERVERCFG = LoadFile($SERVER_CONFIG_FILE);
 

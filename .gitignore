@@ -48,3 +48,4 @@ henzell.out.*
 *.cow
 *.tar.gz
 backup/
+tmp

@@ -5,7 +5,7 @@ use warnings;
 
 use File::Spec;
 use File::Basename;
-use lib File::Spec->catfile(dirname(__FILE__), '..', 'src');
+use lib File::Spec->catfile(dirname(__FILE__), '../..', 'src');
 use lib File::Spec->catfile(dirname(__FILE__), '..');
 use Helper;
 use Henzell::IRCUtil;

@@ -4,6 +4,7 @@ use warnings;
 use POSIX qw(setsid); # For daemonization.
 use Fcntl qw/:flock SEEK_END/;
 
+use lib 'lib';
 use Henzell::Config qw/%CONFIG %CMD %USER_CMD %PUBLIC_CMD/;
 use Henzell::Crawl;
 use Henzell::Utils;

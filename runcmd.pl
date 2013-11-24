@@ -3,12 +3,14 @@
 use strict;
 use warnings;
 
+use lib 'lib';
 use Henzell::Cmd qw/load_all_commands execute_cmd/;
 use Henzell::IRCStub;
 use Henzell::CommandService;
 use Henzell::SeenService;
 use Henzell::TellService;
 use utf8;
+
 
 do 'sqllog.pl';
 do 'game_parser.pl';

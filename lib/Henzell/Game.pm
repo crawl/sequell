@@ -6,7 +6,7 @@ use warnings;
 use File::Basename;
 use File::Spec;
 
-use lib File::Spec->catfile(dirname(__FILE__), '../src');
+use lib File::Spec->catfile(dirname(__FILE__), '../../src');
 use lib File::Spec->catfile(dirname(__FILE__), '..');
 
 use Helper qw/demunge_xlogline serialize_time/;

@@ -10,7 +10,8 @@ use YAML::Any qw/LoadFile/;
 use File::Spec;
 use File::Basename;
 
-my $HENZELL_ROOT = File::Spec->catfile(File::Basename::dirname(__FILE__), '..');
+my $HENZELL_ROOT = File::Spec->catfile(File::Basename::dirname(__FILE__),
+                                       '../..');
 my $CONFIG_FILE =
   File::Spec->catfile($HENZELL_ROOT, 'config/crawl-data.yml');
 
