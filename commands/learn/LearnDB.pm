@@ -24,8 +24,8 @@ our @EXPORT_OK = qw/cleanse_term num_entries read_entry print_to_entry
                     check_entry_exists report_error parse_query
                     insert_entry $RTERM $RTERM_INDEXED $RTEXT/;
 
-our $RTERM = qr/([\w!]+)/;
-our $RTERM_INDEXED = qr/([\w!]+)\[(\d+)\]/;
+our $RTERM = qr/([^\[\]\s]+)/;
+our $RTERM_INDEXED = qr/$RTERM\s*\[\s*([+-]?\d+)\]?/;
 our $RTEXT = qr/(.+)/;
 
 our $TERM_MAX_LENGTH = 30;
@@ -37,13 +37,14 @@ sub term_exists($;$) {
 }
 
 sub cleanse_term {
-  my $term = lc(shift);
+  my $term = shift;
 
   $term =~ y/ /_/;
+  $term =~ y/[]//d;
   $term =~ s/^_+//;
   $term =~ s/_+$//;
+  $term =~ s/_{2,}/_/g;
 
-  $term =~ y/a-z0-9_!//cd;
   return $term;
 }
 
@@ -61,6 +62,11 @@ sub check_entry_exists($;$) {
       die "I don't have a page labeled $term in my learndb.";
     }
   }
+}
+
+sub canonical_term {
+  my $term = shift;
+  $DB->canonical_term($term)
 }
 
 sub normalize_index {
@@ -144,8 +150,8 @@ sub read_entry {
   return '' unless defined $definition;
   return $definition if $just_the_entry;
 
+  $term = canonical_term($term);
   $term =~ y/_/ /;
-  $term = uc $term if $term =~ /^xtahua$/;
   return sprintf '%s[%d/%d]: %s', $term, $entry_num, num_entries($term),
                  $definition;
 }
@@ -216,7 +222,9 @@ sub move_entry($$$;$) {
   check_term_length($dst);
   if (!$snum) {
     check_entry_exists($src, 1);
-    die "$dst exists, cannot overwrite it.\n" if term_exists($dst);
+    if (lc($src) ne lc($dst) && term_exists($dst)) {
+      die "$dst exists, cannot overwrite it.\n";
+    }
     rename_entry($src, $dst);
     return "$src -> " . read_entry($dst, 1);
   }

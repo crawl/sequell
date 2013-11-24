@@ -170,7 +170,7 @@ sub _process_command {
 
     my $processor = $CMD{$command} || $CMD{custom};
     my $output =
-      $processor->(_pack_args($target, $nick, $verbatim, '', ''));
+      $processor->(_pack_args($target, $nick, $verbatim, '', '')) || '';
 
     if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
       if ($reprocessed_command || $proxied ||

@@ -1,5 +1,5 @@
 CREATE TABLE terms (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    term STRING);
+                    term TEXT COLLATE NOCASE);
 CREATE INDEX terms_term ON terms (term);
 
 CREATE TABLE definitions (

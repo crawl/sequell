@@ -91,6 +91,14 @@ sub definition {
   $self->definition_at($term, $index)
 }
 
+sub canonical_term {
+  my ($self, $term) = @_;
+  $self->init();
+  $self->query_val(<<QUERY, $term)
+SELECT term FROM terms WHERE term = ?
+QUERY
+}
+
 sub term_id {
   my ($self, $term) = @_;
   $self->init();
@@ -169,7 +177,7 @@ UPDATE_DEF
 
 sub update_term {
   my ($self, $term, $newterm) = @_;
-  if ($self->has_term($newterm)) {
+  if (lc($term) ne lc($newterm) && $self->has_term($newterm)) {
     die "Cannot rename $term -> $newterm, $newterm exists\n";
   }
   $self->exec(<<UPDATE_TERM, $newterm, $term)
