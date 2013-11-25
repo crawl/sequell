@@ -11,6 +11,7 @@ use File::Basename;
 
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use Henzell::SQLLearnDB;
+use LearnDB::Entry;
 
 use base 'Exporter';
 
@@ -34,6 +35,10 @@ our $TEXT_MAX_LENGTH = 350;
 sub term_exists($;$) {
   my ($term, $num) = @_;
   $DB->definition_exists($term, $num)
+}
+
+sub mtime {
+  $DB->mtime
 }
 
 sub cleanse_term {
@@ -70,7 +75,7 @@ sub canonical_term {
 }
 
 sub normalize_index {
-  my ($term, $num, $normalize_for_insert) = @_;
+  my ($term, $num, $op) = @_;
   $term = cleanse_term($term);
   $num ||= 1;
   my $total = num_entries($term);
@@ -78,9 +83,9 @@ sub normalize_index {
     $num += $total + 1;
     $num = 1 if $num <= 0;
   }
-  if ($num > $total) {
+  if ($num > $total && $op ne 'query') {
     $num = $total;
-    ++$num if $normalize_for_insert;
+    ++$num if $op eq 'insert';
   }
   $num
 }
@@ -98,7 +103,7 @@ sub parse_query {
 
 sub entry_redirect {
   my $entry = shift;
-  return unless $entry && $entry =~ /: see \{(.*)?\}\Z/i;
+  return unless $entry && $entry->value() =~ /^\s*see\s+\{(.*)?\}\s*\Z/i;
   parse_query($1)
 }
 
@@ -126,7 +131,9 @@ sub query_entry_with_redirects {
       }
     }
 
-    return $res || $previous_redirecting_entry if $res !~ /: see \{.*\}\Z/i;
+    if (!entry_redirect($res)) {
+      return $res || $previous_redirecting_entry;
+    }
     my ($redirect) = $res =~ /\{(.*)\}/;
     ($term, $num) = parse_query($redirect);
   }
@@ -134,26 +141,40 @@ sub query_entry_with_redirects {
 
 # Porcelain: parses a query and retrieves an entry, following redirects, etc.
 sub query_entry {
-  my ($term, $num) = @_;
+  my ($term, $num, $error_message_if_missing) = @_;
   return unless $term && $term =~ /\S/;
   unless (defined $num) {
     ($term, $num) = parse_query($term);
+    return unless $term && $term =~ /\S/;
   }
-  query_entry_with_redirects($term, $num)
+  my $res = query_entry_with_redirects($term, $num);
+  if ($error_message_if_missing && (!defined($res) || $res eq '')) {
+	return "I don't have a page labeled $term in my learndb." if $num == 1;
+    return "I don't have a page labeled $term\[$num] in my learndb.";
+  }
+  $res
+}
+
+sub read_entries {
+  my $term = shift;
+  $DB->definitions($term)
 }
 
 sub read_entry {
   my ($term, $entry_num, $just_the_entry) = @_;
   $term = cleanse_term($term);
-  $entry_num = normalize_index($term, $entry_num);
+  $entry_num = normalize_index($term, $entry_num, 'query');
   my $definition = $DB->definition($term, $entry_num);
-  return '' unless defined $definition;
+  return undef unless defined $definition;
   return $definition if $just_the_entry;
 
   $term = canonical_term($term);
+  my $count = num_entries($term);
   $term =~ y/_/ /;
-  return sprintf '%s[%d/%d]: %s', $term, $entry_num, num_entries($term),
-                 $definition;
+  LearnDB::Entry->new(term => $term,
+                      index => $entry_num,
+                      count => num_entries($term),
+                      value => $definition)
 }
 
 sub check_thing_length($$$) {
@@ -193,7 +214,7 @@ sub del_entry {
 sub replace_entry
 {
   my $term = cleanse_term(shift);
-  my $entry_num = shift;
+  my $entry_num = normalize_index($term, shift());
   my $new_text = shift;
   $DB->update_value($term, $entry_num, $new_text);
 }
@@ -242,4 +263,4 @@ sub report_error($) {
   print $error
 }
 
-1;
+1

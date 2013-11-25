@@ -9,7 +9,9 @@ use warnings;
 #  move A[x] B    -> delete A[x] !learn add B <text>, i.e. add as last entry.
 #  move A B       -> rename all entries in A as B
 
-use lib "commands/learn";
+use File::Spec;
+use File::Basename;
+use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use LearnDB qw/$RTERM_INDEXED $RTERM/;
 
 eval {

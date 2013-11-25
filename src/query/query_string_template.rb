@@ -2,11 +2,11 @@ module Query
    class QueryStringTemplate
      def self.substitute(query_string, argument_lists, default_nick=nil)
        argument_lists.reduce(query_string.to_s) { |query, arglist|
-         substitute_query_args(query, arglist.strip, default_nick)
+         expand(query, arglist.strip, 'user' => default_nick)
        }
      end
 
-     def self.substitute_query_args(query_string, arglist, default_nick)
+     def self.expand(query_string, arglist, scope={})
        require 'tpl/template'
 
        args = arglist.split(' ')
@@ -15,8 +15,6 @@ module Query
 
        arg_provider = lambda { |key|
          case key
-         when 'user'
-           default_nick
          when '*'
            rest_args_used = true
            (args[max_index..-1] || []).join(' ')
@@ -25,7 +23,7 @@ module Query
            max_index = index if index > max_index
            args[index - 1] || ''
          else
-           nil
+           scope[key]
          end
        }
       res = Tpl::Template.template_eval_string(query_string, arg_provider)
@@ -33,14 +31,6 @@ module Query
         res.gsub(%r{(\?:.*)?$}, ' ' + arglist + ' \1')
       else
         res
-      end
-    end
-
-    def self.split_placeholder(placeholder)
-      if placeholder =~ /^(\d+|\*)\s*:-(.*)/
-        [$1, $2]
-      else
-        [placeholder, '']
       end
     end
   end

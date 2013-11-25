@@ -3,9 +3,10 @@
 use strict;
 use warnings;
 
-use lib "commands/learn";
-use LearnDB qw/$RTERM_INDEXED $RTERM $RTEXT report_error insert_entry/;
+use File::Spec;
 use File::Basename;
+use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
+use LearnDB qw/$RTERM_INDEXED $RTERM $RTEXT report_error insert_entry/;
 
 eval {
   if ($ARGV[1] =~ /^$RTERM_INDEXED $RTEXT/) {

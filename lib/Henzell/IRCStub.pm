@@ -12,6 +12,11 @@ sub nick {
   shift()->bot_nick()
 }
 
+sub channel_nicks {
+  my ($self, $c) = @_;
+  ($self->nick(), 'Anon')
+}
+
 sub tick {
   my $self = shift;
   $self->_each_service_call('event_tick');

@@ -1,6 +1,7 @@
 require 'tpl/tplike'
 require 'cmd/executor'
 require 'command_context'
+require 'helper'
 
 module Tpl
   class Subcommand

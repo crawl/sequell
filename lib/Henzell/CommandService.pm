@@ -73,7 +73,7 @@ sub _irc_said {
   if ($auth && $auth->nick_is_authenticator($$m{who})) {
     $self->_process_auth_response($m);
   } else {
-    $self->_process_message($m);
+    $self->_process_command($m);
   }
 }
 
@@ -86,6 +86,7 @@ sub _process_auth_response {
 
 sub _message_metadata {
   my ($self, $m) = @_;
+  return $m if $m->{command_metadata};
 
   my $verbatim = $$m{body};
   my $target = $verbatim;
@@ -110,8 +111,9 @@ sub _message_metadata {
   +{ %$m,
       private => $private,
       target => $target,
-      command => $command
-  }
+      command => $command,
+      command_metadata => 1
+   }
 }
 
 sub is_always_public {
@@ -126,21 +128,33 @@ sub force_private {
   return $CONFIG{use_pm} && ($command =~ /^!\w/ || $command =~ /^[?]{2}/);
 }
 
-sub _process_message {
-  my ($self, $m) = @_;
-  $m = $self->_message_metadata($m);
-  return if $$m{sibling};
-  $self->_process_command($m);
-}
-
 sub _pack_args {
   return (join " ", map { $_ eq '' ? "''" : "\Q$_"} @_), @_;
 }
 
 sub _process_command {
   my ($self, $m) = @_;
+  my $res = $self->execute_command($m);
+  return unless defined($res);
+  $self->{irc}->post_message(%$m, body => $res);
+}
+
+sub recognized_command {
+  my ($self, $m) = @_;
+  $m = $self->_message_metadata($m);
   my $command = $$m{command};
-  return unless $command;
+  $command &&
+    Henzell::Config::command_exists($command) &&
+        (!$$m{private} || !$self->is_always_public($$m{verbatim}))
+}
+
+sub execute_command {
+  my ($self, $m) = @_;
+  return if $$m{sibling};
+  $m = $self->_message_metadata($m);
+
+  my $command = $$m{command};
+  return undef unless $command;
 
   my $auth = $self->_auth();
   my $target = $$m{target};
@@ -154,18 +168,15 @@ sub _process_command {
   if (!$proxied && $command eq '!load' && exists $admins{$nick})
   {
     print "LOAD: $nick: $verbatim\n";
-    $self->{irc}->post_message(channel => $channel,
-                               who => $$m{who},
-                               body => $self->_load_commands());
+    return $self->_load_commands();
   }
-  elsif (Henzell::Config::command_exists($command) &&
-         (!$private || !$self->is_always_public($verbatim)))
+  elsif ($self->recognized_command($m))
   {
     # Log all commands to Henzell.
     print "CMD($private): $nick: $verbatim\n";
-    $ENV{PRIVMSG} = $private ? 'y' : '';
-    $ENV{HENZELL_PROXIED} = $proxied ? 'y' : '';
-    $ENV{IRC_NICK_AUTHENTICATED} =
+    local $ENV{PRIVMSG} = $private ? 'y' : '';
+    local $ENV{HENZELL_PROXIED} = $proxied ? 'y' : '';
+    local $ENV{IRC_NICK_AUTHENTICATED} =
       !$auth || $auth->nick_identified($nick) ? 'y' : '';
 
     my $processor = $CMD{$command} || $CMD{custom};
@@ -175,14 +186,13 @@ sub _process_command {
     if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
       if ($reprocessed_command || $proxied ||
           $auth->nick_identified($nick, 'attempted_auth')) {
-        $self->{irc}->post_message($m,
-              "Cannot authenticate $nick with services, ignoring $verbatim");
+        return "Cannot authenticate $nick with services, ignoring $verbatim";
       } else {
         $auth->authenticate_user($1, $m);
       }
-      return;
+      return undef;
     }
-    $self->{irc}->post_message(%$m, body => $output);
+    return $output;
   }
   undef
 }

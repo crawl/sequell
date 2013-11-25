@@ -30,8 +30,18 @@ class CommandContext
     ', '
   end
 
+  def self.with_default_nick(nick)
+    old_nick = @default_nick
+    begin
+      @default_nick = nick
+      yield
+    ensure
+      @default_nick = old_nick
+    end
+  end
+
   def self.default_nick
-    ARGV[1]
+    @default_nick || ARGV[1]
   end
 
   def self.command_words

@@ -10,6 +10,11 @@ sub new {
   bless { file => $dbfile }, $cls
 }
 
+sub mtime {
+  my $self = shift;
+  (stat($self->file()))[9]
+}
+
 sub begin_work {
   shift()->db()->begin_work()
 }

@@ -84,9 +84,6 @@ QUERY
 sub definition {
   my ($self, $term, $index) = @_;
   $index ||= 1;
-  my $defcount = $self->definition_count($term);
-  $index += $defcount + 1 if $index < 0;
-  $index = $defcount if $index > $defcount;
   return if $index < 0;
   $self->definition_at($term, $index)
 }

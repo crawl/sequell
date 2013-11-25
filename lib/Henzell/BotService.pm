@@ -92,16 +92,19 @@ sub say_paged {
 sub post_message {
   my ($self, %m) = @_;
   my $output = $m{body};
+
+  return unless defined($output) && $output =~ /\S/;
+
   # Handle emotes (/me does foo)
   if ($output =~ s{^/me }{}) {
     $self->emote(%m, body => $output);
     return;
   }
 
-  if ($output =~ s{^/notice }{}) {
-    $self->notice(%m, body => $output);
-    return;
-  }
+  # if ($output =~ s{^/notice }{}) {
+  #   $self->notice(%m, body => $output);
+  #   return;
+  # }
 
   $self->say_paged(%m, body => $output);
 }

@@ -2,13 +2,15 @@
 use strict;
 use warnings;
 
-use lib "commands/learn";
-use LearnDB;
+use File::Spec;
+use File::Basename;
+use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
+use LearnDB qw/read_entry num_entries replace_entry/;
 
 my ($term, $num, $rest);
 
 for ($ARGV[1]) {
-  /^([\w! ]+)\[(\d+)\]\s+(s[^a-z].+)/i || /^([\w! ]+)\s+(s[^a-z].+)/i
+  /^([^\[\]]+?)\[([+-]?\d+)\]?\s+(s[^a-z].+)/i || /^([^\[\]]+?)\s+(s[^a-z].+)/i
     or do {
       print "Syntax is: !learn edit TERM[NUM] s/<search>/<repl>/\n";
       exit 1;
@@ -28,7 +30,7 @@ $num ||= 1;
 
 my $text = read_entry($term, $num, 1);
 
-if ($text eq '')
+if (!defined($text))
 {
   print "I don't have a page labeled $term\[$num] in my learndb.";
   exit;
@@ -43,6 +45,7 @@ my ($regex, $replacement, $opts) =
   print "Syntax is: !learn edit TERM[NUM] s/REGEX/REPLACE/opts";
   exit;
 };
+$replacement =~ s/\\(.)/$1/g;
 $opts ||= '';
 
 $regex = "^" if $regex eq "";

@@ -118,11 +118,18 @@ sub irc_services {
 
   $reg->(Henzell::TellService->new(irc => $irc_bot));
 
-  # All bots have the command processor; no announce-only bots.
-  $reg->(Henzell::CommandService->new(
+  my $executor = Henzell::CommandService->new(
     irc => $irc_bot,
     auth => Henzell::IRCAuth->new($irc_bot),
-    config => $config_file));
+    config => $config_file);
+
+  if ($feat->('learndb')) {
+    $reg->(Henzell::LearnDBService->new(irc => $irc_bot,
+                                        executor => $executor));
+  }
+
+  # All bots have the command processor; no announce-only bots.
+  $reg->($executor);
 
   \@services
 }

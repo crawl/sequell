@@ -2,8 +2,10 @@
 use strict;
 use warnings;
 
-use lib "commands/learn";
-use LearnDB;
+use File::Spec;
+use File::Basename;
+use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
+use LearnDB qw/check_entry_exists swap_entries report_error/;
 
 eval {
   my ($term, $num, $term2, $num2) =

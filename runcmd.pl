@@ -9,6 +9,7 @@ use Henzell::IRCStub;
 use Henzell::CommandService;
 use Henzell::SeenService;
 use Henzell::TellService;
+use Henzell::LearnDBService;
 use utf8;
 
 
@@ -28,10 +29,12 @@ $ENV{HENZELL_ALL_COMMANDS} = 'y';
 
 my $irc = Henzell::IRCStub->new(channel => $CHANNEL);
 
+my $cmd_service = Henzell::CommandService->new(irc => $irc, config => $CONFIG);
 my @services = (
   Henzell::SeenService->new(irc => $irc),
   Henzell::TellService->new(irc => $irc),
-  Henzell::CommandService->new(irc => $irc, config => $CONFIG)
+  Henzell::LearnDBService->new(irc => $irc, executor => $cmd_service),
+  $cmd_service
 );
 $irc->configure_services(services => \@services);
 

@@ -2,11 +2,13 @@
 use strict;
 use warnings;
 
-use lib "commands/learn";
+use File::Spec;
+use File::Basename;
+use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use LearnDB qw/cleanse_term num_entries read_entry del_entry/;
 
 $ARGV[1] =~ y/ /_/;
-$ARGV[1] =~ /^([\w!]+)(?:\[([+-]?\d+)\])?/ or do
+$ARGV[1] =~ /^([^\[\]]+)(?:\[([+-]?\d+)\]?)?/ or do
 {
   print "Syntax is: !learn delete TERM[NUM] (you may omit [NUM] if TERM has only one entry)";
   exit;
@@ -15,7 +17,7 @@ $ARGV[1] =~ /^([\w!]+)(?:\[([+-]?\d+)\])?/ or do
 my ($term, $num) = (cleanse_term($1), $2);
 
 my $entries = num_entries($term);
-$num = 1 if $entries == 1;
+$num ||= 1 if $entries == 1;
 
 if ($entries == 0)
 {
