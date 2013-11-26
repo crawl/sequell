@@ -2,22 +2,30 @@
 
 use strict;
 use warnings;
+use utf8;
 use Time::localtime;
 use File::stat;
+
+use lib 'lib';
 use Henzell::Cmd;
 use Henzell::SourceServer;
 use Henzell::XlogSrc;
-use utf8;
+use Henzell::LogParse;
+use Henzell::CommandService;
+
 use open qw/:std :encoding(UTF-8)/;
 
 $Henzell::XlogSrc::TARGET_BASE = 'tests/data';
+$ENV{LEARNDB} = 'tmp/test.learn.db';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{HENZELL_TEST} = 'y';
 $ENV{RUBYOPT} = '-rubygems -Isrc';
 $ENV{HENZELL_ALL_COMMANDS} = 'y';
 $ENV{PERL_UNICODE} = 'AS';
+$ENV{IRC_NICK_AUTHENTICATED} = 'y';
 
-require 'sqllog.pl';
+mkdir 'tmp';
+unlink $ENV{LEARNDB};
 
 my $DB_DIRTY;
 my $DBNAME = 'henzell_test';
@@ -28,7 +36,8 @@ $ENV{'HENZELL_DBNAME'} = $DBNAME;
 $ENV{'HENZELL_DBUSER'} = $DBUSER;
 $ENV{'HENZELL_DBPASS'} = $DBPASS;
 
-new_db_handle($DBNAME, $DBUSER, $DBPASS) && initialize_sqllog();
+Henzell::LogParse::new_db_handle($DBNAME, $DBUSER, $DBPASS) &&
+  Henzell::LogParse::initialize_sqllog();
 
 my $FAILFAST;
 my $SCHEMAFILE = 'henzell-schema.sql';
@@ -114,7 +123,7 @@ sub datafiles_newest_time() {
 
 sub with_db(&) {
   my $sub = shift;
-  my $db = new_db_handle($DBNAME, $DBUSER, $DBPASS);
+  my $db = Henzell::LogParse::new_db_handle($DBNAME, $DBUSER, $DBPASS);
   my $result = $sub->($db);
   $db->disconnect;
   $result
@@ -298,7 +307,7 @@ TESTREPORT
   }
 
   my ($exitcode, $output, $cmd) = execute_cmd($$test{line});
-  $output = handle_output($output, 1) || '';
+  $output = Henzell::CommandService->handle_output($output, 1) || '';
   chomp $output;
   $$test{cmdline} = $cmd;
   print $logf <<TESTREPORT;

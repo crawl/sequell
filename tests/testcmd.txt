@@ -17,7 +17,6 @@
 # Any line starting with $ describes shell commands to run; the command will
 # be echoed to stderr; the command exit code will not be checked.
 
-$ rm -r dat/learndb
 ?? cow ::~ I don't have a page labeled cow
 !learn add cow MOOOOOO
 ??cow ::~ MOOOO

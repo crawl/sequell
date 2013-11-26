@@ -225,13 +225,13 @@ sub _command_proc_generator {
     my ($command_dir, $file) = @_;
     return sub {
       my ($args, @args) = @_;
-      $self->_handle_output(
+      $self->handle_output(
         $self->_run_command($command_dir, $file, $args, @args))
     };
   }
 }
 
-sub _handle_output {
+sub handle_output {
   my ($self, $output, $full_output) = @_;
 
   return unless $output =~ /\S/s;
