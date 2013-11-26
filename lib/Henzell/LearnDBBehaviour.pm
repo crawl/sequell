@@ -72,7 +72,8 @@ sub env {
 
   my $bot = $self->{irc}->nick();
   my $rnick = $self->_random_nick_in($$m{channel}, $bot, $$m{who});
-  my %env = (nick => $$m{who},
+  my %env = (%$m,
+             nick => $$m{who},
              user => $$m{who},
              bot => $bot,
              rnick => $rnick,
