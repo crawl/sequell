@@ -22,11 +22,15 @@ sub bare {
   $self->term() eq '' || $self->value() =~ /^\s*: /
 }
 
+sub strip_value {
+  my ($self, $value) = @_;
+  $value =~ s/^\s*: //;
+  $value
+}
+
 sub template {
   my $self = shift();
-  my $value = $self->value();
-  $value =~ s/^\s*: //;
-  $self->bare() ? $value : $self->description()
+  $self->bare() ? $self->formatted_value() : $self->description()
 }
 
 sub term {
@@ -35,6 +39,11 @@ sub term {
 
 sub value {
   shift()->{value}
+}
+
+sub formatted_value {
+  my $self = shift;
+  $self->strip_value($self->value())
 }
 
 sub index {

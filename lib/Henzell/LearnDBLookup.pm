@@ -54,7 +54,7 @@ sub _exec_command {
 }
 
 sub resolve {
-  my ($self, $m, $entry, $args, %env) = @_;
+  my ($self, $m, $entry, $bare, $args, %env) = @_;
 
   return undef unless defined $entry;
 
@@ -72,7 +72,8 @@ sub resolve {
 
   # Make sure we still have something that looks like a LearnDB entry:
   $entry = LearnDB::Entry->wrap($entry);
-  $self->_expander()->expand($entry->template(), $args, %env)
+  my $tpl = $bare ? $entry->formatted_value() : $entry->template();
+  $self->_expander()->expand($tpl, $args, %env)
 }
 
 1

@@ -142,10 +142,10 @@ sub query_entry_with_redirects {
 # Porcelain: parses a query and retrieves an entry, following redirects, etc.
 sub query_entry {
   my ($term, $num, $error_message_if_missing) = @_;
-  return unless $term && $term =~ /\S/;
+  return unless defined($term) && $term =~ /\S/;
   unless (defined $num) {
     ($term, $num) = parse_query($term);
-    return unless $term && $term =~ /\S/;
+    return unless defined($term) && $term =~ /\S/;
   }
   my $res = query_entry_with_redirects($term, $num);
   if ($error_message_if_missing && (!defined($res) || $res eq '')) {

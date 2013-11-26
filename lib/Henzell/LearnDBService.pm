@@ -71,14 +71,16 @@ sub _reactors {
 }
 
 sub _expand {
-  my ($self, $m, $msg) = @_;
-  $self->_lookup()->resolve($m, $msg, '', $self->{beh}->env($m))
+  my ($self, $m, $msg, $bare) = @_;
+  $self->_lookup()->resolve($m, $msg, $bare, '', $self->{beh}->env($m))
 }
 
 sub _db_query {
-  my ($self, $m, $query, $carp_if_missing) = @_;
+  my ($self, $m, $query, $bare, $carp_if_missing) = @_;
   my $msg =
-    $self->_expand($m, LearnDB::query_entry($query, undef, $carp_if_missing));
+    $self->_expand($m,
+                   LearnDB::query_entry($query, undef, $carp_if_missing),
+                   $bare);
   if (defined $msg && $msg =~ /\S/) {
     $self->{irc}->post_message(%$m, body => $msg);
     1
@@ -90,7 +92,7 @@ sub direct_query {
   return unless $m->{said};
   my $body = $$m{body};
   if ($body =~ /^\s*[?]{2}\s*(.*)\s*$/) {
-    $self->_db_query($m, $1, 'carp-if-missing');
+    $self->_db_query($m, $1, undef, 'carp-if-missing');
   }
 }
 
@@ -99,7 +101,7 @@ sub maybe_query {
   return unless $m->{said};
   my $body = $$m{body};
   if ($body =~ /^\s*(.*)\s*[?]+\s*$/) {
-    $self->_db_query($m, $1);
+    $self->_db_query($m, $1, 'bare');
   }
 }
 

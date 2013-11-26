@@ -10,7 +10,7 @@ my $sibling_fetch_delay = 10;
 
 # Fetch logs at least once in so many seconds, even if we haven't seen
 # any siblings speak.
-my $longest_logfetch_pause = 30 * 60;
+my $longest_logfetch_pause = 30;
 
 sub new {
   my ($cls, %opt) = @_;

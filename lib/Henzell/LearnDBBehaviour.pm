@@ -87,7 +87,8 @@ sub behaviour_result {
 
   my $match = $beh->{match}->match($m);
   return undef unless $match;
-  $self->{dblookup}->resolve($m, $beh->{action}, $match->{args},
+  $self->{dblookup}->resolve($m, $beh->{action}, 'bare',
+                             $match->{args},
                              $self->env($m, $match))
 }
 
