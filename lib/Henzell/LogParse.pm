@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+package Henzell::LogParse;
 
 use strict;
 use warnings;
@@ -12,6 +13,7 @@ use Henzell::Config;
 use Henzell::DB;
 use Henzell::TableLoader;
 use Henzell::Game;
+use Data::Dumper;
 
 my @LOGFIELDS_DECORATED = Henzell::Crawl::logfields_decorated();
 my %GAME_TYPE_PREFIXES = Henzell::Crawl::game_type_prefixes();
@@ -220,8 +222,8 @@ SELECT MAX(t.file_offset)
   FROM $table AS t INNER JOIN l_file AS lf ON lf.id = t.file_id
  WHERE lf.file = ?
 OFFSET
-  #print "Getting offset for $table with $file: $query\n";
   my $res = query_one($query, $file);
+  #print "Offset for $table with $file = $res: $query\n";
   defined($res)? $res : -1
 }
 
@@ -232,6 +234,11 @@ sub truncate_table {
 
 sub go_to_offset {
   my ($table, $loghandle, $offset) = @_;
+
+  if ($offset == -2) {
+    seek($loghandle, 0, SEEK_CUR);
+    return 1;
+  }
 
   if ($offset > 0) {
     # Seek to the newline.
@@ -275,7 +282,7 @@ sub cat_xlog {
   my ($table, $lf, $fadd, $offset, $event_publisher) = @_;
 
   my $loghandle = $lf->{handle};
-  my $lfile = $lf->{file};
+  my $lfile = $lf->{file} or die "No filename in " . Dumper($lf) . "\n";
   my $readfile = $lf->{readfile};
   $offset = find_start_offset_in($table, $lfile) unless defined $offset;
   die "No offset into $lfile ($table)" unless defined $offset;
@@ -327,7 +334,8 @@ sub game_table_name($$) {
 sub cat_typed_xlogfile {
   my ($lf, $offset, $event_publisher) = @_;
   my $milestone = $lf->{milestones};
-  cat_xlog(logfile_table($$lf{file}), $lf,
+  cat_xlog($milestone? milefile_table($$lf{file}) : logfile_table($$lf{file}),
+           $lf,
            $milestone ? \&add_milestone : \&add_logline,
            $offset,
            $event_publisher)

@@ -12,7 +12,11 @@ use warnings;
 use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
+use lib File::Spec->catfile(dirname(__FILE__), '../../src');
 use LearnDB qw/$RTERM_INDEXED $RTERM/;
+use Helper;
+
+Helper::forbid_private();
 
 eval {
   if ($ARGV[1] =~ /^$RTERM_INDEXED\s+$RTERM_INDEXED\s*$/) {

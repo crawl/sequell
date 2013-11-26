@@ -13,6 +13,7 @@ use Henzell::IRCAuth;
 use Henzell::SeenService;
 use Henzell::TellService;
 use Henzell::CommandService;
+use Henzell::LearnDBService;
 use Henzell::LogFetchService;
 use Henzell::LogParse;
 use Henzell::LogReader;
@@ -120,7 +121,7 @@ sub irc_services {
 
   my $executor = Henzell::CommandService->new(
     irc => $irc_bot,
-    auth => Henzell::IRCAuth->new($irc_bot),
+    auth => Henzell::IRCAuth->new(irc => $irc_bot),
     config => $config_file);
 
   if ($feat->('learndb')) {

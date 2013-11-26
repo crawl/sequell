@@ -8,6 +8,10 @@ use warnings;
 # behaved bot to cause us to hammer cdo with http requests.
 my $sibling_fetch_delay = 10;
 
+# Fetch logs at least once in so many seconds, even if we haven't seen
+# any siblings speak.
+my $longest_logfetch_pause = 30 * 60;
+
 sub new {
   my ($cls, %opt) = @_;
   bless \%opt, $cls
@@ -37,9 +41,11 @@ sub sibling_announcement {
 
 sub _need_logfetch {
   my $self = shift;
-  $self->{fetch_logs} &&
-    (!$self->{last_fetch_time} ||
-       (time() - $self->{last_fetch_time}) > $sibling_fetch_delay)
+  return 1 unless $self->{last_fetch_time};
+  return 1 if $self->{fetch_logs} &&
+              (time() - $self->{last_fetch_time}) > $sibling_fetch_delay;
+
+  (time() - $self->{last_fetch_time}) > $longest_logfetch_pause
 }
 
 sub _fetch_logs {

@@ -146,6 +146,7 @@ sub event_userquit {
 
 sub react {
   my ($self, $m) = @_;
+  return if $$m{self} || $$m{authenticator};
   $self->_refresh();
   for my $reactor (@{$self->{reactors}}) {
     last if $reactor->($m);

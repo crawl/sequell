@@ -3,12 +3,14 @@ package Henzell::IRCAuth;
 use strict;
 use warnings;
 
-my $NICK_AUTHENTICATOR = 'NickServ';
+use lib '..';
+use Henzell::IRCUtil;
+
 my $AUTH_EXPIRY_SECONDS = 60 * 60;
 
 sub new {
   my ($cls, %opt) = @_;
-  bless { auth_service => $NICK_AUTHENTICATOR,
+  bless { auth_service => $Henzell::IRCUtil::NICK_AUTHENTICATOR,
           auth_expiry_seconds => $AUTH_EXPIRY_SECONDS,
           %opt,
           cmd => { }, authenticated_users => { } }, $cls

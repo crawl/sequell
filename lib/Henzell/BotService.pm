@@ -3,6 +3,7 @@ package Henzell::BotService;
 
 use lib '..';
 use Henzell::Config qw/%CONFIG %CMD %USER_CMD %PUBLIC_CMD/;
+use Henzell::IRCUtil;
 
 # The largest message the bot will paginate in PM.
 my $MAX_PAGINATE_LENGTH = 3001;
@@ -22,6 +23,11 @@ sub nick_is_sibling {
 
   ($nick ne lc($self->nick())) &&
     scalar(grep($_ eq $nick, map(lc, sibling_bots())))
+}
+
+sub nick_is_authenticator {
+  my ($self, $nick) = @_;
+  lc($nick) eq lc($Henzell::IRCUtil::NICK_AUTHENTICATOR)
 }
 
 sub configure_services {
@@ -126,6 +132,7 @@ sub _message_metadata {
     private => $private,
     verbatim => $verbatim,
     sibling => $sibling,
+    authenticator => $self->nick_is_authenticator($nick),
     self => lc($$m{who}) eq lc($self->nick())
   }
 }

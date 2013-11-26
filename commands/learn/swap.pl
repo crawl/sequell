@@ -5,7 +5,11 @@ use warnings;
 use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
+use lib File::Spec->catfile(dirname(__FILE__), '../../src');
 use LearnDB qw/check_entry_exists swap_entries report_error/;
+use Helper;
+
+Helper::forbid_private();
 
 eval {
   my ($term, $num, $term2, $num2) =

@@ -5,7 +5,11 @@ use warnings;
 use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
+use lib File::Spec->catfile(dirname(__FILE__), '../../src');
 use LearnDB qw/read_entry num_entries replace_entry/;
+use Helper;
+
+Helper::forbid_private();
 
 my ($term, $num, $rest);
 

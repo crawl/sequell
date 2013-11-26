@@ -41,14 +41,16 @@ sub _recognized_command {
   my ($self, $m, $command) = @_;
   $self->_executor()->recognized_command({ %$m,
                                            body => $command,
-                                           verbatim => $command })
+                                           verbatim => $command,
+                                           proxied => 1})
 }
 
 sub _exec_command {
   my ($self, $m, $command) = @_;
   $self->_executor()->execute_command({ %$m,
                                         body => $command,
-                                        verbatim => $command })
+                                        verbatim => $command,
+                                        proxied => 1 })
 }
 
 sub resolve {

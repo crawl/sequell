@@ -6,6 +6,7 @@ use warnings;
 use lib '..';
 use Henzell::LogParse;
 use Henzell::Config;
+use Data::Dumper;
 use POE;
 
 sub new {
@@ -25,10 +26,8 @@ sub new {
 sub _open_handles {
   my $self = shift;
   $self->{stonehandles} =
-    [ map {
-        $_[0]->{milestones} = 1;
-        $_[0]
-      } Henzell::LogParse::open_handles(@{$self->{milestones}}) ];
+    [ map(+{ %$_, milestones => 1 },
+          Henzell::LogParse::open_handles(@{$self->{milestones}})) ];
   $self->{loghandles} =
     [ Henzell::LogParse::open_handles(@{$self->{logfiles}}) ];
 
@@ -67,6 +66,7 @@ sub tail_logs {
 sub _read_logs {
   my ($self, $catchup, @logs) = @_;
   for my $log (@logs) {
+    die "No filename in " . Dumper($log) . "\n" unless $log->{file};
     if ($catchup) {
       print "Catching up on records from $log->{file}...\n";
     }
@@ -77,7 +77,7 @@ sub _read_logs {
     };
     Henzell::LogParse::cat_typed_xlogfile(
       $log,
-      $catchup? undef : tell($log->{handle}),
+      $catchup? undef : -2,
       $event_publisher);
   }
 }

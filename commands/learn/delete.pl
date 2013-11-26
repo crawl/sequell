@@ -5,7 +5,11 @@ use warnings;
 use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
+use lib File::Spec->catfile(dirname(__FILE__), '../../src');
 use LearnDB qw/cleanse_term num_entries read_entry del_entry/;
+use Helper;
+
+Helper::forbid_private();
 
 $ARGV[1] =~ y/ /_/;
 $ARGV[1] =~ /^([^\[\]]+)(?:\[([+-]?\d+)\]?)?/ or do

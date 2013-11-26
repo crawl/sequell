@@ -9,6 +9,7 @@ use parent 'Henzell::SQLite';
 
 use File::Basename;
 use File::Spec;
+use utf8;
 
 my $schema = File::Spec->catfile(dirname(__FILE__), '../../config/learndb.sql');
 
@@ -71,10 +72,17 @@ sub definition_exists {
   defined($self->definition_at($term, $index))
 }
 
+sub utf8decode {
+  my ($self, $bytes) = @_;
+  return $bytes unless defined $bytes;
+  utf8::decode($bytes);
+  $bytes
+}
+
 sub definition_at {
   my ($self, $term, $index) = @_;
   $index ||= 1;
-  $self->query_val(<<QUERY, $term, $index)
+  $self->utf8decode($self->query_val(<<QUERY, $term, $index))
 SELECT definition FROM definitions
  WHERE term_id = (SELECT id FROM terms WHERE term = ?)
    AND seq = ?
@@ -91,7 +99,7 @@ sub definition {
 sub canonical_term {
   my ($self, $term) = @_;
   $self->init();
-  $self->query_val(<<QUERY, $term)
+  $self->utf8decode($self->query_val(<<QUERY, $term))
 SELECT term FROM terms WHERE term = ?
 QUERY
 }
@@ -219,6 +227,7 @@ UPDATE definitions SET seq = seq + 1
 UPDATE_INDICES
     }
   }
+  warn "Inserting value: $value\n";
   $self->exec(<<INSERT_SQL, $term_id, $value, $index);
 INSERT INTO definitions (term_id, definition, seq)
      VALUES (?, ?, ?)

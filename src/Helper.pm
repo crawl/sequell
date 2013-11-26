@@ -485,5 +485,24 @@ sub cleanse_nick {
   Henzell::IRCUtil::cleanse_nick(shift)
 }
 
+sub private_messaging {
+  $ENV{PRIVMSG}
+}
+
+sub proxied_command {
+  $ENV{HENZELL_PROXIED}
+}
+
+sub forbid_private {
+  my $stub = shift;
+  if (private_messaging()) {
+    print($stub || "This command cannot be used in PM.", "\n");
+    exit 1;
+  }
+  if (proxied_command()) {
+    print($stub || "This command must be issued directly.", "\n");
+    exit 1;
+  }
+}
 
 1;
