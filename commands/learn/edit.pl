@@ -44,7 +44,7 @@ my ($sep) = $rest =~ /^s(.)/;
 my $qsep = "\Q$sep";
 
 my ($regex, $replacement, $opts) =
-  $rest =~ m{^s$qsep((?:\\$qsep|[^$qsep])*)$qsep((?:\\$qsep|[^$qsep])*)(?:$qsep([ig]*) *)?$} or do
+  $rest =~ m{^s$qsep((?:\\.|[^$qsep\\])*)$qsep((?:\\.|[^$qsep\\])*)(?:$qsep([ig]*) *)?$} or do
 {
   print "Syntax is: !learn edit TERM[NUM] s/REGEX/REPLACE/opts";
   exit;
