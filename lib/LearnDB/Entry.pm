@@ -19,13 +19,13 @@ sub new {
 
 sub bare {
   my $self = shift;
-  $self->term() eq '' || $self->value() =~ /^: /
+  $self->term() eq '' || $self->value() =~ /^\s*: /
 }
 
 sub template {
   my $self = shift();
   my $value = $self->value();
-  $value =~ s/^: //;
+  $value =~ s/^\s*: //;
   $self->bare() ? $value : $self->description()
 }
 
