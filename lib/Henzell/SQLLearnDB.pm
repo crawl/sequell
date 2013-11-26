@@ -44,10 +44,10 @@ sub _initialize_db {
 sub each_term {
   my ($self, $action) = @_;
   $self->init();
-  my $st = $self->prepare('SELECT term FROM terms');
+  my $st = $self->prepare('SELECT term FROM terms ORDER by term');
   $st->execute();
   while (my $row = $st->fetchrow_arrayref()) {
-    $action->($row->[0]);
+    $action->($self->utf8decode($row->[0]));
   }
 }
 
@@ -62,7 +62,7 @@ QUERY
   $st->execute($term) or die "Couldn't lookup definition: $self->errstr()\n";
   my @definitions;
   while (my $row = $st->fetchrow_arrayref()) {
-    push @definitions, $row->[0];
+    push @definitions, $self->utf8decode($row->[0]);
   }
   @definitions
 }
@@ -227,7 +227,6 @@ UPDATE definitions SET seq = seq + 1
 UPDATE_INDICES
     }
   }
-  warn "Inserting value: $value\n";
   $self->exec(<<INSERT_SQL, $term_id, $value, $index);
 INSERT INTO definitions (term_id, definition, seq)
      VALUES (?, ?, ?)

@@ -7,11 +7,23 @@ use HTTP::Date;
 use strict;
 use warnings;
 
+use File::Basename;
+use File::Spec;
+use lib File::Spec->catfile($ENV{HENZELL_ROOT} ||
+                              File::Spec->catfile(dirname(__FILE__), '..'),
+                            'lib');
+use Henzell::SQLLearnDB;
+use utf8;
+use open qw/:std :utf8/;
+
+my $dbfile = shift() || 'dat/learn.db';
+my $db = Henzell::SQLLearnDB->new($dbfile);
+
 my $timestamp = 0;
 
 local $/;
 
-my $title = "Henzell's learndb";
+my $title = "##crawl learndb";
 my %learndb;
 my %redir;
 my %link;
@@ -20,7 +32,7 @@ my $FULL_REDIRECT_PATTERN = qr/^see {([a-z0-9_\[\]!?@ -]+)}$/i;
 sub addlink($$)
 {
     local $_=$_[0];
-    my $dest=$_[1];
+    my $dest=canonical_link($_[1]);
 
     #mixed _ and spaces?
     ${$redir{$dest}}{$_}=1;
@@ -35,37 +47,30 @@ sub addlink($$)
     $link{$_}=1;
 }
 
-for(split /\n/, `find dat/learndb/ -type f ! -name '*.html*'`)
-{
-    open F, "<$_" or die "Can't read [$_]\n";
-    if (m:learndb/([a-z0-9_-]+)/(\d+):)
-    {
-        my $key = $1;
-        $key.="[$2]" if $2!='1';
-        my $val = <F>;
-        if ($val =~ $FULL_REDIRECT_PATTERN)
-        {
-            my $dest = $1;
-            $dest =~ s/\[1\]$//;
-            addlink($key, $dest);
-        }
-        else
-        {
-            addlink($key, $key);
-        }
-        $learndb{$key}=$val;
+$timestamp = $db->mtime();
+$db->each_term(
+  sub {
+    my $term = shift;
+    my @definitions = $db->definitions($term);
+    for my $i (1 .. @definitions) {
+      my $val = $definitions[$i - 1];
+      my $key = $term;
+      $key .= "[$i]" if $i > 1;
+      if ($val =~ $FULL_REDIRECT_PATTERN) {
+        my $dest = $1;
+        addlink($key, $dest);
+      }
+      else {
+        addlink($key, $key);
+      }
+      $learndb{$key}=$val;
     }
-    close F;
+  });
 
-    my @st;
-    $timestamp = $st[10] if @st=stat $_ and $st[10]>$timestamp;
-}
-
-my $embedded_css = do { local (@ARGV, $/) = 'learndb.css'; <> };
+my $embedded_css = do { local (@ARGV, $/) = 'config/data/learndb.css'; <> };
 
 print <<EOF;
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-        "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -122,7 +127,7 @@ for my $key (sort keys %learndb)
     print "<ol>" if $has_multiple;
     print htmlize($learndb{$key}, $has_multiple, ''), "\n";
     my $i=1;
-    while($learndb{$key."[".++$i."]"})
+    while(exists $learndb{$key."[".++$i."]"})
     {
       my $text = $learndb{$key."[$i]"};
       my $prefix = '';

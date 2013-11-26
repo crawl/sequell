@@ -8,16 +8,20 @@ STDIN.sync = true
 STDERR.sync = true
 STDOUT.sync = true
 
-while (line = STDIN.readline)
-  begin
-    data = JSON.parse(line)
-    CommandContext.with_default_nick((data['env'] || { })['nick']) do
-      puts JSON.dump(res: Query::QueryStringTemplate.expand(
-          data['msg'],
-          data['args'] || '',
-          data['env'] || { }))
+begin
+  while (line = STDIN.readline)
+    begin
+      data = JSON.parse(line)
+      CommandContext.with_default_nick((data['env'] || { })['nick']) do
+        puts JSON.dump(res: Query::QueryStringTemplate.expand(
+            data['msg'],
+            data['args'] || '',
+            data['env'] || { }))
+      end
+    rescue
+      puts JSON.dump(err: $!.message)
     end
-  rescue
-    puts JSON.dump(err: $!.message)
   end
+rescue EOFError
+  # Normal shutdown
 end

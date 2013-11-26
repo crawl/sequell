@@ -12,7 +12,6 @@ use Henzell::TellService;
 use Henzell::LearnDBService;
 use utf8;
 
-
 do 'sqllog.pl';
 do 'game_parser.pl';
 
