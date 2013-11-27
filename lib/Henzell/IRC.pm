@@ -76,7 +76,7 @@ sub tick {
 
 sub channel_nicks {
   my ($self, $channel) = @_;
-  keys %{$self->channel_data($channel)}
+  keys %{$self->channel_data($channel) || { }}
 }
 
 # Override BasicBot say since it tries to get clever with linebreaks.
