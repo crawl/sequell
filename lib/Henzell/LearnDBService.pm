@@ -91,7 +91,7 @@ sub direct_query {
   my ($self, $m) = @_;
   return unless $m->{said};
   my $body = $$m{body};
-  if ($body =~ /^\s*[?]{2}\s*(.*)\s*$/) {
+  if ($body =~ /^\s*[?]{2}\s*(.+)\s*$/) {
     $self->_db_query($m, $1, undef, 'carp-if-missing');
   }
 }
@@ -100,7 +100,7 @@ sub maybe_query {
   my ($self, $m) = @_;
   return unless $m->{said};
   my $body = $$m{body};
-  if ($body =~ /^\s*(.*)\s*[?]+\s*$/) {
+  if ($body =~ /^\s*(.+)\s*[?]+\s*$/) {
     $self->_db_query($m, $1, 'bare');
   }
 }
