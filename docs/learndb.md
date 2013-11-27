@@ -151,24 +151,23 @@ Query Forms
 
 There are three ways to query the LearnDB:
 
-1. ??<term>
-2. <term>?
-3. !learn query <term>
+1. ??term
+2. term??
+3. !learn query term
 
-??<term> is expected to be the most common form of query. Sequell will
-explicitly report an error if a user requests a nonexistent term, and
-will generally indicate the entry number and the count of entries when
-queried with ??<term>:
+??term is the standard query. Sequell will report errors if a user
+requests a nonexistent term with ??term, and will generally indicate
+the entry number and the count of entries when queried with ??term:
 
     <user> ??zot
     <Sequell> zot[1/6]: The final area of the game, ...
 
-<term>? is an indirect query. Sequell will silently ignore the query
+term?? is an indirect query. Sequell will silently ignore the query
 if the LearnDB does not contain the term. If Sequell finds the term in
 the LearnDB, it will report the entry, but will skip the summary of the
 entry number and the count of entries.
 
-    <user> zot?
+    <user> zot??
     <Sequell> The final area of the game, ...
 
 !learn query is the canonical query: it prevents Sequell from
@@ -183,13 +182,13 @@ modifying the entry for display in any way.
 Text Templates
 --------------
 
-When queried with ??<x> and <x>?, Sequell expands entries as follows:
+When queried with ??x and x??, Sequell expands entries as follows:
 
 1. Any $variable that Sequell recognises will be replaced with its value.
 2. Any $variable that Sequell does not recognise will be echoed.
 3. If the entry is prefixed with ": " (colon space, without the quotes),
    Sequell will skip the term[index/count]: prefix when displaying the entry.
-   Note that this is the default behaviour when queried with the form <x>?
+   Note that this is the default behaviour when queried with the form x??
 
 Sequell recognizes these variables:
 
@@ -220,16 +219,16 @@ Will provoke Sequell to greet any visitor to the channel who says "Hi!"
     <user> Hi!
     <Sequell> Hello, user. Welcome to ##crawl!
 
-The <TEXT> that Sequell matches against is intentionally limited to
-reduce abuse. You are restricted to simple matches of text. You may define
-very limited capturing patterns:
+The TEXT that Sequell matches against is intentionally limited to
+reduce the chances of excessive bot spam. You are restricted to simple
+matches of text. You may define very limited capturing patterns:
 
     !learn add :beh: Give $person a hug ::: /me hugs $person.
     <user> Give rutabaga a hug
     * Sequell hugs rutabaga.
 
-The <TEXT> normally matches the entire input line. You can indicate that
-<TEXT> should not be anchored to the end of the line using >>> at the end,
+The TEXT normally matches the entire input line. You can indicate that
+TEXT should not be anchored to the end of the line using >>> at the end,
 and not anchored to the beginning using <<< at the beginning. <<< and >>>
 may be used together.
 

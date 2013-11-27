@@ -100,7 +100,7 @@ sub maybe_query {
   my ($self, $m) = @_;
   return unless $m->{said};
   my $body = $$m{body};
-  if ($body =~ /^\s*(.+)\s*[?]+\s*$/) {
+  if ($body =~ /^\s*(.+)\s*[?]{2,}\s*$/) {
     $self->_db_query($m, $1, 'bare');
   }
 }
