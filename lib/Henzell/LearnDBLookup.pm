@@ -73,7 +73,10 @@ sub resolve {
   # Make sure we still have something that looks like a LearnDB entry:
   $entry = LearnDB::Entry->wrap($entry);
   my $tpl = $bare ? $entry->formatted_value() : $entry->template();
-  $self->_expander()->expand($tpl, '', %env)
+  my $res = eval {
+    $self->_expander()->expand($tpl, '', %env)
+  };
+  $res || $@
 }
 
 1

@@ -146,36 +146,6 @@ sub periodic_actions {
   ]
 }
 
-sub nick_rule_match {
-  my ($rule, $nick) = @_;
-  ($$rule{nick} || '') eq $nick
-}
-
-sub rule_pattern_match {
-  my ($rule, $verbatim) = @_;
-  $verbatim =~ qr/$$rule{pattern}/ && $1
-}
-
-sub handle_special_command {
-  my ($m, $private, $nick, $verbatim) = @_;
-  return if $private;
-  my $respond_to = $CONFIG{respond_to};
-  return unless $respond_to && ref($respond_to) eq 'ARRAY';
-  for my $rule (@{$CONFIG{respond_to}}) {
-    next unless ref($rule) eq 'HASH';
-    next unless nick_rule_match($rule, $nick);
-    next unless $$rule{executor} eq 'command';
-
-    my $body = rule_pattern_match($rule, $verbatim);
-    next unless $body;
-    $$m{body} = $body;
-    $$m{proxied} = 1;
-    process_command($m);
-    return 1;
-  }
-  undef
-}
-
 sub process_config() {
   @logfiles = @Henzell::Config::LOGS unless @logfiles;
   @stonefiles = @Henzell::Config::MILESTONES unless @stonefiles;
