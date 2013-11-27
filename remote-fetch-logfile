@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use lib 'lib';
 use Henzell::Config qw/%CONFIG @LOGS @MILESTONES/;
 use Henzell::Utils;
 
