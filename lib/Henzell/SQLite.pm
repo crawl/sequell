@@ -46,6 +46,13 @@ sub _open {
   $db
 }
 
+sub disable_fsync {
+  my $self = shift;
+  my $db = $self->db();
+  $db->do('PRAGMA synchronous = off') or
+    die "Could not disable fsync: $db->errstr\n";
+}
+
 sub load_sql_file {
   my ($self, $file) = @_;
   return unless -f $file;

@@ -14,6 +14,7 @@ my $db = Henzell::SQLLearnDB->new($file)
   or die "Couldn't open LearnDB at $file: $!";
 
 my $fs = Henzell::FSLearnDB->new($dbdir);
+$db->disable_fsync();
 $fs->each_term(
   sub {
     my $term = shift;
