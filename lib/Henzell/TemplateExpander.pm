@@ -34,8 +34,8 @@ sub expand {
                            env => \%variables }), "\n";
   my $res = <$in>;
   my $json = decode_json($res);
-  die "Could not parse response: $res\n" unless $json;
-  die $json->{err} if $json && $json->{err};
+  return "Could not parse response: $res\n" unless $json;
+  return $json->{err} if $json && $json->{err};
   $json && $json->{res}
 }
 
