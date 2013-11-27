@@ -5,7 +5,6 @@ use warnings;
 
 # !learn move may be used as:
 #  move A[x] B[y] -> delete A[x] and !learn add B[y] <text>
-#  move A[x] A[y] -> as before: delete A[x] and !learn add B[y] <text>
 #  move A[x] B    -> delete A[x] !learn add B <text>, i.e. add as last entry.
 #  move A B       -> rename all entries in A as B
 

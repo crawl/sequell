@@ -25,12 +25,12 @@ sub set_behaviours {
 
 sub _parse_behaviours {
   my $self = shift;
-  grep($_, map($self->_parse_behaviour($_), @_))
+  grep($_ && $_->{match}, map($self->_parse_behaviour($_), @_))
 }
 
 sub _parse_behaviour {
   my ($self, $beh) = @_;
-  unless ($beh =~ /(.*):::(.*)/) {
+  unless ($beh =~ /^(.*):::(.*)$/) {
     warn "Behaviour $beh is malformed\n";
     return undef;
   }

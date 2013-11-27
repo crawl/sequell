@@ -35,6 +35,27 @@ sub translate_group {
   }
 }
 
+sub test_words {
+  my $word_count = shift;
+  my @chars = ('a'..'z', '0'..'9');
+  my @words;
+  for my $word (1 .. $word_count) {
+    push @words, join('', map(@chars[rand @chars], 8 .. 15));
+  }
+  join(' ', @words)
+}
+
+# Generate random word strings. If the pattern matches any of them,
+# disallow it.
+sub overpermissive_pattern {
+  my ($self, $re) = @_;
+  return 1 if '' =~ $re;
+  for my $word (map(test_words($_), 1..6)) {
+    return 1 if $word =~ $re;
+  }
+  0
+}
+
 sub parse {
   my ($self, $matcher, $ctx) = @_;
   my %conditions;
@@ -58,8 +79,14 @@ sub parse {
   push @re, '\s*?';
   push @re, $after ? '(.*?)$' : '$';
 
+  my $re = qr/@{[join('', @re)]}/;
+  if ($self->overpermissive_pattern($re)) {
+    warn "Pattern $re for $original is overpermissive, rejecting it\n";
+    return undef;
+  }
+
   $self->new(original => $original,
-             expr => qr/@{[join('', @re)]}/,
+             expr => $re,
              conditions => \%conditions,
              captures => \@captures)
 }
@@ -78,10 +105,17 @@ sub condition_match {
   1
 }
 
+sub canonical_body {
+  my $body = shift;
+  s/^\s+//, s/\s+$//, s/\s+/ /g for $body;
+  $body
+}
+
 sub match {
   my ($self, $m) = @_;
   return unless $self->condition_match($m);
-  my $body = $$m{body};
+  my $body = canonical_body($$m{body});
+  return unless $body =~ /\S/;
   my $re = $self->{expr};
   if ($body =~ $re) {
     my (@bindings) = $body =~ $re;

@@ -13,7 +13,7 @@ Helper::forbid_private();
 
 eval {
   my ($term, $num, $term2, $num2) =
-    $ARGV[1] =~ /^([\w! ]+)\[(\d+)\] +([\w! ]+)\[(\d+)\]/ or do
+    $ARGV[1] =~ /^([\w! ]+)\[(\d+)\]? +([\w! ]+)\[(\d+)\]?/ or do
       {
         print "Syntax is: !learn swap TERM[NUM] TERM2[NUM2]";
         exit;

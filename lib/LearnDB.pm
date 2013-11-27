@@ -76,6 +76,7 @@ sub canonical_term {
 
 sub normalize_index {
   my ($term, $num, $op) = @_;
+  $op ||= '';
   $term = cleanse_term($term);
   $num ||= 1;
   my $total = num_entries($term);
@@ -141,13 +142,14 @@ sub query_entry_with_redirects {
 
 # Porcelain: parses a query and retrieves an entry, following redirects, etc.
 sub query_entry {
-  my ($term, $num, $error_message_if_missing) = @_;
+  my ($term, $num, $error_message_if_missing, $ignore_redirects) = @_;
   return unless defined($term) && $term =~ /\S/;
   unless (defined $num) {
     ($term, $num) = parse_query($term);
     return unless defined($term) && $term =~ /\S/;
   }
-  my $res = query_entry_with_redirects($term, $num);
+  my $res = $ignore_redirects ? read_entry($term, $num)
+                              : query_entry_with_redirects($term, $num);
   if ($error_message_if_missing && (!defined($res) || $res eq '')) {
 	return "I don't have a page labeled $term in my learndb." if $num == 1;
     return "I don't have a page labeled $term\[$num] in my learndb.";
@@ -207,7 +209,7 @@ sub insert_entry {
 
 sub del_entry {
   my $term = cleanse_term(shift);
-  my $entry_num = normalize_index(num_entries($term), shift());
+  my $entry_num = normalize_index(num_entries($term), shift(), 'query');
   $DB->remove($term, $entry_num);
 }
 

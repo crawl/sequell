@@ -16,6 +16,7 @@ my %filenames =
   q      => "query.pl",
 
   add    => "add.pl",
+  a      => "add.pl",
   insert => 'add.pl',
 
   mv     => 'move.pl',
@@ -26,6 +27,7 @@ my %filenames =
   rm     => "delete.pl",
 
   edit   => "edit.pl",
+  e      => "edit.pl",
 
   swap   => "swap.pl",
 );
