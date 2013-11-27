@@ -128,7 +128,7 @@ sub event_emoted {
                  body => "/me $$m{body}" });
 }
 
-sub event_chainjoin {
+sub event_chanjoin {
   my ($self, $m) = @_;
   $self->react({ %$m, event => 'chanjoin', chanjoin => 1,
                  body => "/join $$m{body}" });
