@@ -24,15 +24,15 @@ sub event_said {
     if (Henzell::Tell::message_notify($$m{who})) {
       # just in case their first command is !messages
       return if $$m{body} =~ /^!messages\b/i;
-    }
 
-    $self->{irc}->post_message(
-      %$m,
-      body => sprintf('%s: You have %d message%s. Use !messages to read %s.',
-                      $$m{who},
-                      $cnt,
-                      $cnt == 1 ? '' : 's',
-                      $cnt == 1 ? 'it' : 'them'));
+      $self->{irc}->post_message(
+        %$m,
+        body => sprintf('%s: You have %d message%s. Use !messages to read %s.',
+                        $$m{who},
+                        $cnt,
+                        $cnt == 1 ? '' : 's',
+                        $cnt == 1 ? 'it' : 'them'));
+    }
   }
 }
 
