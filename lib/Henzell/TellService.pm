@@ -18,6 +18,8 @@ sub new {
 sub event_said {
   my ($self, $m) = @_;
 
+  return if $$m{sibling} || $$m{self};
+
   if (my $cnt = Henzell::Tell::message_count($$m{who})) {
     if (Henzell::Tell::message_notify($$m{who})) {
       # just in case their first command is !messages

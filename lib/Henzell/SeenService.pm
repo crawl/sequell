@@ -22,7 +22,7 @@ sub init {
 sub seen_update {
   my ($self, $e, $doing) = @_;
 
-  return if $$e{private} || $$e{self};
+  return if $$e{private} || $$e{self} || $$e{sibling};
   my $nick = $$e{who};
 
   $nick =~ y/'//d;
