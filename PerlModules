@@ -6,4 +6,5 @@ YAML::Any
 Tie::Cache
 File::Next
 App::Nopaste
+re::engine::RE2
 JSON

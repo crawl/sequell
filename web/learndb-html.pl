@@ -51,6 +51,7 @@ $timestamp = $db->mtime();
 $db->each_term(
   sub {
     my $term = shift;
+    next if $term eq ':beh:';
     my @definitions = $db->definitions($term);
     for my $i (1 .. @definitions) {
       my $val = $definitions[$i - 1];

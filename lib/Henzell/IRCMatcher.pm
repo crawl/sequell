@@ -50,9 +50,9 @@ sub test_words {
 sub overpermissive_pattern {
   my ($self, $re) = @_;
   return 1 if '' =~ $re;
-  for my $word (map(test_words($_), 1..6)) {
-    return 1 if $word =~ $re;
-  }
+  # for my $word (map(test_words($_), 1..6)) {
+  #   return 1 if $word =~ $re;
+  # }
   0
 }
 
