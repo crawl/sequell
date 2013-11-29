@@ -27,11 +27,14 @@ sub _echo_service {
 }
 
 sub expand {
-  my ($self, $template, $argline, %variables) = @_;
+  my ($self, $template, $argline, %opt) = @_;
   my ($in, $out) = $self->_echo_service();
   print $out encode_json({ msg => $template,
                            args => $argline,
-                           env => \%variables }), "\n";
+                           command_env => {
+                             PRIVMSG => $opt{irc_msg}{private}
+                           },
+                           env => $opt{env} }), "\n";
   my $res = <$in>;
   my $json = decode_json($res);
   return "Could not parse response: $res\n" unless $json;

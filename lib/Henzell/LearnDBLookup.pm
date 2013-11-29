@@ -74,7 +74,9 @@ sub resolve {
   $entry = LearnDB::Entry->wrap($entry);
   my $tpl = $bare ? $entry->formatted_value() : $entry->template();
   my $res = eval {
-    $self->_expander()->expand($tpl, '', %env)
+    $self->_expander()->expand($tpl, '',
+                               irc_msg => $m,
+                               env => \%env)
   };
   $res || $@
 }

@@ -103,7 +103,7 @@ sub _message_metadata {
     $target   = Henzell::IRCUtil::cleanse_nick($target);
   }
 
-  if ($self->force_private($verbatim) && !$self->is_always_public($verbatim)) {
+  if ($self->force_private($verbatim)) {
     $private = 1;
     $$m{channel} = 'msg';
   }
@@ -114,13 +114,6 @@ sub _message_metadata {
       command => $command,
       command_metadata => 1
    }
-}
-
-sub is_always_public {
-  my ($self, $command) = @_;
-  # Every !learn command apart from !learn query has to be public, always.
-  return 1 if $command =~ /^!learn/i && $command !~ /^!learn\s+query/i;
-  return $PUBLIC_CMD{lc $command};
 }
 
 sub force_private {
@@ -144,8 +137,7 @@ sub recognized_command {
   $m = $self->_message_metadata($m);
   my $command = $$m{command};
   $command &&
-    Henzell::Config::command_exists($command) &&
-        (!$$m{private} || !$self->is_always_public($$m{verbatim}))
+    Henzell::Config::command_exists($command)
 }
 
 sub execute_command {

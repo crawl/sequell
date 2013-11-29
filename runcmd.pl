@@ -40,14 +40,16 @@ $irc->configure_services(services => \@services);
 sub runcmd($) {
   chomp(my $cmd = shift);
   my $nick = $DEFAULT_NICK;
+  my $pm;
   return unless $cmd =~ /\S/;
-  if ($cmd =~ /^(\w+): (.*)/) {
-    $nick = $1;
+  if ($cmd =~ /^(\w*): (.*)/) {
+    $nick = $1 || $DEFAULT_NICK;
+    $pm = 'msg' unless $1;
     $cmd = $2;
   }
 
   $irc->tick();
-  $irc->said({ who => $nick, channel => $CHANNEL, body => $cmd });
+  $irc->said({ who => $nick, channel => $pm || $CHANNEL, body => $cmd });
 }
 
 if (@ARGV > 0) {
