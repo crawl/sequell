@@ -14,7 +14,7 @@ sub match_literal {
   my ($self, $g) = @_;
   $g = "\Q$g";
   $g =~ s/\\ +/\\s+?/g;
-  qr/$g/i
+  "(?i)$g"
 }
 
 sub translate_group {
@@ -35,16 +35,6 @@ sub translate_group {
   }
 }
 
-sub test_words {
-  my $word_count = shift;
-  my @chars = ('a'..'z', '0'..'9');
-  my @words;
-  for my $word (1 .. $word_count) {
-    push @words, join('', map(@chars[rand @chars], 8 .. 15));
-  }
-  join(' ', @words)
-}
-
 # Generate random word strings. If the pattern matches any of them,
 # disallow it.
 sub overpermissive_pattern {
@@ -56,15 +46,8 @@ sub overpermissive_pattern {
   0
 }
 
-sub parse {
-  my ($self, $matcher, $ctx) = @_;
-  my %conditions;
-  my $original = $matcher;
-  $matcher =~ s/\{\{(\w+):([^\}]*)\}\}/ $conditions{$1} = $2, '' /ge;
-  $matcher =~ s/\s+/ /g;
-  $matcher =~ s/^\s+//;
-  $matcher =~ s/\s+$//;
-
+sub parse_matcher {
+  my ($self, $ctx, $matcher) = @_;
   my @captures;
   my $before = $matcher =~ s/^<<<//;
   my $after = $matcher =~ s/>>>$//;
@@ -81,14 +64,29 @@ sub parse {
 
   my $re = qr/@{[join('', @re)]}/;
   if ($self->overpermissive_pattern($re)) {
-    warn "Pattern $re for $original is overpermissive, rejecting it\n";
+    return undef;
+  }
+}
+
+sub parse {
+  my ($self, $matcher, $ctx) = @_;
+  my %conditions;
+  my $original = $matcher;
+  $matcher =~ s/\{\{(\w+):([^\}]*)\}\}/ $conditions{$1} = $2, '' /ge;
+  $matcher =~ s/\s+/ /g;
+  $matcher =~ s/^\s+//;
+  $matcher =~ s/\s+$//;
+
+  my $m = $self->parse_matcher($ctx, $matcher);
+  unless ($matcher) {
+    warn "Could not compile pattern for $original\n";
     return undef;
   }
 
   $self->new(original => $original,
-             expr => $re,
+             expr => $m->{re},
              conditions => \%conditions,
-             captures => \@captures)
+             captures => $m->{captures})
 }
 
 sub new {
