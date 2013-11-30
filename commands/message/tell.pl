@@ -1,12 +1,13 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use utf8;
 do 'commands/message/helper.pl';
 
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
 
-chomp(my @args = <STDIN>);
+chomp(my @args = @ARGV);
 
 sub fail() {
   print "I don't grok. Syntax is !tell PERSON MESSAGE.\n";
