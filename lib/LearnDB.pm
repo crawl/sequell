@@ -193,8 +193,10 @@ sub check_term_length($) {
   check_thing_length("Term name", cleanse_term(shift), $TERM_MAX_LENGTH);
 }
 
-sub check_text_length($) {
-  check_thing_length("Entry text", shift, $TEXT_MAX_LENGTH);
+sub check_text_length($;$) {
+  my ($entry_text, $optional_name) = @_;
+  check_thing_length($optional_name || "Entry text", $entry_text,
+                     $TEXT_MAX_LENGTH);
 }
 
 sub insert_entry {

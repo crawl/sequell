@@ -44,7 +44,7 @@ my ($sep) = $rest =~ /^s(.)/;
 my $qsep = "\Q$sep";
 
 my ($regex, $replacement, $opts) =
-  $rest =~ m{^s$qsep((?:\\.|[^$qsep\\])*)$qsep((?:\\.|[^$qsep\\])*)(?:$qsep([ig]*) *)?$} or do
+  $rest =~ m{^s$qsep((?:\\.|[^$qsep\\])*)$qsep((?:\\.|[^$qsep\\])*)(?:$qsep([Ig]*) *)?$} or do
 {
   print "Syntax is: !learn edit TERM[NUM] s/REGEX/REPLACE/opts";
   exit;
@@ -53,27 +53,24 @@ $replacement =~ s/\\(.)/$1/g;
 $opts ||= '';
 
 $regex = "^" if $regex eq "";
-my $case_sensitive = 1;
+my $case_insensitive = 1;
 my $global = 0;
 
-if (index($opts, "i") >= 0)
+if (index($opts, "I") >= 0)
 {
-  $case_sensitive = 0;
+  $case_insensitive = 0;
 }
 if (index($opts, "g") >= 0)
 {
   $global = 1;
 }
 
-if ($case_sensitive)
-{
-  $regex = eval { qr/$regex/i };
-}
-else
-{
-  $regex = eval { qr/$regex/ };
-}
-print $@ and exit if $@;
+use re::engine::RE2 -strict => 1;
+
+my $regex_text = $regex;
+$regex = Helper::eval_or_exit {
+  $case_insensitive ? qr/$regex/i : qr/$regex/
+};
 
 my $oldtext = $text;
 my $matched = 0;
@@ -89,7 +86,7 @@ else
 
 if (not $matched)
 {
-  print "No change because the regex failed to match.";
+  print "No change: regex `$regex_text` does not match `$text`";
   exit;
 }
 
@@ -99,11 +96,9 @@ if ($text eq $oldtext)
   exit;
 }
 
-if (length($text) > 350)
-{
-  print "New text exceeds the maximum length of 350 characters, aborting.";
-  exit;
-}
+Helper::eval_or_exit {
+  LearnDB::check_text_length($text, 'New text')
+};
 
 replace_entry($term, $num, $text);
 print read_entry($term, $num);

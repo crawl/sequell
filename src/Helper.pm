@@ -41,11 +41,19 @@ our %EXPORT_TAGS = (
 my $NICKMAP_FILE = 'dat/nicks.map';
 my %NICK_ALIASES;
 my $nick_aliases_loaded;
-
-# useful variables {{{
-#our $source_dir = '/home/doy/coding/src/stone_soup-release/crawl-ref';
 our $source_dir = 'current';
-# }}}
+
+sub eval_or_exit(&) {
+  my $proc = shift();
+  my $res = eval { $proc->() };
+  my $err = $@;
+  if ($err) {
+    my ($msg) = $err =~ /(.*) at/;
+    print "ERROR: ", $msg, "\n";
+    exit 1;
+  }
+  $res
+}
 
 sub demunge_xlogline # {{{
 {

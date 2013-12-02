@@ -96,6 +96,22 @@ in the search must be escaped:
     <user> !learn edit cow[1] s/\?/!/
     <Sequell> cow[1/4]: Vocalization: "Moo!"
 
+Sequell uses [the RE2 regex engine](https://code.google.com/p/re2/wiki/Syntax)
+
+Regular expressions are case-insensitive by default, but can be made
+case-sensitive using the flag I
+
+### Flags
+
+Sequell recognises these regex flags for !learn edit:
+
+| Flag | Description                              |
+|------|------------------------------------------|
+| I    | Case-sensitive search                    |
+| g    | Global replace (replace all occurrences) |
+
+You may also use embedded regex flags such as (?-i).
+
 Removing entries from the LearnDB
 ---------------------------------
 

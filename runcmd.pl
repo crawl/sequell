@@ -17,7 +17,7 @@ do 'game_parser.pl';
 
 my $DEFAULT_NICK = $ENV{NICK} || 'greensnark';
 my $CHANNEL = $ENV{CHANNEL} || '##crawl';
-my $CONFIG = $ENV{RC} || 'rc/henzell.rc';
+my $CONFIG = $ENV{RC} || 'rc/sequell.rc';
 
 $ENV{IRC_NICK_AUTHENTICATED} = 'y';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
