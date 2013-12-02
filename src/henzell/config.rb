@@ -2,8 +2,8 @@ require 'yaml'
 
 module Henzell
   class Config
-    DEFAULTS_FILEPATH = 'rc/henzell.defaults'
-    CONFIG_FILEPATH = 'rc/henzell.rc'
+    DEFAULTS_FILEPATH = 'rc/sequell.defaults'
+    CONFIG_FILEPATH = 'rc/sequell.rc'
 
     def self.root
       ENV['HENZELL_ROOT'] || '.'

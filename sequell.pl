@@ -26,7 +26,7 @@ END {
 
 my $daemon = 1;
 my $irc = 1;
-my $config_file = 'rc/henzell.rc';
+my $config_file = Henzell::Config::default_config();
 GetOptions("daemon!" => \$daemon,
            "irc!" => \$irc,
            "rc=s" => \$config_file) or die "Invalid options\n";
@@ -34,9 +34,6 @@ GetOptions("daemon!" => \$daemon,
 $ENV{LC_ALL} = 'en_US.UTF-8';
 $ENV{HENZELL_ROOT} = getcwd();
 $ENV{RUBYOPT} = "-rubygems -I" . File::Spec->catfile(getcwd(), 'src');
-
-my $SERVER = 'cao';     # Local server.
-my $ALT_SERVER = 'cdo'; # Our 'alternative' server.
 
 my @stonefiles;
 my @logfiles;

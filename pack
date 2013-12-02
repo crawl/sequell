@@ -1,0 +1,8 @@
+-*- mode: ack; default-directory: "~/fun/crawl/henzell/" -*-
+Ack started at Mon Dec  2 12:12:31
+
+ack --nocolor --nogroup  -- henzell.defaults
+lib/Henzell/Config.pm:20:                                        'rc/henzell.defaults');
+src/henzell/config.rb:5:    DEFAULTS_FILEPATH = 'rc/henzell.defaults'
+
+Ack finished at Mon Dec  2 12:12:32

@@ -17,7 +17,7 @@ our @EXPORT_OK = qw/read get %CONFIG %CMD %USER_CMD %CMDPATH %PUBLIC_CMD
 use File::Basename;
 use File::Spec;
 my $DEFAULTS_FILE = File::Spec->catfile(dirname(__FILE__), '../..',
-                                        'rc/henzell.defaults');
+                                        'rc/sequell.defaults');
 
 my %DEFAULT_CONFIG = %{YAML::Any::LoadFile($DEFAULTS_FILE)};
 our %CONFIG = %DEFAULT_CONFIG;
@@ -27,12 +27,16 @@ our %CMDPATH;
 our %PUBLIC_CMD;
 our @LOGS;
 our @MILESTONES;
-our $CONFIG_FILE = 'rc/henzell.rc';
+our $CONFIG_FILE = 'rc/sequell.rc';
 
 my $command_dir = 'commands';
 my $user_command_loaded_at;
 
 my %ABBRMAP;
+
+sub default_config {
+  $CONFIG_FILE
+}
 
 sub get() {
   \%CONFIG
