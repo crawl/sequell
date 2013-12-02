@@ -37,7 +37,7 @@ module Henzell
       [0, Henzell::LearnDBQuery.query(arguments), '']
     end
 
-    def execute(command_line, default_nick='???', suppress_stderr=false)
+    def execute(command_line, env, suppress_stderr=false)
       unless command_line =~ /^(\S+)(?:(\s+(.*)))?/
         raise StandardError, "Bad command line: #{command_line}"
       end
@@ -48,7 +48,7 @@ module Henzell
         return learndb_query(arguments)
       end
 
-      execute_command(command, arguments, default_nick, suppress_stderr)
+      execute_command(command, arguments, env, suppress_stderr)
     end
 
     def direct_command?(command)
@@ -59,12 +59,11 @@ module Henzell
       (@commands[command] || { })[:file] =~ /echo.pl/
     end
 
-    def execute_command(command, arguments, default_nick, suppress_stderr=false)
+    def execute_command(command, arguments, env, suppress_stderr=false)
       seen_commands = Set.new
 
       unless direct_command?(command)
-        arguments = Query::QueryStringTemplate.substitute(arguments, [''],
-          default_nick)
+        arguments = Query::QueryStringTemplate.substitute(arguments, [''], env)
         arguments = arguments.join(' ') if arguments.is_a?(Array)
       end
 
@@ -86,7 +85,7 @@ module Henzell
             STDERR.puts("Expanded #{old_command} => #{command} #{args}")
           end
           arguments =
-            Query::QueryStringTemplate.substitute(args, [arguments], default_nick)
+            Query::QueryStringTemplate.substitute(args, [arguments], env)
           arguments = arguments.join(' ') if arguments.is_a?(Array)
           unless ENV['HENZELL_TEST']
             STDERR.puts("Expanded #{args} with #{old_arguments} => #{arguments}")
@@ -96,7 +95,7 @@ module Henzell
 
         command_script =
           File.join(Config.root, "commands", @commands[command][:file])
-        target = default_nick
+        target = env['nick']
 
         command_line = [command, arguments].join(' ')
         unless ENV['HENZELL_TEST']
@@ -110,7 +109,7 @@ module Henzell
         else
           redirect = suppress_stderr ? '2>/dev/null' : ''
           system_command_line =
-            %{#{command_script} #{quote(target)} #{quote(default_nick)} } +
+            %{#{command_script} #{quote(target)} #{quote(target)} } +
             %{#{quote(command_line)} '' #{redirect}}
           File.open('cmd.log', 'a') { |f|
             f.puts("Executing: #{system_command_line}")

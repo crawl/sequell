@@ -255,7 +255,7 @@ Entries may link to other links using the `see {term[index]}` format:
     !learn add kine see {cow}
     <user> ??kine
     <Sequell> cow[1/2]: A domesticated ungulate.
-    <user> kine?
+    <user> kine??
     <Sequell> A domesticated ungulate.
 
 `!learn query` ignores redirects.

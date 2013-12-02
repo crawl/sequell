@@ -74,8 +74,8 @@ module Cmd
       self.command_line
     end
 
-    def execute(config, default_nick, suppress_stderr=false)
-      config.commands.execute(self.command_line, default_nick, suppress_stderr)
+    def execute(config, env, suppress_stderr=false)
+      config.commands.execute(self.command_line, env, suppress_stderr)
     end
 
     def valid?(config)

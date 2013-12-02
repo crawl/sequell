@@ -1,8 +1,8 @@
 module Query
   class QueryStringTemplate
-    def self.substitute(query_string, argument_lists, default_nick=nil)
+    def self.substitute(query_string, argument_lists, scope={})
       argument_lists.reduce(query_string.to_s) { |query, arglist|
-        expand(query, arglist.strip, 'user' => default_nick)
+        expand(query, arglist.strip, scope)
       }
      end
 

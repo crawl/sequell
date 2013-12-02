@@ -140,6 +140,11 @@ sub recognized_command {
     Henzell::Config::command_exists($command)
 }
 
+sub env_map {
+  my ($self, $m) = @_;
+  map(("HENZELL_ENV_\U$_" => $$m{$_}), keys(%$m))
+}
+
 sub execute_command {
   my ($self, $m) = @_;
   return if $$m{sibling};
@@ -170,6 +175,9 @@ sub execute_command {
     local $ENV{HENZELL_PROXIED} = $proxied ? 'y' : '';
     local $ENV{IRC_NICK_AUTHENTICATED} =
       !$auth || $auth->nick_identified($nick) ? 'y' : '';
+
+    my %env_map = $self->env_map($m);
+    local @ENV{keys %env_map} = values %env_map;
 
     my $processor = $CMD{$command} || $CMD{custom};
     my $output =

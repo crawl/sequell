@@ -15,8 +15,8 @@ module Cmd
       self[:suppress_stderr]
     end
 
-    def default_nick
-      self[:default_nick]
+    def env
+      self[:env]
     end
 
     def permitted_commands
@@ -54,7 +54,7 @@ module Cmd
     end
 
     def execute
-      @command.execute(@config, @options.default_nick || '???',
+      @command.execute(@config, @options.env,
                        @options.suppress_stderr) || [1, '']
     end
   end

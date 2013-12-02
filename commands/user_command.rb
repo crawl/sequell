@@ -10,7 +10,11 @@ TIME_LIMIT = 60
 
 begin
   Timeout.timeout(TIME_LIMIT) {
-    exit_code, output = Cmd::Executor.execute(ARGV[2], default_nick: ARGV[1],
+    exit_code, output = Cmd::Executor.execute(ARGV[2],
+      env: {
+        'nick' => ARGV[1],
+        'user' => ARGV[1],
+      }.merge(Helper.henzell_env),
       forbidden_commands: ['??'])
 
     puts(output)

@@ -38,6 +38,14 @@ NICKMAP_FILE = Henzell::Config.file_path(
 
 $nicks_loaded = false
 
+module Helper
+  def self.henzell_env
+    Hash[ ENV.keys.find_all { |k| k =~ /^henzell_env_\w+$/i }.map { |k|
+        k =~ /^henzell_env_(\w+)$/i && [$1.downcase, ENV[k]]
+      } ]
+  end
+end
+
 def munge_game(game)
   game.to_a.map { |x,y| "#{x}=#{y.to_s.gsub(':', '::')}" }.join(':')
 end

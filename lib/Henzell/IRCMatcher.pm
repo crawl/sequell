@@ -12,9 +12,7 @@ sub capturing_var {
 
 sub match_literal {
   my ($self, $g) = @_;
-  $g = "\Q$g";
-  $g =~ s/\\ +/\\s+?/g;
-  "(?i)$g"
+  $g
 }
 
 sub translate_group {
@@ -35,17 +33,6 @@ sub translate_group {
   }
 }
 
-# Generate random word strings. If the pattern matches any of them,
-# disallow it.
-sub overpermissive_pattern {
-  my ($self, $re) = @_;
-  return 1 if '' =~ $re;
-  # for my $word (map(test_words($_), 1..6)) {
-  #   return 1 if $word =~ $re;
-  # }
-  0
-}
-
 sub parse_matcher {
   my ($self, $ctx, $matcher) = @_;
   my @captures;
@@ -62,10 +49,9 @@ sub parse_matcher {
   push @re, '\s*?';
   push @re, $after ? '(.*?)$' : '$';
 
+  use re::engine::RE2;
   my $re = qr/@{[join('', @re)]}/;
-  if ($self->overpermissive_pattern($re)) {
-    return undef;
-  }
+  +{ re => $re, captures => \@captures }
 }
 
 sub parse {
@@ -117,11 +103,11 @@ sub match {
   my $re = $self->{expr};
   if ($body =~ $re) {
     my (@bindings) = $body =~ $re;
+    my %named_captures = %+;
     my %captures;
     @captures{@{$self->{captures}}} = @bindings;
-    print "MATCH: $body: ", Dumper($self), "\n";
     {
-      env => { %$m, %captures },
+      env => { %$m, %captures, %named_captures },
       args => $captures{after}
     }
   }
