@@ -1,8 +1,44 @@
 require 'henzell/config'
 require 'tpl/function_def'
 require 'command_context'
+require 're2'
+require 'date'
+
+class String
+  def re2_gsub(re2_regexp, repl=nil)
+    re2_regexp = RE2::Regexp.new(re2_regexp.to_s) if re2_regexp.is_a?(String)
+    pos = 0
+    len = self.size
+    fragments = []
+    new_string = ''
+    substr = self[pos, len]
+    while true
+      match = re2_regexp.match(self, -1, pos)
+      break unless match && match.size > 0
+      fragments << self[pos, match.begin(0) - pos]
+      fragments << (repl ? repl : yield(match))
+      pos = match.end(0)
+    end
+    fragments << (self[pos, self.size] || '')
+    fragments.join('')
+  end
+end
 
 module Tpl
+  class RE2MatchWrapper
+    def initialize(match)
+      @match = match
+    end
+
+    def [](key)
+      if key =~ /^\d+$/
+        @match[key.to_i]
+      else
+        @match[key]
+      end
+    end
+  end
+
   FunctionDef.define('apply', [2,-1]) {
     arglist = self.raw_args[1 .. -2].dup
     Funcall.new(self[0], *(arglist + autosplit(self[-1]).to_a)).eval(scope)
@@ -210,6 +246,64 @@ module Tpl
     end
   }
 
+  FunctionDef.define('replace-n', [3, 4]) {
+    count = 0
+    max = self[0].to_i
+    if arity == 3
+      self[-1].to_s.gsub(self[1]) { |m|
+        count += 1
+        if count > max && max != -1
+          m
+        else
+          ''
+        end
+      }
+    else
+      self[-1].to_s.gsub(self[1]) { |m|
+        count += 1
+        if count > max && max != -1
+          m
+        else
+          self[2]
+        end
+      }
+    end
+  }
+
+  FunctionDef.define('re-replace', [2, 3]) {
+    if arity == 2
+      self[-1].to_s.re2_gsub(self[0], '')
+    else
+      self[-1].to_s.re2_gsub(self[0]) { |m|
+        self.eval_arg(1, RE2MatchWrapper.new(m))
+      }
+    end
+  }
+
+  FunctionDef.define('re-replace-n', [3, 4]) {
+    count = 0
+    max = self[0].to_i
+    if arity == 3
+      self[-1].to_s.re2_gsub(self[1]) { |m|
+        count += 1
+        if count > max && max != -1
+          m.to_s
+        else
+          ''
+        end
+      }
+    else
+      self[-1].to_s.re2_gsub(self[1]) { |m|
+        count += 1
+        if count > max && max != -1
+          m.to_s
+        else
+          self.eval_arg(2, RE2MatchWrapper.new(m))
+        end
+      }
+    end
+  }
+
   FunctionDef.define('upper', 1) { self[-1].to_s.upcase }
   FunctionDef.define('lower', 1) { self[-1].to_s.downcase }
 
@@ -247,4 +341,19 @@ module Tpl
       rand(self[0].to_i)
     end
   }
+
+  FunctionDef.define('time', 0) {
+    DateTime.now
+  }
+
+  ISO8601_FMT = '%FT%T%z'
+
+  FunctionDef.define('ptime', [1, 2]) {
+    DateTime.strptime(self[0], arity == 2? self[-1] : ISO8601_FMT)
+  }
+
+  FunctionDef.define('ftime', [1, 2]) {
+    self[0].strftime(arity == 2? self[-1] : ISO8601_FMT)
+  }
+
 end

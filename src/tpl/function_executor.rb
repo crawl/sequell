@@ -34,8 +34,12 @@ module Tpl
       @fn.arity
     end
 
-    def argvalue(arg)
-      arg.is_a?(Tplike) ? arg.eval(@provider) : arg
+    def argvalue(arg, scope=@provider)
+      arg.is_a?(Tplike) ? arg.eval(scope) : arg
+    end
+
+    def eval_arg(index, override_scope={})
+      argvalue(raw_arg(index), lambda { |x| override_scope[x] || @provider[x] })
     end
 
     def arguments

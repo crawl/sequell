@@ -25,6 +25,11 @@ module Tpl
       REGISTRY[name] = self.new(name, evaluator, arity)
     end
 
+    def self.scope(inner, outer=nil)
+      return inner unless outer
+      lambda { |key| inner[key] || outer[key] }
+    end
+
     def self.callable?(thing)
       thing.is_a?(Function) || thing.is_a?(self)
     end
@@ -178,6 +183,10 @@ module Tpl
 
     def [](index)
       @cache[index] ||= @executor[index]
+    end
+
+    def eval_arg(index, override_scope={})
+      @executor.eval_arg(index, override_scope)
     end
 
     def canonicalize(val)

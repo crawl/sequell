@@ -18,15 +18,14 @@ Where a specific command is described, that command is named
 explicitly as "!lg", "!lm", etc.
 
 !lg
----
+===
 Mnemonic: lg = *Last Game* or *List Game*
 
 The !lg command queries completed games (i.e. games in the logfile) on
 the public servers. !lg does not know about games that are still in
 progress.
 
-Syntax
-======
+### Syntax
 
     !lg [<target-player> [<keyword1> <keyword2> ...]
                          [<game type>; viz 'crawl' or 'sprint']
@@ -292,7 +291,7 @@ Where:
     `!lg * win min=turn -3` (find the third fastest win by turn count)
 
 Ratio Queries
-=============
+-------------
 
 !lg may also be used to calculate ratios using queries of the form:
 
@@ -353,7 +352,7 @@ Use `den.N` if you want to filter by denominator instead of numerator.
 The denominator is the count from the more *general* query.
                            
 !lm
----
+===
 Mnemonic: lm = Last Milestone or List Milestone
 
 The !lm command queries game milestones (i.e. entries in the
@@ -416,7 +415,7 @@ same as !lg, with a few nuances:
 
            
 !hs
----
+===
 Mnemonic: hs = High Score
 
 The !hs command is identical in behaviour to the !lg command with an
@@ -429,7 +428,7 @@ criteria.
 `!hs * DEFE -2`      Second-highest score by a Deep Elf Fire Elementalist.
 
 !won
-----
+====
 
 The !won command shows winning games by the named player, or by all
 players.
@@ -445,14 +444,14 @@ skip. For instance:
 `!won stabwound 5`  shows stabwound's win stats, skipping the first 5 wins.
 
 !gamesby
---------
+========
 
 !gamesby gives general stats for games played by a particular player
 or by all players, and accepts !lg-style filters.
 
 
 Listgame Keywords
------------------
+=================
 
 Listgame keywords are words (containing no spaces) that the listgame
 parser recognises as a filter condition of some kind.
@@ -597,7 +596,7 @@ Listgame keywords may be one of:
 
 
 Logfile Fields
---------------
+==============
 
 This is a description of the fields available for !lg queries. Most of
 the fields here are described as in the Crawl xlogfile; some of the
@@ -833,7 +832,7 @@ A human-readable description for the map in which the player was at
 end of game, usually empty. Example: 'Sprint II: "The Violet Keep of Menkaure"'
 
 Milestone Fields
-----------------
+================
 
 Milestones have many of the same fields as logfiles, but the values for
 these fields are obviously the value of that attribute at the time the
@@ -887,7 +886,7 @@ the original place the player entered the branch/portal. Example:
 milestone=entered a Sewer. oplace=D:3
 
 Operators
----------
+=========
 
 Listgame expressions may use these operators:
 
@@ -917,7 +916,8 @@ Inside expressions:
 
 
 Equals (=) is not very equal
-============================
+----------------------------
+
 The = operator is *not* an exact equality operator; it uses several
 heuristics to fix common broken queries. These heuristics depend on
 the field used in the comparison:
@@ -1029,7 +1029,7 @@ you use a wildcard and want a substring match, you must prefix and
 suffix your search pattern with * as: `tmsg=~*hob???lin*`
 
 Aggregate Functions
--------------------
+===================
 
 The available aggregate functions [usable as `x=aggregate(field)`]:
 
@@ -1050,7 +1050,7 @@ numeric fields.
 
 
 Non-Aggregate Functions
------------------------
+=======================
 
 Non-aggregate functions may be applied to fields in query conditions,
 grouping clauses (s=X) and extra-field info (x=X).
@@ -1086,7 +1086,7 @@ grouping clauses (s=X) and extra-field info (x=X).
 
 
 Expressions
------------
+===========
 
 You may use more complex expressions wrapped in ${ }, or after a $
 (optionally terminated by another $):
@@ -1105,7 +1105,7 @@ operators in addition to the usual operators.
 
 
 User-Defined Commands
----------------------
+=====================
 
 You can define shortcut commands for !lg/!lm commands that you use frequently:
 
@@ -1164,12 +1164,12 @@ You may also define new keywords for common listgame filters:
   
 
 Nick Aliases
-------------
+============
 
 The !nick command maps IRC nicks to names used on public servers:
 
 Syntax
-======
+------
 
     !nick ircnick charactername1 [charactername2 ...]
     !nick -rm ircnick
@@ -1217,13 +1217,13 @@ or
 
 
 FooTV
------
+=====
 
 FooTV is a channel on termcast.develz.org (telnet termcast.develz.org
 to watch) that plays games requested using the -tv option.
 
 TV options
-==========
+----------
 
 `-tv`                starts playback of the selected game on FooTV
 
@@ -1311,7 +1311,7 @@ FooTV for the duration of the playback.
 
 
 Graphs (Experimental)
----------------------
+=====================
 
 You may generate graphs for grouped queries using the -graph option:
 
@@ -1347,222 +1347,14 @@ Graphs of median stats in wins by god:
  - Area -- same restrictions as Scatter
  - Pie
 
- 
 Command-Line Expansion
-----------------------
-
-Any command you issue to Sequell is expanded before execution. For
-instance, if user "jake" runs a command as follows:
-
-    <jake > .echo User is: $user
-
-Sequell will respond with: "User is: jake"
-
-The syntax used for command-line expansion is:
-
-### Variables:
-
-References such as `$user`, `$name`, etc. Any reference that Sequell does not
-know how to expand will be canonicalized and echoed.
-
-    <jake > .echo Hi $user => Hi jake
-    <jake > .echo Hi $nobody => Hi ${nobody}
-
-The variables that Sequell recognizes depend on the context:
-
- - Any context:
-
-   `$user`: The name of the requesting user.
-
- - Listgame queries (!lg, etc.)
-
-   `$name`: The name of the player (this may be a guess)
-   `$target`: The first nick referenced in the query, possibly *
-              !lg * fmt:"Name: $name, Target: $target"
-              => Name: <whoever>, Target: *
-
-### Subcommands:
-
-A subcommand may be referenced as `$(<commandline>)`. For instance:
-
-    .echo Characters played by *: $(!lg * s=char join:", ")
-    => Characters played by *: SpEn, MiFi, ...
-
-    .echo Hi $(.echo there) => Hi there
-
-To see wins by characters that player 'foo' has played but not won:
-
-    !lg * win char=$(!lg foo !won s=char join:"|")
-
-Note: any command executing as a subcommand has no default title:
-
-    .echo Chars: $(!lg . s=char) => MuPr, ...
-
-An unknown subcommand will trigger an immediate error, unlike other
-expansions, which will ignore unexpanded values.
-
-### Functions:
-
-Functions may be used as `$(fn ...)`.
-
-   - `$(typeof <val>)`  returns the type of the given value
-
-   - `$(join [<joiner>] <text>)`
-         .echo $(join " and " a,b,c) => a and b and c
-
-     The join function splits text on commas and joins it with the given
-     join string. If omitted, the join string defaults to ", "
-
-   - `$(split [<splitter>] <text>)`
-
-     The split function splits text into an array on the given delimiter:
-
-         .echo $(join $(split & a&b&c)) => a, b, c
-
-   - `$(replace <string> [<replacement>] <text>)`
-
-     The replace function replaces occurrences of `<string>` in `<text>` with
-     `<replacement>`, the replacement defaulting to the empty string:
-
-         .echo $(replace & ! a&b&c) => a!b!c
-         .echo $(replace & a&b&c) => abc
-
-   - `$(upper <str>), $(lower <str>)`
-
-     upper/lower-case text
-
-   - `$(length <string|array>)` String or array length
-   - `$(sub <start> [<exclusive-end>] <string|array>)` Substring or array slice
-   - `$(nth <index> <array>)` Index into array
-   - `$(car <array>)` First element
-   - `$(cdr <array>)` Array slice (identical to $(sub 1 <array>))
-   - `$(rand n)` => random integers in [0,n)
-   - `$(rand n m)` => random integers in [n,m]
-   - Prefix operators: `+` `-` `/` `*` `=` `/=` `<` `>` `<=` `>=` `<=>` `**`
-     `mod` `not`
-   
-          $(<=> 1 5) => -1
-          $(<=> 1 1) => 0
-          $(<=> 5 1) => 1
-          
-   - Type-casts: `str`, `float`, `int`
-
-   - `$(list 1 2 3 4)` => [1, 2, 3, 4]
-   - `$(cons 0 (list 1 2 3 4))` => [0, 1, 2, 3, 4]
-         $(cons 0) => [0]
-         $(cons) => []
-
-   - `$(if <cond> <then> [<else>])`
-   - `$(let (var1 value1 var2 value2 ...) <body>)`
-   
-         $(let (x 2 y 5) $(* $x $y)) => 10
-
-     Note that expressions in the body of a let must be wrapped in `$( )`
-
-   - `$(fn (par1 par2 . rest_parameter) body)`
-     Define a function
-
-         $(let (x (fn (x) $(+ $x 5))) $(x 2)) => 7
-
-     Things to note about functions definitions:
-
-     Use `$foo` to reference the value of the variable foo in the function body:
-     
-         .echo $((fn (foo) $foo) 10) => 10
-         .echo $((fn (foo) foo) 10) => foo
-
-     The function body is treated as a template:
-     
-         .echo $((fn (. args) $(!lg $args fmt:"$name")) * xl>15)
-
-     so if you want to make function calls in the body, use `$()`:
-
-         $(fn (x) $(* $x 2))
-
-   - `$(apply <fn> arg1 arg2 ... arglist)`
-     Apply function to the given argument list, with any individual args
-     prefixed
-     
-         $(apply ${+} (list 1 2 3 4 5)) => 15
-         $(apply ${+} 6 (list 1 2 3 4 5)) => 21
-
-   - `$(range <low> <high> [<step>])` range of numbers from low to high
-     inclusive, with step defaulting to 1.
-     
-         .echo $(range 1 10) => 1 2 3 4 5 6 7 8 9 10
-         .echo $(range 1 10 2) => 1 3 5 7 9
-
-   - `$(concat arg1 arg2...)`
-     Concatenate strings or lists; do not mix argument types.
-
-   - `$(map <fn> <list>)`
-   - `$(filter <predicate-fn> <list>)`
-   - `$(sort [<fn>] <list>)`
-
-   - `$(hash [<key> <value> ...])` create a dictionary
-   - `$(hash-put <key> <value> ... <hash>)` add keys and values to hash
-   - `$(elt <key> <hash>)` get value of <hash>[<key>]
-   - `$hash[key]` same as `$(elt key $hash)`
-   - `$(elts <key> ... <hash>)` get list of hash values for keys
-            Note: `(reverse <hash>)` will invert the hash, converting keys
-                  to values and vice-versa.
-
-   - `$(sort <list>)`
-     `$(sort <comparator> <list>)`
-            `<comparator>` must be a fn (a, b) that returns -1, 0, 1 if
-            a < b, a == b, a > b
-
-   - `$(flatten [<depth>] <list>)`
-            Flattens nested lists inside list.
-
-Unknown functions will be ignored:
-
-     .echo $(foobar) => $(foobar)
-
-Multiple command-line expansions:
-=================================
-
-!lg can use templates to format its output. These templates are also
-expanded using the rules described above.
-
-For instance, given the command
-
-    !lg * win char=$(.echo HESk) stub:'$(!hs * HESk)'
-
-The first expansion (before !lg runs):
-
-    !lg * win char=HESk stub:'$(!hs * HESk)'
-
-If !lg runs and finds no results, it will then evaluate the stub, viz.
-
-    !hs * HESK
-
-
-Suppressing command-line expansion:
-===================================
-Single-quoted strings are not expanded by default. This can be
-used to defer costly subcommands until they're actually needed:
-
-     !lg * stub:'No results, but look: $(!expensive-query)'
-
-Although the default command-line expansion does not expand
-single-quoted strings, !lg will still expand any string used as a
-format, title, or stub.
-
-Defining new functions
 ======================
 
-Use !fn to define new functions:
-
-    !fn double (x) $(* $x 2)
-    .echo $(double 200) => 400
-
-Functions may be recursive, but recursion depth is limited. !fn -ls
-lists user-defined functions and !fn -rm deletes a function.
-
+!lg command lines are subject to
+[Sequell's normal command-line expansion](commandline.md).
 
 Examples
---------
+========
 
 `!lg`                               Show your most recent game.
 
