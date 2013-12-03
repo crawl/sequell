@@ -12,11 +12,9 @@ module Tpl
     def scope_with_bindings(scope)
       binding_map = { }
       @bindings.each { |b|
-        binding_map[b.name] = b.value.eval(scope)
+        binding_map[b.name] = b.value
       }
-      lambda { |key|
-        binding_map[key] || scope[key]
-      }
+      LazyEvalScope.new(binding_map, scope)
     end
 
     def eval(scope)

@@ -12,6 +12,7 @@ use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use Henzell::SQLLearnDB;
 use LearnDB::Entry;
+use LearnDB::MaybeEntry;
 
 use base 'Exporter';
 
@@ -151,10 +152,14 @@ sub query_entry {
   my $res = $ignore_redirects ? read_entry($term, $num)
                               : query_entry_with_redirects($term, $num);
   if ($error_message_if_missing && (!defined($res) || $res eq '')) {
-	return "I don't have a page labeled $term in my learndb." if $num == 1;
-    return "I don't have a page labeled $term\[$num] in my learndb.";
+    if ($num == 1) {
+      return LearnDB::MaybeEntry->with_err(
+        "I don't have a page labeled $term in my learndb.");
+    }
+    return LearnDB::MaybeEntry->with_err(
+      "I don't have a page labeled $term\[$num] in my learndb.");
   }
-  $res
+  LearnDB::MaybeEntry->with_entry($res)
 }
 
 sub read_entries {

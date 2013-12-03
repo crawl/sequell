@@ -142,7 +142,8 @@ sub recognized_command {
 
 sub env_map {
   my ($self, $m) = @_;
-  map(("HENZELL_ENV_\U$_" => $$m{$_}), keys(%$m))
+  my %env = (%$m, bot => $self->{irc}->nick());
+  map(("HENZELL_ENV_\U$_" => $env{$_}), keys(%env))
 }
 
 sub execute_command {

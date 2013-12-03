@@ -55,10 +55,9 @@ module Tpl
     end
 
     def self.eval(template, scope)
-      scope_with_function_lookup = lambda { |key|
-        val = scope[key]
-        val.nil? ? FunctionDef.global_function_value(key) : val
-      }
+      scope_with_function_lookup = Scope.wrap(scope, lambda { |key|
+        FunctionDef.global_function_value(key)
+      })
       template.eval(scope_with_function_lookup)
     end
 

@@ -16,6 +16,7 @@ use lib File::Spec->catfile(dirname(__FILE__), '../src');
 use Henzell::TemplateExpander;
 use LearnDB;
 use LearnDB::Entry;
+use LearnDB::MaybeEntry;
 
 sub new {
   my ($cls, %opt) = @_;
@@ -33,8 +34,11 @@ sub _executor {
 
 sub _resolve_redirect {
   my ($self, $redirect) = @_;
-  LearnDB::Entry->wrap(
-    LearnDB::query_entry($redirect, undef, undef) or "see {$redirect}")
+  my $res = LearnDB::query_entry($redirect, undef, undef);
+  if (!$res || $res->err()) {
+    return LearnDB::Entry->entry("see {$redirect}");
+  }
+  $res->entry()
 }
 
 sub _recognized_command {

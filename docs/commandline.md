@@ -147,8 +147,6 @@ Functions may be used as `$(fn ...)`.
 
      Note that expressions in the body of a let must be wrapped in `$( )`;
 
-     Values in let bindings are evaluated eagerly.
-
    - `$(fn (par1 par2 . rest_parameter) body)`
      Define a function
 

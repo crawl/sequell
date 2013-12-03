@@ -1,4 +1,5 @@
 require 'tpl/function'
+require 'tpl/scope'
 require 'cmd/user_function'
 
 module Tpl
@@ -26,8 +27,7 @@ module Tpl
     end
 
     def self.scope(inner, outer=nil)
-      return inner unless outer
-      lambda { |key| inner[key] || outer[key] }
+      Scope.wrap(inner, outer)
     end
 
     def self.callable?(thing)
@@ -75,9 +75,6 @@ module Tpl
       @evaluator = evaluator
       @supported_arity = arity
       @user_function = @evaluator.is_a?(Function)
-      unless @user_function
-        (class << self; self; end).send(:define_method, :eval_def, &evaluator)
-      end
     end
 
     def builtin?
@@ -235,14 +232,9 @@ module Tpl
       result = if user_function?
         eval_user_function
       else
-        eval_def
+        instance_exec(&@evaluator)
       end
       result
-    end
-
-    def evaluate(value, scope)
-      return value.eval(scope) if value.respond_to?(:tpl?)
-      value
     end
 
     def eval_user_function
@@ -254,13 +246,7 @@ module Tpl
       }
       map[fn.rest] = funcall.arguments[fn.parameters.size .. -1]
       map[fn.name] = fn if fn.name
-      dynamic_scope = lambda { |key|
-        if map.include?(key)
-          evaluated[key] ||= evaluate(map[key], scope)
-        else
-          scope[key]
-        end
-      }
+      dynamic_scope = LazyEvalScope.new(map, scope)
       fn.body.eval(dynamic_scope)
     end
   end

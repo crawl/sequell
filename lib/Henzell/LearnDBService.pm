@@ -72,7 +72,9 @@ sub _reactors {
 
 sub _expand {
   my ($self, $m, $msg, $bare) = @_;
-  $self->_lookup()->resolve($m, $msg, $bare, '', $self->{beh}->env($m))
+  return undef unless $msg;
+  return $msg->err() if $msg->err();
+  $self->_lookup()->resolve($m, $msg->entry(), $bare, '', $self->{beh}->env($m))
 }
 
 sub _db_query {

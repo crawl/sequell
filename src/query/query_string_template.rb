@@ -1,3 +1,5 @@
+require 'tpl/scope'
+
 module Query
   class QueryStringTemplate
     def self.substitute(query_string, argument_lists, scope={})
@@ -13,7 +15,7 @@ module Query
       rest_args_used = false
       max_index = 0
 
-      arg_provider = lambda { |key|
+      arg_provider = Tpl::Scope.block { |key|
         case key
         when '*'
           rest_args_used = true

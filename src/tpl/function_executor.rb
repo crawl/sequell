@@ -39,7 +39,7 @@ module Tpl
     end
 
     def eval_arg(index, override_scope={})
-      argvalue(raw_arg(index), lambda { |x| override_scope[x] || @provider[x] })
+      argvalue(raw_arg(index), Scope.wrap(override_scope, @provider))
     end
 
     def arguments

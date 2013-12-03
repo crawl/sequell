@@ -29,6 +29,8 @@ sub _echo_service {
 sub expand {
   my ($self, $template, $argline, %opt) = @_;
   my ($in, $out) = $self->_echo_service();
+  my $broken_pipe;
+  local $SIG{PIPE} = sub { $broken_pipe = 1; };
   print $out encode_json({ msg => $template,
                            args => $argline,
                            command_env => {
@@ -36,6 +38,21 @@ sub expand {
                            },
                            env => $opt{env} }), "\n";
   my $res = <$in>;
+  if ($broken_pipe || !defined($res)) {
+    if ($self->{retried}) {
+      delete $self->{retried};
+      return "Could not expand $template: subprocess error\n";
+    }
+
+    $self->{retried} = 1;
+    close $in;
+    close $out;
+    delete $self->{_iecho};
+    delete $self->{_oecho};
+    return $self->expand($template, $argline, %opt);
+  }
+
+  delete $self->{retried};
   my $json = decode_json($res);
   return "Could not parse response: $res\n" unless $json;
   return $json->{err} if $json && $json->{err};
