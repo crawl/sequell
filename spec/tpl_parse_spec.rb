@@ -82,6 +82,20 @@ describe Tpl::Template do
     end
   end
 
+  context 'let' do
+    it 'will bind values to names' do
+      tpl_eval('$(let (x 5) $x)').should == 5
+    end
+
+    it 'will bind values to names' do
+      tpl_eval('$(let (x "5") $x)').should == "5"
+    end
+
+    it 'will evaluate function arguments in the correct scope' do
+      tpl_eval('$(let (x 5) $((fn (y) $(let (x 10) $y)) $x))').should == 5
+    end
+  end
+
   context 'hash' do
     it 'will create hashes' do
       tpl_eval('$(hash)').should == { }

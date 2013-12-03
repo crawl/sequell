@@ -7,7 +7,7 @@ module Tpl
     attr_accessor :text
 
     def initialize(text)
-      @text = text.to_s
+      @text = text
     end
 
     def eval(provider)
@@ -23,11 +23,17 @@ module Tpl
     end
 
     def empty?
-      !@text || @text.empty?
+      !@text || @text.to_s.empty?
+    end
+
+    def << (other)
+      @text = @text.to_s
+      @text << other.to_s
+      self
     end
 
     def to_s
-      @text
+      @text.to_s
     end
   end
 end

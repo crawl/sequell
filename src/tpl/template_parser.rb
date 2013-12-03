@@ -21,7 +21,7 @@ module Tpl
 
     rule(:word) {
       (single_quoted_string | double_quoted_template.as(:quoted_template) |
-        word_paren_form | balanced_brackets(word.as(:body)) |
+        number | word_paren_form | balanced_brackets(word.as(:body)) |
         match[' \]'].absent? >> tchar).repeat
     }
 

@@ -42,7 +42,7 @@ module Tpl
         elsif !fragment.empty?
           if fragment.is_a?(TextFragment) && !args.empty? &&
               args[-1].is_a?(TextFragment)
-            args[-1].text += fragment.text
+            args[-1] << fragment
           else
             args << fragment
           end
