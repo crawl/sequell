@@ -51,8 +51,6 @@ def munge_game(game)
 end
 
 def forbid_private_messaging!(msg=nil)
-  forbid_proxying!
-  forbid_subcommand!
   if ENV['PRIVMSG'] == 'y'
     puts(msg) if msg
     exit 1
