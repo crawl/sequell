@@ -189,6 +189,7 @@ Functions may be used as `$(fn ...)`.
 
    - `$(hash [<key> <value> ...])` create a dictionary
    - `$(hash-put <key> <value> ... <hash>)` add keys and values to hash
+   - `$(hash-keys <hash>)` returns a list of the keys in a hash
    - `$(elt <key> <hash>)` get value of <hash>[<key>]
    - `$hash[key]` same as `$(elt key $hash)`
    - `$(elts <key> ... <hash>)` get list of hash values for keys
@@ -200,8 +201,37 @@ Functions may be used as `$(fn ...)`.
             `<comparator>` must be a fn (a, b) that returns -1, 0, 1 if
             a < b, a == b, a > b
 
-   - `$(flatten [<depth>] <list>)`
-            Flattens nested lists inside list.
+   - `$(flatten [<depth>] <list>)` Flattens nested lists inside list.
+
+   - `$(scope [<hash>])`
+
+     Returns a hash-like lookup object that contains the names bound in
+     the current scope. As an example:
+
+         $(let (x 55) $(elt x (scope))) => 55
+
+     Scopes behave like hashes, but you may not be able to inspect
+     all locally bound names using (hash-keys (scope)).
+
+     If given an optional hash object, any names in that hash override
+     bindings in the current scope:
+
+         $(let (x 55) $(elt x (scope (hash x 32)))) => 32
+
+   - `$(binding <scope|hash> [<forms>])`
+
+     Evaluates <forms> with the given scope or hash. Using a simple
+     hash will completely hide all bindings in enclosing scopes. If you
+     want to retain existing bindings, use a scope:
+     
+         $(binding (hash x 20) $x) => 20
+         $(let (y 30) $(binding (hash x 20) $y)) => ${y} (unbound y)
+         $(let (y 30) $(binding (scope (hash x 20)) $y)) => 30
+
+   - `$(do <forms>)`
+
+     Evaluates <forms> in sequence and returns the value of the last.
+     
 
 Unknown functions will be ignored:
 

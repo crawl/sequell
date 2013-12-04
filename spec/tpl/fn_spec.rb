@@ -88,4 +88,25 @@ describe "Template functions" do
     end
   end
 
+  context 'scope' do
+    it 'will return local bindings' do
+      expect(e '$(let (x 55) $(elt x (scope)))').to eql(55)
+      expect(e '$(let (x 55 y 64) $(elts x y (scope (hash x 32))))')
+        .to eql([32, 64])
+    end
+  end
+
+  context 'binding' do
+    it 'will bind forms to the given scope' do
+      expect(e '$(binding (hash x 20) $x)').to eql(20)
+      expect(e '$(let (y 30) $(binding (hash x 20) $y))').to eql('${y}')
+      expect(e '$(let (y 30) $(binding (scope (hash x 20)) $y))').to eql(30)
+    end
+  end
+
+  context 'set!' do
+    it 'will rebind names' do
+      expect(e '$(let (x 50) (set!
+    end
+  end
 end

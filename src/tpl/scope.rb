@@ -11,7 +11,10 @@ module Tpl
 
   class Scope
     def self.wrap(scopelike={}, *delegates)
-      return scopelike if scopelike.is_a?(self) && delegates.empty?
+      if (scopelike.is_a?(self) &&
+          (delegates.empty? || delegates[0] == scopelike))
+        return scopelike
+      end
       self.new(scopelike, *delegates) if self.mutable_scope?(scopelike)
       self.new({ }, scopelike, *delegates)
     end
@@ -28,6 +31,10 @@ module Tpl
     def initialize(dict, *delegates)
       @dict = dict || { }
       @delegates = delegates.compact
+    end
+
+    def keys
+      @dict.keys
     end
 
     def [](key)
@@ -55,14 +62,14 @@ module Tpl
     end
 
     def to_s
-      "#{self.class}(#{@dict} / #{@delegates})"
+      "#{self.class}(#{@dict} // #{@delegates.size})"
     end
 
   protected
     def delegate_lookup(key)
       @delegates.each { |d|
         res = d[key]
-        return res if res
+        return res unless res.nil?
       }
       nil
     end

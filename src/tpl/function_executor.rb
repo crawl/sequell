@@ -15,11 +15,11 @@ module Tpl
       end
     end
 
-    attr_reader :provider, :funcall
-    def initialize(fn, evaluator, provider)
+    attr_accessor :scope, :funcall
+    def initialize(fn, evaluator, scope)
       @fn = fn
       @evaluator = evaluator
-      @provider = provider
+      @scope = scope
     end
 
     def funcall
@@ -27,19 +27,19 @@ module Tpl
     end
 
     def eval
-      @evaluator.eval_with(self)
+      @evaluator.dup.eval_with(self)
     end
 
     def arity
       @fn.arity
     end
 
-    def argvalue(arg, scope=@provider)
+    def argvalue(arg, scope=@scope)
       arg.is_a?(Tplike) ? arg.eval(scope) : arg
     end
 
-    def eval_arg(index, override_scope={})
-      argvalue(raw_arg(index), Scope.wrap(override_scope, @provider))
+    def eval_arg(index, override_scope=nil)
+      argvalue(raw_arg(index), override_scope || @scope)
     end
 
     def arguments

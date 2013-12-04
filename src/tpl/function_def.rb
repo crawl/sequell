@@ -106,7 +106,7 @@ module Tpl
     end
 
     def provider
-      @executor.provider
+      @executor.scope
     end
     alias :scope :provider
 

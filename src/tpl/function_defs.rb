@@ -1,5 +1,6 @@
 require 'henzell/config'
 require 'tpl/function_def'
+require 'tpl/scope'
 require 'command_context'
 require 're2'
 require 'date'
@@ -82,6 +83,10 @@ module Tpl
       res[self[i]] = self[i + 1]
     }
     res
+  }
+
+  FunctionDef.define('hash-keys', 1) {
+    self[0].keys
   }
 
   FunctionDef.define('elt', 2) {
@@ -275,7 +280,7 @@ module Tpl
       self[-1].to_s.re2_gsub(self[0], '')
     else
       self[-1].to_s.re2_gsub(self[0]) { |m|
-        self.eval_arg(1, RE2MatchWrapper.new(m))
+        self.eval_arg(1, Scope.wrap(RE2MatchWrapper.new(m), scope))
       }
     end
   }
@@ -356,4 +361,28 @@ module Tpl
     self[0].strftime(arity == 2? self[-1] : ISO8601_FMT)
   }
 
+  FunctionDef.define('scope', [0, 1]) {
+    if arity == 0
+      scope
+    else
+      Scope.wrap(self[0], scope)
+    end
+  }
+
+  FunctionDef.define('binding', [1, -1]) {
+    binding = Scope.wrap(self[0] || { })
+    nargs = self.arity
+    (1 ... (nargs - 1)).each { |i|
+      eval_arg(i, binding)
+    }
+    eval_arg(-1, binding) if nargs > 0
+  }
+
+  FunctionDef.define('do', [-1]) {
+    nargs = self.arity
+    (1 ... (nargs - 1)).each { |i|
+      self[i]
+    }
+    self[-1] if nargs > 0
+  }
 end
