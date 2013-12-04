@@ -107,6 +107,10 @@ Functions may be used as `$(fn ...)`.
 
      Current time and date.
 
+   - `$(utc <time>)`
+
+     Converts *time* to UTC.
+
    - `$(ptime <text> [<format>])`
 
      Parses *text* to a time with the specified [*format*](http://pubs.opengroup.org/onlinepubs/009695299/functions/strptime.html)

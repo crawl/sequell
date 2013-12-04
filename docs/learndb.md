@@ -266,7 +266,7 @@ a capture to span words by preceding the capture name with *:
 Links
 -----
 
-Entries may link to other links using the `see {term[index]}` format:
+Entries may link to other entries using the `see {term[index]}` format:
 
     !learn add kine see {cow}
     <user> ??kine
@@ -279,6 +279,14 @@ Entries may link to other links using the `see {term[index]}` format:
 LearnDB Entries may run bot commands using `do {<command>}`:
 
     !learn add mylastwin do {!lg . win}
+
+`see {<command>}` also works as an alternative to `do {<command>}`,
+but the `do` form is preferred for commands, since `see {<command>}` will
+only run `<command>` if there is no LearnDB entry for `<command>`.
+
+An alternative to `do {<command>}` is `$(<command>)`, but `$(<command>)` will
+trigger sub-command behaviour, which can be conspicuously different from
+regular command behaviour (particularly for !lg / !lm).
 
 Limitations
 -----------

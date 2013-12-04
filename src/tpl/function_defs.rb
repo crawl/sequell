@@ -351,6 +351,10 @@ module Tpl
     DateTime.now
   }
 
+  FunctionDef.define('utc', 1) {
+    self[0].new_offset(0)
+  }
+
   ISO8601_FMT = '%FT%T%z'
 
   FunctionDef.define('ptime', [1, 2]) {
