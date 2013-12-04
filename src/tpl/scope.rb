@@ -28,6 +28,7 @@ module Tpl
         scopelike.respond_to?(:include?)
     end
 
+    attr_reader :delegates
     def initialize(dict, *delegates)
       @dict = dict || { }
       @delegates = delegates.compact

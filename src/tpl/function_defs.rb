@@ -382,7 +382,7 @@ module Tpl
     s = self.scope
     res = nil
     (0 ... arity).step(2).each { |i|
-      res = s[self[i]] = self[i + 1]
+      res = s.rebind(self[i], self[i + 1])
     }
     res
   }
