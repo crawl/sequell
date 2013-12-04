@@ -72,6 +72,8 @@ sub resolve {
     if ($self->_recognized_command($m, $command)) {
       $entry = $self->_exec_command($m, $command);
     }
+    # Don't post-expand the output of commands.
+    return LearnDB::Entry->wrap($entry);
   }
 
   # Make sure we still have something that looks like a LearnDB entry:
