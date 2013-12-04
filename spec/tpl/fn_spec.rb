@@ -103,10 +103,4 @@ describe "Template functions" do
       expect(e '$(let (y 30) $(binding (scope (hash x 20)) $y))').to eql(30)
     end
   end
-
-  context 'set!' do
-    it 'will rebind names' do
-      expect(e '$(let (x 50) (set!
-    end
-  end
 end

@@ -150,7 +150,7 @@ Functions may be used as `$(fn ...)`.
    - `$(fn (par1 par2 . rest_parameter) body)`
      Define a function
 
-         $(let (x (fn (x) $(+ $x 5))) $(x 2)) => 7
+         $(let (x (fn (x) (+ $x 5))) (x 2)) => 7
 
      Things to note about functions definitions:
 
@@ -163,9 +163,7 @@ Functions may be used as `$(fn ...)`.
      
          .echo $((fn (. args) $(!lg $args fmt:"$name")) * xl>15)
 
-     so if you want to make function calls in the body, use `$()`:
-
-         $(fn (x) $(* $x 2))
+         $(fn (x) (* $x 2))
 
    - `$(apply <fn> arg1 arg2 ... arglist)`
      Apply function to the given argument list, with any individual args

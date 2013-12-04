@@ -1,5 +1,6 @@
 require 'henzell/config'
 require 'cmd/command'
+require 'helper'
 
 module Cmd
   class Options
@@ -54,7 +55,7 @@ module Cmd
     end
 
     def execute
-      @command.execute(@config, @options.env,
+      @command.execute(@config, @options.env || Helper.henzell_env,
                        @options.suppress_stderr) || [1, '']
     end
   end

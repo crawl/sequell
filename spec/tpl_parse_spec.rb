@@ -33,10 +33,6 @@ describe Tpl::Template do
     tpl_eval('$((fn (x) $(* $x 10)) 5)').should == 50
   end
 
-  it 'will parse and eval anonymous undeclared-arg functions' do
-    tpl_eval('$((fn $(* $_ 10)) 2)').should == 20
-  end
-
   it 'will parse and eval rest-arg functions' do
     tpl('$(fn (. args))').should be_an_instance_of(Tpl::Function)
     tpl('$(fn (. args))').parameters.should == []
@@ -50,10 +46,10 @@ describe Tpl::Template do
   end
 
   it "will handle function body quoting" do
-    tpl('$(fn Hi: $_!)').should be_an_instance_of(Tpl::Function)
-    tpl('$(fn Hi: $_!)').body.should be_an_instance_of(Tpl::Fragment)
-    tpl('$(fn Hi: $_!)').body[0].to_s.should == 'Hi: '
-    tpl_eval('$(map (fn Hi: $_!) a|b|c)').should ==
+    tpl('$(fn () "Hi: $_!")').should be_an_instance_of(Tpl::Function)
+    tpl('$(fn () "Hi: $_!")').body_forms[0].should be_an_instance_of(Tpl::Fragment)
+    tpl('$(fn () "Hi: $_!")').body_forms.first[0].to_s.should == 'Hi: '
+    tpl_eval('$(map (fn (x) "Hi: ${x}!") a|b|c)').should ==
       ['Hi: a!', 'Hi: b!', 'Hi: c!']
   end
 
@@ -92,7 +88,11 @@ describe Tpl::Template do
     end
 
     it 'will evaluate function arguments in the correct scope' do
-      tpl_eval('$(let (x 5) $((fn (y) $(let (x 10) $y)) $x))').should == 5
+      tpl_eval('$(let (x 5) ((fn (y) (let (x 10) $y)) $x))').should == 5
+    end
+
+    it 'will permit and eval multiple body forms' do
+      tpl_eval('$(let (x 5) (set! x 10) $x)').should == 10
     end
   end
 

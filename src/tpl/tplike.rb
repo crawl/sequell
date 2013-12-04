@@ -16,6 +16,14 @@ module Tpl
     def eval(provider)
     end
 
+    def eval_value(val, scope)
+      if val.is_a?(Tplike)
+        val.eval(scope)
+      else
+        val
+      end
+    end
+
     def collapse
       self
     end

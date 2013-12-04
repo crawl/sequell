@@ -119,7 +119,7 @@ module Tpl
     rule(:let_form) {
       str("let").as(:let_form) >> space? >>
       binding_form >>
-      space? >> subcommand_line.as(:body)
+      funargs.as(:body_forms)
     }
 
     rule(:binding_form) {
@@ -168,9 +168,8 @@ module Tpl
       (str("fn") >>
         (((space >> identifier).maybe.as(:function_name) >> space >>
           function_parameters.as(:parameters)) |
-         space >> function_parameters.maybe.as(:parameters)) >>
-        space? >>
-        subcommand_line.as(:body)).as(:function_def)
+         space >> function_parameters.as(:parameters)) >>
+        funargs.as(:body_forms)).as(:function_def)
     }
 
     rule(:function_parameters) {
@@ -193,7 +192,8 @@ module Tpl
     }
 
     rule(:identifier) {
-      (match["a-zA-Z_0-9*"] >> match["a-zA-Z_0-9*+-"].repeat >> str("?").maybe |
+      (match["a-zA-Z_0-9*"] >> match["a-zA-Z_0-9*+-"].repeat >>
+        match["?!"].maybe |
        str(".") | str("*") | str("%")).as(:identifier)
     }
 

@@ -8,12 +8,13 @@ module Query
       }
      end
 
-    def self.expand(query_string, arglist, scope={})
+    def self.expand(query_string, arglist, scope)
       require 'tpl/template'
 
       args = arglist.split(' ')
       rest_args_used = false
       max_index = 0
+      scope ||= { }
 
       arg_provider = Tpl::Scope.block { |key|
         case key

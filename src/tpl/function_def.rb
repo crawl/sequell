@@ -247,7 +247,7 @@ module Tpl
       map[fn.rest] = funcall.arguments[fn.parameters.size .. -1]
       map[fn.name] = fn if fn.name
       dynamic_scope = LazyEvalScope.new(map, scope)
-      fn.body.eval(dynamic_scope)
+      fn.eval_body_in_scope(dynamic_scope)
     end
   end
 end

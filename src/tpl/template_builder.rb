@@ -134,8 +134,8 @@ module Tpl
 
     rule(let_form: simple(:name),
          bindings: sequence(:bindings),
-         body: simple(:body)) {
-      LetForm.new(name.to_s, bindings, body)
+         body_forms: sequence(:body_forms)) {
+      LetForm.new(name.to_s, bindings, body_forms)
     }
 
     rule(parameter: simple(:p)) { p }
@@ -146,36 +146,27 @@ module Tpl
            parameters: sequence(:pars),
            rest_parameter: simple(:rest)
          },
-         body: simple(:template)) {
-      Function.new(name, pars, rest, template)
-    }
-
-    rule(function_name: simple(:name),
-         parameters: {
-           parameters: sequence(:pars),
-           rest_parameter: simple(:rest)
-         },
-         body: simple(:template)) {
-      Function.new(name, pars, rest, template)
+         body_forms: sequence(:body_forms)) {
+      Function.new(name, pars, rest, body_forms)
     }
 
     rule(parameters: {
            parameters: sequence(:pars),
            rest_parameter: simple(:rest)
          },
-         body: simple(:template)) {
-      Function.new(nil, pars, rest, template)
+         body_forms: sequence(:body_forms)) {
+      Function.new(nil, pars, rest, body_forms)
     }
 
     rule(parameters: simple(:none),
-         body: simple(:template)) {
-      Function.new(nil, nil, nil, template)
+         body_forms: sequence(:body_forms)) {
+      Function.new(nil, nil, nil, body_forms)
     }
 
     rule(function_name: simple(:name),
          parameters: simple(:empty),
-         body: simple(:template)) {
-      Function.new(name, nil, nil, template)
+         body_forms: sequence(:body_forms)) {
+      Function.new(name, nil, nil, body_forms)
     }
 
     rule(integer: simple(:i)) { i.to_i }

@@ -378,6 +378,15 @@ module Tpl
     eval_arg(-1, binding) if nargs > 0
   }
 
+  FunctionDef.define('set!', -1) {
+    s = self.scope
+    res = nil
+    (0 ... arity).step(2).each { |i|
+      res = s[self[i]] = self[i + 1]
+    }
+    res
+  }
+
   FunctionDef.define('do', [-1]) {
     nargs = self.arity
     (1 ... (nargs - 1)).each { |i|

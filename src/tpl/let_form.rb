@@ -2,11 +2,11 @@ module Tpl
   class LetForm
     include Tplike
 
-    attr_reader :name, :bindings, :body
-    def initialize(name, bindings, body)
+    attr_reader :name, :bindings, :body_forms
+    def initialize(name, bindings, body_forms)
       @name = name
       @bindings = bindings
-      @body = body
+      @body_forms = body_forms
     end
 
     def scope_with_bindings(scope)
@@ -18,7 +18,12 @@ module Tpl
     end
 
     def eval(scope)
-      @body.eval(scope_with_bindings(scope))
+      dynamic_scope = scope_with_bindings(scope)
+      res = nil
+      @body_forms.each { |form|
+        res = eval_value(form, dynamic_scope)
+      }
+      res
     end
 
     def binding_str
@@ -26,7 +31,7 @@ module Tpl
     end
 
     def to_s
-      "$(let #{binding_str} #{@body})"
+      "$(let #{binding_str} #{@body_forms.join(' ')})"
     end
   end
 end
