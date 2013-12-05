@@ -62,6 +62,10 @@ module Tpl
       end
     end
 
+    def subscope(hash)
+      Scope.wrap(hash, self)
+    end
+
     def to_s
       "#{self.class}(#{@dict} // #{@delegates.size})"
     end

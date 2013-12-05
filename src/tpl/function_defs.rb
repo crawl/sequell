@@ -1,6 +1,7 @@
 require 'henzell/config'
 require 'tpl/function_def'
 require 'tpl/scope'
+require 'tpl/tplike'
 require 'command_context'
 require 're2'
 require 'date'
@@ -45,23 +46,13 @@ module Tpl
     Funcall.new(self[0], *(arglist + autosplit(self[-1]).to_a)).eval(scope)
   }
 
-  FunctionDef.define('sort', [1,2]) {
-    thing_to_sort = autosplit(self[-1])
-    if arity == 1
-      thing_to_sort.sort
-    else
-      funcall = Funcall.new(self[0])
-      thing_to_sort.sort { |a, b|
-        funcall.call(scope, a, b)
-      }
-    end
-  }
-
-  FunctionDef.define('inc', 1) { self[0] + 1 }
-  FunctionDef.define('dec', 1) { self[0] - 1 }
-  FunctionDef.define('value', 1) {
-    val = self[0]
-    val.is_a?(String) ? scope[val] : val
+  FunctionDef.define('binding', [1, -1]) {
+    binding = Scope.wrap(self[0] || { })
+    nargs = self.arity
+    (1 ... (nargs - 1)).each { |i|
+      eval_arg(i, binding)
+    }
+    eval_arg(-1, binding) if nargs > 0
   }
 
   FunctionDef.define('call', [1, -1]) {
@@ -69,24 +60,14 @@ module Tpl
     Funcall.new(self[0], *arglist).eval(scope)
   }
 
-  FunctionDef.define('hash', -1) {
-    res = { }
-    (0 ... self.raw_args.size).step(2).each { |i|
-      res[self[i]] = self[i + 1]
-    }
-    res
-  }
+  FunctionDef.define('dec', 1) { self[0] - 1 }
 
-  FunctionDef.define('hash-put', [1, -1]) {
-    res = self[-1].dup
-    (0 ... (self.raw_args.size - 1)).step(2).each { |i|
-      res[self[i]] = self[i + 1]
+  FunctionDef.define('do', -1) {
+    nargs = self.arity
+    (1 ... (nargs - 1)).each { |i|
+      self[i]
     }
-    res
-  }
-
-  FunctionDef.define('hash-keys', 1) {
-    self[0].keys
+    self[-1] if nargs > 0
   }
 
   FunctionDef.define('elt', 2) {
@@ -99,6 +80,35 @@ module Tpl
       indexable[self[i]]
     }
   }
+
+  FunctionDef.define('eval', [1, 2]) {
+    tpl = self[0]
+    tpl = Tpl::Template.template(tpl) unless tpl.is_a?(Tplike)
+    tpl.eval(arity == 2 ? self[-1] : scope)
+  }
+
+  FunctionDef.define('hash', -1) {
+    res = { }
+    (0 ... self.raw_args.size).step(2).each { |i|
+      res[self[i]] = self[i + 1]
+    }
+    res
+  }
+
+  FunctionDef.define('hash-keys', 1) {
+    self[0].keys
+  }
+
+  FunctionDef.define('hash-put', [1, -1]) {
+    res = self[-1].dup
+    (0 ... (self.raw_args.size - 1)).step(2).each { |i|
+      res[self[i]] = self[i + 1]
+    }
+    res
+  }
+
+  FunctionDef.define('identity', 1) { self[0] }
+  FunctionDef.define('inc', 1) { self[0] + 1 }
 
   FunctionDef.define('cons', [0,2]) {
     case arity
@@ -169,8 +179,14 @@ module Tpl
     end
   }
 
-  FunctionDef.define('+', -1) { reduce_numbers(0, &:+) }
-  FunctionDef.define('-', -1) { reduce_numbers(&:-) }
+  FunctionDef.define('+', -1) { reduce_numbers(&:+) || 0 }
+  FunctionDef.define('-', [1, -1]) {
+    if arity == 1
+      -self[0]
+    else
+      reduce_numbers(&:-)
+    end
+  }
   FunctionDef.define('*', -1) { reduce_numbers(1, &:*) }
   FunctionDef.define('/', -1) { reduce_numbers(&:/) }
   FunctionDef.define('mod', 2) { self[0].to_i % self[1].to_i }
@@ -241,6 +257,28 @@ module Tpl
     else
       autosplit(self[-1], self[0])
     end
+  }
+
+  FunctionDef.define('str-find', 2) {
+    self[-1].to_s.index(self[0].to_s) || -1
+  }
+
+  FunctionDef.define('str-find?', 2) {
+    self[-1].to_s.index(self[0].to_s) != nil
+  }
+
+  FunctionDef.define('re-find', 2) {
+    re = self[0]
+    re = RE2::Regexp.new(re.to_s) unless re.is_a?(RE2::Regexp)
+    re.match(self[-1], -1)
+  }
+
+  FunctionDef.define('match-groups', 1) {
+    match = self[0]
+    unless match.is_a?(RE2::MatchData)
+      raise "Expected match object, got: #{match}"
+    end
+    match.to_a
   }
 
   FunctionDef.define('replace', [2, 3]) {
@@ -365,21 +403,36 @@ module Tpl
     self[0].strftime(arity == 2? self[-1] : ISO8601_FMT)
   }
 
+  FunctionDef.define('interval-year', [0, 1]) {
+    (arity == 1 ? self[-1] : 1) * 365
+  }
+
+  FunctionDef.define('interval-day', [0, 1]) {
+    (arity == 1 ? self[-1] : 1)
+  }
+
+  FunctionDef.define('interval-day', [0, 1]) {
+    (arity == 1 ? self[-1] : 1)
+  }
+
+  FunctionDef.define('interval-hour', [0, 1]) {
+    (arity == 1 ? self[-1] : 1) * Rational(1, 24)
+  }
+
+  FunctionDef.define('interval-minute', [0, 1]) {
+    (arity == 1 ? self[-1] : 1) * Rational(1, 24 * 60)
+  }
+
+  FunctionDef.define('interval-second', [0, 1]) {
+    (arity == 1 ? self[-1] : 1) * Rational(1, 24 * 60 * 60)
+  }
+
   FunctionDef.define('scope', [0, 1]) {
     if arity == 0
       scope
     else
       Scope.wrap(self[0], scope)
     end
-  }
-
-  FunctionDef.define('binding', [1, -1]) {
-    binding = Scope.wrap(self[0] || { })
-    nargs = self.arity
-    (1 ... (nargs - 1)).each { |i|
-      eval_arg(i, binding)
-    }
-    eval_arg(-1, binding) if nargs > 0
   }
 
   FunctionDef.define('set!', -1) {
@@ -391,11 +444,31 @@ module Tpl
     res
   }
 
-  FunctionDef.define('do', [-1]) {
-    nargs = self.arity
-    (1 ... (nargs - 1)).each { |i|
-      self[i]
-    }
-    self[-1] if nargs > 0
+  FunctionDef.define('sort', [1,2]) {
+    thing_to_sort = autosplit(self[-1])
+    if arity == 1
+      thing_to_sort.sort
+    else
+      funcall = Funcall.new(self[0])
+      thing_to_sort.sort { |a, b|
+        funcall.call(scope, a, b)
+      }
+    end
   }
+
+  FunctionDef.define('try', [1, 2]) {
+    begin
+      self[0]
+    rescue StandardError => e
+      arity == 2 ? eval_arg(-1, scope.subscope('err!' => e)) : nil
+    end
+  }
+
+  FunctionDef.define('value', 1) {
+    val = self[0]
+    val.is_a?(String) ? scope[val] : val
+  }
+
+  FunctionDef.define('void', -1) { nil }
+
 end

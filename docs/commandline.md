@@ -69,6 +69,32 @@ Functions may be used as `$(fn ...)`.
 
          .echo $(join $(split & a&b&c)) => a, b, c
 
+   - `$(str-find <str> <text>)`; `$(str-find? <str> <text>)`
+   
+      `str-find` returns the index of <str> in <text>, indexes
+      starting with 0, or -1 if <str> is not found in <text>. If
+      merely checking for match/no-match, `str-find?` returns boolean
+      true or false.
+
+   - `$(re-find <regex> <text>)`
+   
+      Returns a match object if the regex matches the text.
+
+      Match objects can be indexed with `elt`, or converted into a
+      list of captures with `match-groups`. The indexes where the
+      regex matched can be obtained using `match-begin` and `match-end`.
+
+   - `$(match-groups <match>)`
+
+     Returns a list of text groups captured by a regex search. The first
+     item is always the full matching text of the regex.
+
+   - `$(match-begin <match> [<group-index>])`
+
+     Returns the start index in the original text where the regex matched. If
+     *group-index* is specified, returns the start index where that particular
+     capturing group matched.
+
    - `$(replace <string> [<replacement>] <text>)`
 
      The replace function replaces occurrences of `<string>` in `<text>` with
@@ -117,6 +143,20 @@ Functions may be used as `$(fn ...)`.
 
      If *format* is omitted, the ISO 8601 date format (%FT%T%z) is assumed.
 
+   - `$(interval-year [<x>])`, `$(interval-day [<x>])`,
+     `$(interval-hour [<x>])`, `$(interval-minute [<x>])`,
+     `$(interval-second [<x>])`
+
+     Interprets <x> as an appropriate time interval, which can then be
+     used in date arithmetic. A *year* is treated as a unit of 365 days, not
+     a strict calendar year.
+
+     For intervals of one day and larger, you may just use the appropriate
+     numbers:
+
+         .echo $(+ (time) 5)
+         => <time 5 days in the future>
+
    - `$(ftime <time> [<format>])`
 
      Formats *time* to a string using the specified [*format*](http://pubs.opengroup.org/onlinepubs/009695299/functions/strptime.html)
@@ -125,6 +165,7 @@ Functions may be used as `$(fn ...)`.
 
    - `$(length <string|array>)` String or array length
    - `$(sub <start> [<exclusive-end>] <string|array>)` Substring or array slice
+   
    - `$(nth <index> <array>)` Index into array
    - `$(car <array>)` First element
    - `$(cdr <array>)` Array slice (identical to $(sub 1 <array>))
@@ -145,11 +186,11 @@ Functions may be used as `$(fn ...)`.
          $(cons) => []
 
    - `$(if <cond> <then> [<else>])`
-   - `$(let (var1 value1 var2 value2 ...) <body>)`
+   - `$(let (var1 value1 var2 value2 ...) <body-forms>)`
    
-         $(let (x 2 y 5) $(* $x $y)) => 10
+         $(let (x 2 y 5) (* $x $y)) => 10
 
-     Note that expressions in the body of a let must be wrapped in `$( )`;
+     Note: (let) now assumes multiple body forms.
 
    - `$(fn (par1 par2 . rest_parameter) body)`
      Define a function
@@ -233,6 +274,18 @@ Functions may be used as `$(fn ...)`.
    - `$(do <forms>)`
 
      Evaluates <forms> in sequence and returns the value of the last.
+
+   - `$(void)`
+
+     Returns the null value.
+
+   - `$(try <form> [<catch>])
+
+     Evaluates and returns the value of `<form>`. If evaluating
+     `<form>` raised an error, evaluates and returns the value of
+     `<catch>`, or `(void)` if no *catch* form was provided. In the
+     `<catch>` form, `$err!` will be bound to the error that was
+     caught.
      
 
 Unknown functions will be ignored:

@@ -1,6 +1,14 @@
 require 'tpl/function_def'
 
 module Tpl
+  class FunctionEvalError < StandardError
+    def initialize(where, cause)
+      super("Error in #{where}: #{cause}")
+      @where = where
+      @cause = cause
+    end
+  end
+
   class FunctionExecutor
     def self.fnexists?(fn, scope)
       FunctionDef.find_definition(fn.name, scope)
@@ -11,7 +19,12 @@ module Tpl
       if !evaluator
         fncall.to_s
       else
-        self.new(fncall, evaluator, scope).eval()
+        begin
+          self.new(fncall, evaluator, scope).eval()
+        rescue
+          STDERR.puts($!, $!.backtrace.join("\n"))
+          raise FunctionEvalError.new(fncall, $!)
+        end
       end
     end
 
