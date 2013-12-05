@@ -6,6 +6,7 @@
 use HTTP::Date;
 use strict;
 use warnings;
+use CGI;
 
 use File::Basename;
 use File::Spec;
@@ -94,13 +95,15 @@ sub canonical_link($)
   $link
 }
 
+sub escape {
+  CGI::escapeHTML(shift())
+}
+
 sub htmlize($$$)
 {
   my ($entry, $multiple, $prefix) = @_;
   for ($entry) {
-    s/&/&amp;/g;
-    s/</&lt;/g;
-    s/>/&gt;/g;
+    $_ = escape($_);
     s{(http://[!#\$%&'*+,-./0-9:;=?\@A-Z^_a-z|~]+)}{<a href="$1">$1</a>}g;
 
     my $key;
@@ -119,9 +122,11 @@ for my $key (sort keys %learndb)
     next if !$has_multiple && $learndb{$key} =~ $FULL_REDIRECT_PATTERN;
 
     print "<dt>";
-    print   "<a name=\"$_\"></a>" for(sort keys %{$redir{$key}});
+    print   "<a name=\"$_\"></a>" for(map(escape($_),
+                                          sort keys %{$redir{$key}}));
 
     (my $clean_key = $key) =~ tr{_}{ };
+    $clean_key = escape($clean_key);
     print "$clean_key\n";
     print " <dd>";
 
@@ -132,7 +137,8 @@ for my $key (sort keys %learndb)
     {
       my $text = $learndb{$key."[$i]"};
       my $prefix = '';
-      $prefix .= "<a name=\"$_\"></a>" for(sort keys %{$redir{$key."[$i]"}});
+      $prefix .= "<a name=\"$_\"></a>" for(map(escape($_),
+                                               sort keys %{$redir{$key."[$i]"}}));
       print htmlize($text, $has_multiple, $prefix), "\n";
     }
     print "</ol>" if $has_multiple;
