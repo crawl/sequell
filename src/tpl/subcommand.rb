@@ -15,18 +15,7 @@ module Tpl
 
     def eval(provider)
       return self.to_s unless Template.allow_subcommands?
-      CommandContext.subcommand_context {
-        command_line = self.eval_command_line(provider)
-        debug { "Evaluating subcommand: '#{command_line}'" }
-        exec = Cmd::Executor.execute(
-          command_line,
-          default_nick: CommandContext.default_nick,
-          forbidden_commands: ['??'],
-          suppress_stderr: true)
-        raise StandardError.new("Subcommand #{self} failed: " +
-                                (exec[1] || '').strip) unless exec[0] == 0
-        (exec[1] || '').strip
-      }
+      Cmd::Executor.execute_subcommand(self.eval_command_line(provider))
     end
 
     def eval_command_line(provider)

@@ -10,6 +10,20 @@ module Tpl
   end
 
   class Scope
+    def self.with_scope(scope)
+      old_scope = @@default_scope
+      @@default_scope = scope
+      begin
+        yield
+      ensure
+        @@default_scope = old_scope
+      end
+    end
+
+    def self.default_scope
+      @@default_scope
+    end
+
     def self.wrap(scopelike={}, *delegates)
       if (scopelike.is_a?(self) &&
           (delegates.empty? || delegates[0] == scopelike))

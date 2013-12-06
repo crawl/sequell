@@ -84,6 +84,11 @@ module Tpl
          rightquot: simple(:right)) {
       Fragment.new(left, body, right)
     }
+    rule(leftquot: simple(:left),
+         body: sequence(:bodies),
+         rightquot: simple(:right)) {
+      Fragment.new(left, *bodies, right)
+    }
 
     rule(balanced: simple(:balanced)) { balanced }
 

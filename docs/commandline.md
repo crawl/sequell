@@ -292,6 +292,73 @@ Unknown functions will be ignored:
 
      .echo $(foobar) => $(foobar)
 
+### LearnDB access functions
+   
+   - `$(ldb <term> [<index>])`
+
+     Retrieve the definition for `<term>[<index>]`. If the definition is
+     a LearnDB redirect (see {foo}) or a LearnDB command invocation (do {cmd}),
+     the redirect is followed, or the command is invoked. Definitions are
+     automatically evaluated as templates.
+
+     Returns a LearnDB entry object that converts to a string with
+     (str <obj>) as:
+
+         <term>[<index>/<count>] <definition>
+
+     The definition may be examined as:
+
+       1. `$(ldbent-term <e>)` => the term (after following redirects, etc.)
+       2. `$(ldbent-index <e>)` => the index
+       3. `$(ldbent-term-size <e>)` => the number of entries for the term
+       4. `$(ldbent-text <e>)` => the definition.
+
+   - `$(ldb-lookup "string query")`
+
+     Takes a string query in the form `"<term>[<num>]"` and returns
+     the definition. Otherwise identical in behavior to `ldb`.
+       
+   - `$(ldb-at <term> [<index>])`
+   
+     Retrieve the definition for `<term>[<index>]`, or the first
+     definition if *index* is unspecified. The definition returned is
+     a LearnDB entry object, but redirects and do { } commands are
+     ignored, and the string is not treated as a template to be
+     expanded, i.e. this is a raw LearnDB lookup.
+
+   - `$(ldb-defs <term>)`
+
+     Retrieves the list of definitions for `<term>`. Each definition
+     is returned as a simple string, not as a LearnDB entry object.
+
+   - `$(ldb-size <term>)`
+
+     Returns the number of definitions for *term*, ignoring redirects.
+
+   - `$(ldb-add <term> [<index>] <definition>)`
+
+     Adds *definition* to *term*. If *index* is specified, the new definition
+     will be inserted at that index. If no *index* is specified, the new
+     definition will be appended as the last definition. An *index* of -1
+     produces the same append behaviour as not specifying the index.
+
+     Raises an error if used in PM.
+
+   - `$(ldb-set! <term> <index> <definition>)`
+
+     Replaces the existing definition at `term[index]` with the new
+     definition. If no definition exists at term[index], does nothing.
+
+     Raises an error if used in PM.
+     
+   - `$(ldb-rm! <term> <index>)`
+
+     Deletes the definition at `term[index]`, or the whole term and all
+     its definitions if an index of '*' is specified. Use with caution,
+     there are no confirmation prompts.
+
+     Raises an error if used in PM.
+
 Multiple command-line expansions:
 ---------------------------------
 

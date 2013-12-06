@@ -39,6 +39,12 @@ NICKMAP_FILE = Henzell::Config.file_path(
 $nicks_loaded = false
 
 module Helper
+  def self.raise_private_messaging!
+    if ENV['PRIVMSG'] == 'y'
+      raise "This operation is forbidden in private messaging"
+    end
+  end
+
   def self.henzell_env
     Hash[ ENV.keys.find_all { |k| k =~ /^henzell_env_\w+$/i }.map { |k|
         k =~ /^henzell_env_(\w+)$/i && [$1.downcase, ENV[k]]
@@ -49,6 +55,7 @@ end
 def munge_game(game)
   game.to_a.map { |x,y| "#{x}=#{y.to_s.gsub(':', '::')}" }.join(':')
 end
+
 
 def forbid_private_messaging!(msg=nil)
   if ENV['PRIVMSG'] == 'y'

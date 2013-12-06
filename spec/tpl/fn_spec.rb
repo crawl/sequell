@@ -103,4 +103,11 @@ describe "Template functions" do
       expect(e '$(let (y 30) $(binding (scope (hash x 20)) $y))').to eql(30)
     end
   end
+
+  context 'eval' do
+    it 'will eval templates in the given scope' do
+      expect(e %q{$(eval 5)}).to eql('5')
+      expect(e %q{$(let (x 3) (eval '$(+ 5 7 $x)'))}).to eql(15)
+    end
+  end
 end

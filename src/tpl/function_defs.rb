@@ -26,6 +26,8 @@ class String
   end
 end
 
+require 'tpl/learndb_fn_defs'
+
 module Tpl
   class RE2MatchWrapper
     def initialize(match)
@@ -41,7 +43,7 @@ module Tpl
     end
   end
 
-  FunctionDef.define('apply', [2,-1]) {
+  FunctionDef.define('apply', [2, -1]) {
     arglist = self.raw_args[1 .. -2].dup
     Funcall.new(self[0], *(arglist + autosplit(self[-1]).to_a)).eval(scope)
   }
@@ -83,7 +85,7 @@ module Tpl
 
   FunctionDef.define('eval', [1, 2]) {
     tpl = self[0]
-    tpl = Tpl::Template.template(tpl) unless tpl.is_a?(Tplike)
+    tpl = Tpl::Template.template(tpl.to_s) unless tpl.is_a?(Tplike)
     tpl.eval(arity == 2 ? self[-1] : scope)
   }
 
@@ -470,5 +472,4 @@ module Tpl
   }
 
   FunctionDef.define('void', -1) { nil }
-
 end

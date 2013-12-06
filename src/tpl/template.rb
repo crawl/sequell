@@ -1,6 +1,8 @@
 require 'tpl/template_parser'
 require 'tpl/template_builder'
 require 'tpl/function_defs'
+require 'tpl/scope'
+require 'cmd/executor'
 
 module Tpl
   class TemplateOptions
@@ -45,9 +47,14 @@ module Tpl
       result.to_s
     end
 
-    def self.template_eval(text, provider=nil, &block)
-      provider ||= block
-      eval(template(text), provider)
+    def self.template_eval(text, scope=nil, &block)
+      scope ||= (block || Scope.default_scope)
+      eval(template(text), scope)
+    end
+
+    def self.subcommand_eval(subcommandline, scope=nil, &block)
+      subcommandline = template_eval_string(subcommandline, scope)
+      Cmd::Executor.execute_subcommand(subcommandline)
     end
 
     def self.template_eval_string(text, scope=nil, &block)

@@ -32,11 +32,12 @@ sub _executor {
   shift()->{executor}
 }
 
+# Resolves a redirect, returns an entry.
 sub _resolve_redirect {
   my ($self, $redirect) = @_;
   my $res = LearnDB::query_entry($redirect, undef, undef);
   if (!$res || $res->err()) {
-    return LearnDB::Entry->entry("see {$redirect}");
+    return LearnDB::Entry->wrap("see {$redirect}");
   }
   $res->entry()
 }

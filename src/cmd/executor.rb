@@ -1,5 +1,6 @@
 require 'henzell/config'
 require 'cmd/command'
+require 'command_context'
 require 'helper'
 
 module Cmd
@@ -36,13 +37,37 @@ module Cmd
     end
   end
 
+  class UnknownCommandError < StandardError
+    attr_reader :command, :command_line
+
+    def initialize(command, command_line)
+      super("Not a valid command: #{command} in #{command_line}")
+      @command = command
+      @command_line = command_line
+    end
+  end
+
   class Executor
+    def self.execute_subcommand(command_line)
+      CommandContext.subcommand_context {
+        debug { "Evaluating subcommand: '#{command_line}'" }
+        exec = self.execute(
+          command_line,
+          default_nick: CommandContext.default_nick,
+          forbidden_commands: ['??'],
+          suppress_stderr: true)
+        raise StandardError.new("Subcommand #{self} failed: " +
+                                (exec[1] || '').strip) unless exec[0] == 0
+        (exec[1] || '').strip
+      }
+    end
+
     def self.execute(command_line, options={})
       config = Henzell::Config.default
       command = Command.new(command_line)
       options = Options.new(options)
       unless command.valid?(config) && options.permitted?(command)
-        raise StandardError, "Not a valid command: #{command}"
+        raise UnknownCommandError.new(command, command_line)
       end
 
       self.new(command, options, config).execute

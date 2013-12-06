@@ -215,6 +215,10 @@ Sequell recognizes these variables:
 Sequell will also expand standard
 [Command-Line Expansions](listgame.md#command-line-expansion) in entries.
 
+Sequell's template language has [direct access to the
+LearnDB](commandline.md#learndb-access-functions); when automating
+actions, prefer the LearnDB functions to subcommands.
+
 Behaviour
 ---------
 
