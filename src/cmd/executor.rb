@@ -56,7 +56,7 @@ module Cmd
           default_nick: CommandContext.default_nick,
           forbidden_commands: ['??'],
           suppress_stderr: true)
-        raise StandardError.new("Subcommand #{self} failed: " +
+        raise StandardError.new("Subcommand $(#{command_line}) failed: " +
                                 (exec[1] || '').strip) unless exec[0] == 0
         (exec[1] || '').strip
       }
