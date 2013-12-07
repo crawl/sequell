@@ -76,7 +76,7 @@ Functions may be used as `$(fn ...)`.
       merely checking for match/no-match, `str-find?` returns boolean
       true or false.
 
-   - `$(re-find <regex> <text>)`
+   - `$(re-find <regex> <text> [<start-index>])`
    
       Returns a match object if the regex matches the text.
 
@@ -89,12 +89,28 @@ Functions may be used as `$(fn ...)`.
      Returns a list of text groups captured by a regex search. The first
      item is always the full matching text of the regex.
 
+   - `$(match-n <match> [<n>])`
+
+     Returns the nth text group captured by a regex search. The zeroth
+     item is the full matching text of the regex; other captures start
+     from 1. If unspecified, *n* is assumed to be 0.
+
+     If your pattern used named capturing groups (?P<name>...), you may
+     use the name of the group instead of *n*.
+     
    - `$(match-begin <match> [<group-index>])`
 
-     Returns the start index in the original text where the regex matched. If
-     *group-index* is specified, returns the start index where that particular
-     capturing group matched.
+     Returns the start index in the original text where the regex
+     matched. If *group-index* is specified, returns the start index
+     where that particular capturing group matched.
 
+   - `$(match-end <match> [<group-index>])`
+
+     Returns the index of the character in the original text
+     immediately after the last character of the regex match. If
+     *group-index* is specified, returns the end index just after that
+     particular capturing group.
+     
    - `$(replace <string> [<replacement>] <text>)`
 
      The replace function replaces occurrences of `<string>` in `<text>` with
@@ -113,14 +129,33 @@ Functions may be used as `$(fn ...)`.
 
      Like `replace`, but uses [RE2 regexps](https://code.google.com/p/re2/wiki/Syntax).
 
-     `replacement` is lazily evaluated and may use captures as variables:
+     `replacement` may use captures as variables; to protect against early
+     expansion of the replacement, you must single-quote it:
      
-         .echo $(re-replace '\b([a-z])' (upper $1) "How now brown cow")
+         .echo $(re-replace '\b([a-z])' '$(upper $1)' "How now brown cow")
          => How Now Brown Cow
 
-         .echo $(re-replace '\b\w(?P<letter>[a-z])\w\b' (upper $letter) "How now brown cow")
+         .echo $(re-replace '\b\w(?P<letter>[a-z])\w\b' '$(upper $letter)' "How now brown cow")
          => O O brown O
 
+     As an alternative to single-quoting the replacement, you may use `quote`:
+
+         .echo $(re-replace '\b([a-z])' (quote (upper $1)) "How now brown cow")
+         => How Now Brown Cow
+
+         .echo $(re-replace '\b([a-z])' `(upper $1) "How now brown cow")
+         => How Now Brown Cow
+
+     As a final replacement form, you may pass a function instead of a
+     replacement string. The function will be invoked for each match
+     and must return a replacement string:
+
+         $(re-replace "(y)(.*)(k)" (fn () "$1$(upper $2)$3") yak)
+         => yAk
+
+     A one-argument function may also be used, which will be called with a
+     match object passed to it.
+        
    - `$(re-replace-n <n> <regex> [<replacement>] <text)`
 
       Replaces only *n* matches; this is the regex equivalent of `replace-n`.
@@ -270,6 +305,25 @@ Functions may be used as `$(fn ...)`.
          $(binding (hash x 20) $x) => 20
          $(let (y 30) $(binding (hash x 20) $y)) => ${y} (unbound y)
          $(let (y 30) $(binding (scope (hash x 20)) $y)) => 30
+
+   - `$(eval <string|quoted-form> [<scope>])`
+
+     Evaluates the string or quoted form as a template, optionally using
+     the supplied *scope*. If *scope* is omitted, defaults to the current
+     scope.
+
+         $(eval 5) => 5
+         $(let (x 3) (eval '$(+ 5 7 $x)')) => 15
+         $(let (x 3) (eval `(+ 5 7 $x)))  => 15
+         $(let (x 3) (eval (quote (+ 5 7 $x))))  => 15
+
+   - `$(quote <form>)`
+
+     Returns <form> as a syntax object representing the template. Useful for
+     eval, or regex replacements.
+
+     As a convenience, `<form> behaves the same as (quote <form>).
+     Sequell does not support splicing forms with , and ,@ yet.
 
    - `$(do <forms>)`
 

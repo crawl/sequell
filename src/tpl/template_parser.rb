@@ -131,7 +131,8 @@ module Tpl
     }
 
     rule (:binding) {
-      space? >> identifier.as(:binding_name) >> space >> wordtpl.as(:value)
+      space? >> identifier.as(:binding_name) >> space >>
+        template_atom.as(:value)
     }
 
     rule(:template_funcall) {
@@ -141,11 +142,18 @@ module Tpl
       funargs.as(:function_arguments)
     }
 
-    rule(:funargs) {
-      (space >>
-        ((number >> ((space | str(")")).present? | any.absent?)) |
-          wordtpl)
-      ).as(:argument).repeat
+    rule (:quoted_form) {
+      str("`").as(:quoted) >> template_atom.as(:form)
+    }
+
+    rule (:template_atom) {
+      quoted_form |
+      (number >> ((space | str(")")).present? | any.absent?)) |
+        wordtpl
+    }
+
+    rule (:funargs) {
+      (space >> template_atom).as(:argument).repeat
     }
 
     rule(:template_with_options) {

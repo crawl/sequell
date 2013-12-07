@@ -73,7 +73,8 @@ module Tpl
     end
 
     def self.template(text)
-      parse = TemplateParser.new.parse(text)
+      return text if text.is_a?(Tplike)
+      parse = TemplateParser.new.parse(text.to_s)
       template = TemplateBuilder.new.apply(parse)
       if template.is_a?(Hash)
         STDERR.puts("Broken template parse: #{template.inspect}")

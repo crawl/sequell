@@ -15,7 +15,11 @@ module Tpl
     end
 
     def arity
-      [@parameters.size, @rest ? -1 : @parameters.size]
+      @arity ||= [@parameters.size, @rest ? -1 : @parameters.size]
+    end
+
+    def arity_match?(n)
+      n >= arity[0] && (arity[1] == -1 || n <= arity[1])
     end
 
     def call(scope, *args)

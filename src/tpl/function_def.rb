@@ -227,7 +227,7 @@ module Tpl
       @cache = { }
       @executor = executor
       unless arity_match?
-        raise "Bad number of arguments (#{arity}) to #{@name} in #{funcall}, must be #{@supported_arity}"
+        raise "Bad number of arguments (#{arity}) to #{@name || @evaluator}, must be #{@supported_arity}"
       end
       result = if user_function?
         eval_user_function

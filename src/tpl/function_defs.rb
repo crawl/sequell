@@ -3,46 +3,12 @@ require 'tpl/function_def'
 require 'tpl/scope'
 require 'tpl/tplike'
 require 'command_context'
-require 're2'
 require 'date'
 
-class String
-  def re2_gsub(re2_regexp, repl=nil)
-    re2_regexp = RE2::Regexp.new(re2_regexp.to_s) if re2_regexp.is_a?(String)
-    pos = 0
-    len = self.size
-    fragments = []
-    new_string = ''
-    substr = self[pos, len]
-    while true
-      match = re2_regexp.match(self, -1, pos)
-      break unless match && match.size > 0
-      fragments << self[pos, match.begin(0) - pos]
-      fragments << (repl ? repl : yield(match))
-      pos = match.end(0)
-    end
-    fragments << (self[pos, self.size] || '')
-    fragments.join('')
-  end
-end
-
 require 'tpl/learndb_fn_defs'
+require 'tpl/re_fn_defs'
 
 module Tpl
-  class RE2MatchWrapper
-    def initialize(match)
-      @match = match
-    end
-
-    def [](key)
-      if key =~ /^\d+$/
-        @match[key.to_i]
-      else
-        @match[key]
-      end
-    end
-  end
-
   FunctionDef.define('apply', [2, -1]) {
     arglist = self.raw_args[1 .. -2].dup
     Funcall.new(self[0], *(arglist + autosplit(self[-1]).to_a)).eval(scope)
@@ -84,8 +50,7 @@ module Tpl
   }
 
   FunctionDef.define('eval', [1, 2]) {
-    tpl = self[0]
-    tpl = Tpl::Template.template(tpl.to_s) unless tpl.is_a?(Tplike)
+    tpl = Tpl::Template.template(self[0])
     tpl.eval(arity == 2 ? self[-1] : scope)
   }
 
@@ -135,6 +100,10 @@ module Tpl
     else
       autosplit(self[-1]).flatten(self[0])
     end
+  }
+
+  FunctionDef.define('quote', 1) {
+    raw_arg(0)
   }
 
   FunctionDef.define('reverse', 1) {
@@ -269,20 +238,6 @@ module Tpl
     self[-1].to_s.index(self[0].to_s) != nil
   }
 
-  FunctionDef.define('re-find', 2) {
-    re = self[0]
-    re = RE2::Regexp.new(re.to_s) unless re.is_a?(RE2::Regexp)
-    re.match(self[-1], -1)
-  }
-
-  FunctionDef.define('match-groups', 1) {
-    match = self[0]
-    unless match.is_a?(RE2::MatchData)
-      raise "Expected match object, got: #{match}"
-    end
-    match.to_a
-  }
-
   FunctionDef.define('replace', [2, 3]) {
     if arity == 2
       self[-1].to_s.gsub(self[0], '')
@@ -310,40 +265,6 @@ module Tpl
           m
         else
           self[2]
-        end
-      }
-    end
-  }
-
-  FunctionDef.define('re-replace', [2, 3]) {
-    if arity == 2
-      self[-1].to_s.re2_gsub(self[0], '')
-    else
-      self[-1].to_s.re2_gsub(self[0]) { |m|
-        self.eval_arg(1, Scope.wrap(RE2MatchWrapper.new(m), scope))
-      }
-    end
-  }
-
-  FunctionDef.define('re-replace-n', [3, 4]) {
-    count = 0
-    max = self[0].to_i
-    if arity == 3
-      self[-1].to_s.re2_gsub(self[1]) { |m|
-        count += 1
-        if count > max && max != -1
-          m.to_s
-        else
-          ''
-        end
-      }
-    else
-      self[-1].to_s.re2_gsub(self[1]) { |m|
-        count += 1
-        if count > max && max != -1
-          m.to_s
-        else
-          self.eval_arg(2, RE2MatchWrapper.new(m))
         end
       }
     end

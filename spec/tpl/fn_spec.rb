@@ -23,28 +23,6 @@ describe "Template functions" do
     end
   end
 
-  context 're-replace' do
-    it 'will replace regexps' do
-      expect(e '$(re-replace y.*k yuck yak)').to eql('yuck')
-      expect(e '$(re-replace "(y)(.*)(k)" (concat $1 (upper $2) $3) yak)').to eql('yAk')
-      expect(e %q{$(re-replace '\b([a-z])' (upper $1) "How now brown cow")})
-        .to eql('How Now Brown Cow')
-      expect(e %q{$(re-replace '\b([a-z])' "How now brown cow")})
-        .to eql('How ow rown ow')
-    end
-  end
-
-  context 're-replace-n' do
-    it 'will replace regexps' do
-      expect(e '$(re-replace-n 1 y.*k yuck yak)').to eql('yuck')
-      expect(e '$(re-replace-n 1 "(y)(.*)(k)" (concat $1 (upper $2) $3) yak)').to eql('yAk')
-      expect(e %q{$(re-replace-n 2 '\b([a-z])' (upper $1) "How now brown cow")})
-        .to eql('How Now Brown cow')
-      expect(e %q{$(re-replace-n 2 '\b([a-z])' "How now brown cow")})
-        .to eql('How ow rown cow')
-    end
-  end
-
   context 'time' do
     it 'will return the current time' do
       now = DateTime.now
@@ -108,6 +86,9 @@ describe "Template functions" do
     it 'will eval templates in the given scope' do
       expect(e %q{$(eval 5)}).to eql('5')
       expect(e %q{$(let (x 3) (eval '$(+ 5 7 $x)'))}).to eql(15)
+      expect(e %q{$(let (x 3) (eval `$(+ 5 7 $x)))}).to eql(15)
+      expect(e %q{$(let (x 3) (eval `(+ 5 7 $x)))}).to eql(15)
+      expect(e %q{$(let (x 3) (eval (quote (+ 5 7 $x))))}).to eql(15)
     end
   end
 end

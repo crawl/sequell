@@ -70,6 +70,16 @@ module Tpl
         Funcall.new(function.identifier, *args)
       end
     }
+
+    rule(quoted: simple(:q),
+         form: simple(:form)) {
+      Funcall.new('quote', form)
+    }
+    rule(quoted: simple(:q),
+         form: sequence(:forms)) {
+      Funcall.new('quote', Fragment.new(*forms).collapse)
+    }
+
     rule(argument: simple(:arg)) { arg }
     rule(argument: sequence(:args)) { Fragment.new(*args).collapse }
     rule(string: sequence(:c)) { c.join('') }
