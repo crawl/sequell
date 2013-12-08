@@ -213,7 +213,7 @@ Sequell recognizes these variables:
 3. $channel: The channel.
 
 Sequell will also expand standard
-[Command-Line Expansions](listgame.md#command-line-expansion) in entries.
+[Command-Line Expansions](commandline.md) in entries.
 
 Sequell's template language has [direct access to the
 LearnDB](commandline.md#learndb-access-functions); when automating
@@ -292,7 +292,7 @@ Available conditions:
 Behaviours are not evaluated if Sequell thinks the user's command is a
 LearnDB query (`??<foo>`). This may change in the future.
 
-All LearnDB entries matching the regex `^:\w+:$` are hidden from the
+All LearnDB entries matching the regex `^(:\w+:|~.+)$` are hidden from the
 HTML LearnDB page.
 
 Links
