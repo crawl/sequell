@@ -3,6 +3,7 @@
 use lib 'src';
 use Helper;
 use Henzell::Config qw/%CMDPATH/;
+use LearnDB;
 
 Helper::help("Displays help on a command. For a list of commands, see !cmdinfo.");
 
@@ -20,4 +21,6 @@ my $requested = lc(defined($1) ? $1 : "!help");
 if ($CMDPATH{$requested}) {
   print "$requested: ";
   exec $CMDPATH{$requested}, @ARGV;
+} else {
+  print "[[[LEARNDB: ${requested}: :::!help:${requested}:::No help for $requested (you could add help with !learn add !help:$requested <helpful text>)]]]\n"
 }

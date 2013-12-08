@@ -17,6 +17,7 @@ use Henzell::LearnDBService;
 use Henzell::LogFetchService;
 use Henzell::LogParse;
 use Henzell::LogReader;
+use Henzell::Bus;
 use Getopt::Long;
 use Cwd;
 
@@ -105,6 +106,9 @@ sub irc_services {
   my @services;
   my $reg = sub { push @services, shift() };
   my $feat = sub { Henzell::Config::feat_enabled(shift()) };
+
+  my $bus = Henzell::Bus->new;
+
   $reg->(Henzell::SeenService->new(irc => $irc_bot)) if $feat->('seen_update');
 
   if ($log_reader->active()) {
@@ -119,11 +123,13 @@ sub irc_services {
   my $executor = Henzell::CommandService->new(
     irc => $irc_bot,
     auth => Henzell::IRCAuth->new(irc => $irc_bot),
-    config => $config_file);
+    config => $config_file,
+    bus => $bus);
 
   if ($feat->('learndb')) {
     $reg->(Henzell::LearnDBService->new(irc => $irc_bot,
-                                        executor => $executor));
+                                        executor => $executor,
+                                        bus => $bus));
   }
 
   # All bots have the command processor; no announce-only bots.

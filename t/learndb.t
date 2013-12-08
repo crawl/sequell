@@ -23,16 +23,20 @@ $ENV{HENZELL_ALL_COMMANDS} = 'y';
 use Henzell::LearnDBService;
 use Henzell::IRCTestStub;
 use Henzell::CommandService;
+use Henzell::Bus;
 use LearnDB;
 
 my $channel = '##crawl';
 my $nick = 'greensnark';
 my $rc = 'rc/sequell.rc';
 my $irc = Henzell::IRCTestStub->new(channel => $channel);
+my $bus = Henzell::Bus->new;
 my $cmd = Henzell::CommandService->new(irc => $irc,
-                                       config => $rc);
+                                       config => $rc,
+                                       bus => $bus);
 my $ldb = Henzell::LearnDBService->new(executor => $cmd,
-                                       irc => $irc);
+                                       irc => $irc,
+                                       bus => $bus);
 $irc->configure_services(services => [$ldb, $cmd]);
 
 is(irc('??cow'), "I don't have a page labeled cow in my learndb.");
@@ -50,6 +54,11 @@ irc('!learn add cow How now');
 irc('!learn add cszo cßo');
 is(irc('??cszo'), "cszo[1/1]: cßo");
 is(irc('??pow[-1]'), "cow[3/3]: How now");
+
+
+irc('!learn add !help:!foo Hahahahaha');
+is(irc('!help !foo'), "!foo: Hahahahaha");
+like(irc('!help !bar'), qr/No help for !bar/);
 
 beh('Hi! ::: Hello, $nick. Welcome to ${channel}!', sub {
   is(irc('Hi!'), "Hello, greensnark. Welcome to ##crawl!")

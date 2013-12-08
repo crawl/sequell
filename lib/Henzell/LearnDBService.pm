@@ -10,6 +10,7 @@ use File::Spec;
 use lib '..';
 use lib File::Spec->catfile(dirname(__FILE__), '../src');
 
+use parent 'Henzell::ServiceBase';
 use Henzell::LearnDBBehaviour;
 use Henzell::LearnDBLookup;
 
@@ -25,6 +26,11 @@ sub new {
     Henzell::LearnDBLookup->new(executor => $self->_executor());
   $self->{beh} = Henzell::LearnDBBehaviour->new(irc => $opt{irc},
                                                 dblookup => $self->_lookup());
+  $self->subscribe_event('learndb_service', 'indirect_query',
+                         sub {
+                           my ($alias, $event, @args) = @_;
+                           $self->indirect_query_event(@args);
+                         });
   $self
 }
 
@@ -85,6 +91,7 @@ sub _db_query {
                    LearnDB::query_entry($query, undef, $carp_if_missing),
                    $bare);
   if (defined $msg && $msg =~ /\S/) {
+    $msg = "$$m{prefix}$msg" if $$m{prefix};
     $self->{irc}->post_message(%$m, body => $msg);
     1
   }
@@ -105,6 +112,15 @@ sub maybe_query {
   my $body = $$m{body};
   if ($body =~ /^\s*(.+)\s*[?]{2,}\s*$/) {
     $self->_db_query($m, $1, 'bare');
+  }
+}
+
+sub indirect_query_event {
+  my ($self, $m) = @_;
+  my $query = $$m{body} . "??";
+  if (!$self->maybe_query({ %$m, body => $query, verbatim => $query,
+                            said => 1 })) {
+    $self->{irc}->post_message(%$m, body => $$m{stub}) if $$m{stub};
   }
 }
 

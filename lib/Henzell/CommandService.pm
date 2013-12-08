@@ -12,6 +12,8 @@ use File::Spec;
 use lib '..';
 use lib File::Spec->catfile(dirname(__FILE__), '../src');
 
+use parent 'Henzell::ServiceBase';
+
 use Henzell::Config qw/%CONFIG %CMD %USER_CMD %PUBLIC_CMD/;
 use Henzell::Game;
 use Henzell::IRCUtil;
@@ -27,8 +29,7 @@ sub new {
   my $auth = $opt{auth};
   my $config_file = $opt{config};
   my $self = bless {
-    irc => $irc,
-    auth => $auth,
+    %opt,
     config_file => $config_file,
     backlog => []
    }, $cls;
@@ -193,6 +194,18 @@ sub execute_command {
       }
       return undef;
     }
+
+    if ($output =~ /^\[\[\[LEARNDB: (.*?):::(.*?):::(.*)\]\]\]$/) {
+      my ($prefix, $query, $stub) = ($1, $2, $3);
+      $self->publish_event('learndb_service', 'indirect_query',
+                           { %$m,
+                             body => $query,
+                             verbatim => $query,
+                             prefix => $prefix,
+                             stub => $stub });
+      $output = '';
+    }
+
     return $output;
   }
   undef
