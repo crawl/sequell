@@ -5,7 +5,7 @@
 !cmd cmd.rb :direct
 !cmdinfo cmdinfo.pl
 !coffee coffee.pl :direct
-!help help.pl
+!help help.pl :direct
 !chars chars.rb
 !deathsin deathsin.rb
 .echo echo.pl
