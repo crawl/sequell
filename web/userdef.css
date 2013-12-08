@@ -1,0 +1,75 @@
+html {
+  font-family: "Lucida Grande", "Helvetica";
+  font-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  padding: 1em;
+  margin: 0;
+  width: 100%;
+}
+
+nav {
+  position: absolute;
+  top: 1em;
+  right: 10em;
+}
+
+div, section {
+  padding: 0;
+  margin: 0;
+}
+
+.subtext {
+  margin-top: -0.5em;
+  color: #bbb;
+  font-size: 11px;
+}
+
+h1, h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+  margin-bottom: 0.5em;
+  padding: 0;
+}
+
+h2 {
+  font-size: 18px;
+}
+
+section {
+  padding: 1em 0;
+  margin-bottom: 1em;
+  display: block;
+  width: 90%;
+}
+
+table {
+  border: 1px solid #eee;
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+
+td, th {
+  border: 1px solid #eee;
+  border-collapse: collapse;
+  text-align: left;
+  padding: 0.5em;
+}
+
+td.name {
+  font-family: Monospace;
+  color: #300;
+}
+
+td.def {
+  overflow: auto;
+  font-family: Monospace;
+  color: #030;
+}

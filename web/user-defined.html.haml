@@ -1,0 +1,89 @@
+!!! 5
+%html
+  %head
+    %meta(http-equiv="Content-Type"
+          content="text/html; charset=UTF-8")
+    %title User Defines
+    %link(rel="stylesheet" type="text/css"
+          href="userdef.css")
+
+  %body
+    %h1 Sequell User Definitions
+    .subtext
+      Updated #{Time.now}
+
+    %nav
+      %a(href="#keywords") Keywords
+      %a(href="#commands") Commands
+      %a(href="#functions") Functions
+
+
+    %section.keywords
+      %a(name="keywords")
+      %h2 Keywords
+
+      - if keywords.empty?
+        .stub No keywords
+      - else
+
+        %table
+          %colgroup
+            %col(span="1" style="width: 15%")
+            %col(span="1" style="width: 85%")
+
+          %tr
+            %th.name Keyword
+            %th.def Definition
+
+          - for keyword in keywords
+            %tr
+              %td.name
+                %a{name: keyword[0]}
+                #{keyword[0]}
+              %td.def= keyword[1]
+
+    %section.commands
+      %a(name="commands")
+      %h2 Commands
+
+      - if commands.empty?
+        .stub No commands
+      - else
+
+        %table
+          %colgroup
+            %col(span="1" style="width: 15%")
+            %col(span="1" style="width: 85%")
+          %tr
+            %th Command
+            %th Definition
+
+          - for command in commands
+            %tr
+              %td.name
+                %a{name: command[0]}
+                #{command[0]}
+              %td.def= command[1]
+
+    %section.functions
+      %a(name="functions")
+      %h2 Functions
+
+      - if functions.empty?
+        .stub No functions
+      - else
+
+        %table
+          %colgroup
+            %col(span="1" style="width: 15%")
+            %col(span="1" style="width: 85%")
+          %tr
+            %th Function
+            %th Definition
+
+          - for function in functions
+            %tr
+              %td.name
+                %a{name: function[0]}
+                #{function[0]}
+              %td.def= function[1]

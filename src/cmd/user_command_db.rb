@@ -1,4 +1,5 @@
 require 'sqlite3'
+require 'henzell/config'
 
 module Cmd
   class UserCommandDb
@@ -86,7 +87,7 @@ module Cmd
 
     def query_all(table)
       commands = []
-      db.execute("SELECT name, definition FROM #{table}") { |row|
+      db.execute("SELECT name, definition FROM #{table} ORDER BY name") { |row|
         commands << [row[0].to_s[1..-1], row[1]]
       }
       commands
