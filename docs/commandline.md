@@ -264,7 +264,7 @@ Functions may be used as `$(<fn> ...)`.
      
          .echo $((fn (. args) (!lg $args fmt:"$name")) * xl>15)
 
-         $(fn (x) (* $x 2))
+         (fn (x) (* $x 2))
 
    - `$(apply <fn> arg1 arg2 ... arglist)`
      Apply function to the given argument list, with any individual args
@@ -354,7 +354,7 @@ Functions may be used as `$(<fn> ...)`.
 
      Returns the null value.
 
-   - `$(try <form> [<catch>])
+   - `$(try <form> [<catch>])`
 
      Evaluates and returns the value of `<form>`. If evaluating
      `<form>` raised an error, evaluates and returns the value of
