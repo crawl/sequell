@@ -248,7 +248,7 @@ Functions may be used as `$(<fn> ...)`.
      `set!` can only change variables bound by a `let` and function
      parameters.
 
-   - `$(fn (par1 par2 . rest_parameter) body)`
+   - `$(fn (par1 par2 . rest_parameter) body-forms)`
      Define a function
 
          $(let (x (fn (x) (+ $x 5))) (x 2)) => 7
@@ -260,9 +260,9 @@ Functions may be used as `$(<fn> ...)`.
          .echo $((fn (foo) $foo) 10) => 10
          .echo $((fn (foo) foo) 10) => foo
 
-     The function body is treated as a template:
+     The function body is *no longer treated as a template*:
      
-         .echo $((fn (. args) $(!lg $args fmt:"$name")) * xl>15)
+         .echo $((fn (. args) (!lg $args fmt:"$name")) * xl>15)
 
          $(fn (x) (* $x 2))
 
