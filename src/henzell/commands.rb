@@ -95,7 +95,7 @@ module Henzell
 
         command_script =
           File.join(Config.root, "commands", @commands[command][:file])
-        target = env['nick'] or raise "No nick in #{env} (henzell env: #{Helper.henzell_env})"
+        target = env['nick'] || 'Plog'
 
         command_line = [command, arguments].join(' ')
         unless ENV['HENZELL_TEST']

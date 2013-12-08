@@ -8,6 +8,9 @@ instance, if user "jake" runs a command as follows:
 
 Sequell will respond with: "User is: jake"
 
+The same expansion is applied to LearnDB queries, and, in some cases,
+to text supplied to commands, such as formats and titles for `!lg`.
+
 The syntax used for command-line expansion is:
 
 ### Variables:
@@ -18,11 +21,24 @@ know how to expand will be canonicalized and echoed.
     <jake > .echo Hi $user => Hi jake
     <jake > .echo Hi $nobody => Hi ${nobody}
 
-The variables that Sequell recognizes depend on the context:
+Unknown variables may be replaced with alternative text using the ${x:-alt}
+form:
+
+    <jake > .echo Hi ${nobody:-anon} => Hi anon
+
+The alternative text in ${x:-alt} is a full template, and can
+reference other variables, functions, etc.
+
+The variables (really bindings, as in names bound to values) that
+Sequell recognizes depend on the context:
 
  - Any context:
 
    `$user`: The name of the requesting user.
+   `$nick`: Same as $user.
+   `$bot` : The name of the bot (Sequell)
+   `$channel`: The channel on which Sequell received the triggering message.
+               $channel will be 'msg' for private messages.
 
  - Listgame queries (!lg, etc.)
 
@@ -53,7 +69,7 @@ expansions, which will ignore unexpanded values.
 
 ### Functions:
 
-Functions may be used as `$(fn ...)`.
+Functions may be used as `$(<fn> ...)`.
 
    - `$(typeof <val>)`  returns the type of the given value
 
@@ -225,7 +241,16 @@ Functions may be used as `$(fn ...)`.
    
          $(let (x 2 y 5) (* $x $y)) => 10
 
-     Note: (let) now assumes multiple body forms.
+     Note: (let) now assumes multiple body forms, so the $() for let bodies
+     is no longer needed.
+
+   - `$(set! <name> <value> [<name2> <value2> ...])`
+
+     Rebinds the value of variable <names> to <values> and returns the
+     last value.
+
+     `set!` can only change variables bound by a `let` and function
+     parameters.
 
    - `$(fn (par1 par2 . rest_parameter) body)`
      Define a function
@@ -413,11 +438,12 @@ Unknown functions will be ignored:
 
      Raises an error if used in PM.
 
-Multiple command-line expansions:
----------------------------------
+Quoting and multiple command-line expansions:
+---------------------------------------------
 
 !lg can use templates to format its output. These templates are also
-expanded using the rules described above.
+expanded using the commandline rules described above. To protect templates
+from immediate evaluation, wrap them in single quotes.
 
 For instance, given the command
 

@@ -12,6 +12,18 @@ describe Tpl::Template do
     Tpl::Template.template_eval(text, scope)
   end
 
+  it 'will expand variables' do
+    expect(e('$cow', 'cow' => 'moo')).to eq('moo')
+  end
+
+  it 'will canonicalize unbound variables' do
+    expect(e('$cow')).to eq('${cow}')
+  end
+
+  it 'will substitute unbound variables with :-' do
+    expect(e('${cow:-Moo!}')).to eq('Moo!')
+  end
+
   it 'will parse function calls' do
     tpl('$(map $x 1,2,3,4)').should be_an_instance_of(Tpl::Funcall)
   end

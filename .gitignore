@@ -16,7 +16,6 @@ milestones.txt
 *.pyc
 current
 _darcs/
-t/
 allgames*.txt
 logfile*
 logfile.db
@@ -49,3 +48,4 @@ henzell.out.*
 *.tar.gz
 backup/
 tmp
+user.txt
