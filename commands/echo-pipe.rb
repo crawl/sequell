@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 
 require 'query/query_string_template'
+require 'cmd/executor'
 require 'json'
 require 'env'
 require 'command_context'
@@ -12,6 +13,9 @@ STDOUT.sync = true
 
 TIME_LIMIT = 60
 
+logf = File.open('echo-pipe.log', 'w')
+logf.sync = true
+
 begin
   while (line = STDIN.readline)
     begin
@@ -19,10 +23,12 @@ begin
       Timeout.timeout(TIME_LIMIT) {
         Env.with(data['command_env']) do
           CommandContext.with_default_nick((data['env'] || { })['nick']) do
-            puts JSON.dump(res: Query::QueryStringTemplate.expand(
-                data['msg'],
-                data['args'] || '',
-                data['env'] || { }))
+            Cmd::Executor.with_default_env(data['env']) do
+              puts JSON.dump(res: Query::QueryStringTemplate.expand(
+                  data['msg'],
+                  data['args'] || '',
+                  data['env'] || { }))
+            end
           end
         end
       }
@@ -30,6 +36,8 @@ begin
       puts JSON.dump(err: "Time limit of #{TIME_LIMIT} exceeded")
     rescue
       puts JSON.dump(err: $!.message)
+      logf.puts("Failed to evaluate #{line}: #$!")
+      logf.puts($!.backtrace.map { |x| "  #{x}" }.join("\n"))
     end
   end
 rescue EOFError

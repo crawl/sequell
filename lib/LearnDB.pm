@@ -220,6 +220,11 @@ sub del_entry {
   $DB->remove($term, $entry_num);
 }
 
+sub del_term {
+  my $term = cleanse_term(shift);
+  $DB->remove($term);
+}
+
 sub replace_entry
 {
   my $term = cleanse_term(shift);

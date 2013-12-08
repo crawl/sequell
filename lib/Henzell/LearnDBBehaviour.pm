@@ -20,7 +20,6 @@ sub new {
 sub set_behaviours {
   my $self = shift;
   $self->{behaviours} = [ $self->_parse_behaviours(@_) ];
-  print "Behaviours: ", Dumper($self->{behaviours}), "\n";
 }
 
 sub _parse_behaviours {
@@ -47,6 +46,7 @@ sub _parse_matcher {
 
 sub behaviour {
   my ($self, $m) = @_;
+  #warn "Testing ", Dumper($m), " against ", Dumper($self->{behaviours}), "\n";
   for my $beh (@{$self->{behaviours}}) {
     my $res = $self->behaviour_result($m, $beh);
     return $res if $res;

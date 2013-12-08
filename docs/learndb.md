@@ -232,7 +232,7 @@ someone to say and then respond to. The format for :beh: entries is:
 
 For instance adding this behaviour:
 
-    !learn add :beh: Hi! ::: Hello, $nick. Welcome to $channel!
+    !learn add :beh: Hi! ::: Hello, $nick. Welcome to ${channel}!
 
 Will provoke Sequell to greet any visitor to the channel who says "Hi!"
 
@@ -255,21 +255,31 @@ When <<< is used, an implicit capture of $before is created for the
 text before the match. >>> implicitly captures $after with the text
 after the match:
 
-    !learn add :beh: /me visits >>> :: /me also visits $after
+    !learn add :beh: /me visits >>> ::: /me also visits $after
     * user visits the Lair.
     * Sequell also visits the Lair.
 
 <<< and >>> are just a convenience; you may instead use standard regular
 expression syntax, using the `(?P<name>pattern)` capture syntax.
 
-    !learn add :beh: /me visits (?P<place>.*) :: /me also visits $place    
+    !learn add :beh: /me visits (?P<place>.*) ::: /me also visits $place
     
 Capturing variables normally match single words only. You can request
-a capture to span words by preceding the capture name with *:
+a capture to span words by preceding the capture name with * (notice
+the need to escape the regex metacharacter ? in the example)
 
-    !learn add :beh: Is there $*balm in Gilead? ::: Why, yes, there is $balm
+    !learn add :beh: Is there $*balm in Gilead\? ::: Why, yes, there is $balm
     <user> Is there milk and honey in Gilead?
     <Sequell> Why, yes, there is milk and honey
+
+Optionally, you may define conditions that must apply before a behaviour
+is evaluated as `{{<check>:<value>}}`. As an example:
+
+    !learn add :beh: {{channel:##crawl-dev}} Hi! ::: Shh!
+    
+
+Behaviours are not evaluated if Sequell thinks the user's command is a
+LearnDB query (`??<foo>`). This may change in the future.
 
 Links
 -----

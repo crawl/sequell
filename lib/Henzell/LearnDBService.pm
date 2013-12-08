@@ -38,13 +38,14 @@ sub _executor {
 
 sub _need_refresh {
   my $self = shift;
-  !$self->{refreshed} || LearnDB::mtime() > $self->{refreshed}
+  !$self->{refreshed} || LearnDB::mtime() >= $self->{refreshed}
 }
 
 sub _refresh {
   my $self = shift;
   return unless $self->_need_refresh();
-  $self->{beh}->set_behaviours($self->_read_behaviours());
+  my @beh = $self->_read_behaviours();
+  $self->{beh}->set_behaviours(@beh);
   $self->{refreshed} = time();
 }
 
