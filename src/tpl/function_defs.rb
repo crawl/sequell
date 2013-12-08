@@ -32,7 +32,7 @@ module Tpl
 
   FunctionDef.define('do', -1) {
     nargs = self.arity
-    (1 ... (nargs - 1)).each { |i|
+    (0 ... (nargs - 1)).each { |i|
       self[i]
     }
     self[-1] if nargs > 0
