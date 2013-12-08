@@ -16,7 +16,7 @@
       %a(href="#keywords") Keywords
       %a(href="#commands") Commands
       %a(href="#functions") Functions
-
+      %a(href="#behaviours") Behaviours
 
     %section.keywords
       %a(name="keywords")
@@ -87,3 +87,31 @@
                 %a{name: function[0]}
                 #{function[0]}
               %td.def= function[1]
+
+    %section.behaviours
+      %a(name="behaviours")
+      %h2 Behaviours
+
+      - if behaviours.empty?
+        .stub No behaviours
+      - else
+
+        %table
+          %colgroup
+            %col(span="1" style="width: 4em")
+            %col(span="1" style="width: 15%")
+            %col(span="1" style="width: 85%")
+          %tr
+            %th &nbsp;
+            %th Pattern
+            %th Behaviour
+
+          - behaviours.each_with_index do |beh, i|
+            %tr
+              %td.index= i + 1
+              %td.name
+                - if beh[0].nil?
+                  %span.malformed (broken)
+                - else
+                  #{beh[0]}
+              %td.def= beh[1]

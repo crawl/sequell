@@ -68,6 +68,10 @@ td, th {
   padding: 0.5em;
 }
 
+td.index {
+  text-align: right;
+}
+
 td.name {
   font-family: Monospace;
   color: #300;
@@ -77,4 +81,8 @@ td.def {
   overflow: auto;
   font-family: Monospace;
   color: #030;
+}
+
+.malformed {
+  color: #c00;
 }
