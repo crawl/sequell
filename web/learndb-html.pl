@@ -30,6 +30,11 @@ my %redir;
 my %link;
 my $FULL_REDIRECT_PATTERN = qr/^see {([a-z0-9_\[\]!?@ -]+)}$/i;
 
+sub hidden_term($) {
+  my $term = shift;
+  $term =~ /^:\w+:$/ || $term =~ /^~.+/
+}
+
 sub addlink($$)
 {
     local $_=$_[0];
@@ -52,7 +57,7 @@ $timestamp = $db->mtime();
 $db->each_term(
   sub {
     my $term = shift;
-    return if $term =~ /^:\w+:$/;
+    return if hidden_term($term);
     my @definitions = $db->definitions($term);
     for my $i (1 .. @definitions) {
       my $val = $definitions[$i - 1];
