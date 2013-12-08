@@ -361,6 +361,21 @@ Functions may be used as `$(<fn> ...)`.
      `<catch>`, or `(void)` if no *catch* form was provided. In the
      `<catch>` form, `$err!` will be bound to the error that was
      caught.
+
+   - `$(colour [<fg> [<bg]])`
+
+     Returns an [mIRC colour code](http://www.mirc.com/colors.html).
+     *fg* and *bg* may be between 0 and 15, inclusive, or one of these
+     color names: white, black, blue, green, red, brown, magenta,
+     orange, yellow, lightgreen, cyan, lightcyan, lightblue, lightmagenta,
+     grey, lightgrey.
+
+     If *fg* and *bg* are both omitted, returns the IRC colour reset
+     code.
+
+   - `$(coloured <fg> [<bg>] <text>)`
+
+     Wraps *text* in an IRC colour + reset sequence.
      
 
 Unknown functions will be ignored:

@@ -91,4 +91,19 @@ describe "Template functions" do
       expect(e %q{$(let (x 3) (eval (quote (+ 5 7 $x))))}).to eql(15)
     end
   end
+
+  context 'colour' do
+    it 'will produce irc colour codes' do
+      expect(e '$(colour red blue)').to eq("\x034,2")
+      expect(e '$(colour lightcyan)').to eq("\x0311")
+      expect(e '$(colour)').to eq("\x0f")
+    end
+  end
+
+  context 'coloured' do
+    it 'will produce irc colour codes' do
+      expect(e '$(coloured red blue Colourful!)').to eq("\x034,2Colourful!\x0f")
+      expect(e '$(coloured lightcyan Yay)').to eq("\x0311Yay\x0f")
+    end
+  end
 end

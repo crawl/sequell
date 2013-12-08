@@ -4,6 +4,7 @@ require 'tpl/scope'
 require 'tpl/tplike'
 require 'command_context'
 require 'date'
+require 'irc_color'
 
 require 'tpl/learndb_fn_defs'
 require 'tpl/re_fn_defs'
@@ -393,4 +394,26 @@ module Tpl
   }
 
   FunctionDef.define('void', -1) { nil }
+
+  FunctionDef.define('colour', [0, 2]) {
+    nargs = self.arity
+    case nargs
+    when 0
+      IRCColor.reset
+    when 1
+      IRCColor.color(self[0])
+    when 2
+      IRCColor.color(self[0], self[1])
+    end
+  }
+
+  FunctionDef.define('coloured', [2, 3]) {
+    text = self[-1]
+    case arity
+    when 2
+      IRCColor.color(self[0]) + text + IRCColor.reset
+    when 3
+      IRCColor.color(self[0], self[1]) + text + IRCColor.reset
+    end
+  }
 end
