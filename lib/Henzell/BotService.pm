@@ -98,6 +98,7 @@ sub say_paged {
 sub post_message {
   my ($self, %m) = @_;
   my $output = $m{body};
+  $output = "$output" if $output;
 
   return unless defined($output) && $output =~ /\S/;
 
