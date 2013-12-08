@@ -272,14 +272,28 @@ the need to escape the regex metacharacter ? in the example)
     <user> Is there milk and honey in Gilead?
     <Sequell> Why, yes, there is milk and honey
 
-Optionally, you may define conditions that must apply before a behaviour
-is evaluated as `{{<check>:<value>}}`. As an example:
+Optionally, you may define additional conditions that must be
+satisfied before a behaviour is evaluated as `{{<check>:<value>}}`. As
+an example:
 
     !learn add :beh: {{channel:##crawl-dev}} Hi! ::: Shh!
-    
+
+`{{ }}` conditions are very limited (strict case-insensitive equality
+only), and may also be evaluated as (if) or other conditionals on the
+right side of the :::, but using `{{ }}` is much faster and should be
+preferred where it is sufficient.
+
+Available conditions:
+1. nick
+2. channel (is 'msg' for private messaging)
+3. body (the entire message)
+4. emoted (is '1' if this is an IRC emote, viz. a user doing /me something).
 
 Behaviours are not evaluated if Sequell thinks the user's command is a
 LearnDB query (`??<foo>`). This may change in the future.
+
+All LearnDB entries matching the regex `^:\w+:$` are hidden from the
+HTML LearnDB page.
 
 Links
 -----

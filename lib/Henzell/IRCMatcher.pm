@@ -84,7 +84,7 @@ sub condition_match {
   my ($self, $m) = @_;
   for my $cond (keys %{$self->{conditions}}) {
     my $val = $self->{conditions}->{$cond} || '';
-    return unless ($$m{$cond} || '') eq $val;
+    return unless lc($$m{$cond} || '') eq lc($val);
   }
   1
 }
