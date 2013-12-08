@@ -61,8 +61,8 @@
           - for command in commands
             %tr
               %td.name
-                %a{name: command[0]}
-                #{command[0]}
+                %a{name: h(command[0])}
+                #{h command[0]}
               %td.def= command[1]
 
     %section.functions
@@ -84,8 +84,8 @@
           - for function in functions
             %tr
               %td.name
-                %a{name: function[0]}
-                #{function[0]}
+                %a{name: h(function[0])}
+                #{h function[0]}
               %td.def= function[1]
 
     %section.behaviours
@@ -113,5 +113,5 @@
                 - if beh[0].nil?
                   %span.malformed (broken)
                 - else
-                  #{beh[0]}
+                  #{h beh[0]}
               %td.def= beh[1]
