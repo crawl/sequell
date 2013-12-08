@@ -20,8 +20,9 @@ describe Tpl::Template do
     expect(e('$cow')).to eq('${cow}')
   end
 
-  it 'will substitute unbound variables with :-' do
-    expect(e('${cow:-Moo!}')).to eq('Moo!')
+  it 'will substitute empty variables with :-' do
+    expect(e('${cow:-Moo!}')).to eq('${cow:-Moo!}')
+    expect(e('${cow:-Moo!}', 'cow' => '')).to eq('Moo!')
   end
 
   it 'will parse function calls' do

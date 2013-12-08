@@ -21,13 +21,9 @@ know how to expand will be canonicalized and echoed.
     <jake > .echo Hi $user => Hi jake
     <jake > .echo Hi $nobody => Hi ${nobody}
 
-Unknown variables may be replaced with alternative text using the ${x:-alt}
-form:
-
-    <jake > .echo Hi ${nobody:-anon} => Hi anon
-
-The alternative text in ${x:-alt} is a full template, and can
-reference other variables, functions, etc.
+Empty variables may be replaced with alternative text using the
+${x:-alt} form. The alternative text in ${x:-alt} is a full template,
+and can reference other variables, functions, etc.
 
 The variables (really bindings, as in names bound to values) that
 Sequell recognizes depend on the context:
