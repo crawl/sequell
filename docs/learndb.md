@@ -239,15 +239,14 @@ Will provoke Sequell to greet any visitor to the channel who says "Hi!"
     <user> Hi!
     <Sequell> Hello, user. Welcome to ##crawl!
 
-The TEXT that Sequell matches against is intentionally limited to
-reduce the chances of excessive bot spam. You are restricted to simple
-matches of text. You may define very limited capturing patterns:
+The match *TEXT* is a [regular expression](https://code.google.com/p/re2/wiki/Syntax)
+with optional convenience syntax to capture sections of text by name:
 
     !learn add :beh: Give $person a hug ::: /me hugs $person.
     <user> Give rutabaga a hug
     * Sequell hugs rutabaga.
 
-The TEXT normally matches the entire input line. You can indicate that
+*TEXT* always matches the entire input line. You can indicate that
 TEXT should not be anchored to the end of the line using >>> at the end,
 and not anchored to the beginning using <<< at the beginning. <<< and >>>
 may be used together.
@@ -260,6 +259,11 @@ after the match:
     * user visits the Lair.
     * Sequell also visits the Lair.
 
+<<< and >>> are just a convenience; you may instead use standard regular
+expression syntax, using the `(?P<name>pattern)` capture syntax.
+
+    !learn add :beh: /me visits (?P<place>.*) :: /me also visits $place    
+    
 Capturing variables normally match single words only. You can request
 a capture to span words by preceding the capture name with *:
 

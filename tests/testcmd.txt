@@ -17,19 +17,6 @@
 # Any line starting with $ describes shell commands to run; the command will
 # be echoed to stderr; the command exit code will not be checked.
 
-?? cow ::~ I don't have a page labeled cow
-!learn add cow MOOOOOO
-??cow ::~ MOOOO
-!learn add pow see {cow}
-??pow ::~ MOOOO
-!learn add cow cowcowcow
-??pow[2] ::~ cowcowcow
-??pow[-1] ::~ cowcowcow
-!learn add cow How now
-!learn add cszo cßo
-??cszo ::~ cßo
-??pow[-1] ::~ How now
-
 !coffee cßo ::~ /me hands cßo
 
 $ rm dat/nicks-test.map
@@ -62,7 +49,6 @@ $ rm dat/user_commands.db
 
 .echo Test: $(replace "a b " "" "a b c") ::~ Test: c
 .echo Hello $(replace b c $(replace a b a)) ::~ Hello c
-.echo $(let (x (+ 1 2 3 4)) Hello, $x!) ::~ Hello, 10!
 
 
 .echo Length: $(length abcd) ::~ Length: 4
@@ -99,8 +85,8 @@ E !lg * fe ::~ \(Felid\).*\(Fire Elementalist\)
 
 .echo $(if $(< 1 2) YES NO) ::~ YES
 .echo $(if $(= 1 1 1) YES NO) ::~ YES
-.echo $(let (x yak) Hello, $x!) ::~ Hello, yak!
-.echo $(let (x (+ 1 2 3 4)) Hello, $x!) ::~ Hello, 10!
+.echo $(let (x yak) "Hello, ${x}!") ::~ Hello, yak!
+.echo $(let (x (+ 1 2 3 4)) "Hello, ${x}!") ::~ Hello, 10!
 
 .echo $((fn (x) $(* $x 10)) 5) ::~ 50
 !fn double (x) $(* $x 2)
@@ -109,7 +95,6 @@ E !lg * fe ::~ \(Felid\).*\(Fire Elementalist\)
 !fn fact (n) $(if (> $n 1) (* $n (fact (- $n 1))) 1)
 .echo $(fact 10) ::~ 3628800
 
-E .echo Hi $(!nick -rm greensnark) ::~ may not be used as a subcommand
 .echo '$(!lg)' ::~ '\$\(!lg\)'
 .echo \$(!lg)  ::~ \$\(!lg\)
 !lg * trog fmt:"${name} of ${god:-No God}" ::~ Gandelf of Trog
@@ -501,4 +486,4 @@ E !lg * s=trunc99(sc)
 
 !lg * status=para,slow s=status ::~ 71x paralysed,slowed
 
-.echo $(map (fn Hello $_!) a|b|c) ::~ Hello a! Hello b! Hello c!
+.echo $(map (fn (_) "Hello ${_}!") a|b|c) ::~ Hello a! Hello b! Hello c!

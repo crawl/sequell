@@ -249,5 +249,10 @@ module Tpl
       dynamic_scope = LazyEvalScope.new(map, scope)
       fn.eval_body_in_scope(dynamic_scope)
     end
+
+    def to_s
+      return @evaluator.to_s if user_function?
+      @name.to_s
+    end
   end
 end

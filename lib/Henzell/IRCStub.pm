@@ -58,17 +58,22 @@ sub say {
   my ($self, %m) = @_;
   my $prefix = '';
   $prefix = "$m{who}: " if $m{channel} eq 'msg';
-  print $prefix, $m{body}, "\n";
+  $self->write($prefix, $m{body}, "\n");
 }
 
 sub emote {
   my ($self, %m) = @_;
-  print "/me $m{body}\n";
+  $self->write("/me $m{body}\n");
 }
 
 sub notice {
   my ($self, %m) = @_;
-  print "/notice $m{who} $m{body}\n";
+  $self->write("/notice $m{who} $m{body}\n");
+}
+
+sub write {
+  my $self = shift;
+  print(@_);
 }
 
 1

@@ -48,12 +48,26 @@ module Cmd
   end
 
   class Executor
+    @@default_env = nil
+    def self.with_default_env(env)
+      old_env = @@default_env
+      @@default_env = env
+      begin
+        yield
+      ensure
+        @@default_env = old_env
+      end
+    end
+
+    def self.default_env
+      @@default_env
+    end
+
     def self.execute_subcommand(command_line)
       CommandContext.subcommand_context {
         debug { "Evaluating subcommand: '#{command_line}'" }
         exec = self.execute(
           command_line,
-          default_nick: CommandContext.default_nick,
           forbidden_commands: ['??'],
           suppress_stderr: true)
         raise StandardError.new("Subcommand $(#{command_line}) failed: " +
@@ -65,12 +79,14 @@ module Cmd
     def self.execute(command_line, options={})
       config = Henzell::Config.default
       command = Command.new(command_line)
-      options = Options.new(options)
+      options = Options.new({ env: self.default_env }.merge(options))
       unless command.valid?(config) && options.permitted?(command)
         raise UnknownCommandError.new(command, command_line)
       end
 
-      self.new(command, options, config).execute
+      self.with_default_env(options.env) {
+        self.new(command, options, config).execute
+      }
     end
 
     def initialize(command, options, config)
