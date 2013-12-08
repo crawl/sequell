@@ -11,8 +11,8 @@ class LearnDBQuery
   end
 
   def self.parse_query(query)
-    if query =~ /^(.*)\[([+-]?\d+)\]\s*$/
-      [$1, $2.to_i]
+    if query =~ /^(.*)\[([+-]?\d+|\$)\]\s*$/
+      [$1, $2 == '$' ? -1 : $2.to_i]
     else
       [query, 1]
     end
