@@ -40,6 +40,13 @@ describe 'LearnDB functions' do
       expect(e(%{$(ldbent-term-size (ldb-at 世界 2))})).to eql(2)
       expect(e(%{$(ldbent-text (ldb-at 世界 2))})).to eql('Moo?')
     end
+
+    it 'will fold nils through ldbent-*' do
+      expect(e(%{$(ldbent-term (ldb-at 世界 20))})).to eql('')
+      expect(e(%{$(ldbent-index (ldb-at 世界 20))})).to eql(0)
+      expect(e(%{$(ldbent-term-size (ldb-at 世界 20))})).to eql(0)
+      expect(e(%{$(ldbent-text (ldb-at 世界 20))})).to eql('')
+    end
   end
 
   context 'ldb-rm!' do

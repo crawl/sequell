@@ -51,8 +51,20 @@ module Tpl
     end
   }
 
-  FunctionDef.define('ldbent-term', 1) { self[0].entry.name }
-  FunctionDef.define('ldbent-index', 1) { self[0].index }
-  FunctionDef.define('ldbent-term-size', 1) { self[0].entry.size }
-  FunctionDef.define('ldbent-text', 1) { self[0].text }
+  FunctionDef.define('ldbent-term', 1) {
+    e = self[0]
+    e.nil? ? '' : e.entry.name
+  }
+  FunctionDef.define('ldbent-index', 1) {
+    e = self[0]
+    e.nil? ? 0 : e.index
+  }
+  FunctionDef.define('ldbent-term-size', 1) {
+    e = self[0]
+    e.nil? ? 0 : e.entry.size
+  }
+  FunctionDef.define('ldbent-text', 1) {
+    e = self[0]
+    e.nil? ? '' : e.text
+  }
 end
