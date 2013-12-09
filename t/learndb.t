@@ -85,6 +85,8 @@ beh('r\?\?>>> ::: $(!learn q $after)', sub {
   is(irc('r??cow'), "cow[1/3]: MOOOOOO")
 });
 
+is(irc('.echo $(do 0)'), '0');
+
 done_testing();
 
 sub irc {

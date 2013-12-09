@@ -183,7 +183,8 @@ sub execute_command {
 
     my $processor = $CMD{$command} || $CMD{custom};
     my $output =
-      $processor->(_pack_args($target, $nick, $verbatim, '', '')) || '';
+      $processor->(_pack_args($target, $nick, $verbatim, '', ''));
+    $output = '' unless defined $output;
 
     if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
       if ($reprocessed_command || $proxied ||
