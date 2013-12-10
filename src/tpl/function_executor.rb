@@ -3,9 +3,18 @@ require 'tpl/function_def'
 module Tpl
   class FunctionEvalError < StandardError
     def initialize(where, cause)
-      super("Error in #{where}: #{cause}")
+      super("ERR (#{cause}) in #{elided(where)}")
       @where = where
       @cause = cause
+    end
+
+    def elided(where)
+      where_text = where.to_s
+      if where_text.size > 30
+        where_text[0..27] + '...'
+      else
+        where_text
+      end
     end
   end
 
