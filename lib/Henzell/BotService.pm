@@ -122,7 +122,7 @@ sub _message_metadata {
   my $channel = $$m{channel};
   my $private = $channel eq 'msg';
 
-  my $verbatim = $$m{body};
+  my $verbatim = $$m{raw_body} || $$m{body};
   $nick     =~ y/'//d;
   my $sibling = $self->nick_is_sibling($nick);
 
@@ -132,6 +132,7 @@ sub _message_metadata {
     channel => $channel,
     private => $private,
     verbatim => $verbatim,
+    body => $verbatim,
     sibling => $sibling,
     authenticator => $self->nick_is_authenticator($nick),
     self => lc($$m{who}) eq lc($self->nick())
