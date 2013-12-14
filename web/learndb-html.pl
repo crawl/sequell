@@ -3,10 +3,12 @@
 # Script courtesy kilobyte on ##crawl.
 # See original at http://angband.pl/crawl/henzell.
 
-use HTTP::Date;
 use strict;
 use warnings;
+
 use CGI;
+use HTTP::Date;
+use Unicode::Collate;
 
 use File::Basename;
 use File::Spec;
@@ -28,7 +30,7 @@ my $title = "##crawl learndb";
 my %learndb;
 my %redir;
 my %link;
-my $FULL_REDIRECT_PATTERN = qr/^see {([a-z0-9_\[\]!?@ -]+)}$/i;
+my $FULL_REDIRECT_PATTERN = qr/^see \{([^\[\]\}]+(?:\s*\[\s*\d+\s*\])?)\}$/i;
 
 sub hidden_term($) {
   my $term = shift;
@@ -109,17 +111,18 @@ sub htmlize($$$)
   my ($entry, $multiple, $prefix) = @_;
   for ($entry) {
     $_ = escape($_);
-    s{(http://[!#\$%&'*+,-./0-9:;=?\@A-Z^_a-z|~]+)}{<a href="$1">$1</a>}g;
+    s{(https?://[!#\$%&'*+,-./0-9:;=?\@A-Z^_a-z|~]+)}{<a href="$1">$1</a>}g;
 
     my $key;
     tr/\x00-\x1f//d;
 
-    s|{([a-zA-Z0-9_\[\]!?@ -]+)}| $link{canonical_link($1)} ? "<a href=\"#".canonical_link($1)."\">$1</a>" : "{$1}"|ge;
+    s|{([^\[\]\}]+(?:\s*\[\s*\d+\s*\])?)}| $link{canonical_link($1)} ? "<a href=\"#".canonical_link($1)."\">$1</a>" : "{$1}"|ge;
   }
   $multiple ? "<li>$prefix<span>$entry</span></li>" : "$prefix$entry"
 }
 
-for my $key (sort keys %learndb)
+my $collator = Unicode::Collate->new();
+for my $key ($collator->sort(keys %learndb))
 {
     next if $key =~ /\]$/;
 
