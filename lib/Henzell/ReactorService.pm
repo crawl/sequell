@@ -159,6 +159,11 @@ sub _respond {
   return undef
 }
 
+sub event_tick {
+  my $self = shift;
+  $self->_executor()->event_tick();
+}
+
 sub event_said {
   my ($self, $m) = @_;
   $self->react({ %$m, event => 'said', said => 1 });
@@ -190,6 +195,8 @@ sub event_userquit {
 
 sub react {
   my ($self, $m) = @_;
+
+  return if $self->_executor()->irc_auth_process();
   return if $$m{self} || $$m{authenticator} || $$m{sibling} || !$$m{body};
   $self->_refresh();
   if ($$m{body} =~ s/^\\\\//) {

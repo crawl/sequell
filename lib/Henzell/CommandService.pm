@@ -68,12 +68,19 @@ sub event_tick {
 
 ########################################################################
 
-sub _irc_said {
+sub irc_auth_process {
   my ($self, $m) = @_;
   my $auth = $self->_auth();
   if ($auth && $auth->nick_is_authenticator($$m{who})) {
     $self->_process_auth_response($m);
-  } else {
+    return 1;
+  }
+  undef
+}
+
+sub _irc_said {
+  my ($self, $m) = @_;
+  if (!$self->irc_auth_process($m)) {
     $self->_process_command($m);
   }
 }
