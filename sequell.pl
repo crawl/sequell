@@ -13,7 +13,7 @@ use Henzell::IRCAuth;
 use Henzell::SeenService;
 use Henzell::TellService;
 use Henzell::CommandService;
-use Henzell::LearnDBService;
+use Henzell::ReactorService;
 use Henzell::LogFetchService;
 use Henzell::LogParse;
 use Henzell::LogReader;
@@ -126,14 +126,9 @@ sub irc_services {
     config => $config_file,
     bus => $bus);
 
-  if ($feat->('learndb')) {
-    $reg->(Henzell::LearnDBService->new(irc => $irc_bot,
-                                        executor => $executor,
-                                        bus => $bus));
-  }
-
-  # All bots have the command processor; no announce-only bots.
-  $reg->($executor);
+  $reg->(Henzell::ReactorService->new(irc => $irc_bot,
+                                      executor => $executor,
+                                      bus => $bus));
 
   \@services
 }

@@ -1,4 +1,4 @@
-package Henzell::LearnDBService;
+package Henzell::ReactorService;
 
 use strict;
 use warnings;
@@ -64,6 +64,10 @@ sub _reactors {
   my $self = shift;
   [
     sub {
+      $self->behaviour(@_)
+    },
+
+    sub {
       $self->direct_query(@_)
     },
 
@@ -72,7 +76,7 @@ sub _reactors {
     },
 
     sub {
-      $self->behaviour(@_)
+      $self->command(@_)
     }
   ]
 }
@@ -118,22 +122,40 @@ sub maybe_query {
 sub indirect_query_event {
   my ($self, $m) = @_;
   my $query = $$m{body} . "??";
-  if (!$self->maybe_query({ %$m, body => $query, verbatim => $query,
-                            said => 1 })) {
-    $self->{irc}->post_message(%$m, body => $$m{stub}) if $$m{stub};
+  if ($self->maybe_query({ %$m,
+                           body => $query,
+                           verbatim => $query,
+                           said => 1 })) {
+    return 1;
   }
+  if ($$m{stub}) {
+    $self->{irc}->post_message(%$m, body => $$m{stub});
+    return 1;
+  }
+  undef
 }
 
 sub behaviour {
   my ($self, $m) = @_;
-  my $behaviour_result = $self->{beh}->behaviour($m);
-  if (defined($behaviour_result) && $behaviour_result ne '') {
-    s/^\s+//, s/\s+$// for $behaviour_result;
-    if ($behaviour_result ne '') {
-      $self->{irc}->post_message(%$m, body => $behaviour_result);
-      1
+  $self->{beh}->perform_behaviour($m)
+}
+
+sub command {
+  my ($self, $m) = @_;
+  $self->_respond($m, $self->_executor()->execute_command($m))
+}
+
+sub _respond {
+  my ($self, $m, $res) = @_;
+  if (defined($res) && $res =~ /\S/) {
+    s/^\s+//, s/\s+$// for $res;
+    if ($res ne '') {
+      $res = "$$m{prefix}$res" if $$m{prefix};
+      $self->{irc}->post_message(%$m, body => $res);
+      return 1
     }
   }
+  return undef
 }
 
 sub event_said {

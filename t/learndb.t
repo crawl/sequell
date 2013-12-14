@@ -20,7 +20,7 @@ $ENV{PERL_UNICODE} = 'AS';
 $ENV{HENZELL_ROOT} = '.';
 $ENV{HENZELL_ALL_COMMANDS} = 'y';
 
-use Henzell::LearnDBService;
+use Henzell::ReactorService;
 use Henzell::IRCTestStub;
 use Henzell::CommandService;
 use Henzell::Bus;
@@ -34,10 +34,10 @@ my $bus = Henzell::Bus->new;
 my $cmd = Henzell::CommandService->new(irc => $irc,
                                        config => $rc,
                                        bus => $bus);
-my $ldb = Henzell::LearnDBService->new(executor => $cmd,
+my $ldb = Henzell::ReactorService->new(executor => $cmd,
                                        irc => $irc,
                                        bus => $bus);
-$irc->configure_services(services => [$ldb, $cmd]);
+$irc->configure_services(services => [$ldb]);
 
 is(irc('??cow'), "I don't have a page labeled cow in my learndb.");
 is(irc('!learn add cow MOOOOOO'), 'cow[1/1]: MOOOOOO');
@@ -85,6 +85,25 @@ beh('r\?\?>>> ::: $(!learn q $after)', sub {
   is(irc('r??cow'), "cow[1/3]: MOOOOOO")
 });
 
+beh('.echo Hi! ::: Hola ::: continue',
+    '.echo Hi! ::: Eeek! ::: break', sub {
+  is(irc('.echo Hi!'), "Hola\nEeek!\nHi!");
+});
+
+beh('.echo Hi! ::: Hola ::: last',
+    '.echo Hi! ::: Eeek! ::: break', sub {
+  is(irc('.echo Hi!'), "Hola");
+});
+
+beh('.echo Hi! ::: Eeek! ::: break',
+    '.echo Hi! ::: Hola ::: last', sub {
+      is(irc('.echo Hi!'), "Eeek!\nHi!");
+});
+
+beh('\?\?\s*secret\s* :::  ::: last', sub {
+  is(irc('??secret'), "");
+});
+
 is(irc('.echo $(do 0)'), '0');
 
 done_testing();
@@ -111,8 +130,9 @@ sub emote {
 }
 
 sub beh {
-  my ($beh, $test) = @_;
+  my @beh = @_;
+  my $test = pop @beh;
   LearnDB::del_term(':beh:');
-  irc("!learn add :beh: $beh");
+  irc("!learn add :beh: $_") for @beh;
   $test->();
 }

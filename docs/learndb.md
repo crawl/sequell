@@ -228,7 +228,29 @@ This feature is experimental, inspired by
 The entries for the :beh: term define text that Sequell will look for
 someone to say and then respond to. The format for :beh: entries is:
 
-    <TEXT> ::: <ACTION>
+    <TEXT> ::: <ACTION> [ ::: <NEXT-STEP> ]
+
+1. *TEXT* defines the input pattern that Sequell must match for the :beh:
+   action to trigger.
+2. The *ACTION* template defines what Sequell says in response to the input.
+3. The *NEXT-STEP* template (optional) defines how Sequell proceeds after a *TEXT* match.
+
+Every line of text anyone says or emotes on IRC feeds into Sequell's
+behaviour evaluator as follows:
+
+1. User says "xyz" on IRC.
+2. Sequell takes each :beh: rule in turn and attempts to match it to "xyz".
+3. If the rule matches:
+  * Sequell evaluates the *NEXT-STEP* template, if any. If the next
+    step evaluates to "break", Sequell skips further behaviour
+    evaluation, even if the current rule produces no output. If the
+    next step is "last", Sequell will not evaluate any further
+    behaviour rules, OR any further commands. If the next step is
+    "continue", Sequell will evaluate the next behaviour rule even if
+    the current rule produces output.
+  * Sequell evaluates the action. If the action evaluates to a non-empty
+    text, Sequell responds with the text and does nothing further for that
+    command (unless the next step was "continue", or "break").
 
 For instance adding this behaviour:
 
@@ -292,8 +314,51 @@ Available conditions:
 Behaviours are not evaluated if Sequell thinks the user's command is a
 LearnDB query (`??<foo>`). This may change in the future.
 
-All LearnDB entries matching the regex `^(:\w+:|~.+)$` are hidden from the
-HTML LearnDB page.
+*NEXT-STEP* is optional, and controls how Sequell reacts to the given
+input. The *NEXT-STEP* template is expanded using the standard
+template expansion. After expansion, Sequell lowercases and removes
+leading and trailing whitespace, then compares the next step to the
+known behaviour steps.
+
+### Behaviour evaluation table
+
+Sequell reacts to text on IRC in this sequence:
+
+1. Behaviours
+2. LearnDB direct queries, viz. ??TERM
+3. LearnDB indirect queries, viz. TERM??
+4. Commands
+
+In general, Sequell responds to the first matching item: if a user
+says something that triggers a behaviour, Sequell will not then try to
+look up the same thing in the LearnDB or treat it as a command. If a
+user LearnDB query like X?? is matched, Sequell will not proceed to
+evaluate the same query as a command. The exception to this strict
+first-match-wins rule is for behaviours that specify a *NEXT-STEP*
+modifier.
+
+Here's a table summarising how behaviours are evaluated, with and
+without *NEXT-STEP*. Behaviours are evaluated in sequence, with
+malformed behaviours ignored.
+
+| *TEXT* matched | *ACTION* not empty | *NEXT-STEP*  | What happens                                                                       |
+|----------------|--------------------|----------|------------------------------------------------------------------------------------|
+| No             | -                  | -        | Nothing happens for this behaviour, next behaviour is evaluated                    |
+| Yes            | No                 | (none)   | Nothing happens for this behaviour, next behaviour is evaluated                    |
+| Yes            | Yes                | (none)   | Says or emotes the action, no further behaviours or commands are evaluated.        |
+| Yes            | -                  | break    | Says the action if not empty, then skips other behaviours and                      |
+|                |                    |          | proceeds with LearnDB lookup and normal command evaluation.                        |
+| Yes            | -                  | last     | Says the action if not empty, then does no other behaviours or command evaluation. |
+| Yes            | -                  | continue | Says the action if not empty, then evaluates the next behaviour                    |
+
+For instance, to nag LearnDB users to use PM every now and then, but
+still respond to the query:
+
+    !learn add :beh: \?\?>>> ::: $(if (and (/= $channel msg) (rand 10)) '' "/msg $bot your queries, ${nick}!") ::: break
+
+To ignore a LearnDB query:
+
+    !learn add :beh: \?\?\s*secret\s* :::  ::: last
 
 Links
 -----

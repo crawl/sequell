@@ -9,7 +9,6 @@ use File::Spec;
 
 use lib '..';
 use lib File::Spec->catfile(dirname(__FILE__), '../src');
-use Henzell::TemplateExpander;
 use Henzell::IRCMatcher;
 
 sub new {
@@ -29,14 +28,16 @@ sub _parse_behaviours {
 
 sub _parse_behaviour {
   my ($self, $beh) = @_;
-  unless ($beh =~ /^(.*):::(.*)$/) {
+  my @pieces = split /:::/, $beh;
+  unless (@pieces >= 2) {
     warn "Behaviour $beh is malformed\n";
     return undef;
   }
 
-  my ($matcher, $action) = ($1, $2);
+  my ($matcher, $action, $flags) = @pieces;
   +{ match => $self->_parse_matcher($matcher),
-     action => $action }
+     action => $action,
+     flags => $flags }
 }
 
 sub _parse_matcher {
@@ -44,19 +45,22 @@ sub _parse_matcher {
   Henzell::IRCMatcher->parse($matcher, { BOT => $self->{irc}->nick() })
 }
 
-sub behaviour {
+sub perform_behaviour {
   my ($self, $m) = @_;
   #warn "Testing ", Dumper($m), " against ", Dumper($self->{behaviours}), "\n";
   for my $beh (@{$self->{behaviours}}) {
-    my $res = $self->behaviour_result($m, $beh);
-    return $res if $res;
+    my $res = $self->_behaviour_result($m, $beh);
+    next unless $res;
+
+    my $flag = $res->{flags};
+    my $empty = $res->{empty};
+    if (!$empty) {
+      $self->{irc}->post_message(%$m, body => $res->{text});
+    }
+    last if $flag eq 'break';
+    return 1 if ($flag eq 'last') || (!$empty && $flag ne 'continue');
   }
   undef
-}
-
-sub _expander {
-  my $self = shift;
-  $self->{_expander} ||= Henzell::TemplateExpander->new()
 }
 
 sub _random_nick_in {
@@ -82,14 +86,26 @@ sub env {
   %env
 }
 
-sub behaviour_result {
+sub _behaviour_result {
   my ($self, $m, $beh) = @_;
 
   my $match = $beh->{match}->match($m);
   return undef unless $match;
-  $self->{dblookup}->resolve($m, $beh->{action}, 'bare',
-                             $match->{args},
-                             $self->env($m, $match))
+
+  my %env = $self->env($m, $match);
+  my $flags = $beh->{flags} || '';
+  if ($flags) {
+    $flags = lc($self->{dblookup}->resolve($m, $flags, 'bare', '', %env) || '');
+  }
+  s/^\s+//s, s/\s+$//s for $flags;
+  my $res_text = $self->{dblookup}->resolve($m, $beh->{action}, 'bare',
+                                            $match->{args},
+                                            %env) || '';
+  s/^\s+//s, s/\s+$//s for $res_text;
+  my $empty = !defined($res_text) || $res_text !~ /\S/;
+  +{ empty => $empty,
+     text => $res_text,
+     flags => $flags }
 }
 
 1

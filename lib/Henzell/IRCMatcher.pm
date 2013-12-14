@@ -12,7 +12,7 @@ sub capturing_var {
 
 sub match_literal {
   my ($self, $g) = @_;
-  $g
+  "(?i)$g"
 }
 
 sub translate_group {

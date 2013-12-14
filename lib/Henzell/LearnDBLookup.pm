@@ -1,4 +1,3 @@
-
 # Extended LearnDB lookup that handles see/do {<command>}, and expands
 # Sequell template expressions. This is a layer over the simple LearnDB
 # lookup services provided by LearnDB.pm
@@ -25,7 +24,7 @@ sub new {
 
 sub _expander {
   my $self = shift;
-  $self->{_expander} ||= Henzell::TemplateExpander->new()
+  $self->{expander} ||= Henzell::TemplateExpander->new()
 }
 
 sub _executor {
