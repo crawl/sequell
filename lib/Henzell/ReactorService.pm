@@ -196,7 +196,7 @@ sub event_userquit {
 sub react {
   my ($self, $m) = @_;
 
-  return if $self->_executor()->irc_auth_process();
+  return if $self->_executor()->irc_auth_process($m);
   return if $$m{self} || $$m{authenticator} || $$m{sibling} || !$$m{body};
   $self->_refresh();
   if ($$m{body} =~ s/^\\\\//) {
