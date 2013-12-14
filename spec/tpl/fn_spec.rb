@@ -6,6 +6,15 @@ describe "Template functions" do
     Tpl::Template.template_eval(tpl, scope)
   end
 
+  context 'not' do
+    it 'will boolean-negate its argument' do
+      expect(e('$(not 0)')).to be_true
+      expect(e('$(not 1)')).to be_false
+      expect(e('$(not (void))')).to be_true
+      expect(e('$(not (list))')).to be_true
+    end
+  end
+
   context 'replace' do
     it 'will replace strings' do
       expect(e('$(replace a x yak)')).to eql('yxk')

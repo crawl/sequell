@@ -171,7 +171,9 @@ module Tpl
 
   FunctionDef.define('and', -1) { lazy_all?(true) { |a| truthy?(a) } }
   FunctionDef.define('or', -1) { lazy_any?(false) { |a| truthy?(a) } }
-  FunctionDef.define('not', 1) { !self[-1] }
+  FunctionDef.define('not', 1) {
+    !truthy?(self[-1])
+  }
 
   FunctionDef.define('/=', 2) {
     canonicalize(self[0]) != canonicalize(self[1])
