@@ -6,8 +6,8 @@ use warnings;
 use Data::Dumper;
 
 sub capturing_var {
-  my ($self, $var) = @_;
-  $var =~ /^[a-z][a-z0-9_]*$/
+  my ($self, $ctx, $var) = @_;
+  !$ctx->{$var}
 }
 
 sub match_literal {
@@ -21,7 +21,7 @@ sub translate_group {
     my $var = $1;
     my $greedy = $var =~ /^\*/;
     $var =~ s/^\*//;
-    if ($self->capturing_var($var)) {
+    if ($self->capturing_var($ctx, $var)) {
       push @$captures, $var;
       return $greedy? '(.+)' : '(\S+?)';
     } else {
@@ -34,7 +34,7 @@ sub translate_group {
 }
 
 sub parse_matcher {
-  my ($self, $ctx, $matcher) = @_;
+  my ($self, $matcher, $ctx) = @_;
   my @captures;
   my $before = $matcher =~ s/^<<<//;
   my $after = $matcher =~ s/>>>$//;
@@ -63,7 +63,7 @@ sub parse {
   $matcher =~ s/^\s+//;
   $matcher =~ s/\s+$//;
 
-  my $m = $self->parse_matcher($ctx, $matcher);
+  my $m = $self->parse_matcher($matcher, $ctx);
   unless ($matcher) {
     warn "Could not compile pattern for $original\n";
     return undef;

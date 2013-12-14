@@ -42,7 +42,7 @@ sub _parse_behaviour {
 
 sub _parse_matcher {
   my ($self, $matcher) = @_;
-  Henzell::IRCMatcher->parse($matcher, { BOT => $self->{irc}->nick() })
+  Henzell::IRCMatcher->parse($matcher, { bot => $self->{irc}->nick() })
 }
 
 sub perform_behaviour {

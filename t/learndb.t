@@ -105,6 +105,11 @@ beh('\?\?\s*secret\s* :::  ::: last', sub {
   is(irc('\\\\??secret'), "I don't have a page labeled secret in my learndb.");
 });
 
+beh('!tell $bot >>> ::: Flee, ${nick}! ::: last', sub {
+  is(irc('!tell Sequell Hi'), "Flee, greensnark!");
+  like(irc('!tell greensnark Hi'), qr/OK, .*greensnark/);
+});
+
 irc('!cmd !yak .echo Hi');
 is(irc('!yak'), "Hi");
 
