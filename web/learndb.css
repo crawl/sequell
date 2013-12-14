@@ -3,7 +3,8 @@
 }
 
 html {
-  font-family: "Tahoma", "Arial", "Sans-Serif";
+  font-family: "Lucida Sans Unicode", "Lucida Sans", "Lucida Grande",
+               "Helvetica", "Sans-Serif";
   font-size: 14px;
   margin: 0;
   padding: 0;
@@ -18,7 +19,6 @@ body {
 
 h1 {
   font-size: 28px;
-  font-family: "Lucida Grande", "Sans-Serif";
   color: #444;
   margin: 0;
   padding: 0;
@@ -41,7 +41,6 @@ dt {
   margin-top: 0.75em;
   padding-top: 0.5em;
   padding-left: 5px;
-  font-family: "Lucida Grande", "Sans-Serif";
   font-size: 20px;
   font-weight: bold;
 }
