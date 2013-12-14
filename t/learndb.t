@@ -102,6 +102,7 @@ beh('.echo Hi! ::: Eeek! ::: break',
 
 beh('\?\?\s*secret\s* :::  ::: last', sub {
   is(irc('??secret'), "");
+  is(irc('\\\\??secret'), "I don't have a page labeled secret in my learndb.");
 });
 
 is(irc('.echo $(do 0)'), '0');

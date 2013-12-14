@@ -324,7 +324,7 @@ known behaviour steps.
 
 Sequell reacts to text on IRC in this sequence:
 
-1. Behaviours
+1. Behaviours (any text prefixed with \\ ignores behaviours)
 2. LearnDB direct queries, viz. ??TERM
 3. LearnDB indirect queries, viz. TERM??
 4. Commands
@@ -333,9 +333,7 @@ In general, Sequell responds to the first matching item: if a user
 says something that triggers a behaviour, Sequell will not then try to
 look up the same thing in the LearnDB or treat it as a command. If a
 user LearnDB query like X?? is matched, Sequell will not proceed to
-evaluate the same query as a command. The exception to this strict
-first-match-wins rule is for behaviours that specify a *NEXT-STEP*
-modifier.
+evaluate the same query as a command.
 
 Here's a table summarising how behaviours are evaluated, with and
 without *NEXT-STEP*. Behaviours are evaluated in sequence, with

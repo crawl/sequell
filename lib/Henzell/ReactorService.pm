@@ -137,6 +137,7 @@ sub indirect_query_event {
 
 sub behaviour {
   my ($self, $m) = @_;
+  return undef if $$m{nobeh};
   $self->{beh}->perform_behaviour($m)
 }
 
@@ -191,6 +192,11 @@ sub react {
   my ($self, $m) = @_;
   return if $$m{self} || $$m{authenticator} || $$m{sibling} || !$$m{body};
   $self->_refresh();
+  if ($$m{body} =~ s/^\\\\//) {
+    $$m{nobeh} = 1;
+    $$m{verbatim} =~ s/^\\\\//;
+    s/^\s+//, s/\s+$// for ($$m{body}, $$m{verbatim});
+  }
   for my $reactor (@{$self->{reactors}}) {
     last if $reactor->($m);
   }
