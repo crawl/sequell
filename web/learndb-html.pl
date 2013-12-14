@@ -30,6 +30,7 @@ my $title = "##crawl learndb";
 my %learndb;
 my %redir;
 my %link;
+my %canonical_term;
 my $FULL_REDIRECT_PATTERN = qr/^see \{([^\[\]\}]+(?:\s*\[\s*\d+\s*\])?)\}$/i;
 
 sub hidden_term($) {
@@ -37,22 +38,44 @@ sub hidden_term($) {
   $term =~ /^:\w+:$/ || $term =~ /^~.+/
 }
 
-sub addlink($$)
+sub canonical_lookup {
+  lc(canonical_link(shift))
+}
+
+sub canonical_link($)
 {
-    local $_=$_[0];
-    my $dest=canonical_link($_[1]);
+  my $link = shift;
+  for ($link) {
+    s/\[\s*1\s*\]$//;
+    tr/ /_/;
+    s/_+\[/[/;
+    s/_+/_/g;
+    s/^_+//;
+    s/_+$//;
+  }
+  $link
+}
 
-    #mixed _ and spaces?
-    ${$redir{$dest}}{$_}=1;
-    $link{$_}=1;
+sub term_is_link {
+  $link{canonical_lookup(shift)}
+}
 
-    tr{_}{ };
-    ${$redir{$dest}}{$_}=1;
-    $link{$_}=1;
+sub term_link {
+  my $term = shift;
+  $canonical_term{canonical_lookup($term)}
+}
 
-    tr{ }{_};
-    ${$redir{$dest}}{$_}=1;
-    $link{$_}=1;
+sub escape {
+  CGI::escapeHTML(shift())
+}
+
+sub addlink($$) {
+  my $key = canonical_link($_[0]);
+  my $lc_key = lc $key;
+  my $dest=canonical_lookup($_[1]);
+  ${$redir{$dest}}{$key}=1;
+  $link{$lc_key} = 1;
+  $canonical_term{$lc_key} = $key;
 }
 
 $timestamp = $db->mtime();
@@ -76,35 +99,20 @@ $db->each_term(
     }
   });
 
-my $embedded_css = do { local (@ARGV, $/) = 'config/data/learndb.css'; <> };
-
 print <<EOF;
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width">
 <title>$title</title>
-<style type="text/css">
-$embedded_css
-</style>
+<link rel="stylesheet" type="text/css" href="learndb.css">
 </head>
 <body>
   <h1>${title}</h1>
 EOF
 print "<p class='note'>Updated on ".time2str($timestamp)."\n";
 print "<dl>\n";
-
-sub canonical_link($)
-{
-  my $link = lc(shift);
-  $link =~ s/\[1\]$//;
-  $link =~ tr/ /_/;
-  $link
-}
-
-sub escape {
-  CGI::escapeHTML(shift())
-}
 
 sub htmlize($$$)
 {
@@ -116,7 +124,7 @@ sub htmlize($$$)
     my $key;
     tr/\x00-\x1f//d;
 
-    s|{([^\[\]\}]+(?:\s*\[\s*\d+\s*\])?)}| $link{canonical_link($1)} ? "<a href=\"#".canonical_link($1)."\">$1</a>" : "{$1}"|ge;
+    s|{([^\[\]\}]+(?:\s*\[\s*\d+\s*\])?)}| term_is_link($1) ? "<a href=\"#". term_link($1) . "\">$1</a>" : "{$1}"|ge;
   }
   $multiple ? "<li>$prefix<span>$entry</span></li>" : "$prefix$entry"
 }
@@ -131,7 +139,7 @@ for my $key ($collator->sort(keys %learndb))
 
     print "<dt>";
     print   "<a name=\"$_\"></a>" for(map(escape($_),
-                                          sort keys %{$redir{$key}}));
+                                          sort keys %{$redir{canonical_lookup($key)}}));
 
     (my $clean_key = $key) =~ tr{_}{ };
     $clean_key = escape($clean_key);
@@ -146,7 +154,7 @@ for my $key ($collator->sort(keys %learndb))
       my $text = $learndb{$key."[$i]"};
       my $prefix = '';
       $prefix .= "<a name=\"$_\"></a>" for(map(escape($_),
-                                               sort keys %{$redir{$key."[$i]"}}));
+                                               sort keys %{$redir{canonical_lookup($key."[$i]")}}));
       print htmlize($text, $has_multiple, $prefix), "\n";
     }
     print "</ol>" if $has_multiple;

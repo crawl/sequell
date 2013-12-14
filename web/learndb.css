@@ -1,13 +1,27 @@
+* {
+  box-sizing: border-box;
+}
+
 html {
-  font-family: "Trebuchet MS", "Sans-Serif";
-  font-size: 12px;
-  padding: 4px 15px;
+  font-family: "Tahoma", "Arial", "Sans-Serif";
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 2em;
+  max-width: 1200px;
 }
 
 h1 {
-  font-size: 16px;
-  font-family: "Lucida Grande", "Trebuchet MS", "Sans-Serif";
-  border-bottom: 2px solid #a88;
+  font-size: 28px;
+  font-family: "Lucida Grande", "Sans-Serif";
+  color: #444;
+  margin: 0;
+  padding: 0;
   padding-left: 5px;
   margin-bottom: 2px;
 }
@@ -23,24 +37,23 @@ p {
 }
 
 dt {
-  /* display: run-in; at by's request, it breaks safari ---r. */
-  /* border-top: 1px solid #ddd; */
-  border-bottom: 1px solid #dcc;
-  padding-top: 6px;
-  margin-top: 10px;
+  border-top: 1px solid #fee;
+  margin-top: 0.75em;
+  padding-top: 0.5em;
   padding-left: 5px;
-  font-family: "Lucida Grande", "Trebuchet MS", "Sans-Serif";
-  font-size: 12px;
+  font-family: "Lucida Grande", "Sans-Serif";
+  font-size: 20px;
   font-weight: bold;
-  margin-bottom: 4px;
 }
 
 dd {
   background-color: #fff;
   color: #000;
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 0.75em;
   margin-left: 5px;
+  margin-top: 0.3em;
+  padding-left: 0.3em;
 }
 
 ol {
@@ -51,6 +64,9 @@ ol {
 
 li {
   color: #aaa;
+  margin-top: 0;
+  padding-top: 0;
+  margin-bottom: 0.5em;
 }
 
 li span {
