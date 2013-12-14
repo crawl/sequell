@@ -6,6 +6,32 @@ describe "Template functions" do
     Tpl::Template.template_eval(tpl, scope)
   end
 
+  context 'nvl' do
+    it 'will return the empty string if no args' do
+      expect(e '$(nvl)').to eq('')
+    end
+
+    it 'will evaluate form with nvl of empty string if single-arg' do
+      expect(e '$(nvl $x)').to eq('')
+      expect(e '$(nvl ${x:-foo})').to eq('foo')
+      expect(e '$(let (x 3) (nvl $x))').to eq(3)
+      expect(e '$(let (x 3) (nvl (set! x 15) $x))').to eq(15)
+    end
+  end
+
+  context 'with-nvl' do
+    it 'will return the nvl value if no other forms' do
+      expect(e '$(with-nvl 12)').to eq(12)
+    end
+
+    it 'will evaluate forms with the given nvls' do
+      expect(e '$(with-nvl cow $x)').to eq('cow')
+      expect(e '$(with-nvl cow ${x:-foo})').to eq('cow')
+      expect(e '$(let (x 3) (with-nvl cow $x))').to eq(3)
+      expect(e '$(let (x 3) (with-nvl cow (set! x moo) $x))').to eq('moo')
+    end
+  end
+
   context 'not' do
     it 'will boolean-negate its argument' do
       expect(e('$(not 0)')).to be_true

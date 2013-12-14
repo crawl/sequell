@@ -24,6 +24,10 @@ module Tpl
     eval_arg(-1, binding) if nargs > 0
   }
 
+  FunctionDef.define('bound?', 1) {
+    !scope[self[0]].nil?
+  }
+
   FunctionDef.define('call', [1, -1]) {
     arglist = self.raw_args[1..-1].dup
     Funcall.new(self[0], *arglist).eval(scope)
@@ -37,6 +41,35 @@ module Tpl
       self[i]
     }
     self[-1] if nargs > 0
+  }
+
+  FunctionDef.define('with-nvl', [1, -1]) {
+    nvl = self[0]
+    nargs = self.arity
+    Tpl::LookupFragment.with_nvl(nvl) {
+      (1 ... (nargs - 1)).each { |i|
+        self[i]
+      }
+      if nargs > 1
+        self[-1]
+      else
+        Tpl::LookupFragment.nvl
+      end
+    }
+  }
+
+  FunctionDef.define('nvl', -1) {
+    nargs = self.arity
+    Tpl::LookupFragment.with_nvl('') {
+      (0 ... (nargs - 1)).each { |i|
+        self[i]
+      }
+      if nargs > 0
+        self[-1]
+      else
+        Tpl::LookupFragment.nvl
+      end
+    }
   }
 
   FunctionDef.define('elt', 2) {

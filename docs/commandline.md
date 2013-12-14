@@ -69,6 +69,31 @@ Functions may be used as `$(<fn> ...)`.
 
    - `$(typeof <val>)`  returns the type of the given value
 
+   - `$(bound? <name>)`
+   
+     Returns true if *name* is bound to a non-(void) value in the current scope.
+     
+   - `$(nvl <forms>)`
+
+     Evaluates each form in a scope where an unbound name evaluates to the empty string.
+     Unbound variables normally evaluate to strings with their names. *nvl* instead treats
+     an unbound name as evaluating to the empty string:
+
+         $x => ${x}
+         ${x:-foo} => ${x:-foo}
+         $(nvl $x) =>
+         $(nvl ${x:-foo}) => foo
+
+   - `$(with-nvl <nvl> <forms>)`
+
+     Like *nvl*, but uses a user-supplied default value instead of defaulting to the empty
+     string. Use with caution:
+     
+         $x => ${x}
+         ${x:-foo} => ${x:-foo}
+         $(with-nvl yak $x) => yak
+         $(with-nvl yak ${x:-foo}) => yak
+
    - `$(join [<joiner>] <text>)`
          .echo $(join " and " a,b,c) => a and b and c
 

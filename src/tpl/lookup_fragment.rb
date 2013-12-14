@@ -2,6 +2,22 @@ module Tpl
   class LookupFragment < Fragment
     attr_reader :identifier
 
+    @@nvl = nil
+
+    def self.with_nvl(nvl)
+      old_nvl = @@nvl
+      @@nvl = nvl
+      begin
+        yield
+      ensure
+        @@nvl = old_nvl
+      end
+    end
+
+    def self.nvl
+      @@nvl
+    end
+
     def self.fragment(thing)
       return thing if thing.is_a?(LookupFragment)
       self.new(thing)
@@ -58,8 +74,13 @@ module Tpl
       if !value.nil?
         yield value
       else
-        to_s
+        self.nvl
       end
+    end
+
+    def nvl
+      nvl_val = self.class.nvl
+      nvl_val.nil? ? to_s : nvl_val
     end
 
     def collapse
@@ -68,8 +89,7 @@ module Tpl
 
     def eval(provider)
       res = value_str(provider)
-      return self.to_s if res.nil?
-      res
+      return res.nil? ? self.nvl : res
     end
 
     def to_s
