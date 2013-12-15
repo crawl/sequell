@@ -19,6 +19,10 @@ my %filenames =
   a      => "add.pl",
   insert => 'add.pl',
 
+  set    => 'set.pl',
+  s      => 'set.pl',
+  '='    => 'set.pl',
+
   mv     => 'move.pl',
   move   => 'move.pl',
 
@@ -37,7 +41,7 @@ if ($ARGV[2] =~ s/^\?[?>](.*)//)
   $subcommand = "query";
   $args = $1;
 }
-elsif ($ARGV[2] =~ s/^!learn +(\w+) *(.*)$//i)
+elsif ($ARGV[2] =~ s/^!learn +(\S+) *(.*)$//i)
 {
   $subcommand = $1;
   $args = $2;

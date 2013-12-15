@@ -27,7 +27,7 @@ our @EXPORT_OK = qw/cleanse_term num_entries read_entry print_to_entry
                     insert_entry $RTERM $RTERM_INDEXED $RTEXT/;
 
 our $RTERM = qr/([^\[\]\s]+)/;
-our $RTERM_INDEXED = qr/$RTERM\s*\[\s*([+-]?\d+)\]?/;
+our $RTERM_INDEXED = qr/$RTERM\s*\[\s*([+-]?\d+|\$)\]?/;
 our $RTEXT = qr/(.+)/;
 
 our $TERM_MAX_LENGTH = 30;
@@ -77,6 +77,7 @@ sub canonical_term {
 
 sub normalize_index {
   my ($term, $num, $op) = @_;
+  $num = -1 if $num && $num eq '$';
   $op ||= '';
   $term = cleanse_term($term);
   $num ||= 1;
@@ -209,8 +210,8 @@ sub insert_entry {
   $term = cleanse_term($term);
   check_term_length($term);
   check_text_length($text);
-
-  $DB->add($term, $text, $num);
+  $num = -1 if ($num || '') eq '$';
+  $num = $DB->add($term, $text, $num);
   return read_entry($term, $num);
 }
 
@@ -231,6 +232,7 @@ sub replace_entry
   my $entry_num = normalize_index($term, shift());
   my $new_text = shift;
   $DB->update_value($term, $entry_num, $new_text);
+  read_entry($term, $entry_num)
 }
 
 sub swap_entries {

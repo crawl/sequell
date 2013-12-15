@@ -55,6 +55,21 @@ irc('!learn add cszo cßo');
 is(irc('??cszo'), "cszo[1/1]: cßo");
 is(irc('??pow[-1]'), "cow[3/3]: How now");
 
+irc('!learn set cow[-1] How now brown cow');
+is(irc('??pow[-1]'), "cow[3/3]: How now brown cow");
+
+is(irc('!learn set radon An element'), 'radon[1/1]: An element');
+is(irc('!learn set radon A radioactive element'),
+   'radon[1/1]: A radioactive element');
+is(irc('!learn set radon[5] Rn'),
+   'radon[2/2]: Rn');
+is(irc('!learn set radon[2] RADON'),
+   'radon[2/2]: RADON');
+is(irc('!learn set radon[-1] ?'),
+   'radon[2/2]: ?');
+is(irc('!learn set radon[$] ???'),
+   'radon[2/2]: ???');
+is(irc('!learn set puma[$] PUMA'), 'puma[1/1]: PUMA');
 
 irc('!learn add !help:!foo Hahahahaha');
 is(irc('!help !foo'), "!foo: Hahahahaha");
@@ -112,6 +127,7 @@ beh('!tell $bot >>> ::: Flee, ${nick}! ::: last', sub {
 
 irc('!cmd !yak .echo Hi');
 is(irc('!yak'), "Hi");
+irc('!cmd -rm !yak');
 
 is(irc('.echo $(do 0)'), '0');
 
@@ -119,6 +135,7 @@ done_testing();
 
 sub irc {
   my $command = shift();
+  $irc->tick();
   $irc->said({ channel => $channel,
                body => $command,
                verbatim => $command,

@@ -83,9 +83,15 @@ index is renumbered one higher to accommodate the new entry.
 Updating entries in the LearnDB
 -------------------------------
 
-Use !learn edit to edit entries in the LearnDB. Identify the entry you're
-editing with term[index] and use a search and replace expression in the
-form s/<search>/<replacement>/.
+Use !learn set to replace the content of an existing entry in the LearnDB:
+
+    !learn set TERM[NUM] New text
+
+!learn set acts like !learn add if there is no existing definition.
+
+Use !learn edit to modify portions of entries in the LearnDB. Identify
+the entry you're editing with term[index] and use a search and replace
+expression in the form s/<search>/<replacement>/.
 
     <user> !learn edit cow[1] s/Mooo!/Moo?/
     <Sequell> cow[1/4]: Vocalization: "Moo?"
@@ -158,9 +164,10 @@ any alias as convenient.
 
 1. !learn query == !learn q
 2. !learn add == !learn insert == !learn a
-3. !learn edit == !learn e
-4. !learn move == !learn mv
-5. !learn delete == !learn del == !learn rm
+3. !learn set == !learn s
+4. !learn edit == !learn e
+5. !learn move == !learn mv
+6. !learn delete == !learn del == !learn rm
 
 Query Forms
 -----------

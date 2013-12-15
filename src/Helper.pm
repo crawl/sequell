@@ -513,4 +513,11 @@ sub forbid_private {
   }
 }
 
+sub strip_text {
+  my $text = shift;
+  return '' unless defined $text;
+  s/^\s+//, s/\s+$// for $text;
+  $text
+}
+
 1;
