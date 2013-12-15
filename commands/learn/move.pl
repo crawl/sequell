@@ -14,6 +14,8 @@ use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
 use LearnDB qw/$RTERM_INDEXED $RTERM/;
 use Helper;
+use utf8;
+use open qw/:std :utf8/;
 
 Helper::forbid_private();
 

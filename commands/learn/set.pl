@@ -9,6 +9,8 @@ use lib File::Spec->catfile(dirname(__FILE__), '../../src');
 use LearnDB qw/read_entry num_entries replace_entry insert_entry
                $RTERM_INDEXED $RTERM $RTEXT/;
 use Helper;
+use utf8;
+use open qw/:std :utf8/;
 
 Helper::forbid_private();
 

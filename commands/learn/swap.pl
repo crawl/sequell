@@ -8,6 +8,8 @@ use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
 use LearnDB qw/check_entry_exists swap_entries report_error/;
 use Helper;
+use utf8;
+use open qw/:std :utf8/;
 
 Helper::forbid_private();
 
