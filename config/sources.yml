@@ -179,9 +179,9 @@ sources:
   - name: ckr
     base: http://kr.dobrazupa.org
     logfiles:
-      - www/logfile
+      - www/logfile*
     milestones:
-      - www/milestones
+      - www/milestones*
     morgues:
       - http://kr.dobrazupa.org/morgue/0.13
     ttyrecs:
