@@ -7,6 +7,7 @@ use strict;
 use warnings;
 
 use CGI;
+use HTML::Entities;
 use HTTP::Date;
 use Unicode::Collate;
 
@@ -69,6 +70,10 @@ sub escape {
   CGI::escapeHTML(shift())
 }
 
+sub unescape {
+  HTML::Entities::decode_entities(shift())
+}
+
 sub addlink($$) {
   my $key = canonical_link($_[0]);
   my $lc_key = lc $key;
@@ -120,11 +125,8 @@ sub htmlize($$$)
   for ($entry) {
     $_ = escape($_);
     s{(https?://[!#\$%&'*+,-./0-9:;=?\@A-Z^_a-z|~]+)}{<a href="$1">$1</a>}g;
-
-    my $key;
     tr/\x00-\x1f//d;
-
-    s|{([^\[\]\}]+(?:\s*\[\s*\d+\s*\])?)}| term_is_link($1) ? "<a href=\"#". term_link($1) . "\">$1</a>" : "{$1}"|ge;
+    s|{([^\[\]\}]+(?:\s*\[\s*\d+\s*\])?)}| term_is_link(unescape($1)) ? "<a href=\"#". escape(term_link(unescape($1))) . "\">$1</a>" : "{$1}"|ge;
   }
   $multiple ? "<li>$prefix<span>$entry</span></li>" : "$prefix$entry"
 }
