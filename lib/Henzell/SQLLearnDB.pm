@@ -45,7 +45,7 @@ sub each_term {
   my ($self, $action) = @_;
   $self->init();
   my $st = $self->prepare('SELECT term FROM terms ORDER by term');
-  $st->execute();
+  $self->execute_st($st) or die "Couldn't get terms: $self->errstr()\n";
   while (my $row = $st->fetchrow_arrayref()) {
     $action->($self->utf8decode($row->[0]));
   }
@@ -59,7 +59,7 @@ SELECT definition FROM definitions
  WHERE term_id = (SELECT id FROM terms WHERE term = ?)
 ORDER BY seq ASC
 QUERY
-  $st->execute($term) or die "Couldn't lookup definition: $self->errstr()\n";
+  $self->execute_st($st, $term) or die "Couldn't lookup definition: $self->errstr()\n";
   my @definitions;
   while (my $row = $st->fetchrow_arrayref()) {
     push @definitions, $self->utf8decode($row->[0]);

@@ -79,8 +79,23 @@ sub prepare {
 sub exec {
   my ($self, $query, @binds) = @_;
   my $st = $self->prepare($query);
-  $st->execute(@binds) or die "Couldn't execute $query: $self->errstr()\n";
+  $self->execute_st($st, @binds)
+    or die "Couldn't execute $query: " . $self->errstr() . "\n";
   $st
+}
+
+sub execute_st {
+  my ($self, $st, @binds) = @_;
+  my $tries = 50;
+  while ($tries-- > 0) {
+    my $res = $st->execute(@binds);
+    return $res if $res;
+    unless ($self->errstr() =~ /\blocked\b/) {
+      die $self->errstr();
+    }
+    sleep 1;
+  }
+  undef
 }
 
 sub query_val {
