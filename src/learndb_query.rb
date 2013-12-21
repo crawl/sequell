@@ -2,12 +2,52 @@ require 'tpl/template'
 require 'cmd/executor'
 
 class LearnDBQuery
+  def self.redirect_pattern
+    /^\s*see\s+\{(.*)\}\s*$/i
+  end
+
   def self.query(db, scope, query, index=nil)
     if index.nil?
       query, index = self.parse_query(query)
     end
 
     self.new(db, scope, query, index, { }).query
+  end
+
+  def self.lookup_string(query, index=nil)
+    return query if index.nil? || index == 1
+    "#{query}[#{index}]"
+  end
+
+  def self.resolve_redirect_terms(db, query)
+    query, index = self.parse_query(query)
+    seen = Set.new([query.downcase.strip])
+    while true
+      redir = self.redirect_term?(db, query)
+      break unless redir
+
+      redir_term, ignored = self.parse_query(redir)
+      redir_term = redir_term.downcase.strip
+      query = redir_term
+      break if seen.include?(redir_term)
+      seen << redir_term
+    end
+    self.lookup_string(db.real_term(query), index)
+  end
+
+  def self.redirect_term?(db, query)
+    query, index = self.parse_query(query)
+    e = db.entry(query)
+    return false if e.size != 1
+    redir = redirect_entry?(e[1].text)
+    return false unless redir
+    pattern = redir[1]
+    return false if pattern =~ /\[\s*([+-]?\d+|\$)\s*\]?$/ && $1 != '1'
+    pattern
+  end
+
+  def self.redirect_entry?(entry_text)
+    redirect_pattern.match(entry_text)
   end
 
   def self.parse_query(query)
@@ -89,7 +129,7 @@ class LearnDBQuery
   end
 
   def redirect?(result)
-    /^\s*see\s+\{(.*)\}\s*$/i.match(result.text)
+    self.class.redirect_entry?(result.text)
   end
 
   def resolve(result)

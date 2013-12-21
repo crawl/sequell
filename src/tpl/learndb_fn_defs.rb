@@ -20,6 +20,14 @@ module Tpl
     LearnDBQuery.query(LearnDB::DB.default, scope, term, index)
   }
 
+  FunctionDef.define('ldb-redirect-term?', 1) {
+    LearnDBQuery.redirect_term?(LearnDB::DB.default, self[0].to_s)
+  }
+
+  FunctionDef.define('ldb-canonical-term', 1) {
+    LearnDBQuery.resolve_redirect_terms(LearnDB::DB.default, self[0].to_s)
+  }
+
   FunctionDef.define('ldb-search-terms', 1) {
     search = self[0]
     search = RE2::Regexp.new(search.to_s) unless search.is_a?(RE2::Regexp)

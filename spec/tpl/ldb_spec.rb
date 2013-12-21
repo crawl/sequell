@@ -122,7 +122,22 @@ describe 'LearnDB functions' do
       db.entry('pow').add('see {世界[2]}')
       db.entry('link').add('see {other}')
       db.entry('other').add('see {世界}')
+      db.entry('non-redir').add('see {moo[2]}')
+      db.entry('recur-a').add('see {recur-b}')
+      db.entry('recur-b').add('see {recur-a}')
     }
+
+    it 'will canonicalize redirects' do
+      expect(e('$(ldb-canonical-term LINK)')).to eq('世界')
+      expect(e('$(ldb-canonical-term recur-a)')).to eq('recur-a')
+      expect(e('$(ldb-canonical-term 世界)')).to eq('世界')
+    end
+
+    it 'will report if terms are full redirects' do
+      expect(e('$(ldb-redirect-term? LINK)')).to be_true
+      expect(e('$(ldb-redirect-term? recur-a)')).to be_true
+      expect(e('$(ldb-redirect-term? non-redir)')).to be_false
+    end
 
     it 'will lookup similar terms iwth ldb-similar-terms' do
       expect(e('$(ldb-similar-terms links)')).to eq(['link'])

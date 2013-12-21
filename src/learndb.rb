@@ -18,6 +18,10 @@ module LearnDB
       canonical_name && !canonical_name.empty?
     end
 
+    def real_term(name)
+      self.entry(name).canonical_name
+    end
+
     def canonical_term(name)
       name.tr(' ', '_').tr('[]', '').gsub(/^_+|_+$/, '').gsub(/_{2,}/, '_')
     end
@@ -130,9 +134,9 @@ QUERY
     def to_s
       return text if text_only
       if original_term != term
-        trail = [original_term, term, entry.name]
+        trail = [original_term, term, entry.canonical_name]
       else
-        trail = [entry.name]
+        trail = [entry.canonical_name]
       end
       trail = trail.compact.uniq
       "#{trail.join(' ~ ')}[#{index}/#{size}]: #{text}"
@@ -146,6 +150,12 @@ QUERY
     def initialize(db, name)
       @db = db
       @name = name
+    end
+
+    def canonical_name
+      @canonical_name ||=
+        (dbh.single_value('SELECT term FROM terms WHERE term = ?', @name) ||
+         @name)
     end
 
     def with_original_term(term)

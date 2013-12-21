@@ -439,7 +439,34 @@ Unknown functions will be ignored:
      Levenshtein distance (defaults to 2). This is not an exhaustive
      list of terms within the edit distance, but the set of terms at
      the smallest possible edit distance from the given term.
-       
+
+   - `$(ldb-search-terms <pattern>)`
+
+     Returns a list of term (list of strings) that match the supplied pattern.
+
+   - `$(ldb-search-entries <pattern>)`
+
+     Returns a list of entries (list of LearnDB entry objects) that match
+     the supplied pattern.
+
+   - `$(ldb-redirect-term? <term>)`
+
+     Returns true if the given term has only a single entry, and that entry
+     points at another entry with `see {other}` or `see {other[1]}`.
+
+     *term* may have an optional numeric index as "term[2]", etc. The
+     numeric index will be stripped before checking if *term* is a redirect.
+   
+   - `$(ldb-canonical-term <term>)`
+
+     Given a term string, returns the term string if the ldb-redirect-term?
+     returns false, or follows the redirect and returns the first redirected
+     term for which ldb-redirect-term? is false. Returns *term* unchanged if
+     it points into a redirect loop.
+
+     *term* may have an optional numeric index; the index will be preserved
+     in the return value.
+
    - `$(ldb-at <term> [<index>])`
    
      Retrieve the definition for `<term>[<index>]`, or the first
