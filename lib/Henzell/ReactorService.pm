@@ -146,13 +146,15 @@ sub db_search {
   my $body = $$m{body};
   if ($body =~ qr{^\s*([?]/[<>]?)\s*(.*)\s*$}) {
     my ($search_mode, $search_term) = ($1, $2);
-    my $terms_only = $search_mode eq '?/<';
-    my $entries_only = $search_mode eq '?/>';
-    $self->{irc}->post_message(
-      %$m,
-      body => $self->_db_search_result($search_term, $terms_only,
-                                       $entries_only));
-    1
+    if ($search_term =~ /\S/) {
+      my $terms_only = $search_mode eq '?/<';
+      my $entries_only = $search_mode eq '?/>';
+      $self->{irc}->post_message(
+        %$m,
+        body => $self->_db_search_result($search_term, $terms_only,
+                                         $entries_only));
+      1
+    }
   }
 }
 

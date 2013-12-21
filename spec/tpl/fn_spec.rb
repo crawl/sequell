@@ -127,6 +127,12 @@ describe "Template functions" do
     end
   end
 
+  context 'exec' do
+    it 'will exec subcommands' do
+      expect(e %q{$(exec ".echo Hi!")}).to eq('Hi!')
+    end
+  end
+
   context 'colour' do
     it 'will produce irc colour codes' do
       expect(e '$(colour red blue)').to eq("\x034,2")

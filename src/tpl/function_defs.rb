@@ -43,6 +43,11 @@ module Tpl
     self[-1] if nargs > 0
   }
 
+  FunctionDef.define('exec', 1) {
+    command = self[0].to_s
+    Cmd::Executor.execute_subcommand(command)
+  }
+
   FunctionDef.define('with-nvl', [1, -1]) {
     nvl = self[0]
     nargs = self.arity

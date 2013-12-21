@@ -363,6 +363,15 @@ Functions may be used as `$(<fn> ...)`.
          $(let (x 3) (eval `(+ 5 7 $x)))  => 15
          $(let (x 3) (eval (quote (+ 5 7 $x))))  => 15
 
+   - `$(exec "commandline")`
+
+     Executes the commandline as a sub-command. Variables in the command-line
+     are not expanded before evaluation; you may eval the commandline first
+     if you want to expand variables.
+
+     Note: Evaluating !lg as a sub-command produces raw xlog output when
+     querying individual games.
+
    - `$(quote <form>)`
 
      Returns <form> as a syntax object representing the template. Useful for
