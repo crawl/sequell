@@ -44,7 +44,10 @@ sub search {
   my @terms;
   my @entries;
   use re::engine::RE2;
-  my $pattern = qr/$term/i;
+  my $pattern = eval {
+    qr/$term/i
+  };
+  return (\@terms, \@entries) unless $pattern;
   $DB->each_term(sub {
     my $term = shift;
     if (!$entries_only && $term =~ $pattern) {
