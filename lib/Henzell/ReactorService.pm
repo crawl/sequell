@@ -134,7 +134,7 @@ sub _db_search_result {
   my ($self, $term, $terms_only, $entries_only) = @_;
   my ($terms, $entries) = LearnDB::search($term, $terms_only, $entries_only);
   my $res = describe_results($terms, $entries, 1);
-  if (length($res) > 350) {
+  if (length($res) > 400) {
     $res = describe_results($terms, $entries);
   }
   $res
