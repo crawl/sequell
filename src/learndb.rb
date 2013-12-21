@@ -22,6 +22,23 @@ module LearnDB
       name.tr(' ', '_').tr('[]', '').gsub(/^_+|_+$/, '').gsub(/_{2,}/, '_')
     end
 
+    def candidate_terms(name, max_distance=2)
+      require 'levenshtein'
+
+      best_distance = max_distance
+      candidates = []
+      cname = canonical_term(name)
+      db.exec('SELECT term FROM terms ORDER BY term ASC') { |r|
+        term = r[0]
+        distance = Levenshtein.distance(cname, term.downcase)
+        if distance <= best_distance
+          candidates = [] if distance < best_distance
+          candidates << term
+        end
+      }
+      candidates
+    end
+
     def entry(entry_name)
       Entry.new(self, canonical_term(entry_name))
     end
@@ -73,6 +90,7 @@ QUERY
 
   class LookupResult
     attr_reader :entry, :index, :size, :text, :text_only
+    attr_accessor :original_term, :term
     def initialize(entry, index, size, text, text_only=false)
       @entry = entry
       @index = index
@@ -83,16 +101,29 @@ QUERY
 
     def to_s
       return text if text_only
-      "#{entry}[#{index}/#{size}]: #{text}"
+      if original_term != term
+        trail = [original_term, term, entry.name]
+      else
+        trail = [entry.name]
+      end
+      trail = trail.compact.uniq
+      "#{trail.join(' ~ ')}[#{index}/#{size}]: #{text}"
     end
   end
 
   class Entry
     attr_reader :name
+    attr_accessor :original_term
 
     def initialize(db, name)
       @db = db
       @name = name
+    end
+
+    def with_original_term(term)
+      copy = self.dup
+      copy.original_term = term
+      copy
     end
 
     def rename_to(newname)

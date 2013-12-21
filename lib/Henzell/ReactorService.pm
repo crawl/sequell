@@ -88,12 +88,16 @@ sub _expand {
   $self->_lookup()->resolve($m, $msg->entry(), $bare, '', $self->{beh}->env($m))
 }
 
+sub _lookup_term {
+  my ($self, $term, $carp_if_missing) = @_;
+  LearnDB::query_entry_autocorrect($term, undef, $carp_if_missing)
+}
+
 sub _db_query {
   my ($self, $m, $query, $bare, $carp_if_missing) = @_;
-  my $msg =
-    $self->_expand($m,
-                   LearnDB::query_entry($query, undef, $carp_if_missing),
-                   $bare);
+
+  my $entry = $self->_lookup_term($query, $carp_if_missing);
+  my $msg = $self->_expand($m, $entry, $bare);
   if (defined $msg && $msg =~ /\S/) {
     $msg = "$$m{prefix}$msg" if $$m{prefix};
     $self->{irc}->post_message(%$m, body => $msg);

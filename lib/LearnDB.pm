@@ -15,6 +15,7 @@ use LearnDB::Entry;
 use LearnDB::MaybeEntry;
 
 use base 'Exporter';
+use Text::LevenshteinXS;
 
 my $DB_PATH = $ENV{LEARNDB} ||
   File::Spec->catfile($ENV{HENZELL_ROOT} || '.', 'dat/learn.db');
@@ -38,6 +39,30 @@ sub term_exists($;$) {
   $DB->definition_exists($term, $num)
 }
 
+sub similar_terms {
+  my ($term, $max_edit_distance) = @_;
+  $max_edit_distance ||= 2;
+  $term = lc(cleanse_term($term));
+
+  my $term_length = length($term);
+  return () unless $term_length >= 2;
+
+  my $best_distance = $max_edit_distance;
+  my @matches;
+  $DB->each_term(sub {
+    my $db_term = shift;
+    if (abs(length($db_term) - $term_length) <= $best_distance) {
+      my $distance = Text::LevenshteinXS::distance(lc $db_term, $term);
+      if ($distance <= $best_distance) {
+        @matches = () if $distance < $best_distance;
+        push @matches, $db_term;
+        $best_distance = $distance;
+      }
+    }
+  });
+  @matches
+}
+
 sub mtime {
   $DB->mtime
 }
@@ -45,6 +70,7 @@ sub mtime {
 sub cleanse_term {
   my $term = shift;
 
+  return $term || '' unless defined $term;
   $term =~ y/ /_/;
   $term =~ y/[]//d;
   $term =~ s/^_+//;
@@ -142,6 +168,39 @@ sub query_entry_with_redirects {
   }
 }
 
+# Porcelain: parses a query and retrieves an entry, following redirects, etc.,
+# and auto-correcting if no entry is found.
+sub query_entry_autocorrect {
+  my ($term, $num, $error_message_if_missing) = @_;
+  my $entry = query_entry($term, $num, $error_message_if_missing);
+  if (!$entry || ($entry->err() && $entry->errcode() eq 'noent')) {
+    my ($qterm, $num) = parse_query($term);
+    return $entry if term_exists($qterm);
+    my @candidates = similar_terms($qterm);
+    return $entry unless @candidates;
+
+    if (@candidates == 1) {
+      my $e = query_entry($candidates[0], $num, $error_message_if_missing);
+      if ($e && $e->entry()) {
+        return LearnDB::MaybeEntry->with_entry(
+          $e->entry()->with_prop(original_term => $qterm,
+                                 corrected_term => $candidates[0]));
+      }
+      return $e;
+    }
+
+    my $err = $entry->err();
+    my $suggestion =
+      "Did you mean: " . join(", ", map {
+        tr/ /_/;
+        $_
+      } @candidates);
+    $err =~ s/$/ $suggestion./;
+    return LearnDB::MaybeEntry->with_err($err, 'noent-suggest');
+  }
+  $entry
+}
+
 # Porcelain: parses a query and retrieves an entry, following redirects, etc.
 sub query_entry {
   my ($term, $num, $error_message_if_missing, $ignore_redirects) = @_;
@@ -155,10 +214,10 @@ sub query_entry {
   if ($error_message_if_missing && (!defined($res) || $res eq '')) {
     if ($num == 1) {
       return LearnDB::MaybeEntry->with_err(
-        "I don't have a page labeled $term in my learndb.");
+        "I don't have a page labeled $term in my learndb.", 'noent');
     }
     return LearnDB::MaybeEntry->with_err(
-      "I don't have a page labeled $term\[$num] in my learndb.");
+      "I don't have a page labeled $term\[$num] in my learndb.", 'noent');
   }
   LearnDB::MaybeEntry->with_entry($res)
 }

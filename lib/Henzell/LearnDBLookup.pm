@@ -59,6 +59,17 @@ sub _exec_command {
 
 sub resolve {
   my ($self, $m, $entry, $bare, $args, %env) = @_;
+  $entry = $self->resolve_entry($m, $entry);
+  return $entry if $entry->prop('literal');
+  $entry = $self->expand_entry($entry, $m, %env);
+  $self->format_entry($entry, $bare)
+}
+
+=item $lookup->resolve_entry($m, $entry, $bare, $args, %env)
+Resolves redirects and expands see and do command blocks.
+=cut
+sub resolve_entry {
+  my ($self, $m, $entry) = @_;
 
   return undef unless defined $entry;
 
@@ -73,18 +84,29 @@ sub resolve {
       $entry = $self->_exec_command($m, $command);
     }
     # Don't post-expand the output of commands.
-    return LearnDB::Entry->wrap($entry);
+    return LearnDB::Entry->wrap($entry)->with_prop(literal => 1);
   }
 
-  # Make sure we still have something that looks like a LearnDB entry:
+  LearnDB::Entry->wrap($entry)
+}
+
+sub format_entry {
+  my ($self, $entry, $bare) = @_;
+  $bare ? $entry->formatted_value() : $entry->template()
+}
+
+sub expand_entry {
+  my ($self, $entry, $m, %env) = @_;
   $entry = LearnDB::Entry->wrap($entry);
-  my $tpl = $bare ? $entry->formatted_value() : $entry->template();
+
   my $res = eval {
-    $self->_expander()->expand($tpl, '',
+    $self->_expander()->expand($entry->value(), '',
                                irc_msg => $m,
                                env => \%env)
   };
-  $res || $@
+  $res = $@ if $@;
+
+  $entry->with_new_value($res)
 }
 
 1

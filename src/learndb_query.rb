@@ -18,11 +18,12 @@ class LearnDBQuery
     end
   end
 
-  attr_reader :db, :scope, :term, :index, :visited
+  attr_reader :db, :scope, :term, :original_term, :index, :visited
   def initialize(db, scope, term, index, visited)
     @db = db
     @scope = scope
     @term = term
+    @original_term = term
     @index = index
     @visited = visited
   end
@@ -43,14 +44,28 @@ class LearnDBQuery
     mark_visited!(term, index)
 
     entry = @db.entry(term)
+    unless entry.exists?
+      candidates = @db.candidate_terms(term)
+      if candidates.size == 1
+        @term = candidates[0]
+        entry = @db.entry(candidates[0])
+      end
+    end
     lookup = entry[index]
 
     if index == -1 || (!lookup && index != 1)
       result = full_entry_redirect(entry)
-      return result if result || index != -1
+      return with_query_path(result) if result || index != -1
     end
 
-    resolve(lookup) if lookup
+    with_query_path(resolve(lookup)) if lookup
+  end
+
+  def with_query_path(result)
+    return result unless result
+    result.original_term = original_term
+    result.term = term
+    result
   end
 
   ##

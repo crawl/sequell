@@ -124,9 +124,15 @@ describe 'LearnDB functions' do
       db.entry('other').add('see {世界}')
     }
 
+    it 'will lookup similar terms iwth ldb-similar-terms' do
+      expect(e('$(ldb-similar-terms links)')).to eq(['link'])
+      expect(e('$(ldb-similar-terms linkses 3)')).to eq(['link'])
+    end
+
     it 'will follow redirects' do
       expect(e('$(ldb moo)').to_s).to eql('世界[1/6]: めのツ')
       expect(e('$(ldb-lookup pow[2])').to_s).to eql('世界[2/6]: Moo?')
+      expect(e('$(ldb-lookup powz[2])').to_s).to eql('powz ~ pow ~ 世界[2/6]: Moo?')
       expect(e('$(ldb-lookup 世界[$])').to_s).to eql('世界[6/6]: How now, cow!')
     end
 

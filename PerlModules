@@ -7,4 +7,5 @@ Tie::Cache
 File::Next
 App::Nopaste
 re::engine::RE2
+Text::LevenshteinXS
 JSON
