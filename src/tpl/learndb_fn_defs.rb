@@ -20,6 +20,18 @@ module Tpl
     LearnDBQuery.query(LearnDB::DB.default, scope, term, index)
   }
 
+  FunctionDef.define('ldb-search-terms', 1) {
+    search = self[0]
+    search = RE2::Regexp.new(search.to_s) unless search.is_a?(RE2::Regexp)
+    LearnDB::DB.default.terms_matching(search)
+  }
+
+  FunctionDef.define('ldb-search-entries', 1) {
+    search = self[0]
+    search = RE2::Regexp.new(search.to_s) unless search.is_a?(RE2::Regexp)
+    LearnDB::DB.default.entries_matching(search)
+  }
+
   FunctionDef.define('ldb-at', [1, 2]) {
     term = self[0].to_s
     index = arity == 2 ? self[-1].to_i : 1

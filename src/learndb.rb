@@ -28,8 +28,8 @@ module LearnDB
       best_distance = max_distance
       candidates = []
       cname = canonical_term(name)
-      db.exec('SELECT term FROM terms ORDER BY term ASC') { |r|
-        term = r[0]
+
+      each_term { |term|
         distance = Levenshtein.distance(cname, term.downcase)
         if distance <= best_distance
           candidates = [] if distance < best_distance
@@ -39,8 +39,36 @@ module LearnDB
       candidates
     end
 
+    def terms_matching(pattern)
+      terms = []
+      each_term { |term|
+        terms << term if term =~ pattern
+      }
+      terms
+    end
+
+    def entries_matching(pattern)
+      matches = []
+      each_term { |term|
+        entry = self.entry(term)
+        defs = entry.definitions
+        for i in 0...defs.size
+          if defs[i] =~ pattern
+            matches << entry[i + 1]
+          end
+        end
+      }
+      matches
+    end
+
     def entry(entry_name)
       Entry.new(self, canonical_term(entry_name))
+    end
+
+    def each_term
+      db.exec('SELECT term FROM terms ORDER BY term ASC') { |r|
+        yield r[0]
+      }
     end
 
     def term_exists?(term)

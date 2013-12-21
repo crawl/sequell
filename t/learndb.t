@@ -73,6 +73,10 @@ is(irc('!learn set radon[$] ???'),
    'radon[2/2]: ???');
 is(irc('!learn set puma[$] PUMA'), 'puma[1/1]: PUMA');
 
+like(irc('?/cow'), qr/Matching terms \(1\): cow; entries \(3\): cow\[2\].*/);
+is(irc('?/<cow'), 'Matching terms (1): cow');
+like(irc('?/>cow'), qr/Matching entries \(3\): cow\[2.*/);
+
 irc('!learn add !help:!foo Hahahahaha');
 is(irc('!help !foo'), "!foo: Hahahahaha");
 like(irc('!help !bar'), qr/No help for !bar/);

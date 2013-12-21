@@ -156,6 +156,19 @@ You may swap terms as:
 
     !learn swap A[x] B[y]
 
+Searching
+---------
+
+You may search the LearnDB with
+[regular expressions](https://code.google.com/p/re2/wiki/Syntax) using `?/`:
+
+    ?/ <search regex: search in both terms and definitions>
+    ?/< <search regex: search terms only>
+    ?/> <search regex: search definitions only>
+
+If your `?/` search starts with `<` or `>`, use a space to separate the
+search from the `?/`.
+
 LearnDB command aliases
 -----------------------
 

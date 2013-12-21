@@ -81,7 +81,7 @@ sub count {
 }
 
 sub description {
-  my $self = shift;
+  my ($self, $skip_count) = @_;
   my ($term, $index, $count, $value) = ($self->term(), $self->index(),
                                         $self->count(), $self->value());
   return $value if $term eq '';
@@ -93,7 +93,22 @@ sub description {
     my @prelude = grep($_, ($original_term, $corrected_term));
     $term = join(" ~ ", @prelude, $term);
   }
-  "$term\[$index/$count]: $value"
+
+  my $index_text = "$index";
+  $index_text .= "/$count" unless $skip_count;
+  "$term\[$index_text]: $value"
+}
+
+# Verbosity: 3: full, 0: terse
+sub desc {
+  my ($self, $verbosity) = @_;
+  if ($verbosity == 0) {
+    return $self->term() . "[" . $self->index() . "]";
+  } elsif ($verbosity == 3) {
+    return $self->description();
+  } else {
+    return $self->description('skip_count');
+  }
 }
 
 1

@@ -129,6 +129,14 @@ describe 'LearnDB functions' do
       expect(e('$(ldb-similar-terms linkses 3)')).to eq(['link'])
     end
 
+    it 'will search terms with ldb-search-terms' do
+      expect(e('$(ldb-search-terms po.)')).to eq(['pow'])
+    end
+
+    it 'wil search entries with ldb-search-entries' do
+      expect(e('$(str (ldb-search-entries "How now"))')).to eq('世界[6/6]: How now, ${nick}!')
+    end
+
     it 'will follow redirects' do
       expect(e('$(ldb moo)').to_s).to eql('世界[1/6]: めのツ')
       expect(e('$(ldb-lookup pow[2])').to_s).to eql('世界[2/6]: Moo?')

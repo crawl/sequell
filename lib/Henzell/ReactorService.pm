@@ -76,6 +76,10 @@ sub _reactors {
     },
 
     sub {
+      $self->db_search(@_)
+    },
+
+    sub {
       $self->command(@_)
     }
   ]
@@ -101,6 +105,53 @@ sub _db_query {
   if (defined $msg && $msg =~ /\S/) {
     $msg = "$$m{prefix}$msg" if $$m{prefix};
     $self->{irc}->post_message(%$m, body => $msg);
+    1
+  }
+}
+
+sub describe_results {
+  my ($terms, $entries, $verbose) = @_;
+  if (!@$terms && !@$entries) {
+    return "No matches.";
+  }
+
+  my $prefix = "Matching ";
+  my @pieces;
+  if (@$terms) {
+    push @pieces,
+      "terms (" . @$terms . "): " . join(", ", @$terms);
+  }
+  if (@$entries) {
+    push @pieces,
+      "entries (". @$entries . "): " .
+        join(" | ", map($_->desc($verbose ? 2 : 0),
+                        @$entries));
+  }
+  $prefix . join("; ", @pieces)
+}
+
+sub _db_search_result {
+  my ($self, $term, $terms_only, $entries_only) = @_;
+  my ($terms, $entries) = LearnDB::search($term, $terms_only, $entries_only);
+  my $res = describe_results($terms, $entries, 1);
+  if (length($res) > 350) {
+    $res = describe_results($terms, $entries);
+  }
+  $res
+}
+
+sub db_search {
+  my ($self, $m) = @_;
+  return unless $m->{said};
+  my $body = $$m{body};
+  if ($body =~ qr{^\s*([?]/[<>]?)\s*(.*)\s*$}) {
+    my ($search_mode, $search_term) = ($1, $2);
+    my $terms_only = $search_mode eq '?/<';
+    my $entries_only = $search_mode eq '?/>';
+    $self->{irc}->post_message(
+      %$m,
+      body => $self->_db_search_result($search_term, $terms_only,
+                                       $entries_only));
     1
   }
 }

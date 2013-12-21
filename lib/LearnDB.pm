@@ -39,6 +39,33 @@ sub term_exists($;$) {
   $DB->definition_exists($term, $num)
 }
 
+sub search {
+  my ($term, $terms_only, $entries_only) = @_;
+  my @terms;
+  my @entries;
+  use re::engine::RE2;
+  my $pattern = qr/$term/i;
+  $DB->each_term(sub {
+    my $term = shift;
+    if (!$entries_only && $term =~ $pattern) {
+      push @terms, $term;
+    }
+    if (!$terms_only) {
+      my @definitions = $DB->definitions($term);
+      for my $i (0 .. $#definitions) {
+        my $def = $definitions[$i];
+        if ($def =~ $pattern) {
+          push @entries, LearnDB::Entry->new(term => $term,
+                                             index => $i + 1,
+                                             count => scalar(@definitions),
+                                             value => $def);
+        }
+      }
+    }
+  });
+  (\@terms, \@entries)
+}
+
 sub similar_terms {
   my ($term, $max_edit_distance) = @_;
   $max_edit_distance ||= 2;
