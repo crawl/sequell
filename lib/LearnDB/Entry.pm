@@ -89,7 +89,7 @@ sub description {
   my $original_term = $self->original_term();
   my $corrected_term = $self->corrected_term();
   if ($original_term && $term) {
-    undef $corrected_term if lc($corrected_term) eq lc($term);
+    undef $corrected_term if lc($corrected_term) eq LearnDB::cleanse_term(lc($term));
     my @prelude = grep($_, ($original_term, $corrected_term));
     $term = join(" ~ ", @prelude, $term);
   }

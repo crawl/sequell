@@ -5,6 +5,11 @@ require 'cmd/user_command_db'
 module Cmd
   class UserFunction < UserDef
     @@function_definitions = { }
+
+    def self.clear_cache!
+      @@function_definitions = { }
+    end
+
     def self.function_definition(name)
       return name unless name.is_a?(String)
       name = canonicalize_name(name)

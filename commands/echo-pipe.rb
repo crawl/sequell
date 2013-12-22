@@ -6,6 +6,7 @@ require 'json'
 require 'env'
 require 'command_context'
 require 'timeout'
+require 'cmd/user_function'
 
 STDIN.sync = true
 STDERR.sync = true
@@ -22,6 +23,7 @@ begin
       data = JSON.parse(line)
       Timeout.timeout(TIME_LIMIT) {
         Env.with(data['command_env']) do
+          Cmd::UserFunction.clear_cache!
           CommandContext.with_default_nick((data['env'] || { })['nick']) do
             Cmd::Executor.with_default_env(data['env']) do
               puts JSON.dump(res: Query::QueryStringTemplate.expand(
