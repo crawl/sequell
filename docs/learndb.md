@@ -344,7 +344,7 @@ known behaviour steps.
 
 Sequell reacts to text on IRC in this sequence:
 
-1. Behaviours (any text prefixed with \\ ignores behaviours)
+1. Behaviours (any text prefixed with `\\` ignores behaviours)
 2. LearnDB direct queries, viz. ??TERM
 3. LearnDB indirect queries, viz. TERM??
 4. Commands
@@ -372,7 +372,7 @@ malformed behaviours ignored.
 For instance, to nag LearnDB users to use PM every now and then, but
 still respond to the query:
 
-    !learn add :beh: \?\?>>> ::: $(if (and (/= $channel msg) (rand 10)) '' "/msg $bot your queries, ${nick}!") ::: break
+    !learn add :beh: \?\?>>> ::: $(if (and (/= $channel msg) (not (rand 10))) "/msg $bot your queries, ${nick}!") ::: break
 
 To ignore a LearnDB query:
 
