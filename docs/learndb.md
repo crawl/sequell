@@ -331,9 +331,6 @@ Available conditions:
 3. body (the entire message)
 4. emoted (is '1' if this is an IRC emote, viz. a user doing /me something).
 
-Behaviours are not evaluated if Sequell thinks the user's command is a
-LearnDB query (`??<foo>`). This may change in the future.
-
 *NEXT-STEP* is optional, and controls how Sequell reacts to the given
 input. The *NEXT-STEP* template is expanded using the standard
 template expansion. After expansion, Sequell lowercases and removes
