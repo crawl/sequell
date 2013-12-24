@@ -143,7 +143,7 @@ module Sql
     end
 
     def numeric?
-      self.category == 'I'
+      self.category == 'F'
     end
 
     def integer?
