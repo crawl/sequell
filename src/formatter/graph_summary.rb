@@ -107,7 +107,7 @@ module Formatter
 
     def graph_number_format
       return '#,###.##%' if @json_reporter.perc?
-      '#,###'
+      '#,###.##'
     end
 
     def sort_data(data)

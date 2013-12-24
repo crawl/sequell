@@ -27,7 +27,7 @@ module Formatter
         lambda { |row|
           res = []
           for field, index in indexed_fields
-            res << row.value_string(row.extra_values[index], field).to_i
+            res << row.value_string(row.extra_values[index], field).to_f
           end
           res
         }
