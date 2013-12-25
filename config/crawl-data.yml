@@ -936,6 +936,17 @@ milestone-types:
 
 milestone-aliases:
   god.abandon: god.renounce
+  god.wor: god.worship
+  unique: uniq
+  unique.ban: uniq.ban
+  unique.banish: uniq.ban
+  uniq.banish: uniq.ban
+  unique.pac: uniq.pac
+  uniq.pacify: uniq.pac
+  unique.pacify: uniq.pac
+  unique.ens: uniq.ens
+  unique.enslave: uniq.ens
+  uniq.enslave: uniq.ens
 
 tournament-prefixes:
   - t
