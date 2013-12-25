@@ -63,9 +63,13 @@ module Tpl
 
   FunctionDef.define('ldb-rm!', 2) {
     Helper.raise_private_messaging!
-    term_index = self[-1]
-    term_index = nil if term_index.to_s == '*'
-    LearnDB::DB.default.entry(self[0].to_s).delete(term_index)
+    begin
+      term_index = self[-1]
+      term_index = nil if term_index.to_s == '*'
+      LearnDB::DB.default.entry(self[0].to_s).delete(term_index)
+    rescue LearnDB::EntryIndexError
+      nil
+    end
   }
 
   FunctionDef.define('ldb-set!', 3) {

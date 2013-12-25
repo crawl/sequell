@@ -31,6 +31,7 @@ describe 'LearnDB functions' do
       expect(e(%{$(ldb-at 世界 0)}).text).to eql('めのツ')
       expect(e(%{$(ldb-at 世界 -1)}).text).to eql('Moo?')
       expect(e(%{$(ldb-at 世界 -2)}).text).to eql('めのツ')
+      expect(e(%{$(ldb-at 世界 100)})).to be_nil
       expect(e(%{$(ldb-defs 世界)})).to eql(['めのツ', 'Moo?'])
     end
 
@@ -65,6 +66,10 @@ describe 'LearnDB functions' do
       e(%{$(ldb-rm! 世界 1)})
       expect(e(%{$(ldb-size 世界)})).to eql(1)
       expect(e(%{$(ldb-at 世界 1)}).text).to eql('Moo?')
+    end
+
+    it 'will return nil when attempting to delete nonexistent entries' do
+      expect(e '$(ldb-rm! foo 55)').to be_nil
     end
   end
 
