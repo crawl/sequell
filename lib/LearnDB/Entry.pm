@@ -80,6 +80,12 @@ sub count {
   shift()->{count}
 }
 
+sub space_underscore {
+  my $term = shift;
+  $term =~ tr/_/ /;
+  $term
+}
+
 sub description {
   my ($self, $skip_count) = @_;
   my ($term, $index, $count, $value) = ($self->term(), $self->index(),
@@ -91,7 +97,7 @@ sub description {
   if ($original_term && $term) {
     undef $corrected_term if lc($corrected_term) eq LearnDB::cleanse_term(lc($term));
     my @prelude = grep($_, ($original_term, $corrected_term));
-    $term = join(" ~ ", @prelude, $term);
+    $term = join(" ~ ", map(space_underscore($_), @prelude, $term));
   }
 
   my $index_text = "$index";

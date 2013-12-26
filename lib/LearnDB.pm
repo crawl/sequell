@@ -152,7 +152,7 @@ sub normalize_index {
 sub parse_query {
   my $query = shift;
   my $num;
-  $num = $1 if $query =~ s/\[([+-]?\d+|\$)\]? *$//;
+  $num = $1 if $query =~ s/\[\s*([+-]?\d+|\$)(?:\s*\/\s*\d+)?\s*\]? *$//;
   $num ||= 1;
   if ($num eq '$') {
     $num = -1;

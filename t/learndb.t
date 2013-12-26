@@ -43,6 +43,7 @@ irc('!learn add src Test');
 irc('!learn add dst Hi');
 irc('!learn mv src[$] dst[$]');
 is(irc('??dst[$]'), "dst[2/2]: Test");
+is(irc('??dst[2/2]'), "dst[2/2]: Test");
 is(irc('??src[$]'), "I don't have a page labeled src[-1] in my learndb.");
 irc('!learn del dst[$]');
 is(irc('??dst[$]'), "dst[1/1]: Hi");
