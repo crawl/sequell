@@ -116,7 +116,7 @@ sub num_entries {
 
 sub check_entry_exists($;$) {
   my ($term, $num) = @_;
-  if (!$DB->definition_exists($term, $num)) {
+  if (!read_entry($term, $num)) {
     if ($num) {
       die "I don't have a page labeled $term\[$num] in my learndb.";
     }
@@ -306,7 +306,7 @@ sub insert_entry {
 
 sub del_entry {
   my $term = cleanse_term(shift);
-  my $entry_num = normalize_index(num_entries($term), shift(), 'query');
+  my $entry_num = normalize_index($term, shift(), 'query');
   $DB->remove($term, $entry_num);
 }
 
@@ -357,6 +357,7 @@ sub move_entry($$$;$) {
   else {
     check_entry_exists($src, $snum);
     my $src_entry = read_entry($src, $snum, 'just-the-entry');
+    $snum = normalize_index($src, $snum, 'query');
     del_entry($src, $snum);
     return "$src\[$snum] -> " . insert_entry($dst, $dnum || -1, $src_entry);
   }

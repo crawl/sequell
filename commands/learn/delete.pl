@@ -14,13 +14,14 @@ use open qw/:std :utf8/;
 Helper::forbid_private();
 
 $ARGV[1] =~ y/ /_/;
-$ARGV[1] =~ /^([^\[\]]+)(?:\[([+-]?\d+)\]?)?/ or do
+$ARGV[1] =~ /^([^\[\]]+)(?:\[\s*([+-]?\d+|\$)\s*\]?)?/ or do
 {
   print "Syntax is: !learn delete TERM[NUM] (you may omit [NUM] if TERM has only one entry)";
   exit;
 };
 
 my ($term, $num) = (cleanse_term($1), $2);
+$num = -1 if $num && $num eq '$';
 
 my $entries = num_entries($term);
 $num ||= 1 if $entries == 1;

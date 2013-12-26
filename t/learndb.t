@@ -39,6 +39,14 @@ my $ldb = Henzell::ReactorService->new(executor => $cmd,
                                        bus => $bus);
 $irc->configure_services(services => [$ldb]);
 
+irc('!learn add src Test');
+irc('!learn add dst Hi');
+irc('!learn mv src[$] dst[$]');
+is(irc('??dst[$]'), "dst[2/2]: Test");
+is(irc('??src[$]'), "I don't have a page labeled src[-1] in my learndb.");
+irc('!learn del dst[$]');
+is(irc('??dst[$]'), "dst[1/1]: Hi");
+
 is(irc('??cow'), "I don't have a page labeled cow in my learndb.");
 is(irc('!learn add cow MOOOOOO'), 'cow[1/1]: MOOOOOO');
 is(irc('??cow'), "cow[1/1]: MOOOOOO");
