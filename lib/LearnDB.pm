@@ -71,7 +71,7 @@ sub search {
 
 sub similar_terms {
   my ($term, $max_edit_distance) = @_;
-  $max_edit_distance ||= 2;
+  $max_edit_distance ||= 1;
   $term = lc(cleanse_term($term));
 
   my $term_length = length($term);

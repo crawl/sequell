@@ -26,7 +26,7 @@ module LearnDB
       name.tr(' ', '_').tr('[]', '').gsub(/^_+|_+$/, '').gsub(/_{2,}/, '_')
     end
 
-    def candidate_terms(name, max_distance=2)
+    def candidate_terms(name, max_distance=1)
       require 'levenshtein'
 
       best_distance = max_distance
