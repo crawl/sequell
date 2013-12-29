@@ -5,6 +5,7 @@
 use strict;
 use warnings;
 
+use lib 'lib';
 use Henzell::Schema;
 use Getopt::Long;
 
