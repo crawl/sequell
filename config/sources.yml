@@ -186,3 +186,18 @@ sources:
       - http://kr.dobrazupa.org/morgue/0.13
     ttyrecs:
       - http://kr.dobrazupa.org/ttyrecs
+
+  - name: cbro
+    aliases:
+      - cbo
+    base: http://crawl.berotato.org/crawl
+    logfiles:
+      - meta/0.13/logfile{,-sprint,-zotdef}*
+      - meta/git/logfile{,-sprint,-zotdef}*
+    milestones:
+      - meta/0.13/milestones{,-sprint,-zotdef}*
+      - meta/git/milestones{,-sprint,-zotdef}*
+    morgues:
+      - http://crawl.berotato.org/crawl/morgue
+    ttyrecs:
+      - http://crawl.berotato.org/crawl/ttyrec
