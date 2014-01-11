@@ -1,11 +1,11 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -CAS
 use strict;
 use warnings;
+use Encode qw/decode/;
 use utf8;
-do 'commands/message/helper.pl';
-
-binmode STDIN, ':utf8';
-binmode STDOUT, ':utf8';
+use open qw/:std :utf8/;
+use lib 'src';
+use MessageDB;
 
 chomp(my @args = @ARGV);
 
@@ -15,10 +15,10 @@ sub fail() {
 }
 
 my $message = $args[2];
-$message =~ s/^!tell +//i;
+$message =~ s/^\S+ +//i;
 $message =~ /^(\S+) +(.+)$/ or fail();
 
-my $to = cleanse_nick($1) or fail;
+my $to = MessageDB::cleanse_nick($1) or fail;
 $message = $2;
 
 if (length $message > 300)
@@ -27,7 +27,7 @@ if (length $message > 300)
   exit;
 }
 
-my $handle = message_handle($to, '>>', "Unable to add your message to $to\'s queue, sorry!");
+my $handle = MessageDB::handle($to, '>>', "Unable to add your message to $to\'s queue, sorry!");
 
 my %message =
 (
@@ -46,5 +46,5 @@ print {$handle} join(':',
   die "Unable to print to message_dir/$to: $!";
 };
 
-message_notify($to, 1);
+MessageDB::notify($to, 1);
 print "$args[1]: OK, I'll let $to know.\n";

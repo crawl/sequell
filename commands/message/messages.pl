@@ -2,15 +2,15 @@
 use strict;
 use warnings;
 
-do 'commands/message/helper.pl';
 use lib 'src';
 use Helper qw/demunge_xlogline/;
+use MessageDB;
 
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
 
 my $nick = $ARGV[1];
-my $handle = message_handle($nick, '<', "No messages for $nick.");
+my $handle = MessageDB::handle($nick, '<', "No messages for $nick.");
 
 # print the first message
 my $message = <$handle>;
@@ -24,12 +24,12 @@ close $handle;
 # any more messages?
 if (@rest && $rest[0] =~ /:/)
 {
-  my $handle = message_handle($nick, '>', "Unable to truncate $nick\'s message list: $!.");
+  my $handle = MessageDB::handle($nick, '>', "Unable to truncate $nick\'s message list: $!.");
   print {$handle} @rest;
 }
 else
 {
-  message_clear($nick);
+  MessageDB::clear($nick);
 }
 
 printf '(1/%d) %s said (%s ago): %s%s',

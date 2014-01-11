@@ -1,4 +1,5 @@
-#!/usr/bin/perl
+package MessageDB;
+
 use strict;
 use warnings;
 
@@ -6,6 +7,7 @@ use lib 'src';
 use Helper;
 use Henzell::IRCUtil;
 use File::Path;
+use open qw/:std :utf8/;
 
 our $message_dir = 'dat/messages';
 
@@ -14,7 +16,7 @@ sub cleanse_nick
   Henzell::IRCUtil::cleanse_nick(shift())
 }
 
-sub message_count
+sub count
 {
   my $nick = cleanse_nick(shift);
   open my $handle, '<', "$message_dir/$nick" or return 0;
@@ -23,7 +25,7 @@ sub message_count
   return scalar @messages;
 }
 
-sub message_handle
+sub handle
 {
   my ($nick, $mode, $error) = @_;
   $nick = cleanse_nick($nick);
@@ -37,13 +39,13 @@ sub message_handle
   return $handle;
 }
 
-sub message_clear
+sub clear
 {
   my $nick = cleanse_nick(shift);
   system("rm '$message_dir/$nick'");
 }
 
-sub message_notify
+sub notify
 {
   my $nick = cleanse_nick(shift);
   my $reset = shift;
@@ -59,3 +61,5 @@ sub message_notify
   chmod 0777, "$message_dir/$nick";
   return 1;
 }
+
+1
