@@ -188,6 +188,19 @@ QUERY
   return prepare_st($dbh, $text);
 }
 
+sub wrap_handle {
+  my ($handle, $file) = @_;
+  +{ file   => $file->target_filepath(),
+     readfile => $file->read_filepath(),
+     fref   => $file,
+     handle => $handle,
+     pos    => $handle ? tell($handle) : -1,
+     server => $file->server_name(),
+     src    => $file->server_name(),
+     alpha  => $file->alpha()
+   }
+}
+
 sub open_handles
 {
   my (@files) = @_;
@@ -195,20 +208,7 @@ sub open_handles
 
   for my $file (@files) {
     my $path = $file->read_filepath() or next;
-    open my $handle, '<', $path or do {
-      warn "Unable to open $path for reading: $!";
-      next;
-    };
-
-    seek($handle, 0, SEEK_END); # EOF
-    push @handles, { file   => $file->target_filepath(),
-                     readfile => $path,
-                     fref   => $file,
-                     handle => $handle,
-                     pos    => tell($handle),
-                     server => $file->server_name(),
-                     src    => $file->server_name(),
-                     alpha  => $file->alpha()};
+    push @handles, wrap_handle(undef, $file);
   }
   return @handles;
 }
@@ -236,6 +236,7 @@ sub go_to_offset {
   my ($table, $loghandle, $offset) = @_;
 
   if ($offset == -2) {
+    # We're tailing; just reset EOF marker.
     seek($loghandle, 0, SEEK_CUR);
     return 1;
   }
@@ -278,8 +279,27 @@ sub milefile_table($) {
   game_type_table_name(filename_gametype($filename), $TMILESTONE)
 }
 
+sub preopen_filehandle {
+  my $file = shift;
+  return $file->{handle} if $file->{handle};
+
+  my $path = $file->{fref}->read_filepath()
+    or return undef;
+  open my $handle, '<', $path or do {
+    if (!$file->{warned_missing}) {
+      warn "Unable to open $path for reading: $!";
+      $file->{warned_missing} = 1;
+    }
+    return undef;
+  };
+  $file->{handle} = $handle;
+  $handle
+}
+
 sub cat_xlog {
   my ($table, $lf, $fadd, $offset, $event_publisher) = @_;
+
+  preopen_filehandle($lf) or return;
 
   my $loghandle = $lf->{handle};
   my $lfile = $lf->{file} or die "No filename in " . Dumper($lf) . "\n";
