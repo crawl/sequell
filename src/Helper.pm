@@ -49,6 +49,7 @@ sub eval_or_exit(&) {
   my $err = $@;
   if ($err) {
     my ($msg) = $err =~ /(.*) at/;
+    $msg ||= $err;
     print "ERROR: ", $msg, "\n";
     exit 1;
   }
