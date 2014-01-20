@@ -3,6 +3,8 @@
 require 'helper'
 require 'cmd/user_defined_command'
 
+COMMAND_BASE_URL = 'https://github.com/greensnark/dcss_sequell/blob/master'
+
 $ctx = CommandContext.new
 $ctx.extract_options!('rm', 'ls')
 
@@ -47,10 +49,19 @@ end
 def display_user_command(name)
   command = Cmd::UserDefinedCommand.command(name)
   if command.nil?
-    puts("No command #{name}")
+    definition = Henzell::Config.default.commands.definition(name)
+    if definition
+      puts("Built-in: #{name} => #{command_source_url(definition)}")
+    else
+      puts("No command #{name}")
+    end
   else
     puts("Command: #{command}")
   end
+end
+
+def command_source_url(definition)
+  "#{COMMAND_BASE_URL}/commands/#{definition}"
 end
 
 def define_user_command(name, definition)

@@ -25,6 +25,11 @@ module Henzell
       @commands[command_name] || command_name == '??'
     end
 
+    def definition(command_name)
+      defn = @commands[command_name]
+      defn && defn[:file]
+    end
+
     def user_defined?(command_name)
       @user_commands[command_name]
     end

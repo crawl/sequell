@@ -4,12 +4,14 @@ require 'cmd/command'
 
 module Cmd
   class UserDefinedCommand
+    def self.builtin?(name)
+      Henzell::Config.default.commands.builtin?(canonicalize_name(name))
+    end
+
     def self.define(name, definition)
       Cmd::Command.assert_valid!(definition)
       cname = canonicalize_name(name)
-      if Henzell::Config.default.commands.builtin?(cname)
-        raise "Cannot redefine built-in command #{cname}"
-      end
+      raise "Cannot redefine built-in command #{cname}" if builtin?(cname)
       existing_command = self.command(cname)
       UserCommandDb.db.define_command(canonicalize_name(name), definition)
       res = self.command(name)
