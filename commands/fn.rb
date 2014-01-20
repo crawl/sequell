@@ -51,7 +51,7 @@ def display_function(name)
   if function.nil?
     builtin = Tpl::FunctionDef.find_definition(name, nil)
     if builtin
-      puts "Builtin: #{name} => #{builtin_function_location(builtin)}"
+      puts "Built-in: #{name} => #{builtin_function_location(builtin)}"
     else
       puts "No user function '#{name}' (#{builtin})"
     end
