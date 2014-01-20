@@ -69,7 +69,7 @@ module Tpl
       fdef && !fdef.is_a?(Function)
     end
 
-    attr_reader :name, :executor
+    attr_reader :name, :executor, :evaluator
     def initialize(name, evaluator, arity)
       @name = name
       @evaluator = evaluator

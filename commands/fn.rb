@@ -3,6 +3,7 @@
 require 'helper'
 require 'sqlhelper'
 require 'tpl/function_defs'
+require 'tpl/function_def'
 
 $ctx = CommandContext.new
 $ctx.extract_options!('rm', 'ls')
@@ -48,10 +49,20 @@ end
 def display_function(name)
   function = Cmd::UserFunction.function(name)
   if function.nil?
-    puts "No user function '#{name}'"
+    builtin = Tpl::FunctionDef.find_definition(name, nil)
+    if builtin
+      puts "Builtin: #{name} => #{builtin_function_location(builtin)}"
+    else
+      puts "No user function '#{name}' (#{builtin})"
+    end
   else
     puts("#{function}")
   end
+end
+
+def builtin_function_location(builtin)
+  file, line = builtin.evaluator.source_location
+  Henzell::Config.source_repository_url(file, line)
 end
 
 def define_function(name, definition)

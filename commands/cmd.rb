@@ -3,8 +3,6 @@
 require 'helper'
 require 'cmd/user_defined_command'
 
-COMMAND_BASE_URL = 'https://github.com/greensnark/dcss_sequell/blob/master'
-
 $ctx = CommandContext.new
 $ctx.extract_options!('rm', 'ls')
 
@@ -61,7 +59,7 @@ def display_user_command(name)
 end
 
 def command_source_url(definition)
-  "#{COMMAND_BASE_URL}/commands/#{definition}"
+  Henzell::Config.source_repository_url("commands/#{definition}")
 end
 
 def define_user_command(name, definition)

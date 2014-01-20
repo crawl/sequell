@@ -1,12 +1,28 @@
 require 'yaml'
+require 'pathname'
 
 module Henzell
   class Config
     DEFAULTS_FILEPATH = 'rc/sequell.defaults'
     CONFIG_FILEPATH = 'rc/sequell.rc'
+    SOURCE_BROWSE_URL = 'https://github.com/greensnark/dcss_sequell/blob/master'
 
     def self.root
       ENV['HENZELL_ROOT'] || '.'
+    end
+
+    def self.root_relative_path(file)
+      path = Pathname.new(file)
+      unless path.relative?
+        path = path.relative_path_from(Pathname.new(self.root))
+      end
+      path.to_s
+    end
+
+    def self.source_repository_url(file, line=nil)
+      file_url = "#{SOURCE_BROWSE_URL}/#{root_relative_path(file)}"
+      return "#{file_url}\#L#{line}" if line
+      file_url
     end
 
     def self.file_path(name)
