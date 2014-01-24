@@ -103,7 +103,7 @@ module Query
       end
 
       if field === 'verb' && equality?
-        node.value = Crawl::MilestoneType.canonicalize(value)
+        node.value = Crawl::MilestoneType.canonicalize(value) || value.to_s.strip.downcase
       end
 
       if field.multivalue? && equality? && !value.empty?

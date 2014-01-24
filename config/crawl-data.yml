@@ -933,6 +933,7 @@ milestone-types:
   - zig.enter
   - zig.exit
   - death
+  - begin
 
 milestone-aliases:
   god.abandon: god.renounce
@@ -947,6 +948,7 @@ milestone-aliases:
   unique.ens: uniq.ens
   unique.enslave: uniq.ens
   uniq.enslave: uniq.ens
+  began: begin
 
 tournament-prefixes:
   - t
