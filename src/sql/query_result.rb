@@ -54,9 +54,9 @@ module Sql
 
     def qualified_index
       if index < count
-        "#{index}/#{count}"
+        "#{pretty_num(index)}/#{pretty_num(count)}"
       else
-        index.to_s
+        pretty_num(index)
       end
     end
 

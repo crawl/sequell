@@ -272,7 +272,7 @@ def duration_str(dur)
   days = dur / 3600 / 24
   years = days / 365
   days = days % 365
-  prefix = [years > 0 && "#{years}y", days > 0 && "#{days}d"].find_all { |x| x }.join("+")
+  prefix = [years > 0 && "#{pretty_num(years)}y", days > 0 && "#{days}d"].find_all { |x| x }.join("+")
   prefix = "#{prefix}+" unless prefix.empty?
   sprintf("%s%d:%02d:%02d", prefix, (dur / 3600) % 24,
           (dur % 3600) / 60, dur % 60)
@@ -456,8 +456,22 @@ def pretty_date(date)
   date
 end
 
+def pretty_num(num)
+  require 'text/human_readable'
+  Text::HumanReadable.format_number(num)
+end
+
 class Object
   def as_array
     self.is_a?(Array) ? self : [self]
+  end
+end
+
+class << STDOUT
+  def write(text)
+    if text =~ /games for/
+      STDERR.puts caller
+    end
+    super(text)
   end
 end

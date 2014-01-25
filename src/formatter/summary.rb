@@ -38,9 +38,9 @@ module Formatter
 
     def summary_count
       if self.counts.size == 1
-        self.count == 1 ? "One" : "#{self.count}"
+        self.count == 1 ? "One" : "#{pretty_num(self.count)}"
       else
-        self.counts.reverse.join("/")
+        self.counts.reverse.map { |x| pretty_num(x) }.join("/")
       end
     end
 

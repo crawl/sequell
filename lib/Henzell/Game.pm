@@ -88,6 +88,13 @@ sub skill_farming
   }
 }
 
+sub pretty_num {
+  my $num = shift;
+  $num = reverse $num;
+  $num =~ s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
+  scalar(reverse $num)
+}
+
 sub format_date {
   my $date = shift;
   return $date || '' unless value_is_date($date) &&
@@ -191,7 +198,7 @@ sub game_string {
   }
 
   my $title = game_skill_title($game_ref);
-  sprintf '%s%s the %s (L%d %s)%s, %s%s%s, with %d point%s after %d turn%s and %s.',
+  sprintf '%s%s the %s (L%d %s)%s, %s%s%s, with %s point%s after %s turn%s and %s.',
       $extra,
       $game_ref->{name},
 	  $title,
@@ -201,9 +208,9 @@ sub game_string {
       $deathmsg,
       $loc_string,
       $death_date,
-      $game_ref->{sc},
+      pretty_num($game_ref->{sc}),
       $game_ref->{sc} == 1 ? '' : 's',
-      $game_ref->{turn},
+      pretty_num($game_ref->{turn}),
       $game_ref->{turn} == 1 ? '' : 's',
       serialize_time($game_ref->{dur})
 }

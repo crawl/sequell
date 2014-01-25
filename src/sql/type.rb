@@ -1,6 +1,7 @@
 require 'sql/date'
 require 'sql/duration'
 require 'sql/version_number'
+require 'text/human_readable'
 
 module Sql
   class TypeError < StandardError
@@ -158,16 +159,20 @@ module Sql
       self.type == '!'
     end
 
+    def human_readable_number(num)
+      Text::HumanReadable.format_number(num)
+    end
+
     def display_value(value, display_format=nil)
       return vault_name(value) if self.vault?
       return Sql::Duration.display_value(value) if self.duration?
       return Sql::Date.display_date(value, display_format) if self.date?
       numeric_value = value.is_a?(BigDecimal) || value.is_a?(Float)
       if self.integer?
-        return value.to_i
+        return human_readable_number(value.to_i)
       end
       if self.real?
-        return strip_padding_zeros(sprintf("%.2f", value.to_f))
+        return human_readable_number(strip_padding_zeros(sprintf("%.2f", value.to_f)))
       end
       value
     end

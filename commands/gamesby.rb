@@ -35,7 +35,7 @@ sql_each_row_for_query(full_query, *q.values) do |r|
 end
 
 def winstr(wcount, ngames)
-  s = "#{wcount}"
+  s = "#{pretty_num(wcount)}"
   if wcount > 0
     s << " " << sprintf("(%.1f%%)", wcount * 100.0 / ngames.to_f)
   end
@@ -43,7 +43,7 @@ def winstr(wcount, ngames)
 end
 
 def sqlnumber(num)
-  sprintf("%.0f", num)
+  pretty_num(sprintf("%.0f", num))
 end
 
 def midnight(date)
@@ -74,7 +74,7 @@ else
 
   stats = [
     "won #{winstr(win_count, ngames)}",
-    "high score #{r[4]}",
+    "high score #{pretty_num(r[4])}",
     "total score #{sqlnumber(r[5])}",
     "total turns #{sqlnumber(r[6])}"
   ]
@@ -85,6 +85,6 @@ else
 
   stats << "total time #{duration_str(duration.to_i)}"
 
-  puts("#{q.argstr} has played #{ngames} game#{plural}, between " +
+  puts("#{q.argstr} has played #{pretty_num(ngames)} game#{plural}, between " +
     "#{datestr(tstart)} and #{datestr(tend)}, " + stats.join(", ") + ".")
 end

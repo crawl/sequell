@@ -33,7 +33,7 @@ end
 def times(n)
   n == 1 ? "once"  :
   n == 2 ? "twice" :
-           "#{n} times"
+           "#{pretty_num(n)} times"
 end
 
 nick, num, trail_select = parse_args
@@ -105,11 +105,11 @@ begin
   else
     if nwins == 0 then
       if (num < allwins || allwins == 0) && first == 0 then
-        puts "#{desc} has not won in #{count} games."
+        puts "#{desc} has not won in #{pretty_num(count)} games."
       else
-        puts "#{desc} has not won in #{count - nfinalwin} games" +
+        puts "#{desc} has not won in #{pretty_num(count - nfinalwin)} games" +
           " since their #{finalwin}" +
-          " (win ##{allwins})."
+          " (win ##{pretty_num(allwins)})."
       end
     else
       if num == 0 then
@@ -118,15 +118,15 @@ begin
           b.last <=> a.last }.
           map { |a,b| "#{b}x#{a}" }.
           join(' ')
-        puts "#{desc} has won #{times(nwins)} in #{count} games " +
+        puts "#{desc} has won #{times(nwins)} in #{pretty_num(count)} games " +
           "(#{sprintf('%0.2f%%', nwins * 100.0 / count)}): #{wins}"
       else
         wins = wins.join(', ')
         ngames = count - first
         perc = sprintf('%0.2f%%', nwins * 100.0 / ngames)
-        puts "#{desc} has won #{times(nwins)} in #{count - first} " +
+        puts "#{desc} has won #{times(nwins)} in #{pretty_num(count - first)} " +
           "games (#{perc}) " +
-          "since their #{lastwin} (win ##{num}): " +
+          "since their #{lastwin} (win ##{pretty_num(num)}): " +
           wins
       end
     end
