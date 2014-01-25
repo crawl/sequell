@@ -38,6 +38,7 @@ module Tpl
       str('"') >>
       (str("\\") >> str("\\").as(:char) |
         str("\\") >> str("\"").as(:char) |
+        (str("\\") >> match['a-zA-Z']).as(:escape) |
         template.as(:embedded_template) |
         match['^"'].as(:char)).repeat >>
       str('"')

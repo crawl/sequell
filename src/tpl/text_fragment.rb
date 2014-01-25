@@ -6,6 +6,10 @@ module Tpl
 
     attr_accessor :text
 
+    def self.translate_escape(text)
+      text.gsub(/\\n/, "\n")
+    end
+
     def initialize(text)
       @text = text
     end

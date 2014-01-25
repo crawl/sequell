@@ -20,6 +20,7 @@ module Tpl
       Fragment.new(*fragments).collapse
     }
     rule(char: simple(:c)) { c.to_s }
+    rule(escape: simple(:c)) { TextFragment.translate_escape(c.to_s) }
     rule(leftquot: simple(:c)) { c.to_s }
     rule(rightquot: simple(:c)) { c.to_s }
 
