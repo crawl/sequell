@@ -19,7 +19,7 @@ my $CONFIG_FILE = File::Spec->catfile(dirname(__FILE__), '..',
 
 our $CFG = LoadFile($CONFIG_FILE);
 
-our @EXPORT = qw/$source_dir error help strip_cmdline/;
+our @EXPORT = qw/$source_dir $git_browser_url error help strip_cmdline/;
 our @EXPORT_OK = qw/$logfile demunge_logline demunge_xlogline munge_game
                     games_for
                     @skills normalize_skill short_skill code_skill
@@ -42,6 +42,9 @@ my $NICKMAP_FILE = 'dat/nicks.map';
 my %NICK_ALIASES;
 my $nick_aliases_loaded;
 our $source_dir = 'current';
+## Set to the URL to the git browser, e.g.
+## our $git_browser_url = 'http://s-z.org/neil/git/';
+our $git_browser_url;
 
 sub eval_or_exit(&) {
   my $proc = shift();

@@ -92,7 +92,7 @@ sub scan_line { # {{{
     return $paren_level;
 } # }}}
 sub check_function { # {{{
-    my ($function, $filename, $partial) = @_;
+    my ($function, $filename, $partial, $ln_only) = @_;
 
     my $start_line;
     my $looking_for = 'function';
@@ -121,15 +121,16 @@ sub check_function { # {{{
                 $looking_for = 'closebrace';
             }
         }
-        elsif ($looking_for eq 'closebrace') {
-            return get_file($filename, $start_line, $.) if /^}/;
+        elsif ($looking_for eq 'closebrace' && $_ =~ /^}/) {
+	    return ($ln_only ? $start_line :
+		    get_file($filename, $start_line, $.));
         }
     }
 
     return;
 } # }}}
 sub check_define { # {{{
-    my ($define, $filename, $partial) = @_;
+    my ($define, $filename, $partial, $ln_only) = @_;
 
     my $start_line;
     my $looking_for = 'define';
@@ -142,15 +143,16 @@ sub check_define { # {{{
             $looking_for = 'enddefine';
             redo;
         }
-        elsif ($looking_for eq 'enddefine') {
-            return get_file($filename, $start_line, $.) unless /\\\n$/;
+        elsif ($looking_for eq 'enddefine' && $_ =~ /\\\n$/) {
+	    return ($ln_only ?  $start_line:
+		    get_file($filename, $start_line, $.));
         }
     }
 
     return;
 } # }}}
 sub check_vault { # {{{
-    my ($vault, $filename, $partial) = @_;
+    my ($vault, $filename, $partial, $ln_only) = @_;
 
     my $start_line;
     my $looking_for = 'name';
@@ -163,15 +165,16 @@ sub check_vault { # {{{
             $looking_for = 'endmap';
             redo;
         }
-        elsif ($looking_for eq 'endmap') {
-            return get_file($filename, $start_line, $.) if /^ENDMAP/;
+        elsif ($looking_for eq 'endmap' && $_ =~ /^ENDMAP/) {
+	    return ($ln_only ? $start_line : 
+		    get_file($filename, $start_line, $.));
         }
     }
 
     return;
 } # }}}
 sub get_function { # {{{
-    my ($function, $search_for) = @_;
+    my ($function, $search_for, $ln_only) = @_;
     my $partial = !($function =~ s/^=//);
 
     if ($search_for eq 'source' || $search_for eq 'function') {
@@ -179,7 +182,7 @@ sub get_function { # {{{
                                         file_filter    => sub { /\.(?:cc|h)$/ },
                                       }, "$source_dir/source");
         while (defined (my $file = $files->())) {
-            my $lines = check_function $function, $file, $partial;
+            my $lines = check_function $function, $file, $partial, $ln_only;
             return $lines, $file if defined $lines;
         }
     }
@@ -188,7 +191,7 @@ sub get_function { # {{{
                                         file_filter    => sub { /\.(?:cc|h)$/ },
                                       }, "$source_dir/source");
         while (defined (my $file = $files->())) {
-            my $lines = check_define $function, $file, $partial;
+            my $lines = check_define $function, $file, $partial, $ln_only;
             return $lines, $file if defined $lines;
         }
     }
@@ -197,7 +200,7 @@ sub get_function { # {{{
                                         file_filter    => sub { /\.des$/ },
                                       }, "$source_dir/source/dat");
         while (defined (my $file = $files->())) {
-            my $lines = check_vault $function, $file, $partial;
+            my $lines = check_vault $function, $file, $partial, $ln_only;
             return $lines, $file if defined $lines;
         }
     }
@@ -221,10 +224,16 @@ sub get_file { # {{{
     return $lines;
 } # }}}
 sub output { # {{{
-    my ($lines, $filename) = @_;
-
-    chomp $lines;
-    if ($lines =~ /\n/) {
+    my ($lines, $filename, $use_git) = @_;
+    $filename =~ s/$source_dir\///;
+    chomp $lines if defined $lines;
+    if ($use_git)
+    {
+	print $git_browser_url . '?p=crawl.git;a=blob;f=crawl-ref/' . 
+	    $filename . ';hb=HEAD' . (defined $lines ? '#l' . $lines : "") . 
+	    "\n";
+    }
+    elsif ($lines =~ /\n/) {
         my $lang = 'text';
         $lang = 'cpp'    if $filename =~ /\.(?:cc|h)$/;
         $lang = 'python' if $filename =~ /\.py$/;
@@ -240,6 +249,9 @@ sub output { # {{{
     }
 } # }}}
 
+my ($which) = split ' ', $ARGV[2];
+$which =~ s/^\W//;
+my $ln_only = $which =~ s/^g//;
 my $cmd = strip_cmdline $ARGV[2], case_sensitive => 1;
 my ($filename, $function, $start_line, $end_line, $rest) = parse_cmdline $cmd;
 error "Couldn't understand $rest" if $rest;
@@ -250,12 +262,14 @@ usage unless defined $filename || defined $function;
 
 my $lines;
 if (defined $function) {
-    my ($which) = split ' ', $ARGV[2];
-    $which =~ s/^!//;
-    ($lines, $filename) = get_function $function, $which;
+    ($lines, $filename) = get_function $function, $which, $ln_only;
+}
+elsif ($ln_only) {
+    $lines = $start_line;
+    $filename = "source/$filename";
 }
 else {
     $lines = get_file "$source_dir/source/$filename", $start_line, $end_line;
 }
 
-output $lines, $filename;
+output $lines, $filename, $ln_only;
