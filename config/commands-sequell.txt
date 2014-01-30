@@ -14,7 +14,11 @@
 !ftw ftw.pl
 !function source.pl
 !gamesby gamesby.rb
+!gcdefine source.pl
+!gfunction source.pl
 !gkills gkills.rb
+!gsource source.pl
+!gvault source.pl
 !hs hsn.rb
 !killsby killsby.rb
 !kw keyworddef.rb
