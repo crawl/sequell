@@ -42,9 +42,9 @@ my $NICKMAP_FILE = 'dat/nicks.map';
 my %NICK_ALIASES;
 my $nick_aliases_loaded;
 our $source_dir = 'current';
+
 ## Set to the URL to the git browser, e.g.
-## our $git_browser_url = 'http://s-z.org/neil/git/';
-our $git_browser_url;
+our $git_browser_url = 'http://s-z.org/neil/git/';
 
 sub eval_or_exit(&) {
   my $proc = shift();
