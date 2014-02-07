@@ -179,11 +179,14 @@ sources:
   - name: ckr
     base: http://kr.dobrazupa.org
     logfiles:
-      - www/logfile*
+      - www/trunk/logfile*
+      - www/0.13/logfile*
     milestones:
-      - www/milestones*
+      - www/trunk/milestones*
+      - www/0.13/milestones*
     morgues:
-      - http://kr.dobrazupa.org/morgue/0.13
+      - ['ckr.*-(?:svn|git)', 'http://kr.dobrazupa.org/morgue/trunk']
+      - ['ckr.*-(\d+[.]\d+)$', 'http://kr.dobrazupa.org/morgue/$1']
     ttyrecs:
       - http://kr.dobrazupa.org/ttyrecs
 
