@@ -331,10 +331,11 @@ god:
   sif: Sif Muna
   tso: The Shining One
   nem: Nemelex Xobeh
-  dit: Dithmengos
+  dit: Dithmenos
 
 god-aliases:
   feawn: Fedhas
+  dithmengos: Dithmenos
 
 # * - dead species
 species:
