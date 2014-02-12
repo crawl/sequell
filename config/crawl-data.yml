@@ -200,6 +200,9 @@ uniques:
   - Lamia
   - Pan
   - Sojobo
+  - Asterion
+  - Natasha
+  - Vashnia
 
 # Only used by !apt at the moment.
 skills:
@@ -331,10 +334,11 @@ god:
   sif: Sif Muna
   tso: The Shining One
   nem: Nemelex Xobeh
-  dit: Dithmengos
+  dit: Dithmenos
 
 god-aliases:
   feawn: Fedhas
+  dithmengos: Dithmenos
 
 # * - dead species
 species:
