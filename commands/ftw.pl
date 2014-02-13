@@ -11,11 +11,11 @@ Helper::help("Abbreviates race/role abbreviations. " .
 
 sub race_lookup {
 	my $key = lc(shift);
-        my $abbr = short_race($key) || '';
-        # Discard draconian qualifiers:
-        $abbr =~ s/\[.*?\]// if $abbr;
-        $abbr
-}
+    my $abbr = short_race($key) || '';
+    # Discard draconian qualifiers:
+    $abbr =~ s/\[.*?\]// if $abbr;
+    $abbr
+  }
 sub role_lookup {
 	my $key = lc(shift);
         return short_role($key) || '';

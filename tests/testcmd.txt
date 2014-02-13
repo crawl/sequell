@@ -30,6 +30,7 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!ftw warper :: ??Wr
 !apt Gr ::~ Gr: Fighting: \d
 !apt Gargoyle ::~ Gr: Fighting: \d
 !apt Grotesk ::~ Gr: Fighting: \d

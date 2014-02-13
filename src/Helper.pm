@@ -253,8 +253,8 @@ sub normalize_race { # {{{
 } # }}}
 sub short_race { # {{{
     my $race = shift;
-    $race = normalize_race($race) || $race;
-    return $short_races{$race || ''} || $race;
+    $race = normalize_race($race);
+    return $short_races{$race || ''};
 } # }}}
 sub code_race { # {{{
     my $race = shift;
