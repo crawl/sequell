@@ -4,6 +4,10 @@ sub bus {
   shift()->{bus}
 }
 
+sub irc {
+  shift()->{irc}
+}
+
 sub subscribe_event {
   my ($self, $alias, $event, $action) = @_;
   my $bus = $self->bus();

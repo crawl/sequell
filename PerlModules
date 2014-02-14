@@ -9,3 +9,4 @@ App::Nopaste
 re::engine::RE2
 Text::LevenshteinXS
 JSON
+Sub::Recursive

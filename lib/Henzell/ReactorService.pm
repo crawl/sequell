@@ -6,11 +6,12 @@ use warnings;
 use Data::Dumper;
 use File::Basename;
 use File::Spec;
+use Sub::Recursive;
 
 use lib '..';
 use lib File::Spec->catfile(dirname(__FILE__), '../src');
 
-use parent 'Henzell::ServiceBase';
+use parent qw/Henzell::ServiceBase Henzell::Forkable/;
 use Henzell::LearnDBBehaviour;
 use Henzell::LearnDBLookup;
 
@@ -141,8 +142,8 @@ sub _db_search_result {
 }
 
 sub db_search {
-  my ($self, $m) = @_;
-  return unless $m->{said};
+  my ($self, $m, $chain) = @_;
+  return $chain->(undef) unless $m->{said};
   my $body = $$m{body};
   if ($body =~ qr{^\s*([?]/[<>]?)\s*(.*)\s*$}) {
     my ($search_mode, $search_term) = ($1, $2);
@@ -153,54 +154,71 @@ sub db_search {
         %$m,
         body => $self->_db_search_result($search_term, $terms_only,
                                          $entries_only));
-      1
+      return $chain->(1)
     }
   }
+  $chain->(undef)
 }
 
 sub direct_query {
-  my ($self, $m) = @_;
-  return unless $m->{said};
+  my ($self, $m, $chain) = @_;
+  return $chain->(undef) unless $m->{said};
   my $body = $$m{body};
   if ($body =~ /^\s*[?]{2}\s*(.+)\s*$/) {
-    $self->_db_query($m, $1, undef, 'carp-if-missing');
+    return $chain->($self->_db_query($m, $1, undef, 'carp-if-missing'))
   }
+  $chain->(undef)
 }
 
 sub maybe_query {
-  my ($self, $m) = @_;
-  return unless $m->{said};
+  my ($self, $m, $chain) = @_;
+  return $chain->(undef) unless $m->{said};
   my $body = $$m{body};
   if ($body =~ /^\s*(.+)\s*[?]{2,}\s*$/) {
-    $self->_db_query($m, $1, 'bare');
+    return $chain->($self->_db_query($m, $1, 'bare'))
   }
+  $chain->(undef)
 }
 
 sub indirect_query_event {
   my ($self, $m) = @_;
   my $query = $$m{body} . "??";
-  if ($self->maybe_query({ %$m,
-                           body => $query,
-                           verbatim => $query,
-                           said => 1 })) {
-    return 1;
-  }
-  if ($$m{stub}) {
-    $self->{irc}->post_message(%$m, body => $$m{stub});
-    return 1;
-  }
-  undef
+  $self->maybe_query({ %$m,
+                       body => $query,
+                       verbatim => $query,
+                       said => 1 },
+                     sub {
+                       my $result = shift;
+                       return 1 if $result;
+                       if ($$m{stub}) {
+                         $self->{irc}->post_message(%$m, body => $$m{stub});
+                         return 1;
+                       }
+                     });
 }
 
 sub behaviour {
-  my ($self, $m) = @_;
-  return undef if $$m{nobeh};
-  $self->{beh}->perform_behaviour($m)
+  my ($self, $m, $chain) = @_;
+  return $chain->(undef) if $$m{nobeh};
+  $chain->($self->{beh}->perform_behaviour($m))
 }
 
 sub command {
-  my ($self, $m) = @_;
-  $self->_respond($m, $self->_executor()->execute_command($m))
+  my ($self, $m, $chain) = @_;
+  my $exec = $self->_executor();
+  my $command = $exec && $exec->recognized_command_name($m);
+  if ($command) {
+    $self->async($command,
+                 sub {
+                   $exec->command_raw_output($m)
+                 },
+                 sub {
+                   my $output = $exec->command_postprocess_output($m, shift());
+                   $chain->($self->_respond($m, $output))
+                 });
+    return;
+  }
+  $chain->(undef)
 }
 
 sub _respond {
@@ -261,9 +279,19 @@ sub react {
     $$m{verbatim} =~ s/^\\\\//;
     s/^\s+//, s/\s+$// for ($$m{body}, $$m{verbatim});
   }
-  for my $reactor (@{$self->{reactors}}) {
-    last if $reactor->($m);
-  }
+
+  my @reactors = @{$self->{reactors}};
+  my $i = 0;
+  my $chain_next = recursive {
+    my $result = shift;
+    unless ($result) {
+      my $reactor = $reactors[$i++];
+      if ($reactor) {
+        $reactor->($m, $REC);
+      }
+    }
+  };
+  $chain_next->(undef)
 }
 
 1

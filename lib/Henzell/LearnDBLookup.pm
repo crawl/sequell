@@ -12,6 +12,9 @@ use File::Spec;
 
 use lib '..';
 use lib File::Spec->catfile(dirname(__FILE__), '../src');
+
+use parent 'Henzell::Forkable';
+
 use Henzell::TemplateExpander;
 use LearnDB;
 use LearnDB::Entry;

@@ -12,7 +12,7 @@ use File::Spec;
 use lib '..';
 use lib File::Spec->catfile(dirname(__FILE__), '../src');
 
-use parent 'Henzell::ServiceBase';
+use parent qw/Henzell::ServiceBase Henzell::Forkable/;
 
 use Henzell::Config qw/%CONFIG %CMD %USER_CMD %PUBLIC_CMD/;
 use Henzell::Game;
@@ -140,12 +140,18 @@ sub _process_command {
   $self->{irc}->post_message(%$m, body => $res);
 }
 
-sub recognized_command {
+sub recognized_command_name {
   my ($self, $m) = @_;
   $m = $self->_message_metadata($m);
   my $command = $$m{command};
   $command &&
-    Henzell::Config::command_exists($command)
+    Henzell::Config::command_exists($command) &&
+        $command
+}
+
+sub recognized_command {
+  my ($self, $m) = @_;
+  $self->recognized_command_name($m)
 }
 
 sub env_map {
@@ -154,7 +160,12 @@ sub env_map {
   map(("HENZELL_ENV_\U$_" => $env{$_}), keys(%env))
 }
 
-sub execute_command {
+sub _command_processor {
+  my ($self, $command) = @_;
+  $CMD{$command} || $CMD{custom}
+}
+
+sub command_raw_output {
   my ($self, $m) = @_;
   return if $$m{sibling};
   $m = $self->_message_metadata($m);
@@ -168,7 +179,6 @@ sub execute_command {
   my $verbatim = $$m{verbatim};
   my $channel = $$m{channel};
   my $private = $$m{private};
-  my $reprocessed_command = $$m{reprocessed_command};
   my $proxied = $$m{proxied};
 
   if (!$proxied && $command eq '!load' && exists $admins{$nick})
@@ -179,7 +189,7 @@ sub execute_command {
   elsif ($self->recognized_command($m))
   {
     # Log all commands to Henzell.
-    print "CMD($private): $nick: $verbatim\n";
+    print STDERR "CMD($private): $nick: $verbatim\n";
     local $ENV{PRIVMSG} = $private ? 'y' : '';
     local $ENV{HENZELL_PROXIED} = $proxied ? 'y' : '';
     local $ENV{IRC_NICK_AUTHENTICATED} =
@@ -188,35 +198,52 @@ sub execute_command {
     my %env_map = $self->env_map($m);
     local @ENV{keys %env_map} = values %env_map;
 
-    my $processor = $CMD{$command} || $CMD{custom};
+    my $processor = $self->_command_processor($command);
     my $output =
       $processor->(_pack_args($target, $nick, $verbatim, '', ''));
     $output = '' unless defined $output;
-
-    if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
-      if ($reprocessed_command || $proxied ||
-          $auth->nick_identified($nick, 'attempted_auth')) {
-        return "Cannot authenticate $nick with services, ignoring $verbatim";
-      } else {
-        $auth->authenticate_user($1, $m);
-      }
-      return undef;
-    }
-
-    if ($output =~ /^\[\[\[LEARNDB: (.*?):::(.*?):::(.*)\]\]\]$/) {
-      my ($prefix, $query, $stub) = ($1, $2, $3);
-      $self->publish_event('learndb_service', 'indirect_query',
-                           { %$m,
-                             body => $query,
-                             verbatim => $query,
-                             prefix => $prefix,
-                             stub => $stub });
-      $output = '';
-    }
-
     return $output;
   }
   undef
+}
+
+sub execute_command {
+  my ($self, $m) = @_;
+  $self->command_postprocess_output( $m, $self->command_raw_output($m) )
+}
+
+sub command_postprocess_output {
+  my ($self, $m, $output) = @_;
+  return $output unless defined $output;
+
+  my $reprocessed_command = $$m{reprocessed_command};
+  my $auth = $self->_auth();
+  my $proxied = $$m{proxied};
+  my $verbatim = $$m{verbatim};
+  my $nick = $$m{nick};
+
+  if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
+    if ($reprocessed_command || $proxied ||
+          $auth->nick_identified($nick, 'attempted_auth')) {
+      return "Cannot authenticate $nick with services, ignoring $verbatim";
+    } else {
+      $auth->authenticate_user($1, $m);
+    }
+    return undef;
+  }
+
+  if ($output =~ /^\[\[\[LEARNDB: (.*?):::(.*?):::(.*)\]\]\]$/) {
+    my ($prefix, $query, $stub) = ($1, $2, $3);
+    $self->publish_event('learndb_service', 'indirect_query',
+                         { %$m,
+                           body => $query,
+                           verbatim => $query,
+                           prefix => $prefix,
+                           stub => $stub });
+    $output = '';
+  }
+
+  return $output;
 }
 
 sub _auth {
@@ -289,7 +316,7 @@ sub _run_command {
 
   my $output = do { local $/; <$out> };
   if ($output =~ /\n!redirect(\S+)/) {
-    return $CMD{$1}->($args, @args);
+    return $self->_command_processor($1)->($args, @args);
   }
   return $output;
 }
