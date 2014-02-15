@@ -962,7 +962,7 @@ terms. Common status abbreviations will also be expanded.
 
 ### god:
 
-Queries of the form god=<god-abbr> are transformed to god=<god-full-name>,
+Queries of the form `god=<god-abbr>` are transformed to `god=<god-full-name>`,
 so for instance:
 
     god=nemelex => god='Nemelex Xobeh'
@@ -982,7 +982,7 @@ kills in HangedMan's vaults:
     !lg * map=~hangedman s=vault(map)
 
 
-### killer/ckiller/index:
+### killer/ckiller/ikiller:
 
 Queries of the form killer=X (Example: `killer=hobgoblin`) are
 translated as (killer='X' OR killer='a X' OR killer='an X'). This

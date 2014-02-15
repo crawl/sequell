@@ -1,6 +1,66 @@
-?< notice
-?> respond in PM
-?. pastebin
+- Window functions
+  part(max(sc) by char)
+
+  All second wins:
+    !lg * win partition(rownum(), name, o=end)=2 s=name x=min(char)
+
+
+- Subquery syntax:
+
+  $ <query-type> [: <alias> ] [ ... ]
+
+  In a subquery, and only in a subquery j= foo
+
+- Allow !lg to join on lm with lm:
+
+  Games with no Lair:
+
+    !lg * !exist($lm[br.enter=Lair])
+
+    No grouping or explicit join, therefore implicit join by game_key
+
+         Auto-join on game_key
+
+  Most common first win
+
+    !lg * s=char $lg[s=name win j=name,min(end)]
+
+  Most common second win
+
+    !lg * s=char $lg[win partition(row(), name, o=end)=2 j=game_key]
+
+
+  Explicit join clause:
+
+    $lg[outer:name=name outer:end=min(end)]
+
+  Game with most Boris kills
+    Simple JOIN subquery. The subquery is run and then joined on based
+    on the provided fields.
+
+         !lg * $lm[uniq=Boris s=game_id]
+
+         No explicit join or x=foo, but grouping: therefore, join on
+         grouped field.
+
+    finds the game with the most Boris kills.
+
+    If no x=field is provided, join happens on the grouped field
+    selected by s=field
+
+  Expression subquery:
+    A subquery may be used as an expression:
+         !lg * count($lm[])=0
+      (Shows games with no milestones; expensive)
+
+      No explicit join, x=foo or s=foo, so join by game_key.
+
+    - exists/not exists subquery:
+         !lg * win !exist($lm[Lair])
+      (finds Lairless wins)
+
+      Accept exist/exists as synonyms for exists queries.
+    
 
 - Make Henzell/Sequell more modular:
   - Config should be hot-reloadable.
@@ -8,69 +68,20 @@
   - Convert all Henzell do 'foo.pl' to reloadable modules.
   - Henzell should need restart only if the core changes.
 
-- Command modifiers for Sequell:
-  - PM modifier (already done, needs some form of testing):
-      !>won
-      ?>foo
-    Send command output in PM.
-      
-  - Pastebin modifier:
-      !.won
-    Should send output to pastebin and return the pastebin link, perhaps
-    including a brief summary of the first line of output.
-    
-  - Full-output modifier (only on PM):
-      !*won
-    Don't truncate at first line, send multiple lines of output, but only on
-    PM (ignored on channel).
-
-  - Cleanly factor out Henzell command handling -- make it use the same
-    mechanism as the tests.
-
-
-- New query builder:
-  - Construct query based on treetop parse tree
-
-  - x=foo should permit arbitrary expressions, appropriately bracketed.
-  
-  - Simple query: return game:
-      !lg * defe win
-  - Simple aggregate: return aggregate
-      !lg * defe win x=avg(turn)
-  - Grouping query: return grouped results
-      !lg * defe win s=name
-  - Ratio aggregate:
-      !lg * defe / win x=avg(turn)
-  - Grouped ratio
-      !lg * defe s=name / win
-  - Simple query + -log
-      !lg * defe win -log
-  - Simple query + -tv
-      !lg * defe !win max=sc -tv
-  - Simple query + -ttyrec
-      !lg * defe !win max=sc -ttyrec
-
-- Test setup for Henzell queries:
-  - MySQL dump from Sequell - old games (keep only 2009 and newer games)
-  - Load into test db
-  - Build list of queries
-  - Use a script that runs queries against the various commands being tested
-    and creates a test suite of commands and expected outputs.
-  - Run queries and check for expected results.
-
-- New computed fields:
-  - Nth win for player.
-  - Nth streak win for player.
-  - Streak breaker flag.
-
 - Join resolution:
   - Non-expression queries are always joins.
+  - Expression queries are joins only with explicit j=
   - If main query is !lg and join is !lm, default join condition is
-    start + name, and vice versa of !lm/!lg.
-  - If [[]] has s=foo, join condition is foo
-  - If [[]] has j=x,y,z join condition is all of those
-  - If [[]] has x=q:x y=q:y, join condition is on x, y
+    game_key, and vice versa of !lm/!lg.
+  - If $[] has s=foo, join condition is foo
+  - If $[] has j=x,y,z join condition is all of those
+  - If $[] has x=q:x y=q:y, join condition is on x, y
   - A join without a join condition is an error.
+
+- Query aliasing:
+  - The primary query always has the alias lg/lm based on which command.
+  - The subquery gets no explicit alias unless requested
+  
 
 - Subqueries:
   - Queries involved in expressions are always (possibly correlated) subqueries.
@@ -96,25 +107,6 @@
     Qualified fields will reference the qualified table.
 
   - Subquery may be:
-    - Simple JOIN subquery. The subquery is run and then joined on based
-      on the provided fields.
-         !lg * [[ !lm * uniq=Boris s=game_id ]]
-      finds the game with the most Boris kills.
-
-      If no x=field is provided, join happens on the grouped field
-      selected by s=field
-
-    - Expression subquery:
-      A subquery may be used as an expression:
-         !lg * $[[!lm * j=name,rstart]]=0
-      (Shows games with no milestones; expensive)
-
-      An expression subquery may use a single x=foo to select an
-      expression; if no x=foo is specified, x=count is assumed.
-
-    - exists/not exists subquery:
-         !lg * win !$exists[[!lm * Lair j=name,rstart]]
-      (finds Lairless wins)
 
 - New grammar -- error checking needed:
   Many errors cannot be caught by the parser. These include:
@@ -179,7 +171,7 @@ Parser special cases:
              HAVING count(*) > 3) lg2
      WHERE lg.pname = lg2.pname
 
-   !lg * [[ * win s=name ?: count > 3 ]]
+   !lg * [[ * win s=name ?: N > 3 ]]
      ^^ x=field is implied if no x=<foo> is specified and there's an s=field
 
 - Games that are first wins:
