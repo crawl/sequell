@@ -222,12 +222,13 @@ sub milestone_string
 
   my $time = format_date($$g{time});
   my $prefix = $show_time? "[" . $time . "] " : '';
-  sprintf("$prefix%s%s the %s (L%s %s) %s%s",
+  sprintf("$prefix%s%s the %s (L%s %s%s) %s%s",
           $extra,
           $g->{name},
           game_skill_title($g),
           $g->{xl},
           $g->{char},
+          $g->{god} ? " of $g->{god}" : '',
           $ms,
           $placestring)
 }
