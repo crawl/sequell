@@ -425,6 +425,11 @@ sub sanitize_gold {
   }
 }
 
+sub killer_is_unique {
+  my ($g, $name) = @_;
+  Henzell::Crawl::crawl_unique($name) || ($g->{killer_flags} || '') =~ /unique/i
+}
+
 =head2 fixup_logfields
 
 Cleans up xlog dictionary for milestones and logfile entries.
@@ -497,7 +502,7 @@ sub fixup_logfields {
         if ($kill =~ / the /) {
           my ($mons) = / the (.*)$/;
           # Also takes care of Blork variants.
-          if (Henzell::Crawl::crawl_unique($name)) {
+          if (killer_is_unique($g, $name)) {
             $_ = $name;
           } else {
             # Usually these will all be orcs.
