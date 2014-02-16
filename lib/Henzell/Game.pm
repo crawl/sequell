@@ -191,13 +191,13 @@ sub game_string {
   }
 
   my $title = game_skill_title($game_ref);
-  sprintf '%s%s the %s (L%d %s)%s, %s%s%s, with %d point%s after %d turn%s and %s.',
+  sprintf '%s%s the %s (L%d %s%s), %s%s%s, with %d point%s after %d turn%s and %s.',
       $extra,
       $game_ref->{name},
 	  $title,
       $game_ref->{xl},
       $game_ref->{char},
-      $game_ref->{god} ? ", worshipper of $game_ref->{god}" : '',
+      $game_ref->{god} ? " of $game_ref->{god}" : '',
       $deathmsg,
       $loc_string,
       $death_date,
