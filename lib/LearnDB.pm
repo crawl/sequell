@@ -225,7 +225,7 @@ sub query_entry_autocorrect {
         tr/ /_/;
         $_
       } @candidates);
-    $err =~ s/$/ $suggestion./;
+    $err =~ s/$/ $suggestion./ if $err;
     return LearnDB::MaybeEntry->with_err($err, 'noent-suggest');
   }
   $entry

@@ -41,7 +41,9 @@ sub entry {
 sub description {
   my $self = shift;
   return $self->{err} if $self->{err};
-  $self->{entry}->description()
+  my $entry = $self->{entry};
+  return unless $entry;
+  $entry->description()
 }
 
 1
