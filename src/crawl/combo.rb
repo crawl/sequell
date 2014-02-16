@@ -86,14 +86,12 @@ module Crawl
       @available_species = Set.new
 
       scope = 0
-      SourceReader.new(file, :collect => false, :start => %r/job_allowed/).lines { |line|
-
+      SourceReader.new(file, :collect => false, :start => %r/species_allowed/).lines { |line|
         scope += 1 if line =~ /\{/
         scope -= 1 if line =~ /\}/
         if line =~ /case JOB_(\w+)/ && scope == 2
           current_job = Job.by_name($1)
           @available_species = Set.new(Species.available_species)
-          good_combos += combos(current_job)
         end
 
         if line =~ /SP_(\w+)/ && scope == 3
@@ -103,17 +101,17 @@ module Crawl
         end
 
         if line =~ /cc_restricted/i
-          combos = combos(current_job, species_slab)
-          bad_combos += combos
-          good_combos -= combos
+          bad_combos += combos(current_job, species_slab)
         end
 
-        if !species_slab.empty? && line =~ /CC_UNRESTRICTED/i
-          good_combos = Set.new(combos(current_job, species_slab))
+        if !species_slab.empty? && line =~ /cc_unrestricted/i
+          good_combos += combos(current_job, species_slab)
         end
 
         if !species_slab.empty? && line =~ /cc_banned/i && scope == 3
-          good_combos -= combos(current_job, species_slab)
+          banned = combos(current_job, species_slab)
+          good_combos -= banned
+          bad_combos -= banned
         end
 
         species_slab = [] if line =~ /cc_(banned|\w*?restrict)/i
