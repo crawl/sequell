@@ -7,6 +7,7 @@ Tie::Cache
 File::Next
 App::Nopaste
 re::engine::RE2
-Text::LevenshteinXS
+Text::Levenshtein::Damerau
+Text::Levenshtein::Damerau::XS
 JSON
 Sub::Recursive

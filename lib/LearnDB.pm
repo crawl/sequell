@@ -11,6 +11,7 @@ use File::Basename;
 
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use Henzell::SQLLearnDB;
+use Henzell::ApproxTextMatch;
 use LearnDB::Entry;
 use LearnDB::MaybeEntry;
 
@@ -70,27 +71,10 @@ sub search {
 }
 
 sub similar_terms {
-  my ($term, $max_edit_distance) = @_;
-  $max_edit_distance ||= 1;
-  $term = lc(cleanse_term($term));
-
-  my $term_length = length($term);
-  return () unless $term_length >= 2;
-
-  my $best_distance = $max_edit_distance;
-  my @matches;
-  $DB->each_term(sub {
-    my $db_term = shift;
-    if (abs(length($db_term) - $term_length) <= $best_distance) {
-      my $distance = Text::LevenshteinXS::distance(lc $db_term, $term);
-      if ($distance <= $best_distance) {
-        @matches = () if $distance < $best_distance;
-        push @matches, $db_term;
-        $best_distance = $distance;
-      }
-    }
-  });
-  @matches
+  my ($term) = @_;
+  map(cleanse_term($_),
+      Henzell::ApproxTextMatch->new(
+        cleanse_term($term), $DB->terms())->approx_matches())
 }
 
 sub mtime {

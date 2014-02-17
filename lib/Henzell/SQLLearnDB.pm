@@ -51,6 +51,18 @@ sub each_term {
   }
 }
 
+sub terms {
+  my $self = shift;
+  my @terms;
+  $self->init();
+  my $st = $self->prepare('SELECT term FROM terms ORDER by term');
+  $self->execute_st($st) or die "Couldn't get terms: $self->errstr()\n";
+  while (my $row = $st->fetchrow_arrayref()) {
+    push @terms, $self->utf8decode($row->[0]);
+  }
+  \@terms
+}
+
 sub definitions {
   my ($self, $term) = @_;
   $self->init();

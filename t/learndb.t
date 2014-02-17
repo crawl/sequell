@@ -63,7 +63,7 @@ irc('!learn add cow How now');
 irc('!learn add cszo cßo');
 is(irc('??cszo'), "cszo[1/1]: cßo");
 is(irc('??pow[-1]'), "cow[3/3]: How now");
-is(irc('??Coe'), "Coe ~ cow[1/3]: MOOOOOO");
+is(irc('??Coc'), "Coc ~ cow[1/3]: MOOOOOO");
 is(irc('??powz[3]'), "powz ~ pow ~ cow[3/3]: How now");
 
 irc('!learn set cow[-1] How now brown cow');

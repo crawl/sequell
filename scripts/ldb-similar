@@ -1,0 +1,22 @@
+#! /usr/bin/env perl
+
+use lib 'lib';
+use LearnDB;
+use JSON qw//;
+use utf8;
+use open qw/:std :utf8/;
+
+local $| = 1;
+while (<STDIN>) {
+  if ($_) {
+    my $task = eval { JSON::decode_json($_) };
+    unless ($@) {
+      if ($task && $task->{term}) {
+        my @results = LearnDB::similar_terms($task->{term});
+        print JSON::encode_json({ candidates => \@results }), "\n";
+        next;
+      }
+    }
+  }
+  print JSON::encode_json({ error => "Malformed input" }), "\n";
+}

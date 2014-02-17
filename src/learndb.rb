@@ -1,12 +1,20 @@
 module LearnDB
+  ROOT = ENV['HENZELL_ROOT'] || '.'
   DB_FILE = ENV['LEARNDB'] ||
-    File.join(ENV['HENZELL_ROOT'] || '.', 'dat/learn.db')
+    File.join(ROOT, 'dat/learn.db')
 
-  SCHEMA_FILE = File.join(ENV['HENZELL_ROOT'] || '.', 'config/learndb.sql')
+  SCHEMA_FILE = File.join(ROOT, 'config/learndb.sql')
 
   class DB
     def self.default
       @default ||= self.new(DB_FILE)
+    end
+
+    def self.fuzzy_lookup_slave
+      require 'slave_process'
+      @slave ||=
+        SlaveProcess.singleton('ldb-similar',
+                               "perl #{ROOT}/scripts/ldb-similar")
     end
 
     def initialize(file)
@@ -26,21 +34,10 @@ module LearnDB
       name.tr(' ', '_').tr('[]', '').gsub(/^_+|_+$/, '').gsub(/_{2,}/, '_')
     end
 
-    def candidate_terms(name, max_distance=1)
-      require 'levenshtein'
-
-      best_distance = max_distance
-      candidates = []
-      cname = canonical_term(name)
-
-      each_term { |term|
-        distance = Levenshtein.distance(cname, term.downcase)
-        if distance <= best_distance
-          candidates = [] if distance < best_distance
-          candidates << term
-        end
-      }
-      candidates
+    def candidate_terms(name)
+      p = self.class.fuzzy_lookup_slave
+      p.write_data(term: name)
+      p.read_data["candidates"]
     end
 
     def terms_matching(pattern)

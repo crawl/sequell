@@ -14,7 +14,12 @@ describe 'LearnDB functions' do
   before(:each) {
     FileUtils.mkdir_p('tmp')
     FileUtils.rm_f('tmp/rlearn.db')
+    ENV['LEARNDB'] = 'tmp/rlearn.db'
     allow(LearnDB::DB).to receive(:default).and_return(db)
+  }
+
+  after(:each) {
+    ENV.delete('LEARNDB')
   }
 
   context 'ldb-at, ldb-defs' do
@@ -146,7 +151,6 @@ describe 'LearnDB functions' do
 
     it 'will lookup similar terms iwth ldb-similar-terms' do
       expect(e('$(ldb-similar-terms links)')).to eq(['link'])
-      expect(e('$(ldb-similar-terms linkses 3)')).to eq(['link'])
     end
 
     it 'will search terms with ldb-search-terms' do

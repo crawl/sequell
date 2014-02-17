@@ -3,10 +3,9 @@ require 'learndb_query'
 require 'helper'
 
 module Tpl
-  FunctionDef.define('ldb-similar-terms', [1, 2]) {
+  FunctionDef.define('ldb-similar-terms', 1) {
     term = self[0].to_s
-    distance = arity == 2 ? self[-1] : 2
-    LearnDB::DB.default.candidate_terms(term, distance)
+    LearnDB::DB.default.candidate_terms(term)
   }
 
   FunctionDef.define('ldb-lookup', 1) {
