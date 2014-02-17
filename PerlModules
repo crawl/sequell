@@ -7,6 +7,7 @@ Tie::Cache
 File::Next
 App::Nopaste
 re::engine::RE2
+Lingua::Stem
 Text::Levenshtein::Damerau
 Text::Levenshtein::Damerau::XS
 JSON
