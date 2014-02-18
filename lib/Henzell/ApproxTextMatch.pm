@@ -26,8 +26,8 @@ sub normalize_term {
 }
 
 sub edit_distance {
-  my ($self, $term_length) = @_;
-  return 1 if $term_length < 8;
+  my ($self, $term) = @_;
+  return 1 if length($term) < 8 || $term !~ /^[a-z]+$/i;
   2
 }
 
@@ -141,7 +141,7 @@ sub best_levenshtein_matches {
   my ($self, $term, $match_list, $distance) = @_;
   my @matches;
   my $term_length = length($term);
-  my $best_distance = $distance || $self->edit_distance($term_length);
+  my $best_distance = $distance || $self->edit_distance($term);
   for my $match (@$match_list) {
     if (abs(length($match) - $term_length) <= $best_distance) {
       my $distance = Text::Levenshtein::Damerau::edistance($match, $term);
@@ -157,8 +157,7 @@ sub best_levenshtein_matches {
 
 sub simple_levenshtein {
   my ($self, $term) = @_;
-  return ($term) if $self->atom_is_known($term);
-  $self->best_levenshtein_matches($term, $self->db_terms())
+  ($term, $self->best_levenshtein_matches($term, $self->db_terms()))
 }
 
 sub fuzz_levenshtein {
