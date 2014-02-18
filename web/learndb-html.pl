@@ -124,7 +124,7 @@ sub htmlize($$$)
   my ($entry, $multiple, $prefix) = @_;
   for ($entry) {
     $_ = escape($_);
-    s{(https?://(?:[!#\$%'*+.,/0-9:;=?A-Z^_a-z|~\-]|&(?![a-z]+;))+)}{<a href="$1">$1</a>}g;
+    s{(https?://(?:[!#\$%'*+.,/0-9:;=?A-Z^_a-z|~\-]|&(?!(?:lt|gt);))+)}{<a href="$1">$1</a>}g;
     tr/\x00-\x1f//d;
     s|{([^\[\]\}]+(?:\s*\[\s*\d+\s*\])?)}| term_is_link(unescape($1)) ? "<a href=\"#". escape(term_link(unescape($1))) . "\">$1</a>" : "{$1}"|ge;
   }
