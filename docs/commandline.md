@@ -197,6 +197,11 @@ Functions may be used as `$(<fn> ...)`.
 
       Replaces only *n* matches; this is the regex equivalent of `replace-n`.
 
+   - `$(sprintf <format-string> <args...>)`
+
+     Returns a formatted string. The [format string](http://www.ruby-doc.org/core-2.1.0/Kernel.html#method-i-sprintf) accepts C printf style formatting
+     sequences.
+
    - `$(upper <str>), $(lower <str>)`
 
      upper/lower-case text

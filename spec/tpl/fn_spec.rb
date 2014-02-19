@@ -147,4 +147,11 @@ describe "Template functions" do
       expect(e '$(coloured lightcyan Yay)').to eq("\x0311Yay\x0f")
     end
   end
+
+  context 'sprintf' do
+    it 'will return a formatted string' do
+      expect(e '$(sprintf "%.2f %5s yak" 3.779 cow)').to eq("3.78   cow yak")
+      expect(e '$(sprintf "How now")').to eq("How now")
+    end
+  end
 end

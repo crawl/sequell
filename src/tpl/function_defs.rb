@@ -24,6 +24,10 @@ module Tpl
     eval_arg(-1, binding) if nargs > 0
   }
 
+  FunctionDef.define('sprintf', [1, -1]) {
+    sprintf(self[0], *((1...arity).map { |x| self[x] }))
+  }
+
   FunctionDef.define('bound?', 1) {
     !scope[self[0]].nil?
   }
