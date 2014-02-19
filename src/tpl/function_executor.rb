@@ -3,7 +3,7 @@ require 'tpl/function_def'
 module Tpl
   class FunctionEvalError < StandardError
     def initialize(where, cause)
-      super("ERR (#{cause}) in #{elided(where)}")
+      super("#{cause} in #{elided(where)}")
       @where = where
       @cause = cause
     end
