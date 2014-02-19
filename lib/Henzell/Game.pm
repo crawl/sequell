@@ -67,6 +67,7 @@ sub game_skill_title
   my $game_ref = shift;
   my $title = $game_ref->{title};
   $title = skill_farming($title) if $game_ref->{turn} > 200000;
+  $title = "the $title" unless $title =~ /^(the|le|la|l')\b/i;
   return $title;
 }
 
@@ -191,7 +192,7 @@ sub game_string {
   }
 
   my $title = game_skill_title($game_ref);
-  sprintf '%s%s the %s (L%d %s%s), %s%s%s, with %d point%s after %d turn%s and %s.',
+  sprintf '%s%s %s (L%d %s%s), %s%s%s, with %d point%s after %d turn%s and %s.',
       $extra,
       $game_ref->{name},
 	  $title,
@@ -222,7 +223,7 @@ sub milestone_string
 
   my $time = format_date($$g{time});
   my $prefix = $show_time? "[" . $time . "] " : '';
-  sprintf("$prefix%s%s the %s (L%s %s%s) %s%s",
+  sprintf("$prefix%s%s %s (L%s %s%s) %s%s",
           $extra,
           $g->{name},
           game_skill_title($g),
