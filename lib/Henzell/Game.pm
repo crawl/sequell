@@ -79,12 +79,17 @@ sub skill_title_is_adjective($) {
 sub skill_farming
 {
   my $title = shift;
-  if (skill_title_is_adjective($title)) {
+  if ($title =~ /petite/i) {
+    return "$title Fastidieuse";
+  }
+  elsif (skill_title_is_adjective($title)) {
     return "$title Farmer";
-  } elsif ($title =~ /(Crazy|\w+'s) /) {
+  }
+  elsif ($title =~ /(Crazy|\w+'s) /) {
     $title =~ s/\Q($1)/$1 Farming/;
     return $title;
-  } else {
+  }
+  else {
     return "Farming $title";
   }
 }
