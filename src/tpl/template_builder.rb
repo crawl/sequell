@@ -154,6 +154,12 @@ module Tpl
       LetForm.new(name.to_s, bindings, body_forms)
     }
 
+    rule(letx_form: simple(:name),
+         bindings: sequence(:bindings),
+         body_forms: sequence(:body_forms)) {
+      LetXForm.new(name.to_s, bindings, body_forms)
+    }
+
     rule(parameter: simple(:p)) { p }
     rule(function_def: simple(:fn)) { fn }
 

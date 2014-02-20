@@ -114,11 +114,17 @@ module Tpl
     }
 
     rule(:template_special_form) {
-      let_form
+      let_form | letx_form
     }
 
     rule(:let_form) {
       str("let").as(:let_form) >> space? >>
+      binding_form >>
+      funargs.as(:body_forms)
+    }
+
+    rule(:letx_form) {
+      str("let*").as(:letx_form) >> space? >>
       binding_form >>
       funargs.as(:body_forms)
     }

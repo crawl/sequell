@@ -34,4 +34,12 @@ module Tpl
       "$(let #{binding_str} #{@body_forms.join(' ')})"
     end
   end
+
+  class LetXForm < LetForm
+    def scope_with_bindings(original_scope)
+      @bindings.reduce(original_scope) { |scope, binding|
+        LazyEvalScope.new({ binding.name => binding.value }, scope)
+      }
+    end
+  end
 end

@@ -267,8 +267,16 @@ Functions may be used as `$(<fn> ...)`.
    
          $(let (x 2 y 5) (* $x $y)) => 10
 
+     `let` binds names to values; values in a let form cannot refer to earlier
+     names in the same `let` form (see `let*`).
+
      Note: (let) now assumes multiple body forms, so the $() for let bodies
      is no longer needed.
+
+   - `$(let* (var1 value1 var2 value2 ...) <body-forms>)`
+
+     `let*` behaves like `let`, but each binding in a `let*` can refer to
+     prior names set up by the same `let*` form.
 
    - `$(set! <name> <value> [<name2> <value2> ...])`
 
