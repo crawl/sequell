@@ -332,6 +332,10 @@ Functions may be used as `$(<fn> ...)`.
 
    - `$(flatten [<depth>] <list>)` Flattens nested lists inside list.
 
+   - `$(nick-aliases <name>)`
+
+     Gets the list of nick aliases for NAME, as reported by !nick NAME.
+
    - `$(scope [<hash>])`
 
      Returns a hash-like lookup object that contains the names bound in

@@ -24,10 +24,6 @@ module Tpl
     eval_arg(-1, binding) if nargs > 0
   }
 
-  FunctionDef.define('sprintf', [1, -1]) {
-    sprintf(self[0], *((1...arity).map { |x| self[x] }))
-  }
-
   FunctionDef.define('bound?', 1) {
     !scope[self[0]].nil?
   }
@@ -253,6 +249,10 @@ module Tpl
     autosplit(self[-1]).map { |part| mapper.call(scope, part) }
   }
 
+  FunctionDef.define('nick-aliases', 1) {
+    nick_aliases(self[0])
+  }
+
   FunctionDef.define('filter', 2) {
     mapper = FunctionDef.evaluator(self[0], scope)
     scope = self.scope
@@ -410,6 +410,10 @@ module Tpl
       res = s.rebind(self[i], self[i + 1])
     }
     res
+  }
+
+  FunctionDef.define('sprintf', [1, -1]) {
+    sprintf(self[0], *((1...arity).map { |x| self[x] }))
   }
 
   FunctionDef.define('sort', [1,2]) {
