@@ -20,7 +20,6 @@
 !streak streak.rb
 !tell message/tell.pl
 !time xtime.py
-!tvdef tvdef.rb :direct
 !vault source.pl
 !won won.rb
 !wtf wtf.py
