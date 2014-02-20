@@ -1,19 +1,13 @@
 !apt apt.pl
-!cheers cheers.py :direct
 !cdefine source.pl
 !cmd cmd.rb :direct
 !cmdinfo cmdinfo.pl
-!coffee coffee.pl :direct
 !help help.pl :direct
-!chars chars.rb
-!deathsin deathsin.rb
 .echo echo.pl
 !fn fn.rb :direct
 !ftw ftw.pl
 !function source.pl
 !gamesby gamesby.rb
-!gkills gkills.rb
-!killsby killsby.rb
 !kw keyworddef.rb
 !learn learn.pl :direct
 !lg listgame.rb

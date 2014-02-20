@@ -17,8 +17,6 @@
 # Any line starting with $ describes shell commands to run; the command will
 # be echoed to stderr; the command exit code will not be checked.
 
-!coffee cßo ::~ /me hands cßo
-
 $ rm dat/nicks-test.map
 $ rm dat/user_commands.db
 !nick cow ::= No nick mapping for cow.
@@ -293,10 +291,6 @@ E !lg * ${ac + ev} > 15
 
 !lg * won char=mdee -log
 
-E !gkills * deathonacow
-
-!gkills
-
 !lm * gid=WasJordan:cdo:20101130144401S s=char ::~ 10x NaCK
 
 !lg * / win ?: N>1 ::~ games for \*.
@@ -306,11 +300,6 @@ E !gkills * deathonacow
 !lg * won s=char x=min(start)
 
 !gamesby elliptic
-
-!deathsin Tomb
-
-!killsby hobgoblin
-!killsby storm dragon ::~ 2x aspy
 
 !won elliptic 10
 
@@ -333,8 +322,6 @@ E !gkills * deathonacow
 !lm * t9 won type=god.renounce x=cdist(gid)
 
 !lg @elliptic t s=name x=sum(dur)
-
-!chars elliptic
 
 !kw boring quitting|leaving
 !kw bore boring
