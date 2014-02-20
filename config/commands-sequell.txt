@@ -8,7 +8,6 @@
 !chars chars.rb
 !deathsin deathsin.rb
 .echo echo.pl
-!echo echo.pl
 !fn fn.rb :direct
 !ftw ftw.pl
 !function source.pl
@@ -17,16 +16,13 @@
 !killsby killsby.rb
 !kw keyworddef.rb
 !learn learn.pl :direct
-!listgame listgame.rb
 !lg listgame.rb
 !lm milestone.rb
 !messages message/messages.pl
 !nick nickmap.rb
 !rng rng.pl
 !seen seen.pl :direct
-!send send.rb
 !source source.pl
-!skill skill.pl
 !streak streak.rb
 !tell message/tell.pl
 !time xtime.py
