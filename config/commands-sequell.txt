@@ -1,4 +1,3 @@
-!abyss abyss.py :direct
 !apt apt.pl
 !cheers cheers.py :direct
 !cdefine source.pl
@@ -15,7 +14,6 @@
 !function source.pl
 !gamesby gamesby.rb
 !gkills gkills.rb
-!hs hsn.rb
 !killsby killsby.rb
 !kw keyworddef.rb
 !learn learn.pl :direct
