@@ -22,6 +22,15 @@ module Query
         !option_arguments.empty?
       end
 
+      def merge(other)
+        return self unless other
+        opt = self.dup
+        other.arguments.each { |arg|
+          opt.option_arguments << arg
+        }
+        opt
+      end
+
       def to_s
         (["-#{name}"] + option_arguments).select { |x| !x.empty? }.join(':')
       end

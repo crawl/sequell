@@ -166,7 +166,7 @@ E !lg * killer=tentacled monstrosity
 !lg greensnark won x=avg(end-start) ::~ 18d
 !lg * 
 !lg * won urune<5 start>2012 max=turns
-!ttyrec elliptic win turn<20000
+!lg elliptic win turn<20000 -ttyrec
 
 !nick elynae elynae hyperelynae
 !lg * name=elynae s=name ::= 1702 games for * (name=elynae): 1702x Elynae
@@ -195,10 +195,10 @@ E !lg . won x=runes
 !lg * win s=-name
 !lg * win s=name x=-max(sc)
 !lg * sp ev<${ac}
-E !tv * ce killer='elephant slug' xl=max ::~ not an integer
-E !tv * ce killer=elephant_slug xl=max ::~ not an integer
+E !lg * ce killer='elephant slug' -tv xl=max ::~ not an integer
+E !lg * ce killer=elephant_slug -tv xl=max ::~ not an integer
 E !lg jeanjacques !win XL>=25 s=killer x=xl ::~ non-aggregates
-!tv * map=~grunt
+!lg * map=~grunt -tv
 !lg * x=${hp}
 !lg * x=${hp + ac}
 !lg * win s=${hp + 500}
@@ -239,14 +239,14 @@ E !lg * ${ac + ev} > 15
 
 !lg * s=name / won o=% ?:den.N>2
 
-!log * xl>20 xl<24 cv>0.8 max=start
+!lg * xl>20 xl<24 cv>0.8 max=start -log
 
 !lg * won race!=OM race!=GE race!=El race!=Gn race!=HD s=crace / name=Marvinpa ?:N=0
 
 !lg . DEFE
 !lg test
-!hs * GhEn
-!hs * !win -3
+!lg * GhEn max=sc
+!lg * !win -3 max=sc
 !lg * s=name
 !lg * race=Gh s=name
 !lg @78291 s=char
@@ -286,13 +286,12 @@ E !lg * ${ac + ev} > 15
 !lm * rune=obsidian lg:place=Coc
 
 # Argument with space:
-!log . char=ddbe killer='electric golem'
+!lg . char=ddbe killer='electric golem' -log
 
 # Tourney selector:
-!hs * ddbe when=t
+!lg * ddbe when=t max=sc
 
-# !log test:
-!log * won char=mdee
+!lg * won char=mdee -log
 
 E !gkills * deathonacow
 

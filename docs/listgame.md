@@ -10,10 +10,10 @@ The bot Sequell responds to listgame queries on ##crawl and can also
 be /msged privately.
 
 This document describes listgame: specifically, it covers the !lg and
-!lm commands, as well as the specialised listgame commands !hs, !won,
-etc.
+!lm commands, as well as the specialised listgame commands (!won,
+!streak, etc.)
 
-NOTE: This document uses "listgame" to mean "!lg, !lm, !hs, etc..".
+NOTE: This document uses "listgame" to mean "!lg, !lm, etc..".
 Where a specific command is described, that command is named
 explicitly as "!lg", "!lm", etc.
 
@@ -414,19 +414,6 @@ same as !lg, with a few nuances:
            `!lm * god.worship=Lugonu` = `!lm * type=god.worship noun=Lugonu`
 
            
-!hs
-===
-Mnemonic: hs = High Score
-
-The !hs command is identical in behaviour to the !lg command with an
-implied `max=sc` to show the highest scoring game matching the search
-criteria.
-
-###### Examples:
-
-`!hs *`              Highest scoring game
-`!hs * DEFE -2`      Second-highest score by a Deep Elf Fire Elementalist.
-
 !won
 ====
 
@@ -552,7 +539,7 @@ Listgame keywords may be one of:
              `t0.10` selects the 0.10 tourney (2012a).
 
 14. Milestone Types:
-    In !lm queries ONLY (i.e. not in !lg, !hs, etc.) you may use the
+    In !lm queries ONLY (i.e. not in !lg) you may use the
     milestone type as a keyword:
 
     `abyss.enter` `abyss.exit` `rune` `orb` `ghost`, etc.
@@ -1364,9 +1351,9 @@ Examples
 
 `!lg test`                          test's most recent game.
 
-`!hs * GhEn`                        Highest scoring GhEn game.
+`!lg * GhEn max=sc`                 Highest scoring GhEn game.
 
-`!hs * !win -3`                     Third-highest scoring non-winning game.
+`!lg * !win max=sc -3`              Third-highest scoring non-winning game.
 
 `!lg * s=name`                      Number of games played by each player
 

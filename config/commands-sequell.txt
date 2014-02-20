@@ -17,7 +17,6 @@
 !killsby killsby.rb
 !kw keyworddef.rb
 !learn learn.pl :direct
-!log lastlog.rb
 !listgame listgame.rb
 !lg listgame.rb
 !lm milestone.rb
@@ -31,9 +30,6 @@
 !streak streak.rb
 !tell message/tell.pl
 !time xtime.py
-!ttyrec ttr.rb
-!ttr ttr.rb
-!tv tvreq.rb
 !tvdef tvdef.rb :direct
 !vault source.pl
 !won won.rb

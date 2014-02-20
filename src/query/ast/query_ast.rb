@@ -139,7 +139,9 @@ module Query
 
       def add_option(option)
         @options << option
-        @opt_map[option.name.to_sym] = option
+        opt_key = option.name.to_sym
+        old_opt = @opt_map[opt_key]
+        @opt_map[opt_key] = old_opt ? old_opt.merge(option) : option
       end
 
       def option(name)
