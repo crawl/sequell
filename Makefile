@@ -7,4 +7,4 @@ unit:
 	prove t
 
 integration:
-	perl test-henzell.pl --fail-fast
+	perl ./scripts/test-henzell.pl --fail-fast

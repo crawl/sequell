@@ -51,7 +51,7 @@ sub _need_logfetch {
 sub _fetch_logs {
   my $self = shift;
   print "*** Fetching remote logfiles\n" if $ENV{DEBUG_HENZELL};
-  system "./remote-fetch-logfile >/dev/null 2>&1 &";
+  system "./scripts/remote-fetch-logfile >/dev/null 2>&1 &";
   $self->{last_fetch_time} = time();
   $self->{fetch_logs} = 0;
 }

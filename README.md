@@ -14,15 +14,16 @@ Dependencies
 
   1. Install PostgreSQL, create a database 'henzell' and a user
      'henzell', and give the user access to the database with password
-     'henzell'. Note that the name is 'henzell', not 'sequell'.
+     'henzell'. Note that the database and user name is 'henzell', not
+     'sequell'.
   
   2. In the 'henzell' database, install the PostgreSQL citext and orafce
      extensions by running (as an admin user):
-        CREATE EXTENSION citext;
-        CREATE EXTENSION orafce;
+         CREATE EXTENSION citext;
+         CREATE EXTENSION orafce;
   
      citext is available as part of Postgres contrib; orafce is available at:
-        http://orafce.projects.postgresql.org/
+         http://orafce.projects.postgresql.org/
   
      Sequell needs the CITEXT extension for case-insensitive comparison
      and grouping and the orafce extension for the median aggregate function.
@@ -30,10 +31,13 @@ Dependencies
   2. Set up the database schema as:
   
      Generate the schema:
-     perl schema-gen.pl
+         $ perl ./scripts/schema-gen.pl
   
      Create the tables:
-     psql -U henzell henzell < henzell-schema.sql
+         $ psql -U henzell henzell < henzell-schema.sql
+
+     After catching up on logs, create indexes:
+         $ psql -U henzell henzell < henzell-indexes.sql
 
 * RE2
 
@@ -54,11 +58,11 @@ Sequell wants Perl modules for IRC, YAML parsing, DB connectivity,
 etc. In addition the SQL query commands require several Ruby gems. To
 install Sequell's dependencies, use:
 
-   # ./install-libs
+   # ./scripts/install-libs
 
 You can also install the Perl and Ruby dependencies independently:
 
-   # ./install-perl-modules
+   # ./scripts/install-perl-modules
    # gem install bundler && bundle install
 
 
