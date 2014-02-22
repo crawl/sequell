@@ -1340,6 +1340,78 @@ Command-Line Expansion
 !lg command lines are subject to
 [Sequell's normal command-line expansion](commandline.md).
 
+
+Durable references to games
+===========================
+
+### Summary
+
+Use `gid=<the game id>` in queries that you want to bookmark so
+you can consistently find the same game or milestone in future.
+
+For !lg use:
+
+    !lg * gid=<player:server:date> 1
+
+For !lm use:
+
+    !lm * gid=<player:server:date> <milestone-index>
+
+### The Long Story
+
+If you'd like to reference a particular game on a public server so
+that others can find the game logfile, or ttyrecs, or play the game on
+FooTV, you must unambiguously identify the game with a query that will
+return the same result in the future.
+
+Let's say you found a Tomb death that's interesting:
+
+    <user> !lg * Tomb
+    <Sequell> 1053. redacted the Thanatomancer (L21 DDNe of Makhleb), mangled by a reaper (a +3,+1 scythe of venom) (summoned by an indirect mummy death curse) on Tomb:1 (tomb_1) on 2014-02-21 12:21:13, with 350541 points after 58979 turns and 8:26:54.
+
+If you add a reference to this game to the LearnDB as `!lg * Tomb`,
+that query will be out-of-date the moment any other player on any
+public server dies in the Tomb.
+
+You could improve this somewhat by referencing the game number (1053):
+
+    !lg * Tomb 1053
+
+This says that you're requesting death #1053 in the Tomb, in
+chronological order (by time of death). This is still somewhat
+unsatisfactory, since if two characters die at the same second in the
+Tomb, their game numbers may be swapped if Sequell's database is ever
+rebuilt. You can improve things a little more by specifying the
+player's name:
+
+    !lg redacted Tomb 1
+
+Note that specifying the player's name changes the game number
+(changing any filter option changes the game number).
+
+This reduces the likelihood of finding the wrong game when multiple
+characters die at the same second, but this may still be insufficient:
+a single name may be owned by two different players on two different
+public servers, so same-second-deaths are still possible. To be
+unambiguous, a query must identify the player, the server, and the
+game start time. The best filter that uses all of these is the
+game-key (aka game_id aka gid). Query the game_key using x=gid
+
+    !lg redacted Tomb 1 x=gid
+
+Then use the gid to frame the query you want to save:
+
+    !lg * gid=redacted:clan:20140117111454S 1
+
+For milestones, use the milestone index with the gid, for instance:
+
+    !lm * gid=redacted:clan:20140117111454S br.enter=Tomb 1
+
+It's always a good idea to include the game/milestone index, even for
+milestones that should be unique, because Crawl bugs sometimes produce
+duplicates.
+
+
 Examples
 ========
 
