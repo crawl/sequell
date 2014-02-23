@@ -475,14 +475,15 @@ Listgame keywords may be one of:
    selects only character combos that are playable on the current
    development version of Crawl.
 
+   `playable:sp` and `playable:job` may also be used to select only
+   playable species and jobs respectively.
+
    `playable:good` selects only playable unrestricted combos.
    `playable:bad` selects only playable restricted combos.
 
-   (good and bad are just labels for unrestricted vs restricted --
-   Sequell makes no value judgments about characters.)
-
-   `playable:sp` and `playable:job` may also be used to select only
-   playable species and jobs respectively.
+   playable:good and playable:bad are deprecated and may not be
+   consistent with what Crawl itself recommends. They may be removed
+   at any point.
 
 5. Death types:
    - `won` / `win` / `winning`: select only winning games.
@@ -1002,6 +1003,8 @@ Example: `!lg * class=He` => `!lg * class=Healer`
 
 Any `X=A|B|C` query will be converted to `((X=A || X=B || X=C))` if A, B
 and C contain only letters, underscores, numbers, periods, and spaces.
+
+Similarly any X!=A|B|C will be converted to X!=A X!=B X!=C.
 
 If you want to test (in)equality without any mangling, use == or !==
 
