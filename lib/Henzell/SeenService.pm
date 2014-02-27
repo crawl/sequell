@@ -35,7 +35,7 @@ sub seen_update {
   );
 
   my $seen_dir = $self->{root};
-  my $seen_file = "$seen_dir/\L\Q$nick";
+  my $seen_file = "$seen_dir/\L$nick";
   open my $handle, '>', $seen_file or do
   {
     warn "Unable to open $seen_file for writing: $!";
