@@ -8,7 +8,7 @@ use JSON;
 
 sub new {
   my ($cls, %opt) = @_;
-  bless \%opt, $cls
+  bless { %opt, _opid => 1 }, $cls
 }
 
 sub _root {
@@ -18,12 +18,29 @@ sub _root {
 sub _echo_service {
   my $self = shift;
   if (!$self->{_iecho}) {
-    open2(my $in, my $out, $self->_root() . '/commands/echo-pipe.rb')
-      or die "Couldn't spawn echo service\n";
+    $self->{_echopid} =
+      open2(my $in, my $out, $self->_root() . '/commands/echo-pipe.rb')
+        or die "Couldn't spawn echo service\n";
     $self->{_iecho} = $in;
     $self->{_oecho} = $out;
   }
   ($self->{_iecho}, $self->{_oecho})
+}
+
+sub _kill_echo_service {
+  my $self = shift;
+  return unless $self->{_iecho};
+  kill(SIGTERM => $self->{_echopid}) if $self->{_echopid};
+  close $self->{_iecho};
+  close $self->{_oecho};
+  delete $self->{_iecho};
+  delete $self->{_oecho};
+  delete $self->{_echopid};
+}
+
+sub _next_opid {
+  my $self = shift;
+  return $self->{_opid}++;
 }
 
 sub expand {
@@ -31,7 +48,9 @@ sub expand {
   my ($in, $out) = $self->_echo_service();
   my $broken_pipe;
   local $SIG{PIPE} = sub { $broken_pipe = 1; };
-  print $out encode_json({ msg => $template,
+  my $opid = $self->_next_opid();
+  print $out encode_json({ id => $opid,
+                           msg => $template,
                            args => $argline,
                            command_env => {
                              PRIVMSG => $opt{irc_msg}{private}
@@ -39,24 +58,34 @@ sub expand {
                            env => $opt{env} }), "\n";
   my $res = <$in>;
   if ($broken_pipe || !defined($res)) {
-    if ($self->{retried}) {
-      delete $self->{retried};
-      return "Could not expand $template: subprocess error\n";
-    }
-
-    $self->{retried} = 1;
-    close $in;
-    close $out;
-    delete $self->{_iecho};
-    delete $self->{_oecho};
-    return $self->expand($template, $argline, %opt);
+    return $self->retry_expand($template, $argline, %opt);
+  }
+  my $json = eval {
+    decode_json($res);
+  };
+  undef $json if $@;
+  unless ($json) {
+    return $self->retry_expand($template, $argline, %opt, real_error => "ERR: Could not parse response: $res");
+  }
+  unless (($json->{id} || 0) == $opid) {
+    return $self->retry_expand($template, $argline, %opt, real_error => "ERR: Template expander desynced");
   }
 
   delete $self->{retried};
-  my $json = decode_json($res);
-  return "Could not parse response: $res\n" unless $json;
   return $json->{err} if $json && $json->{err};
   $json && $json->{res}
+}
+
+sub retry_expand {
+  my ($self, $template, $argline, %opt) = @_;
+  if ($self->{retried}) {
+    delete $self->{retried};
+    return $opt{real_error} || "ERR: Could not expand $template: subprocess exploded\n";
+  }
+
+  $self->{retried} = 1;
+  $self->_kill_echo_service();
+  return $self->expand($template, $argline, %opt);
 }
 
 1

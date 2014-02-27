@@ -18,15 +18,19 @@ logf = File.open('echo-pipe.log', 'w')
 logf.sync = true
 
 begin
+  opid = nil
   while (line = STDIN.readline)
     begin
       data = JSON.parse(line)
+      opid = data['id']
       Timeout.timeout(TIME_LIMIT) {
         Env.with(data['command_env']) do
           Cmd::UserFunction.clear_cache!
           CommandContext.with_default_nick((data['env'] || { })['nick']) do
             Cmd::Executor.with_default_env(data['env']) do
-              puts JSON.dump(res: Query::QueryStringTemplate.expand(
+              puts JSON.dump(
+                id: opid,
+                res: Query::QueryStringTemplate.expand(
                   data['msg'],
                   data['args'] || '',
                   data['env'] || { }))
@@ -35,11 +39,13 @@ begin
         end
       }
     rescue Timeout::Error
-      puts JSON.dump(err: "Time limit of #{TIME_LIMIT} exceeded")
+      puts JSON.dump(id: opid, err: "Time limit of #{TIME_LIMIT} exceeded")
     rescue
-      puts JSON.dump(err: $!.message)
+      puts JSON.dump(id: opid, err: $!.message)
       logf.puts("Failed to evaluate #{line}: #$!")
       logf.puts($!.backtrace.map { |x| "  #{x}" }.join("\n"))
+    ensure
+      opid = nil
     end
   end
 rescue EOFError

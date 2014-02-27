@@ -3,7 +3,7 @@ The LearnDB
 
 The LearnDB is a user-maintained database of content accessible to
 users of ##crawl and ##crawl-dev on FreeNode IRC. This is a brief
-description of the command available to query and update the LearnDB.
+description of the commands available to query and update the LearnDB.
 
 The LearnDB is organized into *terms* (also called *pages*). Each term
 may have one or more entries. For user convenience, some entries

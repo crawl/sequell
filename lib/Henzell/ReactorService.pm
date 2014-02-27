@@ -165,7 +165,7 @@ sub direct_query {
   return $chain->(undef) unless $m->{said};
   my $body = $$m{body};
   if ($body =~ /^\s*[?]{2}\s*(.+)\s*$/) {
-    return $chain->($self->_db_query($m, $1, undef, 'carp-if-missing'))
+    return $chain->($self->_db_query($m, $1, undef, 'carp-if-missing'));
   }
   $chain->(undef)
 }
