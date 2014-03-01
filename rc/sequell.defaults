@@ -15,7 +15,7 @@ announce:
 
 seen_update: true
 
-sigils: "!@#$%&=-"
+sigils: "!@#$%&=^-"
 preferred_sigil: "!"
 
 sibling_bots: "Henzell Gretell Hehfiel Sizzell Sequell Cheibriados Lantell Ruffell"
