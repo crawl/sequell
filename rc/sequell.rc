@@ -6,7 +6,7 @@ announce_channel:
 seen_update: 1
 learndb: 1
 
-sigils: "!@#$%&=;.,\\?-"
+sigils: "!@#$%&=;.,\\^?-"
 preferred_sigil: "!"
 
 startup_services:
