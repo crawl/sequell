@@ -373,7 +373,7 @@ species:
   HO: Hill Orc
   LO: Lava Orc
   Gr: [Gargoyle, Grotesk]
-  Dj: Djinni
+  Dj: Djinni*
   Op: Octopode
   Te: Tengu
   Fo: Formicid
