@@ -61,6 +61,8 @@ module Tpl
     }
 
     rule(:tchar) {
+      str("\\") >> str("{").as(:char) |
+      str("\\") >> str("(").as(:char) |
       str("\\") >> str("}").as(:char) |
       str("\\") >> str(")").as(:char) |
       str("\\") >> str("\\").as(:char) |
