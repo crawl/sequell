@@ -5,7 +5,7 @@ require 'parslet'
 module Grammar
   class Atom < Parslet::Parser
     rule(:identifier) {
-      match["a-zA-Z_.[^\x00-\x7f]".force_encoding('UTF-8')] >>
+      match["a-zA-Z_[^\x00-\x7f]".force_encoding('UTF-8')] >>
       match["a-zA-Z0-9_.[^\x00-\x7f]".force_encoding('UTF-8')].repeat
     }
 
