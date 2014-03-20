@@ -40,6 +40,14 @@ sub term_exists($;$) {
   $DB->definition_exists($term, $num)
 }
 
+sub term_redirect {
+  my $term = shift;
+  my $entry = read_entry($term);
+  return '' unless $entry;
+  my ($redirect, $redirect_num) = entry_redirect($entry);
+  $redirect && $redirect_num == 1 ? $redirect : ''
+}
+
 sub search {
   my ($term, $terms_only, $entries_only) = @_;
   my @terms;
@@ -182,6 +190,12 @@ sub query_entry_with_redirects {
   }
 }
 
+sub _filter_redirects {
+  my (@terms) = @_;
+  my %terms = map((lc($_) => 1), @terms);
+  grep(!$terms{lc term_redirect($_)}, @terms)
+}
+
 # Porcelain: parses a query and retrieves an entry, following redirects, etc.,
 # and auto-correcting if no entry is found.
 sub query_entry_autocorrect {
@@ -193,6 +207,7 @@ sub query_entry_autocorrect {
     my @candidates = similar_terms($qterm);
     return $entry unless @candidates;
 
+    @candidates = _filter_redirects(@candidates);
     if (@candidates == 1) {
       my $e = query_entry($candidates[0], $num, $error_message_if_missing);
       if ($e && $e->entry()) {

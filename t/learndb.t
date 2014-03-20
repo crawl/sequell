@@ -60,8 +60,10 @@ is(irc('??pow[2]'), "cow[2/2]: cowcowcow");
 is(irc('??pow[-1]'), "cow[2/2]: cowcowcow");
 
 irc('!learn add cow How now');
+irc('!learn add cowt see {cow}');
 irc('!learn add cszo cßo');
 is(irc('??cszo'), "cszo[1/1]: cßo");
+is(irc('??cowd'), "cowd ~ cow[1/3]: MOOOOOO");
 is(irc('??pow[-1]'), "cow[3/3]: How now");
 is(irc('??Coc'), "Coc ~ cow[1/3]: MOOOOOO");
 is(irc('??powz[3]'), "powz ~ pow ~ cow[3/3]: How now");
@@ -82,9 +84,9 @@ is(irc('!learn set radon[$] ???'),
    'radon[2/2]: ???');
 is(irc('!learn set puma[$] PUMA'), 'puma[1/1]: PUMA');
 
-like(irc('?/cow'), qr/Matching terms \(1\): cow; entries \(3\): cow\[2\].*/);
-is(irc('?/<cow'), 'Matching terms (1): cow');
-like(irc('?/>cow'), qr/Matching entries \(3\): cow\[2.*/);
+like(irc('?/cow'), qr/Matching terms \(2\): cow, cowt; entries \(4\): cow\[2\].*/);
+is(irc('?/<cow'), 'Matching terms (2): cow, cowt');
+like(irc('?/>cow'), qr/Matching entries \(4\): cow\[2.*/);
 
 irc('!learn add !help:!foo Hahahahaha');
 is(irc('!help !foo'), "!foo: Hahahahaha");
