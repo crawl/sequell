@@ -51,7 +51,7 @@ sub authorized_commands {
     delete $self->{cmd}{$nick};
 
     if ($self->nick_identified($nick)) {
-      return map { (%$_, reprocessed_command => 1) } @$msgs;
+      return map { +{%$_, reprocessed_command => 1} } @$msgs;
     }
     else {
       if (@$msgs) {
@@ -69,9 +69,10 @@ sub authenticate_user {
   my ($self, $user, $m) = @_;
   print "User $user needs authentication for $$m{body}\n";
 
+  my $pending_auth = $self->pending_auth($user);
   push @{$self->{cmd}{$user}}, $m;
 
-  if ($self->pending_auth($user)) {
+  if ($pending_auth) {
     print "Skipping auth for $user: pending auth already\n";
     return;
   }
