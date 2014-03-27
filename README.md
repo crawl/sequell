@@ -1,7 +1,7 @@
 Sequell
 -------
 
-Sequell is the announcement and stats IRC bot for ##crawl on Freenode IRC.
+Sequell is the stats IRC bot for ##crawl on Freenode IRC.
 
 Sequell is the successor to the original ##crawl Henzell which at one
 point shared the same code. There are still many references to Henzell
