@@ -6,7 +6,7 @@ require 'set'
 
 forbid_private_messaging! "Cannot map nicks on PM."
 
-help("Maps a nick to name(s) used on cao. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm <src> <dest>")
+help("Maps a nick to name(s) used on the public servers. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm <src> <dest>")
 
 def cmd_nicks(cmdline)
   rm = cmdline.find { |a| a == '-rm' }
