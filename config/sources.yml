@@ -106,12 +106,14 @@ sources:
     base: http://dobrazupa.org
     logfiles:
       - meta/git/logfile{,-sprint,-zotdef}*
+      - meta/nostalgia/logfile*
       - meta/0.14/logfile{,-sprint,-zotdef}*
       - meta/0.13/logfile{,-sprint,-zotdef}*
       - meta/0.12/logfile{,-sprint,-zotdef}*
       - meta/0.11/logfile{,-sprint,-zotdef}*
       - meta/0.10/logfile{,-sprint,-zotdef}*
     milestones:
+      - meta/nostalgia/milestones*
       - meta/git/milestones{,-sprint,-zotdef}*
       - meta/0.14/milestones{,-sprint,-zotdef}*
       - meta/0.13/milestones{,-sprint,-zotdef}*

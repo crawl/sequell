@@ -262,21 +262,14 @@ sub go_to_offset {
   return 1;
 }
 
-sub filename_gametype($) {
-  my $filename = shift;
-  return 'zotdef' if $filename =~ /-(?:zd|zotdef)/i;
-  return 'sprint' if $filename =~ /-spr/i;
-  return undef;
-}
-
 sub logfile_table($) {
-  my $filename = shift;
-  game_type_table_name(filename_gametype($filename), $TLOGFILE)
+  my $file = shift;
+  game_type_table_name($file->game_type(), $TLOGFILE)
 }
 
 sub milefile_table($) {
-  my $filename = shift;
-  game_type_table_name(filename_gametype($filename), $TMILESTONE)
+  my $file = shift;
+  game_type_table_name($file->game_type(), $TMILESTONE)
 }
 
 sub preopen_filehandle {
@@ -330,13 +323,13 @@ sub cat_xlog {
     if (!($rows % $COMMIT_INTERVAL)) {
       $dbh->commit;
       $dbh->begin_work;
-      print "\rCommitted $rows records from $readfile.";
+      print "\rCommitted $rows records from $readfile to @{ [ $table ] }.";
       STDOUT->flush;
     }
   }
   $dbh->commit;
   seek($loghandle, $linestart, SEEK_SET);
-  print "\rUpdated db with $rows records from $lfile.\n" if $rows;
+  print "\rUpdated db ($table) with $rows records from $lfile.\n" if $rows;
   return 1;
 }
 
@@ -347,14 +340,14 @@ sub game_type_table_name($$) {
 
 sub game_table_name($$) {
   my ($game, $base_tablename) = @_;
-  my $game_type = Henzell::Crawl::game_type($game);
+  my $game_type = $game->{game_type} || Henzell::Crawl::game_type($game);
   game_type_table_name($game_type, $base_tablename)
 }
 
 sub cat_typed_xlogfile {
   my ($lf, $offset, $event_publisher) = @_;
   my $milestone = $lf->{milestones};
-  cat_xlog($milestone? milefile_table($$lf{file}) : logfile_table($$lf{file}),
+  cat_xlog($milestone? milefile_table($$lf{fref}) : logfile_table($$lf{fref}),
            $lf,
            $milestone ? \&add_milestone : \&add_logline,
            $offset,
@@ -363,13 +356,13 @@ sub cat_typed_xlogfile {
 
 sub cat_logfile {
   my ($lf, $offset, $event_publisher) = @_;
-  cat_xlog(logfile_table($$lf{file}), $lf, \&add_logline, $offset,
+  cat_xlog(logfile_table($$lf{fref}), $lf, \&add_logline, $offset,
            $event_publisher)
 }
 
 sub cat_stonefile {
   my ($lf, $offset, $event_publisher) = @_;
-  cat_xlog(milefile_table($$lf{file}),
+  cat_xlog(milefile_table($$lf{fref}),
            $lf, \&add_milestone, $offset, $event_publisher)
 }
 
@@ -454,11 +447,6 @@ sub fixup_logfields {
 
   if ($g->{tiles}) {
     $g->{tiles} = "y";
-  }
-
-  my $game_type = Henzell::Crawl::game_type($g);
-  if ($game_type) {
-    $$g{game_type} = $game_type;
   }
 
   $g->{ntv} = 0;
@@ -699,7 +687,7 @@ sub logfile_insert_st($) {
 sub logfile_loader($) {
   my $g = shift;
   my $base_table = $$g{milestone} ? 'milestone' : 'logrecord';
-  my $table = game_type_table_name(Henzell::Crawl::game_type($g), $base_table);
+  my $table = game_type_table_name($g->{game_type}, $base_table);
   $TABLE_LOADERS{$table} ||=
     Henzell::TableLoader->new(db => $dbh,
                               table => $table,
@@ -730,6 +718,7 @@ sub build_fields_from_milestone {
   return if $m->{type} eq 'orb' && Henzell::Crawl::game_is_zotdef($m);
 
   ($m->{file}   = $lf->{file}) =~ s{.*/}{};
+  $m->{game_type} = $lf->{fref}->game_type();
   $m->{offset}	= $offset;
   $m->{src}	= $lf->{server};
   $m->{alpha}	= record_is_alpha_version($lf, $m);
@@ -759,6 +748,7 @@ sub build_fields_from_logline {
   my $fields = logfield_hash($line);
   return if broken_record($fields);
 
+  $fields->{game_type} = $lf->{fref}->game_type();
   $fields->{src} = $lf->{server};
   $fields->{alpha} = record_is_alpha_version($lf, $fields);
   ($fields->{file} = $lf->{file} || '') =~ s{.*/}{};

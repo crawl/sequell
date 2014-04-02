@@ -71,6 +71,7 @@ sub game_type {
   my $self = shift;
   my $name = $self->source_name();
   return 'sprint' if $name =~ /\bspr/i;
+  return 'nostalgia' if $name =~ /\bnostalgia\b/i;
   return 'zotdef' if $name =~ /\b(zd|zotdef)\b/i;
   ''
 }

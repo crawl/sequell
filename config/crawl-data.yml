@@ -43,6 +43,7 @@ game-type-prefixes:
   crawl: ''
   sprint: spr_
   zotdef: zot_
+  nostalgia: nostalgia_
 
 default-game-type: crawl
 
