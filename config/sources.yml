@@ -188,9 +188,11 @@ sources:
     base: http://kr.dobrazupa.org
     logfiles:
       - www/trunk/logfile*
+      - www/0.14/logfile*
       - www/0.13/logfile*
     milestones:
       - www/trunk/milestones*
+      - www/0.14/milestone*
       - www/0.13/milestones*
     morgues:
       - ['ckr.*-(?:svn|git)', 'http://kr.dobrazupa.org/morgue/trunk']
