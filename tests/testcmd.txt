@@ -33,6 +33,7 @@ $ rm dat/user_commands.db
 !apt Gargoyle ::~ Gr: Fighting: \d
 !apt Grotesk ::~ Gr: Fighting: \d
 
+!kw v ::= Built-in: v => place=~Vaults:*
 !cmd =empty => .echo $(replace a '' a)
 !cmd =ifemptytest => .echo $(replace x1 $2 $(replace x0 $1 "x$(length $(sub 0 1 "$3"))"))
 =ifemptytest
