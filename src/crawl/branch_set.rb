@@ -25,6 +25,10 @@ module Crawl
       branch_prop(name, :deepish?)
     end
 
+    def canonical_place(keyword)
+      @place_fixups.fixup(keyword)[0] || keyword
+    end
+
     def branch(keyword)
       keyword = @place_fixups.fixup(keyword)[0]
       if keyword =~ /^([a-z]+):/i

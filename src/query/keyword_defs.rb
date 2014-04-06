@@ -133,7 +133,7 @@ module Query
   }
 
   KeywordMatcher.matcher(:branch) {
-    expr.parse('place', BRANCHES.branch(arg)) if BRANCHES.branch?(arg)
+    expr.parse('place', BRANCHES.canonical_place(arg)) if BRANCHES.branch?(arg)
   }
 
   KeywordMatcher.matcher(:tourney) {
