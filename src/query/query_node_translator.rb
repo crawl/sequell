@@ -34,9 +34,8 @@ module Query
     end
 
     def translate
-      if node.field_value_predicate?
-        return translate_simple_predicate(node)
-      end
+      return translate_simple_predicate(node) if node.field_value_predicate?
+      return translate_funcall(node) if node.kind == :funcall
       node
     end
 
@@ -53,6 +52,16 @@ module Query
       end
       node.operator = oper
       node.value = transformed_value
+    end
+
+    def translate_funcall(node)
+      if node.fn.count? && node.arguments[0].kind == :field
+        f = node.arguments[0]
+        if f.reference?
+          f.reference_id_only = true
+        end
+      end
+      node
     end
 
     def translate_simple_predicate(node)

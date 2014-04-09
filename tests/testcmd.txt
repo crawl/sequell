@@ -76,6 +76,8 @@ E !lg * fe ::~ \(Felid\).*\(Fire Elementalist\)
 !lg * -random
 !lm * -random
 
+!lg * x=cdist(name)
+
 !lg * win s=char x=+avg(turn) ::~ : 2x MuCj
 !lg * win s=char x=-avg(turn) ::~ : TeSu
 !lg * win s=char x=avg(xl),+avg(turn) ::~ : 2x MuCj

@@ -498,14 +498,18 @@ aggregate-functions:
     type: '*'
     expr: "COUNT(*)"
     return: I
+    count: true
   cdist:
     type: '*'
     expr: "COUNT(DISTINCT %s)"
     return: I
+    count: true
   count:
     type: '*'
     expr: "COUNT(DISTINCT %s)"
     return: I
+    id: cdist
+    count: true
   avg:
     types:
       - type: ETD

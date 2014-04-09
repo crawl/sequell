@@ -2,4 +2,5 @@
 --ignore-dir=server-xlogs
 --ignore-dir=dat/learndb
 --ignore-dir=www
+--ignore-dir=dat
 --ignore-file=is:TAGS

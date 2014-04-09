@@ -35,6 +35,14 @@ module Sql
       @canonical_name = @name
     end
 
+    def reference_id_only=(id_only)
+      @reference_id_only = id_only
+    end
+
+    def reference_id_only?
+      @reference_id_only
+    end
+
     def split_aliased_name(aliased_name)
       @@aliased_name_cache[aliased_name] ||= split_prefixed_name(aliased_name)
     end
@@ -113,6 +121,7 @@ module Sql
       copy.table = @table.dup if @table
       copy.name = self.name.dup
       copy.sql_name = @sql_name
+      copy.reference_id_only = @reference_id_only
       copy
     end
 
@@ -204,11 +213,12 @@ module Sql
     end
 
     def sql_typecast(expr)
+      return expr if reference_id_only?
       self.type.comparable_expr(expr)
     end
 
     def to_s
-      @name
+      @name.to_s
     end
 
   private

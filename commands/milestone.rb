@@ -4,7 +4,6 @@ require 'helper'
 require 'sqlhelper'
 require 'libtv'
 require 'query/query_string'
-require 'query/extra_field_parser'
 
 help("Lists milestones for the specified player. Usage: !lm (<player>) (<number>) (options) where options are in the form field=value, or (max|min)=field. See ??milestone for more info.")
 

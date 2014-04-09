@@ -37,7 +37,7 @@ module Sql
         apply_alt_join(@context)
       end
 
-      return resolve_simple_field(field) unless field.reference?
+      return resolve_simple_field(field) if !field.reference? || field.reference_id_only?
 
       # Reference column -- find the reference table
       reference_table = column.lookup_table
@@ -60,7 +60,7 @@ module Sql
       # name may be part of different joins and have different
       # aliases. See QueryTable.
       field.table = reference_table
-      field.sql_name  = column.lookup_field_name
+      field.sql_name = column.lookup_field_name
 
       field
     end
@@ -76,6 +76,7 @@ module Sql
     def resolve_simple_field(field)
       table = Sql::QueryTable.table(@context.field_table(field))
       field.table = @tables.lookup!(table)
+      field.sql_name = field.column.fk_name.to_s if field.reference_id_only?
       field
     end
   end

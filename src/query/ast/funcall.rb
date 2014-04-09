@@ -1,7 +1,7 @@
 module Query
   module AST
     class Funcall < Term
-      attr_reader :name
+      attr_reader :name, :fn
 
       def initialize(name, *arguments)
         @name = name

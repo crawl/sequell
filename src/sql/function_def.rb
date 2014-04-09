@@ -14,12 +14,13 @@ module Sql
       f
     end
 
-    attr_reader :name
+    attr_reader :name, :id
     attr_accessor :argtypes, :summarisable, :expr, :display_format
 
     def initialize(name, cfg)
       @name = name
       @cfg = cfg
+      @id = cfg['id'] || @name
       if @cfg.is_a?(String)
         @cfg = { 'type' => @cfg }
       end
@@ -30,6 +31,10 @@ module Sql
       @preserve_unit = @cfg['preserve-unit']
       @unit = @cfg['unit']
       @expr = @cfg['expr']
+    end
+
+    def count?
+      @cfg['count']
     end
 
     def arity
