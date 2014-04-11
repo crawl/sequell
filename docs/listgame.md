@@ -2,9 +2,7 @@ The listgame manual
 ===================
 
 If you're on ##crawl on Freenode IRC, you can use listgame to see
-game statistics for Crawl games played on the public Crawl servers
-CAO (crawl.akrasiac.org), CDO (crawl.develz.org),
-CSN (crawlus.somatika.net), and CSZO (crawl.s-z.org).
+game statistics for Crawl games played on the public Crawl servers.
 
 The bot Sequell responds to listgame queries on ##crawl and can also
 be /msged privately.
