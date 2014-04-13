@@ -86,12 +86,12 @@ sub exec {
 
 sub execute_st {
   my ($self, $st, @binds) = @_;
-  my $tries = 50;
+  my $tries = 5;
   while ($tries-- > 0) {
     my $res = $st->execute(@binds);
     return $res if $res;
     unless ($self->errstr() =~ /\blocked\b/) {
-      die $self->errstr();
+      return undef;
     }
     sleep 1;
   }

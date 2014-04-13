@@ -11,6 +11,7 @@ use Henzell::SeenService;
 use Henzell::TellService;
 use Henzell::ReactorService;
 use Henzell::Bus;
+use Carp;
 use utf8;
 
 do 'sqllog.pl';
@@ -26,6 +27,8 @@ $ENV{RUBYOPT} = '-rubygems -Isrc';
 $ENV{PERL_UNICODE} = 'AS';
 $ENV{HENZELL_ROOT} = '.';
 $ENV{HENZELL_ALL_COMMANDS} = 'y';
+
+$SIG{INT} = sub { Carp::cluck("^C"); exit(1) };
 
 my $irc = Henzell::IRCStub->new(channel => $CHANNEL);
 

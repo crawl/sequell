@@ -1,0 +1,23 @@
+#! /usr/bin/env ruby
+
+$LOAD_PATH.push('src')
+require 'db/sqlite'
+
+file = ARGV.shift
+
+unless file && File.exist?(file)
+  unless file
+    STDERR.puts "Usage: #{$0} <db>"
+    STDERR.puts("    Locks a sqlite db indefinitely to help " +
+                "test locked-database-handling")
+    exit 1
+  end
+  raise "Must specify SQLite db to lock" unless file
+  raise "Cannot lock #{file}, doesn't exist"
+end
+
+db = Db::Sqlite.new(file)
+db.exec("select * from sqlite_master") { |r|
+  STDERR.puts "Locked #{file}, ^C to stop"
+  STDIN.read
+}
