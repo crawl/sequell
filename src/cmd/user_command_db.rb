@@ -78,36 +78,60 @@ module Cmd
 
   private
     def query(table, name)
-      db.execute("SELECT name, definition FROM #{table} WHERE name = ?",
-                 "_" + name.downcase) { |row|
-        return [row[0].to_s[1..-1], row[1]]
+      sqlite_retry {
+        db.execute("SELECT name, definition FROM #{table} WHERE name = ?",
+          "_" + name.downcase) { |row|
+          return [row[0].to_s[1..-1], row[1]]
+        }
       }
       nil
     end
 
     def query_all(table)
       commands = []
-      db.execute("SELECT name, definition FROM #{table} ORDER BY name") { |row|
-        commands << [row[0].to_s[1..-1], row[1]]
+      sqlite_retry {
+        db.execute("SELECT name, definition FROM #{table} ORDER BY name") {
+          |row|
+          commands << [row[0].to_s[1..-1], row[1]]
+        }
       }
       commands
     end
 
     def exists?(table, name)
-      db.execute("SELECT * FROM #{table} WHERE name = ?",
-        "_" + name.downcase) { |row|
-        return true
+      sqlite_retry {
+        db.execute("SELECT * FROM #{table} WHERE name = ?",
+          "_" + name.downcase) { |row|
+          return true
+        }
       }
       false
     end
 
     def insert(table, name, definition)
-      db.execute("INSERT INTO #{table} (name, definition) VALUES (?, ?)",
-        "_" + name.downcase, definition)
+      sqlite_retry {
+        db.execute("INSERT INTO #{table} (name, definition) VALUES (?, ?)",
+          "_" + name.downcase, definition)
+      }
     end
 
     def delete(table, name)
-      db.execute("DELETE FROM #{table} WHERE name = ?", "_" + name.downcase)
+      sqlite_retry {
+        db.execute("DELETE FROM #{table} WHERE name = ?", "_" + name.downcase)
+      }
+    end
+
+    def sqlite_retry
+      tries = 5
+      while true
+        begin
+          return yield
+        rescue SQLite3::BusyException
+          tries -= 1
+          raise unless tries > 0
+          sleep 1
+        end
+      end
     end
 
     def db
