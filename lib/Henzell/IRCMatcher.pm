@@ -50,7 +50,8 @@ sub parse_matcher {
   push @re, $after ? '(.*?)$' : '$';
 
   use re::engine::RE2;
-  my $re = qr/@{[join('', @re)]}/;
+  my $re = eval { qr/@{[join('', @re)]}/ };
+  return undef if $@;
   +{ re => $re, captures => \@captures }
 }
 
