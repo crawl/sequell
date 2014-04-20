@@ -102,7 +102,7 @@ sub match {
   my $body = canonical_body($$m{body});
   return unless $body =~ /\S/;
   my $re = $self->{expr};
-  if ($body =~ $re) {
+  if ($re && $body =~ $re) {
     my (@bindings) = $body =~ $re;
     my %named_captures = %+;
     my %captures;
