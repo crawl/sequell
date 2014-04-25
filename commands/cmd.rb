@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 
 require 'helper'
+require 'irc_auth'
 require 'cmd/user_defined_command'
 
 $ctx = CommandContext.new
@@ -16,11 +17,13 @@ def main
     list_user_commands
   elsif $ctx[:rm] && name
     forbid_private_messaging! "Cannot delete commands in PM."
+    IrcAuth.authorize!(:any)
     delete_user_command(name)
   elsif name && command.empty?
     display_user_command(name)
   elsif name && !command.empty?
     forbid_private_messaging! "Cannot define commands in PM."
+    IrcAuth.authorize!(:any)
     define_user_command(name, command)
   else
     show_help(true)

@@ -37,7 +37,7 @@ class IrcAuth
       exit
     end
     auths = self.authorizations[auth_context.to_s]
-    unless auths.include?(self.acting_nick)
+    unless auth_context == :any || auths.include?(self.acting_nick)
       puts "Ignoring #{auth_context} request from #{acting_nick}: not authorized. Authorized users: #{display_auths(auths)}."
       exit 1
     end

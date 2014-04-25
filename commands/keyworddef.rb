@@ -2,6 +2,7 @@
 
 require 'helper'
 require 'sqlhelper'
+require 'irc_auth'
 require 'cmd/user_keyword'
 require 'query/ast/ast_translator'
 
@@ -18,11 +19,13 @@ def main
     list_keywords
   elsif $ctx[:rm] && name
     forbid_private_messaging! "Cannot delete keywords in PM."
+    IrcAuth.authorize!(:any)
     delete_keyword(name)
   elsif name && expansion.empty?
     display_keyword(name)
   elsif name && !expansion.empty?
     forbid_private_messaging! "Cannot define keywords in PM."
+    IrcAuth.authorize!(:any)
     define_keyword(name, expansion)
   else
     show_help(true)

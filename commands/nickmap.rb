@@ -3,6 +3,7 @@
 require 'helper'
 
 require 'set'
+require 'irc_auth'
 
 forbid_private_messaging! "Cannot map nicks on PM."
 
@@ -13,6 +14,7 @@ def cmd_nicks(cmdline)
   cmdline.delete(rm) if rm
 
   if rm
+    IrcAuth.authorize!(:any)
     delete_nicks(cmdline)
   else
     add_nicks(cmdline[0], *cmdline[1 .. -1])
@@ -34,6 +36,8 @@ def unique_nicks(str)
 end
 
 def add_nicks(from, *to)
+  IrcAuth.authorize!(:any) unless to.empty?
+
   newnicks = unique_nicks((NICK_ALIASES[from] || '') + " " + to.join(" "))
   NICK_ALIASES[from.downcase] = newnicks
 
@@ -43,6 +47,7 @@ def add_nicks(from, *to)
   else
     puts "No nick mapping for #{from}."
   end
+  !to.empty?
 end
 
 def delete_nicks(cmds)
@@ -55,6 +60,7 @@ def delete_nicks(cmds)
       end
     end
   end
+  true
 end
 
 def delete_src(nick)
@@ -100,8 +106,8 @@ cmdline = args.split()[1 .. -1].map { |x| x.downcase }
 begin
   if not cmdline.empty?
     load_nicks
-    cmd_nicks(cmdline)
-    save_nicks
+    changed = cmd_nicks(cmdline)
+    save_nicks if changed
   end
 rescue
   puts $!

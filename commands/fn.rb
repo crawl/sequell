@@ -2,6 +2,7 @@
 
 require 'helper'
 require 'sqlhelper'
+require 'irc_auth'
 require 'tpl/function_defs'
 require 'tpl/function_def'
 
@@ -18,11 +19,13 @@ def main
     list_functions
   elsif $ctx[:rm] && name
     forbid_private_messaging! "Cannot delete functions in PM."
+    IrcAuth.authorize!(:any)
     delete_function(name)
   elsif name && expansion.empty?
     display_function(name)
   elsif name && !expansion.empty?
     forbid_private_messaging! "Cannot define functions in PM."
+    IrcAuth.authorize!(:any)
     define_function(name, expansion)
   else
     show_help(true)
