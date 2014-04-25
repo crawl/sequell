@@ -42,7 +42,10 @@ sub authorized_commands {
   }
 
   print "Processing auth response from $responder: $body\n";
-  return unless $body =~ /^(\S+) ACC (\d+)/;
+  unless ($body =~ /^(\S+) ACC (\d+)/) {
+    print "Unexpected response from $responder: $body\n";
+    return;
+  }
   my ($nick, $auth) = ($1, $2);
   $self->{authenticated_users}{$nick} = { when => time(), acc => $auth };
 
@@ -51,17 +54,22 @@ sub authorized_commands {
     delete $self->{cmd}{$nick};
 
     if ($self->nick_identified($nick)) {
+      print "Returning " . scalar(@$msgs) . " commands for $nick\n";
       return map { +{%$_, reprocessed_command => 1} } @$msgs;
     }
     else {
       if (@$msgs) {
         my $m = $msgs->[0];
-        $self->{irc}->post_message(
-          { %$m,
+        print "Announcing that $nick is unauthorized for $$m{body}\n";
+        $self->{irc}->post_message(%$m,
             body => "Could not authenticate $nick with services for $$m{body}"
-           });
+        );
+      } else {
+        print "No queued commands for $nick\n";
       }
     }
+  } else {
+    print "No pending auth requests for $nick\n";
   }
 }
 

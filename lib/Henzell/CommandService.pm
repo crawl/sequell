@@ -62,6 +62,7 @@ sub event_tick {
   $self->_load_commands();
   my $queued_command = shift(@{$self->{backlog}});
   if ($queued_command) {
+    print "Replaying queued command: $$queued_command{body}\n";
     $self->_irc_said($queued_command);
   }
 }
