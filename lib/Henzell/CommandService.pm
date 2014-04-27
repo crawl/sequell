@@ -240,7 +240,8 @@ sub command_postprocess_output {
                            body => $query,
                            verbatim => $query,
                            prefix => $prefix,
-                           stub => $stub });
+                           stub => $stub,
+                           autocomplete_disabled => 1 });
     $output = '';
   }
 

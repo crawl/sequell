@@ -90,6 +90,7 @@ like(irc('?/>cow'), qr/Matching entries \(4\): cow\[2.*/);
 
 irc('!learn add !help:!foo Hahahahaha');
 is(irc('!help !foo'), "!foo: Hahahahaha");
+is(irc('!help !foz'), "No help for !foz (you could add help with !learn add !help:!foz <helpful text>)");
 like(irc('!help !bar'), qr/No help for !bar/);
 
 beh('Hi! ::: Hello, $nick. Welcome to ${channel}!', sub {

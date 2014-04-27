@@ -94,14 +94,20 @@ sub _expand {
 }
 
 sub _lookup_term {
-  my ($self, $term, $carp_if_missing) = @_;
-  LearnDB::query_entry_autocorrect($term, undef, $carp_if_missing)
+  my ($self, $term, $carp_if_missing, $autocomplete_disabled) = @_;
+  if ($autocomplete_disabled) {
+    LearnDB::query_entry($term, undef, $carp_if_missing)
+  }
+  else {
+    LearnDB::query_entry_autocorrect($term, undef, $carp_if_missing)
+  }
 }
 
 sub _db_query {
   my ($self, $m, $query, $bare, $carp_if_missing) = @_;
 
-  my $entry = $self->_lookup_term($query, $carp_if_missing);
+  my $entry = $self->_lookup_term($query, $carp_if_missing,
+                                  $$m{autocomplete_disabled});
   my $msg = $self->_expand($m, $entry, $bare);
   if (defined $msg && $msg =~ /\S/) {
     $msg = "$$m{prefix}$msg" if $$m{prefix};
@@ -191,6 +197,7 @@ sub indirect_query_event {
   $self->maybe_query({ %$m,
                        body => $query,
                        verbatim => $query,
+                       autocomplete_disabled => $$m{autocomplete_disabled},
                        said => 1 },
                      sub {
                        my $result = shift;
