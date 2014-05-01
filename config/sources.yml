@@ -211,11 +211,15 @@ sources:
       - meta/0.14/logfile{,-sprint,-zotdef}*
       - meta/0.13/logfile{,-sprint,-zotdef}*
       - meta/git/logfile{,-sprint,-zotdef}*
+      - meta/gods/logfile*: gods
+      - meta/ranged_combat/logfile*: rc
     milestones:
       - meta/nostalgia/milestones*
       - meta/0.14/milestones{,-sprint,-zotdef}*
       - meta/0.13/milestones{,-sprint,-zotdef}*
       - meta/git/milestones{,-sprint,-zotdef}*
+      - meta/gods/milestones*: gods
+      - meta/ranged_combat/milestones*: rc
     morgues:
       - http://crawl.berotato.org/crawl/morgue
     ttyrecs:
