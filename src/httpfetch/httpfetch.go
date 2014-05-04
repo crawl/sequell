@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -20,6 +21,7 @@ var httpTimeout = time.Duration(10 * time.Second)
 var httpTransport = http.Transport{Dial: dialTimeout}
 var httpClient = &http.Client{Transport: &httpTransport}
 var userAgent = DefaultUserAgent
+var MaxConcurrentRequestsPerHost = 5
 
 const O_APPEND = os.O_WRONLY | os.O_APPEND | os.O_CREATE
 
@@ -43,6 +45,13 @@ func Quiet() bool {
 	return quiet
 }
 
+func GetConcurrentRequestCount(count int) int {
+	if count > MaxConcurrentRequestsPerHost {
+		return MaxConcurrentRequestsPerHost
+	}
+	return count
+}
+
 type Headers map[string]string
 
 type HttpError struct {
@@ -62,6 +71,14 @@ type FetchRequest struct {
 	// Don't try to resume downloads if this is set.
 	FullDownload   bool
 	RequestHeaders Headers
+}
+
+func (req *FetchRequest) Host() (string, error) {
+	reqUrl, err := url.Parse(req.Url)
+	if err != nil {
+		return "", err
+	}
+	return reqUrl.Host, nil
 }
 
 func (req *FetchRequest) String() string {
@@ -211,11 +228,47 @@ func NewFileDownload(req *FetchRequest, complete chan<- *FetchResult) {
 	complete <- &FetchResult{req, err, copied}
 }
 
+func groupFetchRequestsByHost(requests []*FetchRequest) map[string][]*FetchRequest {
+	grouped := make(map[string][]*FetchRequest)
+
+	appendReq := func(reqs []*FetchRequest, req *FetchRequest) []*FetchRequest {
+		if reqs == nil {
+			return []*FetchRequest{req}
+		} else {
+			return append(reqs, req)
+		}
+	}
+	for _, req := range requests {
+		reqHost, _ := req.Host()
+		grouped[reqHost] = appendReq(grouped[reqHost], req)
+	}
+
+	return grouped
+}
+
 func ParallelFetch(requests ...*FetchRequest) []*FetchResult {
 	completion := make(chan *FetchResult)
 	defer close(completion)
-	for _, req := range requests {
-		go FetchFile(req, completion)
+
+	runHostRequests := func(host string, reqs []*FetchRequest) {
+		reqChan := make(chan *FetchRequest, len(reqs))
+		for _, req := range reqs {
+			reqChan <- req
+		}
+		close(reqChan)
+		nRoutines := GetConcurrentRequestCount(len(reqs))
+		log.Printf("[GO:%d] Spinning up %d fetches for %s\n",
+			nRoutines, nRoutines, host)
+		for i := 0; i < nRoutines; i++ {
+			go func() {
+				for req := range reqChan {
+					FetchFile(req, completion)
+				}
+			}()
+		}
+	}
+	for host, requests := range groupFetchRequestsByHost(requests) {
+		runHostRequests(host, requests)
 	}
 
 	nrequests := len(requests)
