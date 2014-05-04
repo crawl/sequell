@@ -7,6 +7,7 @@ use lib 'lib';
 use Henzell::Config qw/%CONFIG @LOGS @MILESTONES/;
 use Henzell::Utils;
 
+my $parallel_fetch_bin = "bin/parallelhttpfetch";
 my $verbose = -t STDIN;
 my $show_missing = grep(/^--show-missing$/, @ARGV);
 my $list_files = grep(/^--list-files$/, @ARGV);
@@ -47,8 +48,28 @@ sub fetch_file($) {
   my $url = $file->http_url();
   print "Fetching $url -> $path\n" if $verbose;
 
-  my $limit_time = $target_exists ? '--max-time 15' : '';
-  my $cmd = qq{curl -s $limit_time -C- $url -o $path >/dev/null 2>&1};
+  +{ url => $url, path => $path, target_exists => $target_exists }
+}
+
+sub curl_fetch {
+  for my $file (@_) {
+    my $url = $file->{url};
+    my $path = $file->{path};
+    my $limit_time = $file->{target_exists} ? '--max-time 15' : '';
+    my $cmd = qq{curl -s $limit_time -C- $url -o $path >/dev/null 2>&1};
+    print "[CMD] $cmd\n" if $verbose;
+    system($cmd);
+  }
+}
+
+sub parallel_fetch {
+  my @files = @_;
+  my @cmd = ($parallel_fetch_bin, "--user-agent='Sequell httpfetch/1.0'");
+  push @cmd, "-q" unless $verbose;
+  for my $file (@files) {
+    push @cmd, "\Q$$file{url}>$$file{path}";
+  }
+  my $cmd = join(" ", @cmd);
   print "[CMD] $cmd\n" if $verbose;
   system($cmd);
 }
@@ -56,7 +77,20 @@ sub fetch_file($) {
 sub main() {
   Henzell::Utils::lock_or_exit();
   Henzell::Config::read();
-  fetch_file($_) for (@LOGS, @MILESTONES);
+
+  my @fetch_list;
+  for (@LOGS, @MILESTONES) {
+    my $fetch_target = fetch_file($_);
+    push @fetch_list, $fetch_target if $fetch_target;
+  }
+
+  if (@fetch_list) {
+    if (-x $parallel_fetch_bin) {
+      parallel_fetch(@fetch_list);
+    } else {
+      curl_fetch(@fetch_list);
+    }
+  }
 }
 
 main();

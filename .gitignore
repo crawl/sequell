@@ -50,3 +50,5 @@ backup/
 tmp
 user.txt
 www/*.html
+bin/parallelhttpfetch
+pkg
