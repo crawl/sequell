@@ -52,3 +52,4 @@ user.txt
 www/*.html
 bin/parallelhttpfetch
 pkg
+src/github.com

@@ -129,6 +129,23 @@ func FetchFile(req *FetchRequest, complete chan<- *FetchResult) {
 	NewFileDownload(req, complete)
 }
 
+func fileResumeHeaders(req *FetchRequest, file *os.File) (Headers, int64) {
+	headers := req.RequestHeaders
+	finf, err := file.Stat()
+	resumePoint := int64(0)
+	if err == nil && finf != nil {
+		resumePoint = finf.Size()
+		if headers == nil {
+			headers = Headers{}
+		} else {
+			headers = headers.Copy()
+		}
+		headers["Range"] = fmt.Sprintf("bytes=%d-", resumePoint)
+		headers["Accept-Encoding"] = ""
+	}
+	return headers, resumePoint
+}
+
 func ResumeFileDownload(req *FetchRequest, complete chan<- *FetchResult) {
 	var err error
 	handleError := func() {
@@ -148,19 +165,7 @@ func ResumeFileDownload(req *FetchRequest, complete chan<- *FetchResult) {
 	}
 	defer file.Close()
 
-	headers := req.RequestHeaders
-	finf, err := file.Stat()
-	resumePoint := int64(0)
-	if err == nil && finf != nil {
-		resumePoint = finf.Size()
-		if headers == nil {
-			headers = Headers{}
-		} else {
-			headers = headers.Copy()
-		}
-		headers["Range"] = fmt.Sprintf("bytes=%d-", resumePoint)
-		headers["Accept-Encoding"] = ""
-	}
+	headers, resumePoint := fileResumeHeaders(req, file)
 	resp, err := FileGetResponse(req.Url, headers)
 
 	var copied int64 = 0
