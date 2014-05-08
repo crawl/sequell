@@ -188,7 +188,7 @@ func ResumeFileDownload(req *FetchRequest, complete chan<- *FetchResult) {
 	var copied int64 = 0
 	if err != nil {
 		httpErr, _ := err.(*HttpError)
-		if httpErr == nil || httpErr.StatusCode != 416 {
+		if httpErr == nil || httpErr.StatusCode != http.StatusRequestedRangeNotSatisfiable {
 			handleError()
 			return
 		}
