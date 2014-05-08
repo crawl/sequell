@@ -320,22 +320,24 @@ god:
   ash: Ashenzari
   beo: Beogh
   che: Cheibriados
+  dit: Dithmenos
   ely: Elyvilon
   fed: Fedhas
+  goz: Gozag
   jiy: Jiyva
   kik: Kikubaaqudgha
   lug: Lugonu
   mak: Makhleb
   oka: Okawaru
+  qaz: Qazlal
+  sif: Sif Muna
   tro: Trog
+  tso: The Shining One
   veh: Vehumet
   xom: Xom
   yre: Yredelemnul
   zin: Zin
-  sif: Sif Muna
-  tso: The Shining One
   nem: Nemelex Xobeh
-  dit: Dithmenos
 
 god-aliases:
   feawn: Fedhas
