@@ -51,6 +51,7 @@ module Henzell
       all_ttyrecs =
         HttpList::find_files(self.user_ttyrec_urls, /[.]ttyrec/, tty_end) ||
         [ ]
+      all_ttyrecs = unique_ttyrecs(all_ttyrecs)
 
       first_ttyrec_before_start = nil
       first_ttyrec_is_start = false
@@ -79,6 +80,15 @@ module Henzell
   private
     def user_ttyrec_url(ttyrec_url)
       ttyrec_url + '/' + self.user + '/'
+    end
+
+    def unique_ttyrecs(urls)
+      seen = Set.new
+      urls.find_all { |u|
+        unique_url = !seen.include?(u.filename)
+        seen.add(u.filename)
+        unique_url
+      }
     end
 
     def ttyrec_filename_datetime_string(filename)

@@ -293,6 +293,7 @@ def ttyrec_list_string(game, ttyreclist)
       for ttyrec in ttyreclist do
         baseurl = ttyrec.baseurl
         if oldbase != baseurl then
+          result << ' ' unless result.empty?
           result << baseurl
           oldbase = baseurl
         end
