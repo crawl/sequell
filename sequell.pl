@@ -111,7 +111,7 @@ sub irc_services {
 
   $reg->(Henzell::SeenService->new(irc => $irc_bot)) if $feat->('seen_update');
 
-  if ($log_reader->active()) {
+  if ($CONFIG{sql_store}) {
     $reg->(
       Henzell::LogFetchService->new(
         irc => $irc_bot,

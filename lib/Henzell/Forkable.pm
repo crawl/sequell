@@ -2,6 +2,7 @@ package Henzell::Forkable;
 
 use POE;
 use Henzell::Utils;
+use utf8;
 
 my $GLOBAL_DISPATCH_ID = 0;
 
@@ -41,6 +42,7 @@ sub _build_real_forker {
                  handler => $unique_handler,
                  callback => sub {
                    my ($kernel, $output) = @_[KERNEL, ARG0];
+                   utf8::decode($output);
                    # Remove handler from kernel:
                    $kernel->state($unique_handler);
                    $handler->($output);
