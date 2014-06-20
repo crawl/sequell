@@ -41,11 +41,11 @@ func CreateLogger() Logger {
 		logMsg:    make(chan func() string),
 		writerSet: make(chan io.Writer),
 	}
-	go logger(res)
+	go logAppender(res)
 	return res
 }
 
-func logger(l *loggerImpl) {
+func logAppender(l *loggerImpl) {
 	for {
 		select {
 		case writer := <-l.writerSet:
@@ -55,7 +55,7 @@ func logger(l *loggerImpl) {
 				return
 			}
 			if l.writer != nil {
-				fmt.Fprintln(l.writer, msgf())
+				fmt.Fprint(l.writer, msgf())
 			}
 		}
 	}

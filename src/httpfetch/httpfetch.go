@@ -24,6 +24,7 @@ var userAgent = DefaultUserAgent
 var MaxConcurrentRequestsPerHost = 5
 
 var logWriter = CreateLogger()
+var logger = log.New(logWriter, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
 
 const O_APPEND = os.O_WRONLY | os.O_APPEND | os.O_CREATE
 
@@ -48,7 +49,7 @@ func SetLogFile(file *os.File) {
 }
 
 func Logf(format string, rest ...interface{}) {
-	fmt.Fprintf(logWriter, format, rest...)
+	logger.Printf(format, rest...)
 }
 
 func dialTimeout(network, addr string) (net.Conn, error) {
