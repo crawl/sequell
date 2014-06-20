@@ -23,7 +23,33 @@ var httpClient = &http.Client{Transport: &httpTransport}
 var userAgent = DefaultUserAgent
 var MaxConcurrentRequestsPerHost = 5
 
+var logWriter = CreateLogger()
+
 const O_APPEND = os.O_WRONLY | os.O_APPEND | os.O_CREATE
+
+func SetLogWriter(writer io.Writer) {
+	logWriter.SetWriter(writer)
+}
+
+type unbufferedWriter struct {
+	file *os.File
+}
+
+func (uw unbufferedWriter) Write(b []byte) (n int, err error) {
+	n, err = uw.file.Write(b)
+	if err != nil {
+		_ = uw.file.Sync()
+	}
+	return
+}
+
+func SetLogFile(file *os.File) {
+	SetLogWriter(unbufferedWriter{file: file})
+}
+
+func Logf(format string, rest ...interface{}) {
+	fmt.Fprintf(logWriter, format, rest...)
+}
 
 func dialTimeout(network, addr string) (net.Conn, error) {
 	return net.DialTimeout(network, addr, httpTimeout)
@@ -136,13 +162,18 @@ func FileGetResponse(url string, headers Headers) (*http.Response, error) {
 }
 
 func FetchFile(req *FetchRequest, complete chan<- *FetchResult) {
+	Logf("FetchFile[%s] -> %s (full download: %v)", req.Url, req.Filename,
+		req.FullDownload)
 	if !req.FullDownload {
 		finf, err := os.Stat(req.Filename)
 		if err == nil && finf != nil && finf.Size() > 0 {
+			Logf("FetchFile[%s]: resuming download for %s",
+				req.Url, req.Filename)
 			ResumeFileDownload(req, complete)
 			return
 		}
 	}
+	Logf("FetchFile[%s]: new file download %s", req.Url, req.Filename)
 	NewFileDownload(req, complete)
 }
 
@@ -164,11 +195,13 @@ func fileResumeHeaders(req *FetchRequest, file *os.File) (Headers, int64) {
 }
 
 func ResumeFileDownload(req *FetchRequest, complete chan<- *FetchResult) {
+	Logf("ResumeFileDownload[%s] -> %s", req.Url, req.Filename)
 	var err error
 	handleError := func() {
 		if err != nil && !quiet {
 			log.Println("Download of", req, "failed:", err)
 		}
+		Logf("handleError[%s] -> %s, err: %v", req.Url, req.Filename, err)
 		complete <- fetchError(req, err)
 	}
 
@@ -195,20 +228,26 @@ func ResumeFileDownload(req *FetchRequest, complete chan<- *FetchResult) {
 		err = nil
 	} else {
 		defer resp.Body.Close()
+		Logf("ResumeFileDownload[%s]: Copying bytes to %s from response",
+			req.Url, req.Filename)
 		copied, err = io.Copy(file, resp.Body)
 	}
 	if !quiet {
 		log.Printf("[DONE:%d] ResumeFileDownload (at %d) %s\n", copied, resumePoint, req)
 	}
+	Logf("ResumeFileDownload[%s] -> %s: completed, bytes copied: %v, err: %v",
+		req.Url, req.Filename, copied, err)
 	complete <- &FetchResult{req, err, copied}
 }
 
 func NewFileDownload(req *FetchRequest, complete chan<- *FetchResult) {
+	Logf("NewFileDownload[%s] -> %s", req.Url, req.Filename)
 	if !quiet {
 		log.Println("NewFileDownload ", req)
 	}
 	resp, err := FileGetResponse(req.Url, req.RequestHeaders)
 	if err != nil {
+		Logf("NewFileDownload[%s] -> %s: error: %v (http)", req.Url, req.Filename, err)
 		complete <- fetchError(req, err)
 		return
 	}
@@ -216,37 +255,33 @@ func NewFileDownload(req *FetchRequest, complete chan<- *FetchResult) {
 
 	file, err := os.Create(req.Filename)
 	if err != nil {
+		Logf("NewFileDownload[%s] -> %s: error: %v (fopen)", req.Url, req.Filename, err)
 		complete <- fetchError(req, err)
 		return
 	}
 	defer file.Close()
 
+	Logf("NewFileDownload[%s] -> %s: copying bytes", req.Url, req.Filename)
 	copied, err := io.Copy(file, resp.Body)
 	if !quiet {
 		log.Printf("[DONE:%d] NewFileDownload %s\n", copied, req)
 	}
+	Logf("NewFileDownload[%s] -> %s: completed copy:%v, err:%v", req.Url, req.Filename, copied, err)
 	complete <- &FetchResult{req, err, copied}
 }
 
 func groupFetchRequestsByHost(requests []*FetchRequest) map[string][]*FetchRequest {
 	grouped := make(map[string][]*FetchRequest)
-
-	appendReq := func(reqs []*FetchRequest, req *FetchRequest) []*FetchRequest {
-		if reqs == nil {
-			return []*FetchRequest{req}
-		} else {
-			return append(reqs, req)
-		}
-	}
 	for _, req := range requests {
 		reqHost, _ := req.Host()
-		grouped[reqHost] = appendReq(grouped[reqHost], req)
+		grouped[reqHost] = append(grouped[reqHost], req)
 	}
-
 	return grouped
 }
 
 func ParallelFetch(requests ...*FetchRequest) []*FetchResult {
+	Logf("ParallelFetch: %d files", len(requests))
+
 	completion := make(chan *FetchResult)
 	defer close(completion)
 
@@ -257,8 +292,8 @@ func ParallelFetch(requests ...*FetchRequest) []*FetchResult {
 		}
 		close(reqChan)
 		nRoutines := GetConcurrentRequestCount(len(reqs))
-		log.Printf("[GO:%d] Spinning up %d fetches for %s\n",
-			nRoutines, nRoutines, host)
+		Logf("runHostRequests[%s]: spinning up %d fetch routines for %d URLs",
+			host, nRoutines, len(reqs))
 		for i := 0; i < nRoutines; i++ {
 			go func() {
 				for req := range reqChan {
@@ -268,14 +303,18 @@ func ParallelFetch(requests ...*FetchRequest) []*FetchResult {
 		}
 	}
 	for host, requests := range groupFetchRequestsByHost(requests) {
+		Logf("runHostRequests: %s (%d requests)", host, len(requests))
 		runHostRequests(host, requests)
 	}
 
 	nrequests := len(requests)
+	Logf("ParallelFetch: waiting for %d requests to complete", nrequests)
 	results := make([]*FetchResult, nrequests)
 	for i := 0; i < nrequests; i++ {
 		results[i] = <-completion
+		Logf("ParallelFetch: completed: %s", results[i])
 	}
+	Logf("ParallelFetch: all done: %d requests completed", nrequests)
 	return results
 }
 

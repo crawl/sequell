@@ -65,28 +65,46 @@ func reportDownloadResults(results []*httpfetch.FetchResult) {
 	}
 }
 
+const logfile = "http-fetch.log"
+
 func main() {
+	file, err := os.Create(logfile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't open logfile %s: %v", logfile, err)
+		os.Exit(1)
+	}
+	httpfetch.SetLogFile(file)
+
+	httpfetch.Logf("Setting max procs to %d", runtime.NumCPU())
 	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	quiet := goopt.Flag([]string{"-q", "--quiet"}, nil,
 		"Quiet (log only errors)", "")
 	userAgent := goopt.String([]string{"--user-agent"}, "", "user agent string")
 	goopt.Parse(nil)
 
+	httpfetch.Logf("Setting quiet to %v", *quiet)
 	httpfetch.SetQuiet(*quiet)
 	if userAgent != nil && len(*userAgent) > 0 {
+		httpfetch.Logf("Setting user agent to %s", *userAgent)
 		httpfetch.SetUserAgent(*userAgent)
 	}
 
 	args := goopt.Args
 	if len(args) <= 0 {
+		httpfetch.Logf("Insufficient args, exiting")
 		usage()
 	}
 
 	reqs, err := createUrlRequests(args)
+	httpfetch.Logf("Created %d URL requests", len(reqs))
 	if err != nil {
 		die(err)
 	}
 
+	httpfetch.Logf("Fetching %d URL requests", len(reqs))
 	results := httpfetch.ParallelFetch(reqs...)
+	httpfetch.Logf("Reporting %d URL results", len(results))
 	reportDownloadResults(results)
+	httpfetch.Logf("All done, exiting")
 }
