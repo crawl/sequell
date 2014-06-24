@@ -1223,6 +1223,7 @@ TV options
                      FooTV
                      
 `-tv:channel=<name>` requests a specifically named TV channel instead of FooTV
+
 `-tv:<N`             starts playback N times farther from the end. -tv normally
                      starts playback a little way before the end of game, or
                      a little way before the milestone (when used with !lm).
@@ -1252,11 +1253,14 @@ TV options
                      
 `-tv:>T[turncount]`  End playback near the given turncount (rounded up to
                      nearest 100)
+                     
 `-tv:<T[turncount]`  Start playback near the given turncount (rounded down to
                      nearest 100). `<T0` starts from the beginning of the game.
+                     
 `-tv:T[+-][delta]`   Playback to the turn count of the milestone (or end
                      of game) + the delta. i.e. `T+3000` => turn count of
                      the milestone + 3000 turns.
+                     
 `-tv:x[N]`           Change playback speed. For instance, `-tv:x5` plays back
                      the game at 5x normal speed. N may be in the range [0.1,50]
 
