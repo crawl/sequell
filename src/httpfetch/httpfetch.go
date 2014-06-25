@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,9 +16,15 @@ const DefaultUserAgent = "httpfetch/1.0"
 
 var quiet = false
 
-var httpTimeout = time.Duration(10 * time.Second)
-var httpTransport = http.Transport{Dial: dialTimeout}
-var httpClient = &http.Client{Transport: &httpTransport}
+var connectTimeout = 10 * time.Second
+var readTimeout = 20 * time.Second
+var httpTransport = http.Transport{
+	Dial: dialer(connectTimeout, readTimeout),
+	ResponseHeaderTimeout: connectTimeout,
+}
+var httpClient = &http.Client{
+	Transport: &httpTransport,
+}
 var userAgent = DefaultUserAgent
 var MaxConcurrentRequestsPerHost = 5
 
@@ -50,10 +55,6 @@ func SetLogFile(file *os.File) {
 
 func Logf(format string, rest ...interface{}) {
 	logger.Printf(format, rest...)
-}
-
-func dialTimeout(network, addr string) (net.Conn, error) {
-	return net.DialTimeout(network, addr, httpTimeout)
 }
 
 func SetUserAgent(agent string) {
@@ -231,6 +232,7 @@ func ResumeFileDownload(req *FetchRequest, complete chan<- *FetchResult) {
 		defer resp.Body.Close()
 		Logf("ResumeFileDownload[%s]: Copying bytes to %s from response",
 			req.Url, req.Filename)
+
 		copied, err = io.Copy(file, resp.Body)
 	}
 	if !quiet {
