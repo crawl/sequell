@@ -140,7 +140,7 @@ sub describe_results {
 sub _db_search_result {
   my ($self, $term, $terms_only, $entries_only) = @_;
   my ($terms, $entries, $error) =
-    LearnDB::search($term, $terms_only, $entries_only);
+    LearnDB::search($term, $terms_only, $entries_only, 'ignore_hidden');
   if ($error) {
     $error =~ s/ at \S+ line \d+[.]\s*$//;
     return $error;

@@ -17,6 +17,7 @@ use lib File::Spec->catfile($ENV{HENZELL_ROOT} ||
                               File::Spec->catfile(dirname(__FILE__), '..'),
                             'lib');
 use Henzell::SQLLearnDB;
+use LearnDB;
 use utf8;
 use open qw/:std :utf8/;
 
@@ -33,11 +34,6 @@ my %redir;
 my %link;
 my %canonical_term;
 my $FULL_REDIRECT_PATTERN = qr/^see \{([^\[\]\}]+(?:\s*\[\s*\d+\s*\])?)\}$/i;
-
-sub hidden_term($) {
-  my $term = shift;
-  $term =~ /^:\w+:$/ || $term =~ /^~.+/
-}
 
 sub canonical_lookup {
   lc(canonical_link(shift))
@@ -87,7 +83,7 @@ $timestamp = $db->mtime();
 $db->each_term(
   sub {
     my $term = shift;
-    return if hidden_term($term);
+    return if LearnDB::hidden_term($term);
     my @definitions = $db->definitions($term);
     for my $i (1 .. @definitions) {
       my $val = $definitions[$i - 1];

@@ -35,6 +35,11 @@ our $RTEXT = qr/(.+)/;
 our $TERM_MAX_LENGTH = 30;
 our $TEXT_MAX_LENGTH = 350;
 
+sub hidden_term {
+  my $term = shift;
+  $term =~ /^:\w+:$/ || $term =~ /^~.+/
+}
+
 sub term_exists($;$) {
   my ($term, $num) = @_;
   $DB->definition_exists($term, $num)
@@ -49,7 +54,7 @@ sub term_redirect {
 }
 
 sub search {
-  my ($term, $terms_only, $entries_only) = @_;
+  my ($term, $terms_only, $entries_only, $ignore_hidden) = @_;
   my @terms;
   my @entries;
   use re::engine::RE2;
@@ -59,22 +64,25 @@ sub search {
   return (\@terms, \@entries, $@) unless $pattern;
   $DB->each_term(sub {
     my $term = shift;
-    if (!$entries_only && $term =~ $pattern) {
-      push @terms, $term;
-    }
-    if (!$terms_only) {
-      my @definitions = $DB->definitions($term);
-      for my $i (0 .. $#definitions) {
-        my $def = $definitions[$i];
-        if ($def =~ $pattern) {
-          push @entries, LearnDB::Entry->new(term => $term,
-                                             index => $i + 1,
-                                             count => scalar(@definitions),
-                                             value => $def);
+    my $hidden = $ignore_hidden && hidden_term($term);
+    if (!$hidden) {
+      if (!$entries_only && $term =~ $pattern) {
+        push @terms, $term;
+      }
+      if (!$terms_only) {
+        my @definitions = $DB->definitions($term);
+        for my $i (0 .. $#definitions) {
+          my $def = $definitions[$i];
+          if ($def =~ $pattern) {
+            push @entries, LearnDB::Entry->new(term => $term,
+                                               index => $i + 1,
+                                               count => scalar(@definitions),
+                                               value => $def);
+          }
         }
       }
     }
-  });
+   });
   (\@terms, \@entries)
 }
 
