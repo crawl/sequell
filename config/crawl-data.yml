@@ -47,6 +47,8 @@ game-type-prefixes:
 
 default-game-type: crawl
 
+generic_panlord: a pandemonium lord
+
 orcs:
   - Agrik
   - Alork
