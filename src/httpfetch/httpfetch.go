@@ -153,7 +153,9 @@ func FileGetResponse(url string, headers Headers) (*http.Response, error) {
 	if headers != nil {
 		headers.AddHeaders(&request.Header)
 	}
+	Logf("FileGetResponse[%s]: pre-connect", url)
 	resp, err := httpClient.Do(request)
+	Logf("FileGetResponse[%s]: connected: %v, %v", url, resp, err)
 	if err != nil {
 		return resp, err
 	}
@@ -315,7 +317,8 @@ func ParallelFetch(requests ...*FetchRequest) []*FetchResult {
 	results := make([]*FetchResult, nrequests)
 	for i := 0; i < nrequests; i++ {
 		results[i] = <-completion
-		Logf("ParallelFetch: completed: %s", results[i])
+		Logf("ParallelFetch [%d/%d]: completed: %s", i+1, nrequests,
+			results[i])
 	}
 	Logf("ParallelFetch: all done: %d requests completed", nrequests)
 	return results
