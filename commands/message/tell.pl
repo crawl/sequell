@@ -6,6 +6,7 @@ use utf8;
 use open qw/:std :utf8/;
 use lib 'src';
 use MessageDB;
+use Seen;
 
 chomp(my @args = @ARGV);
 
@@ -19,6 +20,12 @@ $message =~ s/^\S+ +//i;
 $message =~ /^(\S+) +(.+)$/ or fail();
 
 my $to = MessageDB::cleanse_nick($1) or fail;
+
+if (!Seen::seen($to)) {
+  print "Sorry $ARGV[1], I don't know who $to is.\n";
+  exit 1;
+}
+
 $message = $2;
 
 if (length $message > 300)

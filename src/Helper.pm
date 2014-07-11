@@ -62,7 +62,7 @@ sub eval_or_exit(&) {
 sub demunge_xlogline # {{{
 {
   my $line = shift;
-  return {} if $line eq '';
+  return {} unless $line;
   my %game;
 
   chomp $line;

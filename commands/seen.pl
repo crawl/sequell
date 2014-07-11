@@ -3,7 +3,9 @@ use strict;
 use warnings;
 
 use lib 'src';
-use Helper qw/demunge_xlogline cleanse_nick serialize_time/;
+use lib 'lib';
+use Seen;
+use Helper;
 
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
@@ -16,22 +18,18 @@ if (lc($ARGV[0]) eq lc($ARGV[1]))
   exit;
 }
 
-my $target = cleanse_nick($ARGV[0]);
+my $target = $ARGV[0];
 my $nick = $ARGV[1];
 
-open my $handle, '<', "$seen_dir/$target" or do
-{
-  print "Sorry $nick, I haven't seen $ARGV[0].\n";
+my $seen_ref = Seen::seen($target);
+if (!$seen_ref) {
+  print "Sorry $nick, I haven't seen $target.\n";
   exit;
 };
-binmode $handle, ':utf8';
-
-my $line = <$handle>;
-my $seen_ref = demunge_xlogline($line);
 
 printf 'I last saw %s at %s UTC (%s ago) %s.%s',
        $seen_ref->{nick},
        scalar gmtime($seen_ref->{time}),
-       serialize_time(time - $seen_ref->{time}, 1),
+       Helper::serialize_time(time - $seen_ref->{time}, 1),
        $seen_ref->{doing},
        "\n";
