@@ -47,7 +47,7 @@ class LearnDBQuery
   end
 
   def self.redirect_entry?(entry_text)
-    redirect_pattern.match(entry_text)
+    redirect_pattern.match(entry_text.to_s)
   end
 
   def self.parse_query(query)

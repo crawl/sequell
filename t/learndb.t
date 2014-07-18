@@ -55,6 +55,8 @@ is(irc('??cow'), "cow[1/1]: MOOOOOO");
 irc('!learn add pow see {cow}');
 is(irc('??pow'), "cow[1/1]: MOOOOOO");
 
+irc('!learn add numeric_dummy 10');
+is(irc('.echo $(ldb numeric_dummy)'), 'numeric_dummy[1/1]: 10');
 irc('!learn add cow cowcowcow');
 is(irc('??pow[2]'), "cow[2/2]: cowcowcow");
 is(irc('??pow[-1]'), "cow[2/2]: cowcowcow");
