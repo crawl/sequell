@@ -33,7 +33,7 @@ module Sql
         end
       @counts = count.nil? ? nil : [count]
       @extra_fields = extra_fields
-      @extra_values = extra_values.map { |e| [ e ] }
+      @extra_values = extra_values.to_a.map { |e| [ e ] }
       @subrows = nil
     end
 

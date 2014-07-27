@@ -236,7 +236,7 @@ QUERY
   count = nil
   id = nil
   sql_db_handle.execute(wrapped_random_query, *q.values) do |row|
-    index, count, id = row
+    index, count, id = row.to_a
   end
   return Sql::QueryResult.none(q) unless index
   q.with_contexts {

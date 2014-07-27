@@ -63,6 +63,7 @@ module Sql
       base_size = @ctx.db_columns.size
       extras = { }
       map = { }
+      row = row.to_a
       (0 ... row.size).each do |i|
         field = @query_fields[i]
         if i < base_size
