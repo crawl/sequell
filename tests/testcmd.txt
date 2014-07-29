@@ -73,6 +73,9 @@ E !lg * fe ::~ \(Felid\).*\(Fire Elementalist\)
 !lg * gr
 !kw gr ::~ crace=Gargoyle.Grotesk
 
+!lg * end=20110619030928
+!lg * end="20110619 030928"
+!lg * end="20110619-030928"
 !lg * -random
 !lm * -random
 
