@@ -53,6 +53,12 @@ sub term_redirect {
   $redirect && $redirect_num == 1 ? $redirect : ''
 }
 
+sub spaced_term {
+  my $term = shift;
+  $term =~ tr/_/ /;
+  $term
+}
+
 sub search {
   my ($term, $terms_only, $entries_only, $ignore_hidden) = @_;
   my @terms;
@@ -66,7 +72,7 @@ sub search {
     my $term = shift;
     my $hidden = $ignore_hidden && hidden_term($term);
     if (!$hidden) {
-      if (!$entries_only && $term =~ $pattern) {
+      if (!$entries_only && spaced_term($term) =~ $pattern) {
         push @terms, $term;
       }
       if (!$terms_only) {
