@@ -33,6 +33,7 @@ sources:
       - logfile12{,-sprint,-zotdef}*
       - logfile13{,-sprint,-zotdef}*
       - logfile14{,-sprint,-zotdef}*
+      - logfile15{,-sprint,-zotdef}*
       - logfile-git{,-sprint,-zotdef}*
       - logfile-lorcs: lorcs
     milestones:
@@ -49,6 +50,7 @@ sources:
       - milestones12{,-sprint,-zotdef}*
       - milestones13{,-sprint,-zotdef}*
       - milestones14{,-sprint,-zotdef}*
+      - milestones15{,-sprint,-zotdef}*
       - milestones-git{,-sprint,-zotdef}*
       - milestones-lorcs: lorcs
 
@@ -111,6 +113,7 @@ sources:
       - meta/gods/logfile*: gods
       - meta/ranged_combat/logfile*: rc
       - meta/nostalgia/logfile*
+      - meta/0.15/logfile{,-sprint,-zotdef}*
       - meta/0.14/logfile{,-sprint,-zotdef}*
       - meta/0.13/logfile{,-sprint,-zotdef}*
       - meta/0.12/logfile{,-sprint,-zotdef}*
@@ -121,6 +124,7 @@ sources:
       - meta/gods/milestones*: gods
       - meta/ranged_combat/milestones*: rc
       - meta/nostalgia/milestones*
+      - meta/0.15/milestones{,-sprint,-zotdef}*
       - meta/0.14/milestones{,-sprint,-zotdef}*
       - meta/0.13/milestones{,-sprint,-zotdef}*
       - meta/0.12/milestones{,-sprint,-zotdef}*
@@ -213,6 +217,7 @@ sources:
     base: http://crawl.berotato.org/crawl
     logfiles:
       - meta/nostalgia/logfile*
+      - meta/0.15/logfile{,-sprint,-zotdef}*
       - meta/0.14/logfile{,-sprint,-zotdef}*
       - meta/0.13/logfile{,-sprint,-zotdef}*
       - meta/git/logfile{,-sprint,-zotdef}*
@@ -220,6 +225,7 @@ sources:
       - meta/ranged_combat/logfile*: rc
     milestones:
       - meta/nostalgia/milestones*
+      - meta/0.15/logfile{,-sprint,-zotdef}*
       - meta/0.14/milestones{,-sprint,-zotdef}*
       - meta/0.13/milestones{,-sprint,-zotdef}*
       - meta/git/milestones{,-sprint,-zotdef}*
