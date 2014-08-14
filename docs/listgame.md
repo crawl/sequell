@@ -248,6 +248,7 @@ Where:
   * `-graph` For a grouping/summary query, produces a graph. See the
              "[Graphs](#graphs)" section.
   * `-ttyrec` Get URLs to the game's ttyrecs.
+  * `-random` Return a random game matching the filter conditions.
   
   These options are not applicable to summary queries (queries using s=foo),
   with the exception of `-graph`, which is *only* applicable to summary queries.
@@ -385,7 +386,7 @@ same as !lg, with a few nuances:
         gets the URL to the crash dump instead.
   `-ttyrec` gets the URL to the single ttyrec that contains the chosen
         milestone.
-
+  `-random` returns a random milestone matching the filters.
   `-game` gets the game correponding to the chosen milestone.
   
   ###### Example:
