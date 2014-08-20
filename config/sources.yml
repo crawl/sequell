@@ -225,7 +225,7 @@ sources:
       - meta/ranged_combat/logfile*: rc
     milestones:
       - meta/nostalgia/milestones*
-      - meta/0.15/logfile{,-sprint,-zotdef}*
+      - meta/0.15/milestones{,-sprint,-zotdef}*
       - meta/0.14/milestones{,-sprint,-zotdef}*
       - meta/0.13/milestones{,-sprint,-zotdef}*
       - meta/git/milestones{,-sprint,-zotdef}*
