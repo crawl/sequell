@@ -178,6 +178,7 @@ sources:
     base: http://crawl.lantea.net/crawl
     logfiles:
       - meta/git/logfile{,-sprint,-zotdef}*
+      - meta/0.15/logfile{,-sprint,-zotdef}*
       - meta/0.14/logfile{,-sprint,-zotdef}*
       - meta/0.13/logfile{,-sprint,-zotdef}*
       - meta/0.12/logfile{,-sprint,-zotdef}*
@@ -185,6 +186,7 @@ sources:
       - meta/0.10/logfile{,-sprint,-zotdef}*
     milestones:
       - meta/git/milestones{,-sprint,-zotdef}*
+      - meta/0.15/milestones{,-sprint,-zotdef}*
       - meta/0.14/milestones{,-sprint,-zotdef}*
       - meta/0.13/milestones{,-sprint,-zotdef}*
       - meta/0.12/milestones{,-sprint,-zotdef}*
@@ -199,10 +201,12 @@ sources:
     base: http://kr.dobrazupa.org
     logfiles:
       - www/trunk/logfile*
+      - www/0.15/logfile*
       - www/0.14/logfile*
       - www/0.13/logfile*
     milestones:
       - www/trunk/milestones*
+      - www/0.15/milestones*
       - www/0.14/milestone*
       - www/0.13/milestones*
     morgues:
