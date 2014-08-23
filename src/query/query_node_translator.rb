@@ -1,4 +1,5 @@
 require 'query/nick_expr'
+require 'formatter/duration'
 
 module Query
   class QueryNodeTranslator
@@ -176,6 +177,10 @@ module Query
           return AST::Expr.field_predicate(op, field,
             RACE_EXPANSIONS[value.downcase] || value)
         end
+      end
+
+      if field === 'dur' && (value =~ /\d+:\d+$/ || value =~ /\d+,/)
+        node.value = Formatter::Duration.parse(value.to_s)
       end
 
       if field === 'cls' && op.equality?

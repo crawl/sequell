@@ -6,6 +6,7 @@ require 'command_context'
 require 'yaml'
 require 'fileutils'
 require 'henzell/config'
+require 'formatter/duration'
 
 # Don't use more than this much memory (bytes)
 MAX_MEMORY_USED = 768 * 1024 * 1024
@@ -419,18 +420,7 @@ def print_game_result(res)
 end
 
 def pretty_duration(durseconds)
-  minutes = durseconds / 60
-  seconds = durseconds % 60
-  hours = minutes / 60
-  minutes = minutes % 60
-  days = hours / 24
-  hours = hours % 24
-
-  timestr = sprintf("%02d:%02d:%02d", hours, minutes, seconds)
-  if days > 0
-    timestr = "#{days}, #{timestr}"
-  end
-  timestr
+  Formatter::Duration.display(durseconds)
 end
 
 def logger
