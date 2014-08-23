@@ -971,7 +971,7 @@ tournament-prefixes:
   - tournament
 
 tournament-data:
-  default-tourney: '2014a'
+  default-tourney: '2014b'
   crawl:
     '2008':
       version: "0.4"
@@ -1004,6 +1004,9 @@ tournament-data:
     '2014a':
       version: "0.14"
       time: [2014041120, 2014042720]
+    '2014b':
+      version: "0.15"
+      time: [2014082920, 2014091420]
 
   sprint:
     '2010':
