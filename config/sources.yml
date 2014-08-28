@@ -80,6 +80,7 @@ sources:
       - allgames{,-spr,-zd}-0.12.txt*
       - allgames{,-spr,-zd}-0.13.txt*
       - allgames{,-spr,-zd}-0.14.txt*
+      - allgames{,-spr,-zd}-0.15.txt*
       - allgames{,-spr,-zd}-svn.txt*
     milestones:
       - milestones-0.3.txt
@@ -93,6 +94,7 @@ sources:
       - milestones{,-spr,-zd}-0.12.txt*
       - milestones{,-spr,-zd}-0.13.txt*
       - milestones{,-spr,-zd}-0.14.txt*
+      - milestones{,-spr,-zd}-0.15.txt*
       - milestones{,-spr,-zd}-svn.txt*
     morgues:
       - - time_gt: '20110819-1740'
