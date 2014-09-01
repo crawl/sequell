@@ -8,6 +8,7 @@ require 'irc_color'
 
 require 'tpl/learndb_fn_defs'
 require 'tpl/re_fn_defs'
+require 'formatter/duration'
 
 module Tpl
   FunctionDef.define('apply', [2, -1]) {
@@ -369,6 +370,14 @@ module Tpl
 
   FunctionDef.define('ftime', [1, 2]) {
     self[0].strftime(arity == 2? self[-1] : ISO8601_FMT)
+  }
+
+  FunctionDef.define('pduration', 1) {
+    Formatter::Duration.parse(self[0])
+  }
+
+  FunctionDef.define('fduration', 1) {
+    Formatter::Duration.display(self[0].to_i)
   }
 
   FunctionDef.define('interval-year', [0, 1]) {

@@ -268,17 +268,6 @@ def datestr(d)
   end
 end
 
-def duration_str(dur)
-  dur = dur.to_i
-  days = dur / 3600 / 24
-  years = days / 365
-  days = days % 365
-  prefix = [years > 0 && "#{years}y", days > 0 && "#{days}d"].find_all { |x| x }.join("+")
-  prefix = "#{prefix}+" unless prefix.empty?
-  sprintf("%s%d:%02d:%02d", prefix, (dur / 3600) % 24,
-          (dur % 3600) / 60, dur % 60)
-end
-
 def ttyrec_list_string(game, ttyreclist)
   if !ttyreclist || ttyreclist.empty?
     return nil

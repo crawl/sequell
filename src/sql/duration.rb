@@ -1,7 +1,9 @@
+require 'formatter/duration'
+
 module Sql
   class Duration
     def self.display_value(duration)
-      duration_str(duration)
+      Formatter::Duration.display(duration)
     end
   end
 end

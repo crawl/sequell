@@ -179,7 +179,7 @@ module Query
         end
       end
 
-      if field === 'dur' && (value =~ /\d+:\d+$/ || value =~ /\d+,/)
+      if field === 'dur' && (value =~ /\d+:\d+$/ || value =~ /\d+d/ || value =~ /\d+y/)
         node.value = Formatter::Duration.parse(value.to_s)
       end
 

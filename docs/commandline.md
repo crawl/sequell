@@ -206,6 +206,19 @@ Functions may be used as `$(<fn> ...)`.
 
      upper/lower-case text
 
+   - `$(fduration <integer seconds>)`
+
+     Pretty-prints a duration in seconds as hours, minutes and
+     seconds, optionally prefixed with days and years if the duration
+     is large enough.
+
+   - `$(pduration <formatted duration>)`
+
+     Parses a pretty-printed duration into an integer of the number of
+     seconds. If you want to add this to a date, use `interval-second`
+     on it first, since integers are otherwise interpreted as days
+     when added to dates.
+
    - `$(time)`
 
      Current time and date.
@@ -233,6 +246,8 @@ Functions may be used as `$(<fn> ...)`.
 
          .echo $(+ (time) 5)
          => <time 5 days in the future>
+
+     Date arithmetic is not commutative, put the date on the left.
 
    - `$(ftime <time> [<format>])`
 

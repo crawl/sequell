@@ -5,6 +5,7 @@ require 'sqlhelper'
 require 'query/query_string'
 require 'query/ast/funcall'
 require 'sql/date'
+require 'formatter/duration'
 
 help("Summarizes a player's public server career.")
 
@@ -81,9 +82,9 @@ else
 
   time_span_days = (end_time_bracket - start_time_bracket).to_f
   duration_per_day = time_span_days > 0 && duration / time_span_days
-  stats << "play-time/day #{duration_str(duration_per_day)}" if duration_per_day
+  stats << "play-time/day #{Formatter::Duration.display(duration_per_day)}" if duration_per_day
 
-  stats << "total time #{duration_str(duration.to_i)}"
+  stats << "total time #{Formatter::Duration.display(duration.to_i)}"
 
   puts("#{q.argstr} has played #{ngames} game#{plural}, between " +
     "#{datestr(tstart)} and #{datestr(tend)}, " + stats.join(", ") + ".")
