@@ -50,6 +50,7 @@ end
 def display_user_command(name)
   command = Cmd::UserDefinedCommand.command(name)
   if command.nil?
+    name = Cmd::UserDefinedCommand.canonicalize_name(name)
     definition = Henzell::Config.default.commands.definition(name)
     if definition
       puts("Built-in: #{name} => #{command_source_url(definition)}")
