@@ -45,6 +45,11 @@ game-type-prefixes:
   zotdef: zot_
   nostalgia: nostalgia_
 
+game-type-tags:
+  sprint: [spr, sprint]
+  zotdef: [zd, zotdef]
+  nostalgia: nostalgia
+
 default-game-type: crawl
 
 generic_panlord: a pandemonium lord
@@ -691,6 +696,28 @@ column-substitutes:
   ordered:
     v: vnum
     cv: cvnum
+
+field-types:
+  sql:
+    TEXT: citext
+    MAP: citext
+    PK: serial
+    S: text
+    I: int
+    REF: int
+    IB: bigint
+    ET: bigint
+    VER: citext
+    IH: numeric(18)
+    D: timestamp
+    '!': boolean
+  defaults:
+    I: default 0
+    ET: default 0
+    IB: default 0
+    IH: default 0
+  lookup:
+    S: cast(%s as citext)
 
 ##
 # Field type suffixes:
