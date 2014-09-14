@@ -25,7 +25,7 @@ module Henzell
 
     def utc_epoch
       return nil unless @config['utc-epoch']
-      @utc_epoch ||= DateTime.strptime(@config['utc-epoch'], '%Y%m%d%H%M%z')
+      @utc_epoch ||= DateTime.strptime(@config['utc-epoch'], '%Y%m%d%H%M%S%z')
     end
 
     def timezone(type)

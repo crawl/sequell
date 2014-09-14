@@ -9,9 +9,9 @@ use warnings;
 use DBI;
 
 my $XLOG_ROOT = 'server-xlogs';
-my $DBNAME = $ENV{HENZELL_DBNAME} || 'henzell';
-my $DBUSER = 'henzell';
-my $DBPASS = 'henzell';
+my $DBNAME = $ENV{SEQUELL_DBNAME} || 'sequell';
+my $DBUSER = 'sequell';
+my $DBPASS = 'sequell';
 
 sub resolve_file {
   my $file = shift;

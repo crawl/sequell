@@ -55,9 +55,9 @@ my $COMMIT_INTERVAL = 1000;
 
 my $standalone = not caller();
 
-my $DBNAME = $ENV{HENZELL_DBNAME} || 'henzell';
-my $DBUSER = 'henzell';
-my $DBPASS = 'henzell';
+my $DBNAME = $ENV{SEQUELL_DBNAME} || 'sequell';
+my $DBUSER = 'sequell';
+my $DBPASS = 'sequell';
 
 my $dbh;
 my $insert_st;

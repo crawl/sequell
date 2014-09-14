@@ -32,9 +32,9 @@ my $DBNAME = 'henzell_test';
 my $DBUSER = 'henzell';
 my $DBPASS = '';
 
-$ENV{'HENZELL_DBNAME'} = $DBNAME;
-$ENV{'HENZELL_DBUSER'} = $DBUSER;
-$ENV{'HENZELL_DBPASS'} = $DBPASS;
+$ENV{'SEQUELL_DBNAME'} = $DBNAME;
+$ENV{'SEQUELL_DBUSER'} = $DBUSER;
+$ENV{'SEQUELL_DBPASS'} = $DBPASS;
 
 Henzell::LogParse::new_db_handle($DBNAME, $DBUSER, $DBPASS) &&
   Henzell::LogParse::initialize_sqllog();
