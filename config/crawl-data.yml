@@ -456,6 +456,7 @@ classes:
 
 column-aliases:
   maxsk: maxskills
+  fifsk: fifteenskills
   stat: status
   role: cls
   class: cls
@@ -644,13 +645,7 @@ query-tables:
   - logrecord
   - milestone
 
-# Multi-column indexes (single column indexes are annotated in the
-# field name list)
-logrecord-indexes:
-  - [file, offset]
-
 milestone-indexes:
-  - [file, offset]
   - [verb, noun]
 
 # Explicit lookup tables for fields that can reasonably share a lookup
@@ -661,6 +656,10 @@ milestone-indexes:
 # explicit lookup table gets an implicit lookup table with the same
 # name as the field.
 lookup-tables:
+  file:
+    fields: [file]
+    generated-fields:
+      - offsetIB*&
   version:
     fields: [v]
     generated-fields:
@@ -669,10 +668,11 @@ lookup-tables:
     fields: [cv]
     generated-fields:
       - cvnumIH?^
-  killer: [killer, ckiller, ikiller]
+  killer: [killerS, ckillerS, ikillerS, cikillerS]
   map: [map, killermap]
   kaux: [kaux, ckaux]
   msg: [tmsg, vmsg]
+  maxskills: [maxskills, fifteenskills]
 
 type-categories:
   ETD: ETD
@@ -712,10 +712,11 @@ field-types:
     D: timestamp
     '!': boolean
   defaults:
-    I: default 0
-    ET: default 0
-    IB: default 0
-    IH: default 0
+    I: 0
+    ET: 0
+    IB: 0
+    IH: 0
+    '!': "false"
   lookup:
     S: cast(%s as citext)
 
@@ -733,15 +734,18 @@ field-types:
 # - ^ (foreign key into a table)
 # - ! (negatable, aka boolean)
 # - + (multi-valued)
+# - & (external book-keeping data, not derived from xlog fields)
 logrecord-fields-with-type:
-  - idIB%*
-  - offsetIB*?
+  - idIB%*&
+  - offsetIB*&
   - game_key?^
-  - file?^
+  - file^
   - alpha!
   - src?^
+  - explbr^
   - vVER?^
   - cvVER?^
+  - vlongVER^
   - lv^
   - scIB?
   - nameS?^
@@ -754,9 +758,10 @@ logrecord-fields-with-type:
   - sklevI?
   - title?^
   - ktyp?^
-  - killer?^
-  - ckiller?^
-  - ikiller?^
+  - killerS?^
+  - ckillerS?^
+  - ikillerS?^
+  - cikillerS?^
   - kpath^
   - kmod^
   - kaux?^
@@ -790,7 +795,7 @@ logrecord-fields-with-type:
   - splat!
   - rstart*?
   - rend*?
-  - ntvI?
+  - ntvI
   - mapMAP?^
   - killermapMAP?^
   - mapdesc^
@@ -798,23 +803,30 @@ logrecord-fields-with-type:
   - goldI
   - goldfoundI
   - goldspentI
+  - zigscompletedI
+  - zigdeepestI
+  - scrollsusedI
+  - potionsusedI
   - killsI
   - acI
   - evI
   - shI
   - autI
   - maxskills^+
+  - fifteenskills^+
   - status^+
 
 milestone-fields-with-type:
   - idI%
   - game_key?^
-  - offsetI*?
-  - file?^
+  - offsetIB*
+  - file^
   - alpha!
   - src?^
+  - explbr^
   - vVER?^
   - cvVER?^
+  - vlongVER?^
   - nameS?^
   - race?^
   - crace?^
@@ -822,15 +834,15 @@ milestone-fields-with-type:
   - char?^
   - xlI?
   - sk?^
-  - sklevI?
+  - sklevI
   - title?^
   - place?^
   - br^
   - lvlI
   - absdepthI
   - ltyp^
-  - hpI?
-  - mhpI?
+  - hpI
+  - mhpI
   - mmhpI
   - strI
   - intI
@@ -853,13 +865,18 @@ milestone-fields-with-type:
   - goldI
   - goldfoundI
   - goldspentI
+  - zigscompletedI
+  - zigdeepestI
+  - scrollsusedI
+  - potionsusedI
   - killsI
   - acI
   - evI
   - shI
   - autI
-  - maxskills^
-  - status^
+  - maxskills^+
+  - fifteenskills^+
+  - status^+
 
 milestone-verb-mappings:
   unique: uniq
