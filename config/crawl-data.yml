@@ -774,6 +774,9 @@ logrecord-fields-with-type:
   - hpI?
   - mhpI?
   - mmhpI
+  - mpI
+  - mmpI
+  - bmmpI
   - damI
   - sdamI
   - tdamI
@@ -783,7 +786,7 @@ logrecord-fields-with-type:
   - god?^
   - pietyI
   - penI
-  - wizI
+  - wiz!
   - startD*?
   - endD*?
   - durET?
@@ -844,10 +847,14 @@ milestone-fields-with-type:
   - hpI
   - mhpI
   - mmhpI
+  - mpI
+  - mmpI
+  - bmmpI
   - strI
   - intI
   - dexI
   - god?^
+  - wiz!
   - durET
   - turnI?
   - uruneI?
