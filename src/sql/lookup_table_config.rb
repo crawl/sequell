@@ -16,8 +16,15 @@ module Sql
     end
 
     def match_name?(colname)
-      fields.any? { |f| f.name == colname } ||
-        generated_columns.any? { |f| f.name == colname }
+      field_name_match?(colname) || generated_column_match?(colname)
+    end
+
+    def field_name_match?(colname)
+      fields.any? { |f| f.name == colname }
+    end
+
+    def generated_column_match?(colname)
+      generated_columns.any? { |f| f.name == colname }
     end
 
     def fields
@@ -25,7 +32,7 @@ module Sql
     end
 
     def lookup_field(field_name)
-      if match_name?(field_name)
+      if field_name_match?(field_name)
         return self.fields[0].name.dup
       end
       field_name

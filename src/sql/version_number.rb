@@ -1,6 +1,6 @@
 module Sql
   class VersionNumber
-    CANONICAL_VERSION_SEGMENTS = 4
+    CANONICAL_VERSION_SEGMENTS = 3
 
     def self.version_number?(text)
       text =~ /^\d+\.\d+(?:\.\d+)*(?:-[a-z]+[0-9]*)?$/
@@ -13,9 +13,13 @@ module Sql
       version_number_score(version) + qualifier_score(qualifier)
     end
 
+    def self.version_base
+      100000000
+    end
+
     def self.version_number_score(version)
       version_segments = self.segment_version(version)
-      base = 1_000_000
+      base = self.version_base
       score = 0
       version_segments.reverse.each do |segment|
         score += base * segment
@@ -25,20 +29,18 @@ module Sql
     end
 
     def self.qualifier_score(qualifier)
-      return 999 * 999 if !qualifier || qualifier.empty?
-      if qualifier =~ /^([a-z]+)([0-9]*)$/
-        prefix, index = $1, $2
+      return self.version_base - 1 if !qualifier || qualifier.empty?
+      if qualifier =~ /^([a-z]+)([0-9]*)(?:-(\d+))?$/
+        prefix, index, rev = $1, $2, $3
+        rev ||= 0
         index ||= 0
         index = index.to_i
+        rev = rev.to_i
 
-        if prefix.respond_to?(:ord)
-          prefix = prefix.ord
-        else
-          prefix = prefix[0]
-        end
-        return prefix * 1000 + index
+        prefix = prefix.ord - 'a'.ord + 1
+        return prefix * 1000000 + index * 10000 + rev
       end
-      999 * 999
+      self.version_base - 1
     end
 
     def self.segment_version(version)
