@@ -2,12 +2,12 @@ The LearnDB
 ===========
 
 The LearnDB is a user-maintained database of content accessible to
-users of ##crawl and ##crawl-dev on FreeNode IRC. This is a brief
+users of ##crawl and ##crawl-dev on freenode IRC. This is a brief
 description of the commands available to query and update the LearnDB.
 
 The LearnDB is organized into *terms* (also called *pages*). Each term
-may have one or more entries. For user convenience, some entries
-may be links to other entries.
+may have one or more entries. For user convenience, entries may link
+to other entries.
 
 
 Querying the LearnDB
@@ -181,6 +181,32 @@ any alias as convenient.
 4. !learn edit == !learn e
 5. !learn move == !learn mv
 6. !learn delete == !learn del == !learn rm
+
+Links
+-----
+
+Entries may link to other entries using the `see {term[index]}` format:
+
+    !learn add kine see {cow}
+    <user> ??kine
+    <Sequell> cow[1/2]: A domesticated ungulate.
+    <user> kine??
+    <Sequell> A domesticated ungulate.
+
+`!learn query` ignores redirects.
+
+LearnDB Entries may run bot commands using `do {<command>}`:
+
+    !learn add mylastwin do {!lg . win}
+
+`see {<command>}` also works as an alternative to `do {<command>}`,
+but the `do` form is preferred for commands, since `see {<command>}` will
+only run `<command>` if there is no LearnDB entry for `<command>`.
+
+An alternative to `do {<command>}` is `$(<command>)`, but
+`$(<command>)` will trigger sub-command behaviour, which may be
+conspicuously different from regular command behaviour (particularly
+for !lg / !lm).
 
 Query Forms
 -----------
@@ -375,35 +401,10 @@ To ignore a LearnDB query:
 
     !learn add :beh: \?\?\s*secret\s* :::  ::: last
 
-Links
------
-
-Entries may link to other entries using the `see {term[index]}` format:
-
-    !learn add kine see {cow}
-    <user> ??kine
-    <Sequell> cow[1/2]: A domesticated ungulate.
-    <user> kine??
-    <Sequell> A domesticated ungulate.
-
-`!learn query` ignores redirects.
-
-LearnDB Entries may run bot commands using `do {<command>}`:
-
-    !learn add mylastwin do {!lg . win}
-
-`see {<command>}` also works as an alternative to `do {<command>}`,
-but the `do` form is preferred for commands, since `see {<command>}` will
-only run `<command>` if there is no LearnDB entry for `<command>`.
-
-An alternative to `do {<command>}` is `$(<command>)`, but `$(<command>)` will
-trigger sub-command behaviour, which can be conspicuously different from
-regular command behaviour (particularly for !lg / !lm).
-
 Limitations
 -----------
 
 Terms may not contain the ` ` (space), `[` and `]` characters. Terms
 are case-insensitive and case-preserving, but case-insensitive
-matching for non-ASCII characters is unpredictable. Do not rely on
-case-folding for anything outside the ASCII character set.
+matching for non-ASCII characters is undefined. Don't assume
+case-insensitive matching for non-ASCII text.
