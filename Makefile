@@ -1,4 +1,7 @@
-all: test
+all: seqdb
+
+seqdb:
+	go get -u github.com/greensnark/go-sequell/cli/seqdb
 
 test: unit integration
 
