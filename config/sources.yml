@@ -13,7 +13,7 @@ sources:
       D: '-0400'
       S: '-0500'
 
-    utc-epoch: '200808070330+0000'
+    utc-epoch: '20080807033000+0000'
 
     # Annotations: standard glob {} expansion is applied. Files
     # flagged * are assumed to be logfiles that are currently being
@@ -64,7 +64,7 @@ sources:
 
   - name: cdo
     base: http://crawl.develz.org
-    utc-epoch: '200808070330+0000'
+    utc-epoch: '20080807033000+0000'
     timezones:
       D: '+0200'
       S: '+0100'
