@@ -11,20 +11,29 @@ module Sql
       @lookup_cfg = lookup_cfg
     end
 
+    def match?(col)
+      match_name?(col.name)
+    end
+
+    def match_name?(colname)
+      fields.any? { |f| f.name == colname } ||
+        generated_columns.any? { |f| f.name == colname }
+    end
+
     def fields
       @fields ||= find_fields
     end
 
     def lookup_field(field_name)
-      if self.fields.include?(field_name)
-        return self.fields[0].dup
+      if match_name?(field_name)
+        return self.fields[0].name.dup
       end
       field_name
     end
 
     def fk_field(field_name)
-      if self.generated_columns.map(&:name).include?(field_name)
-        return Sql::Field.new(self.fields[0]).reference_field
+      if self.generated_columns.any? { |c| c.name == field_name }
+        return Sql::Field.new(self.fields[0].name).reference_field
       end
       Sql::Field.new(field_name).reference_field
     end
@@ -41,7 +50,7 @@ module Sql
       if @lookup_cfg.is_a?(Hash)
         base_fields += @lookup_cfg['fields'] if @lookup_cfg['fields']
       end
-      base_fields
+      base_fields.map { |f| Sql::Column.new(@cfg, f, {}) }
     end
 
     def find_generated_columns

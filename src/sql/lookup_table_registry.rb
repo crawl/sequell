@@ -5,14 +5,13 @@ module Sql
   class LookupTableRegistry
     def initialize(cfg)
       @cfg = cfg
-      @lookups = @cfg['lookup-tables']
+      @lookup_configs = cfg['lookup-tables']
       @column_keys = { }
     end
 
     def lookup_table_config(lookup_table_name)
-      lookup_table_name = lookup_table_name.sub(/^l_/, '')
-      lookup_cfg = @lookups[lookup_table_name]
-      Sql::LookupTableConfig.new(@cfg, lookup_table_name, lookup_cfg)
+      name = lookup_table_name.sub(/^l_/, '')
+      @lookups[name] || Sql::LookupTableConfig.new(@cfg, name, nil)
     end
 
     def lookup_table(column)
@@ -24,29 +23,24 @@ module Sql
       @column_keys[column.name] ||= find_lookup_key(column)
     end
 
-  private
-    def find_lookup_key(column)
-      for key, value in @lookups
-        if lookup_matches?(value, column)
-          return key
-        end
-      end
-      column.name
+    def lookups
+      @lookups ||= parse_lookup_configs(@lookup_configs)
     end
 
-    def lookup_matches?(lookup, column)
-      if lookup.is_a?(Array)
-        return lookup.include?(column.name)
-      else
-        if lookup['fields'] && lookup['fields'].include?(column.name)
-          return true
-        end
-
-        return lookup['generated-fields'] &&
-          lookup['generated-fields'].map { |f|
-            Sql::Column.new(@cfg, f, {})
-          }.find { |c| c.name == column.name }
+  private
+    def parse_lookup_configs(configs)
+      lookups = { }
+      for name, lookup_cfg in configs
+        lookups[name] = Sql::LookupTableConfig.new(@cfg, name, lookup_cfg)
       end
+      lookups
+    end
+
+    def find_lookup_key(column)
+      for key, lookup in lookups
+        return key if lookup.match?(column)
+      end
+      column.name
     end
   end
 end
