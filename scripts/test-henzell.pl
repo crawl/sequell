@@ -8,14 +8,11 @@ use File::stat;
 
 use lib 'lib';
 use Henzell::Cmd;
-use Henzell::SourceServer;
-use Henzell::XlogSrc;
 use Henzell::LogParse;
 use Henzell::CommandService;
 
 use open qw/:std :encoding(UTF-8)/;
 
-$Henzell::XlogSrc::TARGET_BASE = 'tests/data';
 $ENV{LEARNDB} = 'tmp/test.learn.db';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{HENZELL_TEST} = 'y';
@@ -28,30 +25,20 @@ mkdir 'tmp';
 unlink $ENV{LEARNDB};
 
 my $DB_DIRTY;
-my $DBNAME = 'henzell_test';
-my $DBUSER = 'henzell';
+my $DBNAME = 'sequell_test';
+my $DBUSER = 'sequell';
 my $DBPASS = '';
 
 $ENV{'SEQUELL_DBNAME'} = $DBNAME;
 $ENV{'SEQUELL_DBUSER'} = $DBUSER;
 $ENV{'SEQUELL_DBPASS'} = $DBPASS;
 
-Henzell::LogParse::new_db_handle($DBNAME, $DBUSER, $DBPASS) &&
-  Henzell::LogParse::initialize_sqllog();
-
 my $FAILFAST;
-my $SCHEMAFILE = 'henzell-schema.sql';
-my $INDEXFILE  = 'henzell-indexes.sql';
 my $TESTFILE = 'testcmd.txt';
 
 my $TESTLOG = 'test.log';
 my $TESTDIR = 'tests';
 my $DATADIR = "$TESTDIR/data";
-my @LOGFILES = qw/remote.cdo-logfile-svn remote.cdo-logfile-spr
-                  remote.cdo-logfile-zd/;
-my @MILEFILES = qw/remote.cdo-milestones-svn
-                   remote.cdo-milestones-spr
-                   remote.cdo-milestones-zd/;
 
 my @COMMAND_FILES = glob('config/commands-*.txt');
 
@@ -78,42 +65,13 @@ sub test_failed($$) {
   push @FAILED_TESTS, { test => $test, failure => $failure };
 }
 
-sub datafile_logs() {
-  @LOGFILES
-}
-
-sub datafile_milestones() {
-  @MILEFILES
-}
-
 sub datafiles() {
-  (datafile_logs(), datafile_milestones())
-}
-
-sub datafile_path($) {
-  "$DATADIR/" . shift
-}
-
-sub datafile_hashrefs(@) {
-  map(Henzell::XlogSrc->new($_, scalar(/logfile/i),
-                            Henzell::SourceServer->new({
-                              name => 'cdo',
-                              local => $DATADIR,
-                              logfiles => [],
-                              milestones => []
-                            })),
-      @_)
-}
-
-sub check_datafiles_exist() {
-  for my $file (map(datafile_path($_), datafiles())) {
-    die "Cannot find data file \"$file\"\n" unless -r $file;
-  }
+  grep(m{/remote[.]}, glob("$DATADIR/*"))
 }
 
 sub datafiles_newest_time() {
   my $newest;
-  for my $file (map(datafile_path($_), datafiles())) {
+  for my $file (datafiles()) {
     my $mtime = stat($file)->mtime;
     $newest = $mtime if !$newest || $mtime > $newest;
   }
@@ -176,38 +134,30 @@ sub db_timestamp_stale {
   !$canary_time || $datafiles_newest_time gt $canary_time
 }
 
-sub db_load_schema($) {
-  my $file = shift;
-  announce "Rebuilding schema from $file";
+sub db_reset() {
+  announce("Rebuilding schema for $DBNAME");
+  system("seqdb --db $DBNAME resetdb --force");
+
   with_db {
     my $dbh = shift;
-    my $sql_ddl = do { local (@ARGV, $/) = $file; <> };
-    my @ddl_statements = split(/;/, $sql_ddl);
-    for my $statement (@ddl_statements) {
-      if ($statement =~ /\S/) {
-        $dbh->do($statement)
-          or die "Failed to load schema: error $! on $statement\n";
-      }
-    }
+    my $res = $dbh->do(<<CREATE_CANARY);
+create table canary (last_update timestamp);
+CREATE_CANARY
+
+    $res or die "Failed to create canary table: $!";
   };
 }
 
 sub db_load_data() {
-  with_db {
-    my $dbh = shift;
-    my $timestamp = localtime();
+  announce("Loading data into $DBNAME");
+  system("seqdb --db $DBNAME load --force-source-dir $DATADIR") and
+    die "Couldn't load data into $DBNAME: $!\n";
+}
 
-    my @logfiles = open_handles(datafile_hashrefs(datafile_logs()));
-    my @milestones = open_handles(datafile_hashrefs(datafile_milestones()));
-    for my $logfile (@logfiles) {
-      announce "Loading logfile data from $$logfile{readfile}";
-      cat_logfile($logfile);
-    }
-    for my $milestone (@milestones) {
-      announce "Loading milestone data from $$milestone{readfile}";
-      cat_stonefile($milestone);
-    }
-  };
+sub db_create_indexes() {
+  announce("Creating indexes for $DBNAME");
+  system("seqdb --db $DBNAME create-indexes") and
+    die "Couldn't create indexes for $DBNAME: $!\n";
 }
 
 sub time_to_dbdate($) {
@@ -231,10 +181,10 @@ sub build_test_db() {
   $DB_DIRTY = db_schema_missing() || db_timestamp_stale();
   if ($DB_DIRTY) {
     announce "Database needs update";
-    db_load_schema($SCHEMAFILE);
+    db_reset();
     db_load_data();
     db_canary_set_time();
-    db_load_schema($INDEXFILE);
+    db_create_indexes();
   }
 }
 
@@ -401,7 +351,6 @@ sub run_tests() {
 sub main() {
   $FAILFAST = grep(/--fail-fast/, @ARGV);
   @ARGV = grep(!/^--/, @ARGV);
-  check_datafiles_exist();
   build_test_db();
   run_tests();
   exit(!!scalar(@FAILED_TESTS));
