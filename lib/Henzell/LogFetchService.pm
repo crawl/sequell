@@ -3,14 +3,16 @@ package Henzell::LogFetchService;
 use strict;
 use warnings;
 
+use IO::Handle;
+use Cwd;
+
 # How long after a sibling announcement that Henzell will force-fetch
-# logfile records. This should be at least 5s because we don't want a badly-
-# behaved bot to cause us to hammer cdo with http requests.
-my $sibling_fetch_delay = 10;
+# logfile records.
+my $sibling_fetch_delay = 1;
 
 # Fetch logs at least once in so many seconds, even if we haven't seen
 # any siblings speak.
-my $longest_logfetch_pause = 15 * 60;
+my $longest_logfetch_pause = 120;
 
 sub new {
   my ($cls, %opt) = @_;
@@ -51,9 +53,30 @@ sub _need_logfetch {
 sub _fetch_logs {
   my $self = shift;
   print "*** Fetching remote logfiles\n" if $ENV{DEBUG_HENZELL};
-  system "./scripts/remote-fetch-logfile >/dev/null 2>&1 &";
+  $self->_request_fetch();
   $self->{last_fetch_time} = time();
   $self->{fetch_logs} = 0;
+}
+
+sub _request_fetch {
+  my $self = shift;
+  my $slave = $self->_slave();
+  print $slave "fetch\n";
+  $slave->flush;
+}
+
+sub _slave {
+  my $self = shift;
+  $self->{_slave} ||= $self->_new_slave_fd()
+}
+
+sub _new_slave_fd {
+  my $self = shift;
+  my $pwd = getcwd();
+  my $cmd = "bash -c \"seqdb isync 2> >(rotatelogs $pwd/isync.log.\%Y.\%m.\%d 86400)\"";
+  open my $outf, '|-', $cmd or die "Can't open pipe to `$cmd`: $!\n";
+  $outf->autoflush(1);
+  $outf
 }
 
 sub event_said {

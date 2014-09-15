@@ -15,7 +15,6 @@ use Henzell::TellService;
 use Henzell::CommandService;
 use Henzell::ReactorService;
 use Henzell::LogFetchService;
-use Henzell::LogParse;
 use Henzell::LogReader;
 use Henzell::Bus;
 use Getopt::Long;
@@ -35,9 +34,6 @@ GetOptions("daemon!" => \$daemon,
 $ENV{LC_ALL} = 'en_US.UTF-8';
 $ENV{HENZELL_ROOT} = getcwd();
 $ENV{RUBYOPT} = "-rubygems -I" . File::Spec->catfile(getcwd(), 'src');
-
-my @stonefiles;
-my @logfiles;
 
 local $SIG{PIPE} = 'IGNORE';
 local $SIG{CHLD} = 'IGNORE';
@@ -69,16 +65,6 @@ if ($CONFIG{startup_services}) {
 # Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
 Henzell::Utils::daemonify() if $daemon;
 
-my $log_reader = Henzell::LogReader->new(logfiles => \@logfiles,
-                                         milestones => \@stonefiles);
-
-if ($CONFIG{sql_store}) {
-  # Run catchup twice, since processing a large backlog will produce another
-  # backlog in the processing time of the first:
-  $log_reader->catchup_logs();
-  $log_reader->catchup_logs();
-}
-
 my $HENZELL;
 my %AUTHENTICATED_USERS;
 my %PENDING_AUTH;
@@ -94,8 +80,7 @@ if ($irc) {
                                charset  => "utf-8")
     or die "Unable to create Henzell IRC bot\n";
   $HENZELL->configure_services(
-    services => irc_services($HENZELL),
-    periodic_actions => periodic_actions());
+    services => irc_services($HENZELL));
   $HENZELL->run();
 }
 exit 0;
@@ -133,25 +118,8 @@ sub irc_services {
   \@services
 }
 
-sub periodic_actions {
-  my $sql_store = Henzell::Config::feat_enabled('sql_store');
-  my $announce = Henzell::Config::feat_enabled('announce');
-  return unless $sql_store || $announce;
-  [
-    sub {
-      $log_reader->tail_logs();
-    }
-  ]
-}
-
-sub process_config() {
-  @logfiles = @Henzell::Config::LOGS unless @logfiles;
-  @stonefiles = @Henzell::Config::MILESTONES unless @stonefiles;
-}
-
 sub load_config {
   my $config_file = shift;
   my $loaded = Henzell::Config::read($config_file);
-  process_config();
   $loaded
 }

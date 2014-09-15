@@ -11,6 +11,7 @@ use Henzell::SeenService;
 use Henzell::TellService;
 use Henzell::ReactorService;
 use Henzell::Bus;
+use Henzell::LogFetchService;
 use Carp;
 use utf8;
 
@@ -32,6 +33,7 @@ $SIG{INT} = sub { Carp::cluck("^C"); exit(1) };
 
 my $irc = Henzell::IRCStub->new(channel => $CHANNEL);
 
+my $logfetch =
 my $bus = Henzell::Bus->new;
 my $cmd_service =
   Henzell::CommandService->new(irc => $irc,
@@ -42,7 +44,10 @@ my @services = (
   Henzell::TellService->new(irc => $irc),
   Henzell::ReactorService->new(irc => $irc,
                                executor => $cmd_service,
-                               bus => $bus)
+                               bus => $bus),
+  Henzell::LogFetchService->new(irc => $irc,
+                                siblings =>
+                                  [Henzell::Config::array('sibling_bots')])
 );
 $irc->configure_services(services => \@services);
 

@@ -3,6 +3,7 @@
 \#*
 *.sw[op]
 *.log
+*.log.*
 pcache.db
 remote.*
 .remote-*
