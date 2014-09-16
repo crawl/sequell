@@ -10,14 +10,20 @@ in the source and configuration.
 Dependencies
 ------------
 
+* Go 1.3 or better from http://golang.org/ or installed via your
+  package manager.
+
+  Your [GOPATH environment variable](https://golang.org/doc/code.html)
+  must be correctly set, and $GOPATH/bin must be in your PATH for the
+  `seqdb` tool.
+
 * PostgreSQL 9
 
-  1. Install PostgreSQL, create a database 'henzell' and a user
-     'henzell', and give the user access to the database with password
-     'henzell'. Note that the database and user name is 'henzell', not
+  1. Install PostgreSQL, create a database 'sequell' and a user
+     'sequell', and give the user access to the database with password
      'sequell'.
   
-  2. In the 'henzell' database, install the PostgreSQL citext and orafce
+  2. In the 'sequell' database, install the PostgreSQL citext and orafce
      extensions by running (as an admin user):
          CREATE EXTENSION citext;
          CREATE EXTENSION orafce;
@@ -25,19 +31,58 @@ Dependencies
      citext is available as part of Postgres contrib; orafce is available at:
          http://orafce.projects.postgresql.org/
   
-     Sequell needs the CITEXT extension for case-insensitive comparison
-     and grouping and the orafce extension for the median aggregate function.
-  
-  2. Set up the database schema as:
-  
-     Generate the schema:
-         $ perl ./scripts/schema-gen.pl
-  
-     Create the tables:
-         $ psql -U henzell henzell < henzell-schema.sql
+     Sequell needs the CITEXT extension for case-insensitive
+     comparison and grouping and the orafce extension for the median
+     aggregate function. You may choose to skip the orafce extension
+     if you do not need the median() aggregate function.
 
-     After catching up on logs, create indexes:
-         $ psql -U henzell henzell < henzell-indexes.sql
+     You can use the seqdb tool to create the database and extensions
+     if you run it as a Postgres admin user:
+
+     Build seqdb from the Sequell root directory:
+     
+          $ make
+
+     Then create the database:
+
+          $ seqdb createdb --admin postgres --adminpassword xyzzy
+
+     Depending on what authentication mode you're using for Postgres, you
+     may need to run seqdb as the postgres Unix user (if using ident auth),
+     and/or override the host and port you're connecting on.
+
+     If you're connecting to Postgres using Unix sockets, specify the
+     Unix socket directory as the --host option:
+
+          $ seqdb --host /var/run/postgresql createdb
+
+     Note that you still have to install the orafce and citext
+     extensions for Postgres system-wide before you can create a
+     database that uses these extensions. `seqdb createdb` merely
+     automates the process of creating the database and `sequell`
+     database user and creating the extensions in the database; it
+     cannot install the extensions system-wide.
+  
+  2. Set up the database:
+
+     Build Sequell's DB ops tool using `make` (this requires Go 1.3):
+
+          $ make
+
+     Create the database tables in the schema:
+    
+          $ seqdb create-tables
+
+     Populate the database: first fetch the server logs, then load them:
+
+          $ seqdb fetch && seqdb load
+
+     Create indexes and constraints on the database after loading logs:
+
+          $ seqdb create-indexes
+
+     You can change the database seqdb connects to, and how it connects.
+     Run `seqdb` for an overview.
 
 * RE2
 
@@ -58,12 +103,12 @@ Sequell wants Perl modules for IRC, YAML parsing, DB connectivity,
 etc. In addition the SQL query commands require several Ruby gems. To
 install Sequell's dependencies, use:
 
-   # ./scripts/install-libs
+    # ./scripts/install-libs
 
 You can also install the Perl and Ruby dependencies independently:
 
-   # ./scripts/install-perl-modules
-   # gem install bundler && bundle install
+    # ./scripts/install-perl-modules
+    # gem install bundler && bundle install
 
 
 Configuring Sequell
