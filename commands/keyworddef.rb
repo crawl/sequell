@@ -59,7 +59,11 @@ def display_keyword(name)
       kwtype =
         Cmd::UserKeyword.valid_keyword_name?(name) ? 'Built-in' :
                                                      'Keyword expression'
-      puts "#{kwtype}: #{name} => #{parse.to_query_string(false)}"
+      if parse.nil?
+        puts "#{kwtype}: #{name} evaluates as nothing."
+      else
+        puts "#{kwtype}: #{name} => #{parse.to_query_string(false)}"
+      end
     rescue Query::KeywordParseError
       puts "No keyword '#{name}'"
       raise
