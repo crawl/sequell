@@ -7,14 +7,14 @@ module Sql
     end
 
     def self.version_numberize(version_string)
-      version, qualifier = version_string.split('-')
+      version, qualifier = version_string.split('-', 2)
       qualifier ||= ''
 
       version_number_score(version) + qualifier_score(qualifier)
     end
 
     def self.version_base
-      100000000
+      1_00_00_0000
     end
 
     def self.version_number_score(version)
@@ -28,19 +28,28 @@ module Sql
       score
     end
 
-    def self.qualifier_score(qualifier)
-      return self.version_base - 1 if !qualifier || qualifier.empty?
+    def self.split_qualifier(qualifier)
       if qualifier =~ /^([a-z]+)([0-9]*)(?:-(\d+))?$/
-        prefix, index, rev = $1, $2, $3
-        rev ||= 0
-        index ||= 0
-        index = index.to_i
-        rev = rev.to_i
-
-        prefix = prefix.ord - 'a'.ord + 1
-        return prefix * 1000000 + index * 10000 + rev
+        return [$1, $2, $3]
+      elsif qualifier =~ /^(\d+)-/
+        return ["", "", $1]
       end
-      self.version_base - 1
+      ["", "", ""]
+    end
+
+    def self.qualifier_score(qualifier)
+      return 99_00_0000 if !qualifier || qualifier.empty?
+      prefix, index, rev = split_qualifier(qualifier)
+      rev ||= 0
+      index ||= 0
+      index = index.to_i
+      rev = rev.to_i
+      return prefix_score(prefix) * 1_00_0000 + index * 10000 + rev
+    end
+
+    def self.prefix_score(prefix)
+      return 99 if prefix.empty?
+      (prefix.ord - 'a'.ord + 1)
     end
 
     def self.segment_version(version)
