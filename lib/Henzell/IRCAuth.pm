@@ -6,7 +6,7 @@ use warnings;
 use lib '..';
 use Henzell::IRCUtil;
 
-my $AUTH_EXPIRY_SECONDS = 60 * 60;
+my $AUTH_EXPIRY_SECONDS = 10;
 
 sub new {
   my ($cls, %opt) = @_;
