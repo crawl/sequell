@@ -839,7 +839,7 @@ milestone-fields-with-type:
   - race?^
   - crace?^
   - cls?^
-  - char?^
+  - charS?^
   - xlI?
   - sk?^
   - sklevI

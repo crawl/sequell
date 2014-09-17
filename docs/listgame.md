@@ -206,7 +206,7 @@ Where:
 
   ###### Recognised keyed options:
   * `fmt/format`:
-         For grouped (`s=foo1) queries, the display format of the
+         For grouped (`s=foo`) queries, the display format of the
          innermost group.
          
          The default fmt is `"${n_x}${.} ${%} [${n_ratio};${x}]"`, where
