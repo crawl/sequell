@@ -18,12 +18,6 @@ module Query
       @direction = direction
     end
 
-    def canonicalize_direction(dir)
-      return 'DESC' if !dir || dir == '' || dir == '+'
-      return 'ASC' if dir == '-'
-      dir
-    end
-
     def kind
       :sort
     end
@@ -45,7 +39,7 @@ module Query
     end
 
     def reverse
-      Sort.new(expr.dup, @direction == 'DESC' ? 'ASC' : 'DESC')
+      Sort.new(expr.dup, @direction.upcase == 'DESC' ? 'ASC' : 'DESC')
     end
 
     def to_sql
@@ -54,6 +48,14 @@ module Query
 
     def to_s
       (asc? ? 'min' : 'max') + "=#{expr}"
+    end
+
+  private
+
+    def canonicalize_direction(dir)
+      return 'DESC' if !dir || dir == '' || dir == '+'
+      return 'ASC' if dir == '-'
+      dir
     end
   end
 end

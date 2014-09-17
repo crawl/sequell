@@ -96,7 +96,7 @@ module Query
         node.value = SOURCES.canonical_source(value)
       end
 
-      if field === ['v', 'cv'] && op.relational? &&
+      if field === ['v', 'cv', 'vlong'] && op.relational? &&
           Sql::VersionNumber.version_number?(value)
         return reexpand(AST::Expr.new(op, field.resolve(field.name + 'num'),
                                  Sql::VersionNumber.version_numberize(value)))

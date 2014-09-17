@@ -39,6 +39,13 @@ module Sql
       @reference_id_only = id_only
     end
 
+    ##
+    # Returns true if this is a foreign key field that is deliberately
+    # being queried for the foreign key id (the referencing id)
+    # instead of its value in the foreign table. For instance if the
+    # field is "name", and reference_id_only? is true, it means the
+    # SQL value expression will just be the number pname_id instead of
+    # joining to l_name on pname_id and selecting l_name.name.
     def reference_id_only?
       @reference_id_only
     end
@@ -159,6 +166,7 @@ module Sql
     def bind_ordered_column!
       if self.column && self.column.ordered_column_alias
         self.name = self.column.ordered_column_alias
+        @column = nil
       end
     end
 

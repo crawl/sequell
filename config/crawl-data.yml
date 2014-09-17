@@ -668,6 +668,10 @@ lookup-tables:
     fields: [cv]
     generated-fields:
       - cvnumIH?^
+  vlong:
+    fields: [vlong]
+    generated-fields:
+      - vlongnumIH?^
   killer: [killerS, ckillerS, ikillerS, cikillerS]
   map: [map, killermap]
   kaux: [kaux, ckaux]
@@ -695,6 +699,7 @@ sticky-types:
 column-substitutes:
   ordered:
     v: vnum
+    vlong: vlongnum
     cv: cvnum
 
 field-types:
@@ -745,14 +750,14 @@ logrecord-fields-with-type:
   - explbr^
   - vVER?^
   - cvVER?^
-  - vlongVER^
+  - vlongVER?^
   - lv^
   - scIB?
   - nameS?^
   - race?^
   - crace?^
   - cls?^
-  - char?^
+  - charS?^
   - xlI?
   - sk?^
   - sklevI?
