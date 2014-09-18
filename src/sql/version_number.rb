@@ -29,7 +29,7 @@ module Sql
     end
 
     def self.split_qualifier(qualifier)
-      if qualifier =~ /^([a-z]+)([0-9]*)(?:-(\d+))?$/
+      if qualifier =~ /^([a-z]+)([0-9]*)(?:-(\d+))?/
         return [$1, $2, $3]
       elsif qualifier =~ /^(\d+)-/
         return ["", "", $1]
