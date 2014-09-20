@@ -67,7 +67,7 @@ module Henzell
         end
 
         filetime && (!short_start_time || filetime >= short_start_time) &&
-          filetime <= short_end_time
+          filetime < short_end_time
       end
 
       if first_ttyrec_before_start && !first_ttyrec_is_start
