@@ -13,7 +13,7 @@ module Crawl
     end
 
     def god_resolve_name(abbr)
-      return unless abbr =~ /^[a-z]{3,}$/i
+      return unless abbr =~ /^[a-z]{2,}$/i
 
       dcabbr = abbr.downcase
       match = self.god_abbreviations.find { |g|
