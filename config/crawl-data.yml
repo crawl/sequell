@@ -1005,6 +1005,7 @@ milestone-types:
   - zig.exit
   - death
   - begin
+  - sacrifice
 
 milestone-aliases:
   god.abandon: god.renounce
