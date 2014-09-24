@@ -8,7 +8,7 @@ use File::stat;
 
 use lib 'lib';
 use Henzell::Cmd;
-use Henzell::LogParse;
+use Henzell::DB;
 use Henzell::CommandService;
 
 use open qw/:std :encoding(UTF-8)/;
@@ -81,7 +81,7 @@ sub datafiles_newest_time() {
 
 sub with_db(&) {
   my $sub = shift;
-  my $db = Henzell::LogParse::new_db_handle($DBNAME, $DBUSER, $DBPASS);
+  my $db = Henzell::DB::new_db_handle($DBNAME, $DBUSER, $DBPASS);
   my $result = $sub->($db);
   $db->disconnect;
   $result

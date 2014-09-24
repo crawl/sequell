@@ -15,7 +15,6 @@ use Henzell::TellService;
 use Henzell::CommandService;
 use Henzell::ReactorService;
 use Henzell::LogFetchService;
-use Henzell::LogReader;
 use Henzell::Bus;
 use Getopt::Long;
 use Cwd;

@@ -6,7 +6,6 @@ use warnings;
 use base 'Exporter';
 
 use lib '..';
-use Henzell::ServerConfig;
 use YAML::Any;
 use Cwd;
 use Henzell::UserCommandDb;
@@ -53,11 +52,6 @@ sub sigils {
 sub command_exists {
   my $command = shift;
   $CMD{$command} || $USER_CMD{$command}
-}
-
-sub load_file_paths() {
-  @LOGS = Henzell::ServerConfig::server_logfiles();
-  @MILESTONES = Henzell::ServerConfig::server_milestones();
 }
 
 sub load_public_commands($) {
@@ -151,7 +145,6 @@ sub read {
 
   setup_env();
 
-  load_file_paths();
   load_public_commands($CONFIG{public_commands_file});
   load_commands($CONFIG{commands_file}, $procmaker);
   load_user_commands();
