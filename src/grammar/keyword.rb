@@ -32,8 +32,7 @@ module Grammar
     }
 
     rule(:keyword_nick) {
-      (str("@") >> match["@:"].repeat >> Nick.new.nick_atom_loose |
-       str(":") >> match["@:"].repeat >> Nick.new.nick_atom_loose).as(:nick)
+      (match["@:"].repeat(1) >> Nick.new.nick_atom_strict).as(:nick)
     }
 
     rule(:keyword_any) {

@@ -31,9 +31,17 @@ module Query
           node.nick.value if node.is_a?(NickExpr)
         }
 
-        unless @nick
-          @nick = '.'
-          @head << ::Query::NickExpr.nick('.')
+        @keyword_nick = ASTWalker.find(@head) { |kw|
+          kw.value if kw.is_a?(AST::Keyword) && (kw.value =~ /^[@:]/ || kw.value == '*')
+        }
+
+        if !@nick
+          if @keyword_nick
+            @nick = '*'
+          else
+            @nick = '.'
+            @head << ::Query::NickExpr.nick('.')
+          end
         end
       end
 

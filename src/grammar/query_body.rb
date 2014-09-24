@@ -7,7 +7,7 @@ module Grammar
   class QueryBody < Parslet::Parser
     root(:body_root)
 
-    rule(:nick_expr) { Nick.new >> space.present? | Nick.new >> any.absent? }
+    rule(:nick_expr) { Nick.new >> (space.present? | any.absent?) }
 
     rule(:nick_body) {
       (nick_expr.maybe >>
