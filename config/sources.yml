@@ -228,6 +228,7 @@ sources:
       - meta/0.13/logfile{,-sprint,-zotdef}*
       - meta/git/logfile{,-sprint,-zotdef}*
       - meta/gods/logfile*: gods
+      - meta/plutonians/logfile*: plutonians
       - meta/ranged_combat/logfile*: rc
     milestones:
       - meta/nostalgia/milestones*
@@ -236,6 +237,7 @@ sources:
       - meta/0.13/milestones{,-sprint,-zotdef}*
       - meta/git/milestones{,-sprint,-zotdef}*
       - meta/gods/milestones*: gods
+      - meta/plutonians/milestones*: plutonians
       - meta/ranged_combat/milestones*: rc
     morgues:
       - http://crawl.berotato.org/crawl/morgue
