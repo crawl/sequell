@@ -898,9 +898,17 @@ milestone-verb-mappings:
 
 field-input-transforms: &inputtransforms
   sk:
-    Translocation: Translocations
-    Transmutation: Transmutations
-    Transmigration: Transmutations
+    # String replacements must match the full value:
+    string-replace:
+      - [Translocation, Translocations]
+      - [Transmutation, Transmutations]
+      - [Transmigration, Transmutations]
+  crace:
+    source: race
+    regexp-replace:
+      - [".*(Draconian)", "$1"]
+      - [Grotesk, Gargoyle]
+      - [Kenku, Tengu]
 
 field-transforms:
   ktyp:
