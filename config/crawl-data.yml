@@ -211,6 +211,7 @@ uniques:
   - Asterion
   - Natasha
   - Vashnia
+  - Satan Claus
 
 # Only used by !apt at the moment.
 skills:
@@ -911,6 +912,9 @@ field-input-transforms: &inputtransforms
       - [Kenku, Tengu]
 
 field-transforms:
+  crace:
+    ke: Tengu
+    kenku: Tengu
   ktyp:
     poison: pois
     drown: water
