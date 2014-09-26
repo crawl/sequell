@@ -915,6 +915,7 @@ field-transforms:
   crace:
     ke: Tengu
     kenku: Tengu
+    grotesk: Gargoyle
   ktyp:
     poison: pois
     drown: water
