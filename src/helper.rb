@@ -342,6 +342,10 @@ def help(helpstring, force=false)
   end
 end
 
+def mark_nickmap_stale!
+  $nicks_loaded = false
+end
+
 def load_nicks
   return if $nicks_loaded
   if File.exists?(NICKMAP_FILE)

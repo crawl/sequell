@@ -6,6 +6,7 @@ require 'json'
 require 'env'
 require 'command_context'
 require 'timeout'
+require 'helper'
 require 'cmd/user_function'
 
 STDIN.sync = true
@@ -26,6 +27,7 @@ begin
       Timeout.timeout(TIME_LIMIT) {
         Env.with(data['command_env']) do
           Cmd::UserFunction.clear_cache!
+          mark_nickmap_stale!
           CommandContext.with_default_nick((data['env'] || { })['nick']) do
             Cmd::Executor.with_default_env(data['env']) do
               puts JSON.dump(
