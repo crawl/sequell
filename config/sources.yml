@@ -111,10 +111,22 @@ sources:
       - cßo
     base: http://dobrazupa.org
     logfiles:
-      - meta/git/logfile{,-sprint,-zotdef}*
-      - meta/gods/logfile*: gods
+      - meta/chunkless/logfile*: chunkless
+      - meta/iashol/logfile*: iashol
+      - meta/new_nemelex/logfile: new-nemelex
+      - meta/jump/logfile: jump
+      - meta/inception/logfile: inception
+      - meta/destruction/logfile: destruction
+      - meta/dwants/logfile: dwants
+      - meta/vinestalker/logfile: vinestalker
+      - meta/weightless/logfile: weightless
+      - meta/gods/logfile: gods
+      - meta/shadow-god/logfile: shadow-god
+      - meta/smithgod/logfile: smithgod
+      - meta/smithgod_rebased/logfile*: smithgod_rebased
       - meta/ranged_combat/logfile*: rc
       - meta/nostalgia/logfile*
+      - meta/git/logfile{,-sprint,-zotdef}*
       - meta/0.15/logfile{,-sprint,-zotdef}*
       - meta/0.14/logfile{,-sprint,-zotdef}*
       - meta/0.13/logfile{,-sprint,-zotdef}*
@@ -122,10 +134,22 @@ sources:
       - meta/0.11/logfile{,-sprint,-zotdef}*
       - meta/0.10/logfile{,-sprint,-zotdef}*
     milestones:
-      - meta/git/milestones{,-sprint,-zotdef}*
-      - meta/gods/milestones*: gods
+      - meta/chunkless/milestones*: chunkless
+      - meta/iashol/milestones*: iashol
+      - meta/new_nemelex/milestones: new-nemelex
+      - meta/jump/milestones: jump
+      - meta/inception/milestones: inception
+      - meta/destruction/milestones: destruction
+      - meta/dwants/milestones: dwants
+      - meta/vinestalker/milestones: vinestalker
+      - meta/weightless/milestones: weightless
+      - meta/gods/milestones: gods
+      - meta/shadow-god/milestones: shadow-god
+      - meta/smithgod/milestones: smithgod
+      - meta/smithgod_rebased/milestones*: smithgod_rebased
       - meta/ranged_combat/milestones*: rc
       - meta/nostalgia/milestones*
+      - meta/git/milestones{,-sprint,-zotdef}*
       - meta/0.15/milestones{,-sprint,-zotdef}*
       - meta/0.14/milestones{,-sprint,-zotdef}*
       - meta/0.13/milestones{,-sprint,-zotdef}*
