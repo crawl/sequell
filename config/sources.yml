@@ -20,39 +20,16 @@ sources:
     # updated and will be refetched, always. Files without * are
     # assumed to be dead versions, and will be fetched only if the
     # local copy is missing.
-    logfiles:
+    logs:
       - allgames.txt
-      - logfile04
-      - logfile05
-      - logfile06
-      - logfile07{,-sprint}
-      - logfile08{,-sprint}
-      - logfile09
-      - logfile10*
-      - logfile11{,-sprint,-zotdef}*
-      - logfile12{,-sprint,-zotdef}*
-      - logfile13{,-sprint,-zotdef}*
-      - logfile14{,-sprint,-zotdef}*
-      - logfile15{,-sprint,-zotdef}*
-      - logfile-git{,-sprint,-zotdef}*
-      - logfile-lorcs: lorcs
-    milestones:
       - milestones02
       - milestones03
-      - milestones04
-      - milestones05
-      - milestones06
-      - milestones07{,-sprint}
-      - milestones08{,-sprint}
-      - milestones09
-      - milestones10*
-      - milestones11{,-sprint,-zotdef}*
-      - milestones12{,-sprint,-zotdef}*
-      - milestones13{,-sprint,-zotdef}*
-      - milestones14{,-sprint,-zotdef}*
-      - milestones15{,-sprint,-zotdef}*
-      - milestones-git{,-sprint,-zotdef}*
-      - milestones-lorcs: lorcs
+      - '{logfile,milestones}{04,05,06}'
+      - '{logfile,milestones}{07,08}{,-sprint}'
+      - '{logfile,milestones}09'
+      - '{logfile,milestones}10*'
+      - '{logfile,milestones}{11,12,13,14,15,-git}{,-sprint,-zotdef}*'
+      - '{logfile,milestones}-lorcs': lorcs
 
     # Regex -> location; player name is automatically appended.
     morgues:
@@ -68,34 +45,11 @@ sources:
     timezones:
       D: '+0200'
       S: '+0100'
-    logfiles:
-      - allgames-0.3.txt
-      - allgames-0.4.txt
-      - allgames-0.5.txt
-      - allgames-0.6.txt
-      - allgames{,-spr}-0.7.txt
-      - allgames{,-spr,-zd}-0.8.txt*
-      - allgames{,-spr,-zd}-0.10.txt*
-      - allgames{,-spr,-zd}-0.11.txt*
-      - allgames{,-spr,-zd}-0.12.txt*
-      - allgames{,-spr,-zd}-0.13.txt*
-      - allgames{,-spr,-zd}-0.14.txt*
-      - allgames{,-spr,-zd}-0.15.txt*
-      - allgames{,-spr,-zd}-svn.txt*
-    milestones:
-      - milestones-0.3.txt
-      - milestones-0.4.txt
-      - milestones-0.5.txt
-      - milestones-0.6.txt
-      - milestones{,-spr}-0.7.txt
-      - milestones{,-spr,-zd}-0.8.txt*
-      - milestones{,-spr,-zd}-0.10.txt*
-      - milestones{,-spr,-zd}-0.11.txt*
-      - milestones{,-spr,-zd}-0.12.txt*
-      - milestones{,-spr,-zd}-0.13.txt*
-      - milestones{,-spr,-zd}-0.14.txt*
-      - milestones{,-spr,-zd}-0.15.txt*
-      - milestones{,-spr,-zd}-svn.txt*
+    logs:
+      - '{allgames,milestones}-0.{3,4,5,6}.txt'
+      - '{allgames,milestones}{,-spr}-0.7.txt'
+      - '{allgames,milestones}{,-spr,-zd}-0.{8,10,11,12,13,14,15}.txt*'
+      - '{allgames,milestones}{,-spr,-zd}-svn.txt*'
     morgues:
       - - time_gt: '20110819-1740'
           version_match: '0.9'
@@ -110,52 +64,23 @@ sources:
     aliases:
       - cßo
     base: http://dobrazupa.org
-    logfiles:
-      - meta/chunkless/logfile*: chunkless
-      - meta/iashol/logfile*: iashol
-      - meta/new_nemelex/logfile: new-nemelex
-      - meta/jump/logfile: jump
-      - meta/inception/logfile: inception
-      - meta/destruction/logfile: destruction
-      - meta/dwants/logfile: dwants
-      - meta/vinestalker/logfile: vinestalker
-      - meta/weightless/logfile: weightless
-      - meta/gods/logfile: gods
-      - meta/shadow-god/logfile: shadow-god
-      - meta/smithgod/logfile: smithgod
-      - meta/smithgod_rebased/logfile*: smithgod_rebased
-      - meta/ranged_combat/logfile*: rc
-      - meta/nostalgia/logfile*
-      - meta/git/logfile{,-sprint,-zotdef}*
-      - meta/0.15/logfile{,-sprint,-zotdef}*
-      - meta/0.14/logfile{,-sprint,-zotdef}*
-      - meta/0.13/logfile{,-sprint,-zotdef}*
-      - meta/0.12/logfile{,-sprint,-zotdef}*
-      - meta/0.11/logfile{,-sprint,-zotdef}*
-      - meta/0.10/logfile{,-sprint,-zotdef}*
-    milestones:
-      - meta/chunkless/milestones*: chunkless
-      - meta/iashol/milestones*: iashol
-      - meta/new_nemelex/milestones: new-nemelex
-      - meta/jump/milestones: jump
-      - meta/inception/milestones: inception
-      - meta/destruction/milestones: destruction
-      - meta/dwants/milestones: dwants
-      - meta/vinestalker/milestones: vinestalker
-      - meta/weightless/milestones: weightless
-      - meta/gods/milestones: gods
-      - meta/shadow-god/milestones: shadow-god
-      - meta/smithgod/milestones: smithgod
-      - meta/smithgod_rebased/milestones*: smithgod_rebased
-      - meta/ranged_combat/milestones*: rc
-      - meta/nostalgia/milestones*
-      - meta/git/milestones{,-sprint,-zotdef}*
-      - meta/0.15/milestones{,-sprint,-zotdef}*
-      - meta/0.14/milestones{,-sprint,-zotdef}*
-      - meta/0.13/milestones{,-sprint,-zotdef}*
-      - meta/0.12/milestones{,-sprint,-zotdef}*
-      - meta/0.11/milestones{,-sprint,-zotdef}*
-      - meta/0.10/milestones{,-sprint,-zotdef}*
+    logs:
+      - meta/chunkless/{logfile,milestones}*: chunkless
+      - meta/iashol/{logfile,milestones}*: iashol
+      - meta/new_nemelex/{logfile,milestones}: new-nemelex
+      - meta/jump/{logfile,milestones}: jump
+      - meta/inception/{logfile,milestones}: inception
+      - meta/destruction/{logfile,milestones}: destruction
+      - meta/dwants/{logfile,milestones}: dwants
+      - meta/vinestalker/{logfile,milestones}: vinestalker
+      - meta/weightless/{logfile,milestones}: weightless
+      - meta/gods/{logfile,milestones}: gods
+      - meta/shadow-god/{logfile,milestones}: shadow-god
+      - meta/smithgod/{logfile,milestones}: smithgod
+      - meta/smithgod_rebased/{logfile,milestones}*: smithgod_rebased
+      - meta/ranged_combat/{logfile,milestones}*: rc
+      - meta/nostalgia/{logfile,milestones}*
+      - meta/{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*
     morgues:
       - http://dobrazupa.org/morgue
     ttyrecs:
@@ -165,34 +90,17 @@ sources:
   - name: csn
     base: http://crawlus.somatika.net
     logfiles:
-      - scoring/crawl-trunk/logfile{,-sprint,-zotdef}
-      - scoring/crawl-0.11/logfile{,-sprint,-zotdef}
-    milestones:
-      - scoring/crawl-trunk/milestones{,-sprint,-zotdef}
-      - scoring/crawl-0.11/milestones{,-sprint,-zotdef}
+      - scoring/crawl-{trunk,0.11}/{logfile,milestones}{,-sprint,-zotdef}
     morgues:
       - http://crawlus.somatika.net/dumps
 
   - name: rhf
     base: http://rl.heh.fi/
-    logfiles:
-      - remote.rhf-logfile-0.5
-      - remote.rhf-logfile-0.6
-      - remote.rhf-logfile-0.7
-      - remote.rhf-logfile-trunk
-      - remote.rhf-logfile-spr
-      - meta/crawl-0.12/logfile{,-sprint,-zotdef}
-      - meta/crawl-git/logfile{-sprint,-zotdef}
-      - meta/crawl-git/logfile: rhfnewgit
-    milestones:
-      - remote.rhf-milestones-0.5
-      - remote.rhf-milestones-0.6
-      - remote.rhf-milestones-0.7
-      - remote.rhf-milestones-spr
-      - remote.rhf-milestones-trunk
-      - meta/crawl-0.12/milestones{,-sprint,-zotdef}
-      - meta/crawl-git/milestones{-sprint,-zotdef}
-      - meta/crawl-git/milestones: rhfnewgit
+    logs:
+      - remote.rhf-{logfile,milestones}-{0.5,0.6,0.7,trunk,spr}
+      - meta/crawl-0.12/{logfile,milestones}{,-sprint,-zotdef}
+      - meta/crawl-git/{logfile,milestones}{-sprint,-zotdef}
+      - meta/crawl-git/{logfile,milestones}: rhfnewgit
     morgues:
       - http://rl.heh.fi/morgue
     ttyrecs:
@@ -202,22 +110,8 @@ sources:
     aliases:
       - cln
     base: http://crawl.lantea.net/crawl
-    logfiles:
-      - meta/git/logfile{,-sprint,-zotdef}*
-      - meta/0.15/logfile{,-sprint,-zotdef}*
-      - meta/0.14/logfile{,-sprint,-zotdef}*
-      - meta/0.13/logfile{,-sprint,-zotdef}*
-      - meta/0.12/logfile{,-sprint,-zotdef}*
-      - meta/0.11/logfile{,-sprint,-zotdef}*
-      - meta/0.10/logfile{,-sprint,-zotdef}*
-    milestones:
-      - meta/git/milestones{,-sprint,-zotdef}*
-      - meta/0.15/milestones{,-sprint,-zotdef}*
-      - meta/0.14/milestones{,-sprint,-zotdef}*
-      - meta/0.13/milestones{,-sprint,-zotdef}*
-      - meta/0.12/milestones{,-sprint,-zotdef}*
-      - meta/0.11/milestones{,-sprint,-zotdef}*
-      - meta/0.10/milestones{,-sprint,-zotdef}*
+    logs:
+      - meta/{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*
     morgues:
       - http://crawl.lantea.net/crawl/morgue
     ttyrecs:
@@ -225,16 +119,9 @@ sources:
 
   - name: ckr
     base: http://kr.dobrazupa.org
-    logfiles:
-      - www/trunk/logfile*
-      - www/0.15/logfile*
-      - www/0.14/logfile*
-      - www/0.13/logfile*
-    milestones:
-      - www/trunk/milestones*
-      - www/0.15/milestones*
-      - www/0.14/milestone*
-      - www/0.13/milestones*
+    logs:
+      - www/{trunk,0.15,0.13}/{logfile,milestones}*
+      - www/0.14/{logfile,milestone}*
     morgues:
       - ['ckr.*-(?:svn|git)', 'http://kr.dobrazupa.org/morgue/trunk']
       - ['ckr.*-(\d+[.]\d+)$', 'http://kr.dobrazupa.org/morgue/$1']
@@ -245,24 +132,15 @@ sources:
     aliases:
       - cbo
     base: http://crawl.berotato.org/crawl
-    logfiles:
-      - meta/nostalgia/logfile*
-      - meta/0.15/logfile{,-sprint,-zotdef}*
-      - meta/0.14/logfile{,-sprint,-zotdef}*
-      - meta/0.13/logfile{,-sprint,-zotdef}*
-      - meta/git/logfile{,-sprint,-zotdef}*
-      - meta/gods/logfile*: gods
-      - meta/plutonians/logfile*: plutonians
-      - meta/ranged_combat/logfile*: rc
-    milestones:
-      - meta/nostalgia/milestones*
-      - meta/0.15/milestones{,-sprint,-zotdef}*
-      - meta/0.14/milestones{,-sprint,-zotdef}*
-      - meta/0.13/milestones{,-sprint,-zotdef}*
-      - meta/git/milestones{,-sprint,-zotdef}*
-      - meta/gods/milestones*: gods
-      - meta/plutonians/milestones*: plutonians
-      - meta/ranged_combat/milestones*: rc
+    logs:
+      - meta/nostalgia/{logfile,milestones}*
+      - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}*
+      - meta/new_nemelex/{logfile,milestones}: new-nemelex
+      - meta/gods/{logfile,milestones}*: gods
+      - meta/chunkless/{logfile,milestones}*: chunkless
+      - meta/plutonians/{logfile,milestones}*: plutonians
+      - meta/ranged_combat/{logfile,milestones}*: rc
+      - meta/weightless/{logfile,milestones}: weightless
     morgues:
       - http://crawl.berotato.org/crawl/morgue
     ttyrecs:
