@@ -9,7 +9,11 @@ require 'nick/db'
 require 'nick/entry'
 require 'query/listgame_parser'
 
-help("Maps a nick to name(s) used on the public servers. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm <src> <dest>")
+args = ARGV[2]
+cmdline = args.split()[1 .. -1].map { |x| x.downcase }
+
+help("Maps a nick to name(s) used on the public servers. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm <src> <dest>",
+  cmdline.empty?)
 
 def cmd_nicks(cmdline)
   rm = cmdline.find { |a| a == '-rm' }
@@ -100,9 +104,6 @@ def delete_dest_from(key, value)
     end
   end
 end
-
-args = ARGV[2]
-cmdline = args.split()[1 .. -1].map { |x| x.downcase }
 
 begin
   if not cmdline.empty?
