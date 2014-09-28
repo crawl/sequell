@@ -5,8 +5,6 @@ require 'helper'
 require 'set'
 require 'irc_auth'
 
-forbid_private_messaging! "Cannot map nicks on PM."
-
 help("Maps a nick to name(s) used on the public servers. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm <src> <dest>")
 
 def cmd_nicks(cmdline)
@@ -14,6 +12,7 @@ def cmd_nicks(cmdline)
   cmdline.delete(rm) if rm
 
   if rm
+    forbid_private_messaging! "Cannot delete nicks in PM."
     IrcAuth.authorize!(:any)
     delete_nicks(cmdline)
   else
@@ -36,7 +35,10 @@ def unique_nicks(str)
 end
 
 def add_nicks(from, *to)
-  IrcAuth.authorize!(:any) unless to.empty?
+  unless to.empty?
+    forbid_private_messaging! "Cannot add nicks in PM."
+    IrcAuth.authorize!(:any)
+  end
 
   newnicks = unique_nicks((NICK_ALIASES[from] || '') + " " + to.join(" "))
   NICK_ALIASES[from.downcase] = newnicks
