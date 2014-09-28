@@ -295,7 +295,7 @@ sub handle_output {
 
     return '' unless $output =~ /\S/;
     my $g = Helper::demunge_xlogline($output);
-    my $str = $g->{milestone} ?
+    my $str = exists($g->{milestone}) ?
       Henzell::Game::milestone_string($g, 1) :
       Henzell::Game::game_string($g);
     $output = $pre . $str . $post;

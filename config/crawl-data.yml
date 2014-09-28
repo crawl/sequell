@@ -803,7 +803,6 @@ logrecord-fields-with-type:
   - nruneI?
   - tmsg^
   - vmsg^
-  - splat!
   - rstart*?
   - rend*?
   - ntvI

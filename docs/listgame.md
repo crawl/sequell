@@ -596,8 +596,19 @@ A unique numeric id (integer) associated with the game.
 `v`:
 Game version. Example: "0.6.0", "0.7.0-a0"
 
+`vlong`:
+Full game version. Examples: "0.15.1", "0.15.0-31-geb66e34",
+"0.16-a0-296-gbdb9f68". vlong is empty for games saved by Crawl
+versions that did not have this information.
+
 `lv`:
 Logfile format version
+
+`explbr`:
+Experimental branch name. Examples: "chunkless", "gods", etc. This
+field may be non-empty even for stable releases of Crawl if the server
+admin built Crawl on a local git branch that was not named master or
+did not start with "stone_soup"
 
 `src`:
 Public server abbreviation. One of "cao", "cdo", "cszo", etc.
@@ -700,17 +711,29 @@ The depth in the player's most recent dungeon branch (integer).
 Example: place=D:6 => br=D and lvl=6
 
 `absdepth`:
-The depth in the dungeon the character was at. Note that absdepth may be zero
-if unknown (before absdepth was recorded).
+The depth in the dungeon the character was at (integer). Note that
+absdepth may be zero if unknown (before absdepth was recorded).
 
 `gold`:
-The amount of gold held by the character.
+The amount of gold held by the character (integer).
 
 `goldfound`:
-The total gold found in the dungeon.
+The total gold found in the dungeon (integer).
 
 `goldspent`:
-Gold spent.
+Gold spent (integer).
+
+`zigdeepest`:
+The deepest the character has gone in a ziggurat (integer).
+
+`zigscompleted`:
+The number of ziggurats the character has completed (integer).
+
+`scrollsused`:
+The number of scrolls used (integer).
+
+`potionsused`:
+The number of potions used (integer).
 
 `kills`:
 The number of monsters slain.
@@ -734,6 +757,15 @@ Player's max hp at end of game (integer)
 `mmhp`:
 Player's unrotted max hp at end of game (integer)
 
+`mp`:
+Player's magic points at end of game (integer)
+
+`mmp`:
+Player's max magic points (integer)
+
+`bmmp`:
+Player's base max magic points (integer)
+
 `dam`:
 Damage of the killing blow (integer)
 
@@ -756,6 +788,9 @@ Player's piety (integer)
 
 `pen`:
 Player's penance (integer)
+
+`wiz`:
+Wizmode flag (boolean). If true, the player was in wizard mode.
 
 `start`:
 Game start time (date)
@@ -782,6 +817,9 @@ Game time in arbitrary units of time.
 
 `maxskills/maxsk`:
 All level-27 skills.
+
+`fifteenskills/fifsk`:
+All level-15 or better skills.
 
 `status/stat`:
 Character statuses such as berserk, confused, etc., as a
