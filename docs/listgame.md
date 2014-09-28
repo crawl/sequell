@@ -1185,22 +1185,28 @@ under both those names. aardvark can do that by running:
 
     !nick aardvark kravdraa aardvark
 
-You may add additional listgame conditions to nick mappings:
+You may add additional listgame conditions to nick mappings.
 
     !nick gerbils-cao-games (cao) gerbil
 
-Querying a nick with listgame conditions also applies those conditions:
+Querying a nick with listgame conditions also applies those conditions
+as filters:
 
     !lg gerbils-cao-games
     => !lg gerbil cao
 
-You may establish a "nick" this is entirely composed of listgame conditions:
+You may create a "nick" that is entirely composed of listgame conditions:
 
     !nick wins (win)
     !lg wins
 
-Once a nick mapping is established, all listgame commands will use the
-mapping.
+Avoid pure-condition nick mappings: they make it more likely that
+someone will ask for a player's games and instead trigger a misleading
+nick mapping. In general, prefer !kw to !nick if you're not explicitly
+mapping nicks.
+
+Once a nick mapping is established, !lg and similar commands will expand
+the mapping when used as the first argument (the nick position).
 
 You can bypass nick mappings in listgame queries by using an explicit
 name=foo expression or by prefixing the name with ":":
