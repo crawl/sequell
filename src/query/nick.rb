@@ -1,4 +1,5 @@
 require 'helper'
+require 'nick/entry'
 
 module Query
   class Nick
@@ -6,9 +7,9 @@ module Query
       nick && nick =~ /^!?[*]$/
     end
 
-    def self.aliases(nick)
-      return [nick[1..-1]] if nick =~ /^:/
-      nick_aliases(nick)
+    def self.mapping(nick)
+      return ::Nick::Entry.stub(nick[1..-1]) if nick =~ /^:/
+      NickDB[nick]
     end
   end
 end

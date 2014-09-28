@@ -1,8 +1,10 @@
 require 'query/nick'
 require 'query/ast/expr'
+require 'set'
 
 module Query
   class NickExpr < AST::Expr
+    PENDING_EXPANSIONS = Set.new
     def self.nick(nick)
       return nick if nick.is_a?(self)
       self.new(nick.to_s)
@@ -35,12 +37,30 @@ module Query
       nick = nick.sub(/^@+/, '')
       nick = self.default_nick || nick if nick == '.'
 
-      aliases = Query::Nick.aliases(nick)
-      if aliases.size == 1
-        self.single_nick_predicate(aliases[0], inverted)
+      mapping_predicate(Query::Nick.mapping(nick), inverted)
+    end
+
+    def self.mapping_predicate(mapping, inverted)
+      recursive_expansion_protect(mapping) {
+        condition = nil
+        if mapping.has_condition?
+          condition = Query::ListgameParser.fragment(
+            mapping.listgame_conditions)
+        end
+        nick_predicate = self.nick_predicate(mapping, inverted)
+        return nick_predicate unless condition
+        Query::AST::Expr.new(inverted ? :or : :and,
+          nick_predicate,
+          inverted ? Query::AST::Expr.new(:not, condition) : condition)
+      }
+    end
+
+    def self.nick_predicate(mapping, inverted)
+      if mapping.size == 1
+        self.single_nick_predicate(mapping.primary, inverted)
       else
         Query::AST::Expr.new(inverted ? :and : :or,
-          *aliases.map { |a| single_nick_predicate(a, inverted) })
+          *mapping.expansions.map { |a| single_nick_predicate(a, inverted) })
       end
     end
 
@@ -67,6 +87,20 @@ module Query
     def to_query_string(wrapping_parens=nil)
       return nil if @nick.value == '*'
       @nick.value
+    end
+
+  private
+
+    def self.recursive_expansion_protect(mapping)
+      if PENDING_EXPANSIONS.include?(mapping.nick)
+        raise "recursive nick expansion in #{mapping}"
+      end
+      PENDING_EXPANSIONS.add(mapping.nick)
+      begin
+        yield
+      ensure
+        PENDING_EXPANSIONS.delete(mapping.nick)
+      end
     end
   end
 end

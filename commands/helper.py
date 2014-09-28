@@ -9,8 +9,6 @@ import time
 CFGFILE = os.path.join(os.environ['HENZELL_ROOT'], 'config/crawl-data.yml')
 CFG = yaml.load(open(CFGFILE).read())
 
-www_rawdatapath = '/var/www/crawl/rawdata/'
-
 xkeychars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
 
 adjective_skills = \
@@ -28,10 +26,6 @@ ROLES = ROLE_MAP.values()
 ROLES_ABBR = ROLE_MAP.keys()
 
 WHERE_DIRS = None
-
-NICK_ALIASES = { }
-NICKMAP_FILE = os.path.join(os.environ['HENZELL_ROOT'], 'dat/nicks.map')
-nick_aliases_loaded = False
 
 class Tournament (object):
     def __init__(self, data):
@@ -68,23 +62,6 @@ def default_tourney_name():
 def default_tourney(game_type='crawl'):
     return Tournament(tourney_data()[game_type][default_tourney_name()])
 
-def game_skill_title(game):
-    title = game['title']
-    turns = game['turn']
-    if int(turns) < 200000:
-        return title
-    else:
-        return game_skill_farming(title)
-
-def skill_title_is_adjective(title):
-    return adjective_skills.has_key(title) or adjective_end.search(title)
-
-def game_skill_farming(title):
-    if skill_title_is_adjective(title):
-        return title + " Farmer"
-    else:
-        return "Farming " + title
-
 def plural(int):
     if int > 1:
         return 's'
@@ -96,26 +73,6 @@ def ntimes(times):
     elif times == 2: return 'twice'
     elif times == 3: return 'thrice'
     else: return str(times) + ' times'
-
-def canonicalize_nick(nick):
-    global WHERE_DIRS
-    if WHERE_DIRS is None:
-        WHERE_DIRS = [ f for f in glob(www_rawdatapath + '/*')
-                       if os.path.isdir(f) ]
-    lnickw = '/' + nick.lower()
-    match = [ x for x in WHERE_DIRS if x.lower().endswith(lnickw) ]
-    return len(match) > 0 and extract_nick_from_wherepath(match[0]) or None
-
-def canonicalize_nicks(nicks):
-    return [ n for n in [ canonicalize_nick(x) for x in nicks ] if n ]
-
-def extract_nick_from_wherepath(wherepath):
-    windex = wherepath.rfind('/')
-    if windex == -1:
-	return None
-    where = wherepath[windex + 1 : ]
-    if os.path.isfile(wherepath + '/' + where + '.where'):
-    	return where
 
 def strip_extension(name):
     dotind = name.rfind('.')
@@ -178,76 +135,7 @@ def parse_argslist(argslist):
             opts.append((opt, ''))
     return args, dict(opts)
 
-def munge_game(game):
-    logline = ''
-    for detail in details_names:
-        try:
-            game[detail] # try to catch a keyerror early
-            logline += detail + '=' + str(game[detail]).replace(':', '::') + ':'
-        except KeyError:
-            continue
-
-    logline = logline[:-1]
-    return logline
-
-def demunge_xlogline(logline):
-    if not logline:
-        return {}
-    if logline[0] == ':' or (logline[-1] == ':' and not logline[-2] == ':'):
-        sys.exit(1)
-    if '\n' in logline:
-        sys.exit(1)
-    logline = replace(logline, "::", "\n")
-    details = dict([(item[:item.index('=')], item[item.index('=') + 1:]) for item in logline.split(':')])
-    for key in details:
-        for char in key:
-            if char not in xkeychars:
-                sys.exit(1)
-        details[key] = replace(details[key], "\n", ":")
-    return details
-
-def deathstring(game):
-    deathstring = ''
-    if game['death_type']:
-        deathstring = death_methods[game['death_type']]
-        if game['death_source_name']:
-            deathstring += " - %s" % game['death_source_name']
-    else:
-        deathstring = "killed by %s" % game['death_source_name']
-    if game['auxkilldata']:
-        deathstring += " (%s)" % game['auxkilldata']
-    return deathstring
-
-def serialize_time(s):
-    return '%d:%02d:%02d' % (s/60/60%60, s/60%60, s%60)
-
 def help(helpstring):
     if sys.argv[4]:
         print helpstring
         sys.exit()
-
-def load_nick_aliases():
-    global nick_aliases_loaded
-    if nick_aliases_loaded:
-        return NICK_ALIASES
-    nick_aliases_loaded = True
-    if os.path.exists(NICKMAP_FILE):
-        for line in open(NICKMAP_FILE).readlines():
-            nicks = line.split()
-            if len(nicks) > 1:
-                NICK_ALIASES[nicks[0].lower()] = " ".join(nicks[ 1 : ])
-    return NICK_ALIASES
-
-def nick_aliases(nick):
-    load_nick_aliases()
-    alias = NICK_ALIASES.get(nick.lower())
-    if alias:
-        return alias.split()
-    else:
-        return [ nick ]
-
-def canonical_aliases(nick):
-    return canonicalize_nicks(nick_aliases(nick))
-
-def nick_alias(nick):
-    return nick_aliases(nick)[0]

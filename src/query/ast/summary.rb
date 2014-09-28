@@ -1,3 +1,5 @@
+require 'query/has_expression'
+
 module Query
   module AST
     class Summary < Term

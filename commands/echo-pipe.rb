@@ -27,7 +27,7 @@ begin
       Timeout.timeout(TIME_LIMIT) {
         Env.with(data['command_env']) do
           Cmd::UserFunction.clear_cache!
-          mark_nickmap_stale!
+          NickDB.reload!
           CommandContext.with_default_nick((data['env'] || { })['nick']) do
             Cmd::Executor.with_default_env(data['env']) do
               puts JSON.dump(

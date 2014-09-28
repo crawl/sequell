@@ -29,7 +29,7 @@ our @EXPORT_OK = qw/$logfile demunge_logline demunge_xlogline munge_game
                     @roles normalize_role short_role code_role display_role
                     @gods normalize_god short_god code_god display_god
                     ntimes once serialize_time ucfirst_word
-                    nick_alias unwon_combos cleanse_nick/;
+                    alias unwon_combos cleanse_nick/;
 our %EXPORT_TAGS = (
     logfile => [qw/demunge_logline demunge_xlogline munge_game games_for/],
     skills  => [grep /skill/, @EXPORT_OK],
@@ -38,9 +38,6 @@ our %EXPORT_TAGS = (
     gods    => [grep /god/,   @EXPORT_OK],
 );
 
-my $NICKMAP_FILE = 'dat/nicks.map';
-my %NICK_ALIASES;
-my $nick_aliases_loaded;
 our $source_dir = 'current';
 
 ## Set to the URL to the git browser, e.g.
@@ -57,6 +54,10 @@ sub eval_or_exit(&) {
     exit 1;
   }
   $res
+}
+
+sub cleanse_nick {
+  Henzell::IRCUtil::cleanse_nick(shift)
 }
 
 sub demunge_xlogline # {{{
@@ -468,34 +469,6 @@ sub ucfirst_word { # {{{
     join ' ', map { ucfirst } split / /, shift;
 } # }}}
 # }}}
-
-sub load_nick_aliases {
-  return \%NICK_ALIASES if $nick_aliases_loaded;
-
-  if (-f $NICKMAP_FILE) {
-    open my $inf, '<', $NICKMAP_FILE or return { };
-    while (<$inf>) {
-      chomp;
-      my @nicks = split;
-      $NICK_ALIASES{lc($nicks[0])} =
-        join(" ", @nicks[1 .. $#nicks]) if @nicks > 1;
-    }
-    close $inf;
-  }
-  $nick_aliases_loaded = 1;
-  \%NICK_ALIASES
-}
-
-sub nick_alias {
-  my $nick = shift;
-  my $aliases = load_nick_aliases()->{lc $nick};
-
-  $aliases && $aliases =~ /^(\S+)/ ? $1 : $nick
-}
-
-sub cleanse_nick {
-  Henzell::IRCUtil::cleanse_nick(shift)
-}
 
 sub private_messaging {
   $ENV{PRIVMSG}

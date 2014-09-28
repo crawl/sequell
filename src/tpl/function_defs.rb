@@ -251,7 +251,24 @@ module Tpl
   }
 
   FunctionDef.define('nick-aliases', 1) {
-    nick_aliases(self[0])
+    NickDB[self[0]].expansions
+  }
+
+  FunctionDef.define('nick-entry', 1) {
+    res = NickDB[self[0]]
+    res.stub? ? nil : res
+  }
+
+  FunctionDef.define('nick-name', 1) {
+    self[0].nick
+  }
+
+  FunctionDef.define('nick-expansions', 1) {
+    self[0].expansions
+  }
+
+  FunctionDef.define('nick-lg-conditions', 1) {
+    self[0].listgame_conditions
   }
 
   FunctionDef.define('filter', 2) {

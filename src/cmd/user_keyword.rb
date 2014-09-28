@@ -94,6 +94,7 @@ module Cmd
     end
 
   private
+
     def self.assert_definition_parseable!(definition)
       # Verify that the definition parses:
       CTX_STONE.with do

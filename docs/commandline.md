@@ -358,6 +358,16 @@ Functions may be used as `$(<fn> ...)`.
    - `$(nick-aliases <name>)`
 
      Gets the list of nick aliases for NAME, as reported by !nick NAME.
+     If there are no nick aliases for NAME, returns the single element
+     list `(list NAME)`.
+
+   - `$(nick-entry <name>)`
+
+     Returns a nick entry object for NAME, which has three properties:
+     the nick, its expansions, and its listgame conditions, which you
+     may query as: `$(nick-name NICK)`, `$(nick-expansions NICK)`, and
+     `$(nick-lg-conditions NICK)` respectively. Returns nil if there
+     is no nick entry for NAME.
 
    - `$(scope [<hash>])`
 

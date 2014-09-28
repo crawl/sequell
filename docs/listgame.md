@@ -1185,6 +1185,20 @@ under both those names. aardvark can do that by running:
 
     !nick aardvark kravdraa aardvark
 
+You may add additional listgame conditions to nick mappings:
+
+    !nick gerbils-cao-games (cao) gerbil
+
+Querying a nick with listgame conditions also applies those conditions:
+
+    !lg gerbils-cao-games
+    => !lg gerbil cao
+
+You may establish a "nick" this is entirely composed of listgame conditions:
+
+    !nick wins (win)
+    !lg wins
+
 Once a nick mapping is established, all listgame commands will use the
 mapping.
 
@@ -1196,13 +1210,18 @@ name=foo expression or by prefixing the name with ":":
   `!lg * :elliptic`      does likewise as does
   `!lg :elliptic`
 
+You can explicitly request a nick mapping in a non-nick expression
+with a name=@foo expression:
+
+    !lg * name=@elliptic
+
 You can delete a nick mapping using:
 
     !nick -rm <ircnick>
     
-or
+or remove one server character name from a mapping with:
 
-    !nick -rm . <servercharactername>
+    !nick -rm nick <servercharactername>
 
 
 FooTV

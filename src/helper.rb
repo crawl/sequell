@@ -7,6 +7,9 @@ require 'yaml'
 require 'fileutils'
 require 'henzell/config'
 require 'formatter/duration'
+require 'nick/db'
+
+NickDB = Nick::DB.default
 
 # Don't use more than this much memory (bytes)
 MAX_MEMORY_USED = 768 * 1024 * 1024
@@ -32,12 +35,6 @@ end
 
 MORGUE_DATEFORMAT = '%Y%m%d-%H%M%S'
 SHORT_DATEFORMAT = '%Y%m%d%H%M%S'
-
-NICK_ALIASES = { }
-NICKMAP_FILE = Henzell::Config.file_path(
-  ENV['HENZELL_TEST'] ? 'dat/nicks-test.map' : 'dat/nicks.map')
-
-$nicks_loaded = false
 
 module Helper
   def self.raise_private_messaging!
@@ -340,50 +337,6 @@ def help(helpstring, force=false)
     puts helpstring
     exit
   end
-end
-
-def mark_nickmap_stale!
-  $nicks_loaded = false
-end
-
-def load_nicks
-  return if $nicks_loaded
-  if File.exists?(NICKMAP_FILE)
-    File.open(NICKMAP_FILE) do |f|
-      f.each_line do |line|
-        maps = line.split()
-        # Explicitly downcase in case someone hand-edited the file.
-        NICK_ALIASES[maps[0].downcase] = maps[1 .. -1].join(" ") if maps.size > 1
-      end
-    end
-  end
-  $nicks_loaded = true
-end
-
-def save_nicks
-  FileUtils.mkdir_p(File.dirname(NICKMAP_FILE))
-  tmp = NICKMAP_FILE + '.tmp'
-  File.open(tmp, 'w') do |f|
-    for k, v in NICK_ALIASES do
-      f.puts "#{k} #{v}" if v
-    end
-  end
-  File.rename(tmp, NICKMAP_FILE)
-end
-
-def nick_aliases(nick)
-  load_nicks
-
-  aliases = NICK_ALIASES[nick.downcase]
-  if aliases
-    arralias = aliases.split()
-    return arralias if not arralias.empty?
-  end
-  [ nick ]
-end
-
-def nick_primary_alias(nick)
-  nick_aliases(nick)[0]
 end
 
 def extract_options(args, *keys)

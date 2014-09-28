@@ -4,6 +4,10 @@ require 'helper'
 
 require 'set'
 require 'irc_auth'
+require 'sqlhelper'
+require 'nick/db'
+require 'nick/entry'
+require 'query/listgame_parser'
 
 help("Maps a nick to name(s) used on the public servers. Usage: %CMD% <src> <dest1> <dest2> ...; %CMD% -rm <src>; %CMD% -rm <src> <dest>")
 
@@ -16,40 +20,45 @@ def cmd_nicks(cmdline)
     IrcAuth.authorize!(:any)
     delete_nicks(cmdline)
   else
-    add_nicks(cmdline[0], *cmdline[1 .. -1])
+    add_nicks(cmdline.join(' '))
   end
 end
 
-def unique_nicks(str)
-  nicks = str.split()
+def add_nicks(mapping_string)
+  mapping_string = mapping_string.sub('=>', ' ').strip
+  parsed_nick = Nick::Entry.parse(mapping_string)
 
-  nset = Set.new
-  nicks = nicks.find_all do |n|
-    dupe = nset.member?(n.downcase)
-    nset.add(n.downcase)
-    !dupe && n !~ /[ .*]/
+  if !parsed_nick || parsed_nick.nick == '.' || parsed_nick == '*'
+    die "Bad nick mapping #{mapping_string}"
   end
 
-  res = nicks.join(" ")
-  res.empty? ? nil : res
-end
-
-def add_nicks(from, *to)
-  unless to.empty?
+  if !parsed_nick.empty?
     forbid_private_messaging! "Cannot add nicks in PM."
     IrcAuth.authorize!(:any)
   end
 
-  newnicks = unique_nicks((NICK_ALIASES[from] || '') + " " + to.join(" "))
-  NICK_ALIASES[from.downcase] = newnicks
-
-  mapping = nickmap_string(from)
-  if mapping
-    puts "Mapping " + nickmap_string(from)
-  else
-    puts "No nick mapping for #{from}."
+  if parsed_nick.has_condition?
+    begin
+      cond = parsed_nick.listgame_conditions
+      Query::ListgameParser.fragment(cond)
+    rescue => e
+      STDERR.puts(e, e.backtrace.join("\n"))
+      raise "Invalid nick condition '#{cond}': #{e}"
+    end
   end
-  !to.empty?
+
+  old_nick = NickDB[parsed_nick.nick].dup
+  nick = NickDB.append_nick(parsed_nick)
+  if !nick.stub?
+    puts "Mapping #{nick}"
+  else
+    if !parsed_nick.empty? && !old_nick.stub?
+      puts "Deleted #{old_nick}"
+    else
+      puts "No nick mapping for #{parsed_nick.nick}."
+    end
+  end
+  !parsed_nick.empty?
 end
 
 def delete_nicks(cmds)
@@ -62,55 +71,45 @@ def delete_nicks(cmds)
       end
     end
   end
-  true
+  !cmds.empty?
+end
+
+def die_no_nick(nick)
+  die "No nick mapping for #{nick}."
 end
 
 def delete_src(nick)
-  emap = get_nickmap_or_die(nick)
-  if emap && !emap.empty?
-    puts "Deleted #{nickmap_string(nick)}"
-    NICK_ALIASES[nick.downcase] = nil
-  end
-end
-
-def nickmap_string(key)
-  mapped_nicks = NICK_ALIASES[key]
-  if !mapped_nicks || mapped_nicks.empty?
-    return nil
-  else
-    "#{key} => #{mapped_nicks}"
-  end
-end
-
-def get_nickmap_or_die(key)
-  nickmap = NICK_ALIASES[key.downcase]
-  die "No nick mapping for #{key}." unless nickmap
-  nickmap
+  deleted = NickDB.delete(nick)
+  die_no_nick(nick) if deleted.stub?
+  puts "Deleted #{deleted}"
 end
 
 def delete_dest_from(key, value)
-  emap = get_nickmap_or_die(key)
-  mapping_desc = nickmap_string(key)
-  emap = emap.split
-  emap.delete(value) if emap
-  if emap && !emap.empty?
-    NICK_ALIASES[key.downcase] = emap.join(' ')
-    puts "Deleted #{value} from #{mapping_desc}"
-  else
-    NICK_ALIASES[key.downcase] = nil
-    puts "Deleted #{mapping_desc}"
+  nick = NickDB[key]
+  die_no_nick(key) if nick.stub?
+
+  description = nick.to_s
+  removed = nick.delete(value)
+  if !removed
+    puts "#{value} not mapped in #{description}"
+  elsif removed
+    if nick.stub?
+      puts "Deleted #{description}"
+    else
+      puts "Deleted #{value} from #{description}"
+    end
   end
 end
 
-args = ARGV[2].gsub("/", "").gsub("\\", "")
+args = ARGV[2]
 cmdline = args.split()[1 .. -1].map { |x| x.downcase }
 
 begin
   if not cmdline.empty?
-    load_nicks
     changed = cmd_nicks(cmdline)
-    save_nicks if changed
+    NickDB.save! if changed
   end
 rescue
   puts $!
+  raise
 end
