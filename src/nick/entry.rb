@@ -88,7 +88,7 @@ module Nick
     # expansions and a blank #listgame_conditions is a #stub?, but is
     # not #empty?
     def empty?
-      listgame_conditions.nil? && stub?
+      @listgame_conditions.nil? && @expansions.empty?
     end
 
     ##
