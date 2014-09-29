@@ -5,6 +5,8 @@ require 'sqlhelper'
 require 'query/query_string'
 require 'query/listgame_query'
 
+help("Finds the longest streak for the named player.")
+
 default_nick = ARGV[1]
 args = Query::QueryString.new(ARGV[2])
 
