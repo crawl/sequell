@@ -4,7 +4,8 @@ require 'helper'
 require 'sqlhelper'
 require 'irc_auth'
 require 'cmd/user_keyword'
-require 'query/ast/ast_translator'
+require 'query/listgame_parser'
+require 'query/ast/ast_fixup'
 
 $ctx = CommandContext.new
 $ctx.extract_options!('rm', 'ls')
@@ -54,11 +55,12 @@ def display_keyword(name)
   if keyword.nil?
     begin
       parse = CTX_STONE.with do
-        Query::AST::ASTTranslator.apply(Query::QueryKeywordParser.parse(name))
+        Query::AST::ASTFixup.result(
+          Query::ListgameParser.fragment(name), true)
       end
       kwtype =
         Cmd::UserKeyword.valid_keyword_name?(name) ? 'Built-in' :
-                                                     'Keyword expression'
+                                                     'Expression'
       if parse.nil?
         puts "#{kwtype}: #{name} evaluates as nothing."
       else

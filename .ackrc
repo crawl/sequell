@@ -3,6 +3,7 @@
 --ignore-dir=dat/learndb
 --ignore-dir=www
 --ignore-dir=dat
+--ignore-dir=doc
 --ignore-dir=tests
 --ignore-file=is:TAGS
 --ignore-file=ext:log

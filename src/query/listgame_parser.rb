@@ -56,7 +56,7 @@ module Query
             translated_ast = AST::ASTTranslator.apply(ast)
             #debug{"Resolved AST: #{translated_ast}"}
 
-            fixed_ast = AST::ASTFixup.result(default_nick, translated_ast)
+            fixed_ast = AST::ASTFixup.result(translated_ast)
             #debug{"Fixed AST: #{fixed_ast}, head: #{fixed_ast.head}"}
             fixed_ast
           }

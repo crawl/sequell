@@ -3,24 +3,39 @@ require 'sql/query_context'
 module Query
   module AST
     class ASTFixup
-      def self.result(nick, ast)
-        self.new(nick, ast).result
+      def self.result(ast, fragment=false)
+        self.new(ast).result(fragment)
       end
 
-      attr_reader :nick, :ast
+      attr_reader :ast, :head
 
-      def initialize(nick, ast)
-        @nick = nick
+      def initialize(ast)
         @ast = ast
+        @head = ast.respond_to?(:head) ? ast.head : ast
         @ctx = Sql::QueryContext.context
       end
 
-      def result
+      def result(fragment=false)
         #debug{"AST Fixup: #{ast}"}
-        ast.game_number = -1
-
         fix_value_fields!
+        fixup_full_query! unless fragment
 
+        ast.transform_nodes! { |node|
+          collapse_negated_node(node)
+        }
+
+        ast.transform! { |node|
+          collapse_empty_nodes(node)
+        }
+
+        ast.each_node { |node|
+          fix_node(node)
+        }
+        ast
+      end
+
+      def fixup_full_query!
+        ast.game_number = -1
         ast.transform_nodes! { |node|
           kill_meta_nodes(node)
         }
@@ -45,19 +60,6 @@ module Query
         validate_filters(ast.group_order)
 
         ast.bind_tail!
-
-        ast.transform_nodes! { |node|
-          collapse_negated_node(node)
-        }
-
-        ast.transform! { |node|
-          collapse_empty_nodes(node)
-        }
-
-        ast.each_node { |node|
-          fix_node(node)
-        }
-        ast
       end
 
       def validate_filters(filter)
@@ -71,7 +73,7 @@ module Query
 
       def fix_value_fields!
         values = []
-        ast.head.map_fields { |field|
+        head.map_fields { |field|
           if field.value_key?
             values << field.name
             Sql::Field.field(@ctx.value_field)
@@ -80,7 +82,7 @@ module Query
           end
         }
         unless values.empty?
-          ast.head << Expr.and(*values.map { |v|
+          head << Expr.and(*values.map { |v|
               Expr.field_predicate('=', @ctx.key_field, v)
             })
         end

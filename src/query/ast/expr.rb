@@ -157,7 +157,8 @@ module Query
       def to_in_clause_query_string
         field = self.first.field
         op = self.first.operator
-        value = self.arguments.map(&:value).join('|')
+        value = Query::AST::Value.single_quote_string(
+          self.arguments.map(&:value).join('|'))
         "#{field}#{op}#{value}"
       end
 
@@ -167,21 +168,21 @@ module Query
         }
       end
 
-      def to_query_string(wrapping_parens=true)
-        if self.operator.unary?
-          "#{operator.display_string}#{child_query(self.first)}"
-        else
-          if self.in_clause_transformable?
-            return self.to_in_clause_query_string
+      def to_query_string(wrapping_parens=false)
+        wrap_if(wrapping_parens, '((', '))') {
+          if self.operator.unary?
+            "#{operator.display_string}#{child_query(self.first, true)}"
+          else
+            if self.in_clause_transformable?
+              self.to_in_clause_query_string
+            else
+              singular = self.arguments.size == 1
+              arguments.map { |a|
+                child_query(a, !singular && self.operator > a.operator)
+              }.compact.join(operator.display_string)
+            end
           end
-
-          wrap_with_parens = wrapping_parens && self.arity > 1
-          text = arguments.map { |a|
-            child_query(a, self.operator > a.operator)
-          }.compact.join(operator.display_string)
-          text = "(#{text})" if wrap_with_parens
-          text
-        end
+        }
       end
 
       def sql_values
