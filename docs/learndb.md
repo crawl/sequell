@@ -59,8 +59,8 @@ Use !learn add to add entries to the LearnDB. If no term exists,
 term is found, !learn add will append the entry to the list of
 existing entries for that term.
 
-When adding terms, separate words with underscores; do not use spaces
-to separate words in the term:
+When adding terms, separate words with underscores, or quote the term
+if it contains embedded spaces.
 
     <user> !learn add cow A domesticated ungulate.
     <Sequell> cow[1/1]: A domesticated ungulate.
@@ -70,6 +70,21 @@ to separate words in the term:
     <Sequell> superior cow[1/1]: More cow than cow
     <user> ?? superior cow
     <Sequell> superior cow[1/1]: More cow than cow
+    <user> !learn add "superior cow" Considerably more
+    <Sequell> superior cow[2/2]: Considerably more
+
+Quoting a term does not imply that the term will be created verbatim:
+quoted terms will still have leading and trailing spaces removed and
+the term normalized. Quoting is merely a convenience for entering
+embedded spaces.
+
+    <user> !learn add " extra    spaces    lost " quoting doesn't mean exact
+    <Sequell> extra spaces lost[1/1]: quoting doesn't mean exact
+
+Quoting is *required* if you want the term to start and end with quotes:
+
+    <user> !learn add '"double quotes"' outer quotes required here
+    <Sequell> "double quotes"[1/1]: outer quotes required here
 
 If a term has existing entries, you may insert a new entry at a
 particular index by specifying the index:
@@ -156,6 +171,17 @@ You may swap terms as:
 
     !learn swap A[x] B[y]
 
+Quoting
+-------
+
+Quoted strings are accepted as a convenience when entering long terms
+with embedded spaces, where it would be awkward to replace those
+spaces with underscores. Quoted strings are interpreted only for the
+LearnDB manipulation commands, not when querying the DB.
+
+Quoted strings are still normalized for embedded spaces and stripped
+of leading and trailing spaces.
+    
 Searching
 ---------
 

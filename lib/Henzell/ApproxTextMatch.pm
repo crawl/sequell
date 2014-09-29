@@ -11,6 +11,7 @@ sub new {
   my ($cls, $term, $db_terms, $dictionary_file, %misc) = @_;
   stem_caching({ -level => 2 });
   bless { term => normalize_term($term),
+          max_permute_length => $misc{max_permute_length} || 30,
           db_terms => [map(normalize_term($_), @$db_terms)],
           dictionary_file => ($dictionary_file || '/usr/share/dict/words'),
           %misc
@@ -39,8 +40,13 @@ sub filter_matching {
 
 sub approx_matches {
   my $self = shift;
-  my @permutations =
-    $self->permute($self->fuzz_words($self->term_words()));
+
+  my @permutations;
+  if (length($self->{term}) <= $self->{max_permute_length}) {
+    @permutations = $self->permute($self->fuzz_words($self->term_words()));
+  } else {
+    @permutations = ($self->{term});
+  }
   my @found = $self->filter_matching(@permutations);
   if (!@found) {
     @found = $self->filter_matching(

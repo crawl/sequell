@@ -61,6 +61,21 @@ irc('!learn add cow cowcowcow');
 is(irc('??pow[2]'), "cow[2/2]: cowcowcow");
 is(irc('??pow[-1]'), "cow[2/2]: cowcowcow");
 
+is(irc('!learn add superior_cow More cow than cow'),
+   'superior cow[1/1]: More cow than cow');
+is(irc('!learn add "superior cow" Considerably more'),
+       'superior cow[2/2]: Considerably more');
+is(irc('!learn add \'ultra bull\' Ultra ultra'),
+   'ultra bull[1/1]: Ultra ultra');
+is(irc('!learn mv "superior cow"[$] \'ultra bull\''),
+   'superior cow[2] -> ultra bull[2/2]: Considerably more');
+is(irc('!learn rm superior cow'),
+   'Deleted superior cow[1/1]: More cow than cow');
+is(irc('!learn rm ultra bull[$'),
+   'Deleted ultra bull[2/2]: Considerably more');
+is(irc('!learn rm ultra bull[$'),
+   'Deleted ultra bull[1/1]: Ultra ultra');
+
 irc('!learn add cow How now');
 irc('!learn add cowt see {cow}');
 irc('!learn add cszo cßo');

@@ -6,7 +6,7 @@ use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
-use LearnDB qw/read_entry num_entries replace_entry/;
+use LearnDB qw/read_entry num_entries replace_entry unquote normalize_term/;
 use Helper;
 use utf8;
 use open qw/:std :utf8/;
@@ -16,15 +16,16 @@ Helper::forbid_private();
 my ($term, $num, $rest);
 
 for ($ARGV[1]) {
-  /^([^\[\]]+?)\[([+-]?\d+)\]?\s+(s[^a-z].+)/i || /^([^\[\]]+?)\s+(s[^a-z].+)/i
+  /^([^\[\]]+?)\[([+-]?\d+|\$)\]?\s+(s[^a-z].+)/i || /^([^\[\]]+?)\s+(s[^a-z].+)/i
     or do {
       print "Syntax is: !learn edit TERM[NUM] s/<search>/<repl>/\n";
       exit 1;
     };
-  ($term, $num, $rest) = ($1, $2, $3);
+  ($term, $num, $rest) = (unquote($1), $2, $3);
 }
 
 $rest = $num, undef($num) if defined($num) && !defined($rest);
+$num = -1 if $num eq '$';
 
 s/^\s+//, s/\s+$// for ($term, $rest);
 
@@ -38,6 +39,7 @@ my $text = read_entry($term, $num, 1);
 
 if (!defined($text))
 {
+  $term = normalize_term($term);
   print "I don't have a page labeled $term\[$num] in my learndb.";
   exit;
 }

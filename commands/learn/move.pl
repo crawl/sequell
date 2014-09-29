@@ -12,7 +12,7 @@ use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
-use LearnDB qw/$RTERM_INDEXED $RTERM/;
+use LearnDB qw/$RTERM_INDEXED $RTERM unquote/;
 use Helper;
 use utf8;
 use open qw/:std :utf8/;
@@ -21,13 +21,13 @@ Helper::forbid_private();
 
 eval {
   if ($ARGV[1] =~ /^$RTERM_INDEXED\s+$RTERM_INDEXED\s*$/) {
-    print(LearnDB::move_entry($1, $2, $3, $4));
+    print(LearnDB::move_entry(unquote($1), $2, unquote($3), $4));
   }
   elsif ($ARGV[1] =~ /^$RTERM_INDEXED\s+$RTERM\s*$/) {
-    print(LearnDB::move_entry($1, $2, $3));
+    print(LearnDB::move_entry(unquote($1), $2, unquote($3)));
   }
   elsif ($ARGV[1] =~ /^$RTERM\s+$RTERM\s*$/) {
-    print(LearnDB::move_entry($1, undef, $2));
+    print(LearnDB::move_entry(unquote($1), undef, unquote($2)));
   }
   else {
     print "Syntax: !learn $0 SRC[x] DST[y] or SRC[x] DST or SRC DST\n";

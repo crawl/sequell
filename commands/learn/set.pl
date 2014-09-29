@@ -6,7 +6,7 @@ use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
-use LearnDB qw/read_entry num_entries replace_entry insert_entry
+use LearnDB qw/read_entry num_entries replace_entry insert_entry unquote
                $RTERM_INDEXED $RTERM $RTEXT/;
 use Helper;
 use utf8;
@@ -17,9 +17,9 @@ Helper::forbid_private();
 Helper::eval_or_exit {
   my ($term, $index, $text);
   if ($ARGV[1] =~ /$RTERM_INDEXED $RTEXT/) {
-    ($term, $index, $text) = ($1, $2, $3);
+    ($term, $index, $text) = (unquote($1), $2, $3);
   } elsif ($ARGV[1] =~ /$RTERM $RTEXT/) {
-    ($term, $text) = ($1, $2);
+    ($term, $text) = (unquote($1), $2);
   }
 
   $index ||= 1;

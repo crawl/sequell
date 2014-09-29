@@ -23,17 +23,17 @@ my $DB_PATH = $ENV{LEARNDB} ||
 
 my $DB = Henzell::SQLLearnDB->new($DB_PATH);
 
-our @EXPORT_OK = qw/cleanse_term num_entries read_entry print_to_entry
-                    del_entry replace_entry swap_entries query_entry
-                    check_entry_exists report_error parse_query
-                    insert_entry $RTERM $RTERM_INDEXED $RTEXT/;
+our @EXPORT_OK = qw/cleanse_term normalize_term num_entries read_entry
+                    print_to_entry del_entry replace_entry swap_entries
+                    query_entry check_entry_exists report_error parse_query
+                    insert_entry unquote $RTERM $RTERM_INDEXED $RTEXT/;
 
-our $RTERM = qr/([^\[\]\s]+)/;
+our $RTERM = qr/('(?:[^']|\\[\\'])*'|"(?:[^"]|\\.)*"|[^\[\]\s]+)/;
 our $RTERM_INDEXED = qr/$RTERM\s*\[\s*([+-]?\d+|\$)\]?/;
 our $RTEXT = qr/(.+)/;
 
-our $TERM_MAX_LENGTH = 30;
-our $TEXT_MAX_LENGTH = 350;
+our $TERM_MAX_LENGTH = 100;
+our $TEXT_MAX_LENGTH = 375;
 
 sub hidden_term {
   my $term = shift;
@@ -94,13 +94,31 @@ sub search {
 
 sub similar_terms {
   my ($term) = @_;
-  map(cleanse_term($_),
+  map(normalize_term($_),
       Henzell::ApproxTextMatch->new(
-        cleanse_term($term), $DB->terms())->approx_matches())
+        normalize_term($term), $DB->terms())->approx_matches())
 }
 
 sub mtime {
   $DB->mtime
+}
+
+sub unquote($) {
+  my $term = shift;
+  if ($term =~ /^"((?:[^"]|\\.)*)"$/) {
+    my $body = $1;
+    $body =~ s/\\(.)/$1/g;
+    return $body;
+  } elsif ($term =~ /^'((?:[^']|\\[\\'])*)'$/) {
+    my $body = $1;
+    my $simple_unslash = sub {
+      my $arg = shift;
+      $arg eq '\\' || $arg eq "'" ? $arg : "\\$arg"
+    };
+    $body =~ s/\\(.)/$simple_unslash->($1)/ge;
+    return $body;
+  }
+  $term
 }
 
 sub cleanse_term {
@@ -117,7 +135,7 @@ sub cleanse_term {
 }
 
 sub num_entries {
-  $DB->definition_count(cleanse_term(shift))
+  $DB->definition_count(normalize_term(shift))
 }
 
 sub check_entry_exists($;$) {
@@ -141,7 +159,7 @@ sub normalize_index {
   my ($term, $num, $op) = @_;
   $num = -1 if $num && $num eq '$';
   $op ||= '';
-  $term = cleanse_term($term);
+  $term = normalize_term($term);
   $num ||= 1;
   my $total = num_entries($term);
   if ($num < 0) {
@@ -255,12 +273,13 @@ sub query_entry {
   my $res = $ignore_redirects ? read_entry($term, $num)
                               : query_entry_with_redirects($term, $num);
   if ($error_message_if_missing && (!defined($res) || $res eq '')) {
+    my $display_term = normalize_term($term);
     if ($num == 1) {
       return LearnDB::MaybeEntry->with_err(
-        "I don't have a page labeled $term in my learndb.", 'noent');
+        "I don't have a page labeled $display_term in my learndb.", 'noent');
     }
     return LearnDB::MaybeEntry->with_err(
-      "I don't have a page labeled $term\[$num] in my learndb.", 'noent');
+      "I don't have a page labeled $display_term\[$num] in my learndb.", 'noent');
   }
   LearnDB::MaybeEntry->with_entry($res)
 }
@@ -272,7 +291,7 @@ sub read_entries {
 
 sub read_entry {
   my ($term, $entry_num, $just_the_entry) = @_;
-  $term = cleanse_term($term);
+  $term = normalize_term($term);
   $entry_num = normalize_index($term, $entry_num, 'query');
   my $definition = $DB->definition($term, $entry_num);
   return undef unless defined $definition;
@@ -297,6 +316,15 @@ sub check_thing_length($$$) {
   }
 }
 
+sub truncate_term($) {
+  my $term = shift;
+  substr($term, 0, $TERM_MAX_LENGTH)
+}
+
+sub normalize_term($) {
+  cleanse_term(truncate_term(cleanse_term(shift())))
+}
+
 sub check_term_length($) {
   check_thing_length("Term name", cleanse_term(shift), $TERM_MAX_LENGTH);
 }
@@ -309,28 +337,29 @@ sub check_text_length($;$) {
 
 sub insert_entry {
   my ($term, $num, $text) = @_;
-  $term = cleanse_term($term);
+  my $original_term = $term;
   check_term_length($term);
   check_text_length($text);
+  $term = cleanse_term($term);
   $num = -1 if ($num || '') eq '$';
   $num = $DB->add($term, $text, $num);
-  return read_entry($term, $num);
+  return read_entry($original_term, $num);
 }
 
 sub del_entry {
-  my $term = cleanse_term(shift);
+  my $term = normalize_term(shift);
   my $entry_num = normalize_index($term, shift(), 'query');
   $DB->remove($term, $entry_num);
 }
 
 sub del_term {
-  my $term = cleanse_term(shift);
+  my $term = normalize_term(shift);
   $DB->remove($term);
 }
 
 sub replace_entry
 {
-  my $term = cleanse_term(shift);
+  my $term = normalize_term(shift);
   my $entry_num = normalize_index($term, shift());
   my $new_text = shift;
   $DB->update_value($term, $entry_num, $new_text);
@@ -339,7 +368,7 @@ sub replace_entry
 
 sub swap_entries {
   my ($term1, $num1, $term2, $num2) = @_;
-  $_ = cleanse_term($_) for ($term1, $term2);
+  $_ = normalize_term($_) for ($term1, $term2);
   $num1 = normalize_index($term1, $num1);
   $num2 = normalize_index($term2, $num2);
 
@@ -352,7 +381,7 @@ sub swap_entries {
 
 sub rename_entry($$) {
   my ($src, $dst) = @_;
-  $DB->update_term(cleanse_term($src), cleanse_term($dst));
+  $DB->update_term(normalize_term($src), normalize_term($dst));
 }
 
 sub move_entry($$$;$) {

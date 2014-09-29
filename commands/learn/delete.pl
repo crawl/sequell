@@ -6,7 +6,7 @@ use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
-use LearnDB qw/cleanse_term num_entries read_entry del_entry/;
+use LearnDB qw/normalize_term num_entries read_entry del_entry unquote/;
 use Helper;
 use utf8;
 use open qw/:std :utf8/;
@@ -20,7 +20,7 @@ $ARGV[1] =~ /^([^\[\]]+)(?:\[\s*([+-]?\d+|\$)\s*\]?)?/ or do
   exit;
 };
 
-my ($term, $num) = (cleanse_term($1), $2);
+my ($term, $num) = (normalize_term(unquote($1)), $2);
 $num = -1 if $num && $num eq '$';
 
 my $entries = num_entries($term);
