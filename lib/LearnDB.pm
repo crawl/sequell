@@ -366,6 +366,11 @@ sub replace_entry
   read_entry($term, $entry_num)
 }
 
+sub swap_terms {
+  my ($term1, $term2) = @_;
+  $DB->swap_terms($term1, $term2)
+}
+
 sub swap_entries {
   my ($term1, $num1, $term2, $num2) = @_;
   $_ = normalize_term($_) for ($term1, $term2);

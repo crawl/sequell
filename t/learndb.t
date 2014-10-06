@@ -39,6 +39,15 @@ my $ldb = Henzell::ReactorService->new(executor => $cmd,
                                        bus => $bus);
 $irc->configure_services(services => [$ldb]);
 
+irc('!learn add aa Hello');
+irc('!learn add aa there');
+irc('!learn add bb mellow');
+irc('!learn add bb yak');
+irc('!learn add bb fries');
+is(irc('!learn swap aa bb'), 'aa[2], bb[3] => bb[2], aa[3]');
+is(irc('??aa'), 'aa[1/3]: mellow');
+is(irc('!learn swap aa[2 aa[$'), 'Swapped aa[2] with aa[$].');
+
 irc('!learn add src Test');
 irc('!learn add dst Hi');
 irc('!learn mv src[$] dst[$]');

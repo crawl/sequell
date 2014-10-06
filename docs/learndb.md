@@ -18,7 +18,7 @@ Use ?? to query the LearnDB:
     ?? <term> [entry-index]
 
 For instance:
-    
+
     <user> ??zot[2]
     <Sequell> zot[2/6]: Mind the gaps in your resistances while ...
 
@@ -148,7 +148,7 @@ Moving entries
 You may move entries using the general form:
 
     !learn move A[x] B[y]
-    
+
 This is equivalent to the two command sequence:
 
     !learn del A[x]
@@ -167,9 +167,13 @@ You may rename terms as:
 
 Renaming a term will fail if the destination term already exists.
 
-You may swap terms as:
+You may swap entries as:
 
     !learn swap A[x] B[y]
+
+and swap terms as:
+
+    !learn swap A B
 
 Quoting
 -------
@@ -181,7 +185,7 @@ LearnDB manipulation commands, not when querying the DB.
 
 Quoted strings are still normalized for embedded spaces and stripped
 of leading and trailing spaces.
-    
+
 Searching
 ---------
 
@@ -357,7 +361,7 @@ after the match:
 expression syntax, using the `(?P<name>pattern)` capture syntax.
 
     !learn add :beh: /me visits (?P<place>.*) ::: /me also visits $place
-    
+
 Capturing variables normally match single words only. You can request
 a capture to span words by preceding the capture name with * (notice
 the need to escape the regex metacharacter ? in the example)
@@ -413,8 +417,7 @@ malformed behaviours ignored.
 | No             | -                  | -        | Nothing happens for this behaviour, next behaviour is evaluated                    |
 | Yes            | No                 | (none)   | Nothing happens for this behaviour, next behaviour is evaluated                    |
 | Yes            | Yes                | (none)   | Says or emotes the action, no further behaviours or commands are evaluated.        |
-| Yes            | -                  | break    | Says the action if not empty, then skips other behaviours and                      |
-|                |                    |          | proceeds with LearnDB lookup and normal command evaluation.                        |
+| Yes            | -                  | break    | Says the action if not empty, then skips other behaviours and proceeds with LearnDB lookup and normal command evaluation.                        |
 | Yes            | -                  | last     | Says the action if not empty, then does no other behaviours or command evaluation. |
 | Yes            | -                  | continue | Says the action if not empty, then evaluates the next behaviour                    |
 

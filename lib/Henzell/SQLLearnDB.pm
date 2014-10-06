@@ -192,6 +192,27 @@ UPDATE definitions SET definition = ?
 UPDATE_DEF
 }
 
+sub swap_terms {
+  my ($self, $term1, $term2) = @_;
+  my $term1id = $self->term_id($term1) or die "no term \"$term1\"\n";
+  my $term2id = $self->term_id($term2) or die "no term \"$term2\"\n";
+  die "can't swap term $term1 with itself" if $term1id == $term2id;
+
+  eval {
+    $self->begin_work;
+    $self->exec(<<RENAME_TERM1, $term2, $term1id);
+update terms set term = ? where id = ?
+RENAME_TERM1
+    $self->exec(<<RENAME_TERM2, $term1, $term2id);
+update terms set term = ? where id = ?
+RENAME_TERM2
+    $self->commit;
+  };
+  my $err = $@;
+  $self->rollback() if $err;
+  die $err if $err;
+}
+
 sub update_term {
   my ($self, $term, $newterm) = @_;
   if (lc($term) ne lc($newterm) && $self->has_term($newterm)) {
