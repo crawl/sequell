@@ -37,7 +37,7 @@ module Henzell
     end
 
     def ttyrec_urls
-      self.source.ttyrec_urls
+      self.source.ttyrec_urls || []
     end
 
     def user_ttyrec_urls
