@@ -16,7 +16,6 @@ use LearnDB::Entry;
 use LearnDB::MaybeEntry;
 
 use base 'Exporter';
-use Text::LevenshteinXS;
 
 my $DB_PATH = $ENV{LEARNDB} ||
   File::Spec->catfile($ENV{HENZELL_ROOT} || '.', 'dat/learn.db');
