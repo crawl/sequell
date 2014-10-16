@@ -12,3 +12,4 @@ Text::Levenshtein::Damerau
 Text::Levenshtein::Damerau::XS
 JSON
 Sub::Recursive
+HTML::Entities
