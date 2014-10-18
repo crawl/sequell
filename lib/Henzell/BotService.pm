@@ -77,13 +77,17 @@ sub say_paged {
   return unless (defined($output) && $output =~ /\S/) || $prefix;
 
   my $private = $m{channel} eq 'msg';
+  my $nlines = $m{nlines} || ($private ? -1 : 1);
 
   $output = substr($output, 0, $MAX_PAGINATE_LENGTH) . "..."
     if length($output) > $MAX_PAGINATE_LENGTH;
 
-  if ($private) {
+  if ($nlines == -1 || $nlines > 1) {
     my $length = length($output);
-    for (my $start = 0; $start < $length; $start += $PAGE) {
+    my $line = 0;
+    for (my $start = 0; $start < $length && ($nlines == -1 || $line < $nlines);
+         $start += $PAGE, $line++)
+    {
       if ($length - $start > $PAGE) {
         my $spcpos = rindex($output, ' ', $start + $PAGE - 1);
         if ($spcpos != -1 && $spcpos > $start) {

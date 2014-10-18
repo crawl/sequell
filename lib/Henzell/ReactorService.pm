@@ -296,6 +296,9 @@ sub _parse_relay {
         $$m{orignick} = $$m{nick};
         $$m{nick} = $val;
       }
+      if ($key eq 'n' && $val > 0) {
+        $$m{nlines} = $val;
+      }
     }
   }
   $$m{body} = $cmd;
