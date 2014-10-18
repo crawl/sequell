@@ -283,8 +283,6 @@ sub event_userquit {
 sub _parse_relay {
   my ($self, $m, $target) = @_;
   my ($params, $cmd) = $target =~ /^((?:-\w+ +\S+ +)*)(?:-- +)?(.*)/;
-  $$m{relayed} = 1;
-  $$m{proxied} = 1;
   if ($params =~ /\S/) {
     while ($params =~ /-(\w+) +(\S+) +/g) {
       my ($key, $val) = ($1, $2);
@@ -293,6 +291,8 @@ sub _parse_relay {
         $$m{outprefix} = $val;
       }
       if ($key eq 'nick' && $val) {
+        $$m{relayed} = 1;
+        $$m{proxied} = 1;
         $$m{orignick} = $$m{nick};
         $$m{nick} = $val;
       }
