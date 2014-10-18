@@ -1,5 +1,4 @@
-Command-Line Expansion
-======================
+# Command-Line Expansion
 
 Any command you issue to Sequell is expanded before execution. For
 instance, if user "jake" runs a command as follows:
@@ -70,9 +69,9 @@ Functions may be used as `$(<fn> ...)`.
    - `$(typeof <val>)`  returns the type of the given value
 
    - `$(bound? <name>)`
-   
+
      Returns true if *name* is bound to a non-(void) value in the current scope.
-     
+
    - `$(nvl <forms>)`
 
      Evaluates each form in a scope where an unbound name evaluates to the empty string.
@@ -88,7 +87,7 @@ Functions may be used as `$(<fn> ...)`.
 
      Like *nvl*, but uses a user-supplied default value instead of defaulting to the empty
      string. Use with caution:
-     
+
          $x => ${x}
          ${x:-foo} => ${x:-foo}
          $(with-nvl yak $x) => yak
@@ -107,14 +106,14 @@ Functions may be used as `$(<fn> ...)`.
          .echo $(join $(split & a&b&c)) => a, b, c
 
    - `$(str-find <str> <text>)`; `$(str-find? <str> <text>)`
-   
+
       `str-find` returns the index of <str> in <text>, indexes
       starting with 0, or -1 if <str> is not found in <text>. If
       merely checking for match/no-match, `str-find?` returns boolean
       true or false.
 
    - `$(re-find <regex> <text> [<start-index>])`
-   
+
       Returns a match object if the regex matches the text.
 
       Match objects can be indexed with `elt`, or converted into a
@@ -134,7 +133,7 @@ Functions may be used as `$(<fn> ...)`.
 
      If your pattern used named capturing groups (?P<name>...), you may
      use the name of the group instead of *n*.
-     
+
    - `$(match-begin <match> [<group-index>])`
 
      Returns the start index in the original text where the regex
@@ -147,7 +146,7 @@ Functions may be used as `$(<fn> ...)`.
      immediately after the last character of the regex match. If
      *group-index* is specified, returns the end index just after that
      particular capturing group.
-     
+
    - `$(replace <string> [<replacement>] <text>)`
 
      The replace function replaces occurrences of `<string>` in `<text>` with
@@ -168,7 +167,7 @@ Functions may be used as `$(<fn> ...)`.
 
      `replacement` may use captures as variables; to protect against early
      expansion of the replacement, you must single-quote it:
-     
+
          .echo $(re-replace '\b([a-z])' '$(upper $1)' "How now brown cow")
          => How Now Brown Cow
 
@@ -192,7 +191,7 @@ Functions may be used as `$(<fn> ...)`.
 
      A one-argument function may also be used, which will be called with a
      match object passed to it.
-        
+
    - `$(re-replace-n <n> <regex> [<replacement>] <text)`
 
       Replaces only *n* matches; this is the regex equivalent of `replace-n`.
@@ -257,7 +256,7 @@ Functions may be used as `$(<fn> ...)`.
 
    - `$(length <string|array>)` String or array length
    - `$(sub <start> [<exclusive-end>] <string|array>)` Substring or array slice
-   
+
    - `$(nth <index> <array>)` Index into array
    - `$(car <array>)` First element
    - `$(cdr <array>)` Array slice (identical to $(sub 1 <array>))
@@ -265,11 +264,11 @@ Functions may be used as `$(<fn> ...)`.
    - `$(rand n m)` => random integers in [n,m]
    - Prefix operators: `+` `-` `/` `*` `=` `/=` `<` `>` `<=` `>=` `<=>` `**`
      `mod` `not`
-   
+
           $(<=> 1 5) => -1
           $(<=> 1 1) => 0
           $(<=> 5 1) => 1
-          
+
    - Type-casts: `str`, `float`, `int`
 
    - `$(list 1 2 3 4)` => [1, 2, 3, 4]
@@ -279,7 +278,7 @@ Functions may be used as `$(<fn> ...)`.
 
    - `$(if <cond> <then> [<else>])`
    - `$(let (var1 value1 var2 value2 ...) <body-forms>)`
-   
+
          $(let (x 2 y 5) (* $x $y)) => 10
 
      `let` binds names to values; values in a let form cannot refer to earlier
@@ -309,12 +308,12 @@ Functions may be used as `$(<fn> ...)`.
      Things to note about functions definitions:
 
      Use `$foo` to reference the value of the variable foo in the function body:
-     
+
          .echo $((fn (foo) $foo) 10) => 10
          .echo $((fn (foo) foo) 10) => foo
 
      The function body is *no longer treated as a template*:
-     
+
          .echo $((fn (. args) (!lg $args fmt:"$name")) * xl>15)
 
          (fn (x) (* $x 2))
@@ -322,13 +321,13 @@ Functions may be used as `$(<fn> ...)`.
    - `$(apply <fn> arg1 arg2 ... arglist)`
      Apply function to the given argument list, with any individual args
      prefixed
-     
+
          $(apply ${+} (list 1 2 3 4 5)) => 15
          $(apply ${+} 6 (list 1 2 3 4 5)) => 21
 
    - `$(range <low> <high> [<step>])` range of numbers from low to high
      inclusive, with step defaulting to 1.
-     
+
          .echo $(range 1 10) => 1 2 3 4 5 6 7 8 9 10
          .echo $(range 1 10 2) => 1 3 5 7 9
 
@@ -389,7 +388,7 @@ Functions may be used as `$(<fn> ...)`.
      Evaluates <forms> with the given scope or hash. Using a simple
      hash will completely hide all bindings in enclosing scopes. If you
      want to retain existing bindings, use a scope:
-     
+
          $(binding (hash x 20) $x) => 20
          $(let (y 30) $(binding (hash x 20) $y)) => ${y} (unbound y)
          $(let (y 30) $(binding (scope (hash x 20)) $y)) => 30
@@ -452,14 +451,14 @@ Functions may be used as `$(<fn> ...)`.
    - `$(coloured <fg> [<bg>] <text>)`
 
      Wraps *text* in an IRC colour + reset sequence.
-     
+
 
 Unknown functions will be ignored:
 
      .echo $(foobar) => $(foobar)
 
 ### LearnDB access functions
-   
+
    - `$(ldb <term> [<index>])`
 
      Retrieve the definition for `<term>[<index>]`. If the definition is
@@ -507,7 +506,7 @@ Unknown functions will be ignored:
 
      *term* may have an optional numeric index as "term[2]", etc. The
      numeric index will be stripped before checking if *term* is a redirect.
-   
+
    - `$(ldb-canonical-term <term>)`
 
      Given a term string, returns the term string if the ldb-redirect-term?
@@ -519,7 +518,7 @@ Unknown functions will be ignored:
      in the return value.
 
    - `$(ldb-at <term> [<index>])`
-   
+
      Retrieve the definition for `<term>[<index>]`, or the first
      definition if *index* is unspecified. The definition returned is
      a LearnDB entry object, but redirects and do { } commands are
@@ -550,17 +549,16 @@ Unknown functions will be ignored:
      definition. If no definition exists at term[index], does nothing.
 
      Raises an error if used in PM.
-     
+
    - `$(ldb-rm! <term> <index>)`
 
      Deletes the definition at `term[index]`, or the whole term and all
-     its definitions if an index of '*' is specified. Use with caution,
+     its definitions if an index of `*` is specified. Use with caution,
      there are no confirmation prompts.
 
      Raises an error if used in PM.
 
-Quoting and multiple command-line expansions:
----------------------------------------------
+## Quoting and multiple command-line expansions:
 
 !lg can use templates to format its output. These templates are also
 expanded using the commandline rules described above. To protect templates
@@ -579,8 +577,7 @@ If !lg runs and finds no results, it will then evaluate the stub, viz.
     !hs * HESK
 
 
-Suppressing command-line expansion:
------------------------------------
+## Suppressing command-line expansion:
 
 Single-quoted strings are not expanded by default. This can be
 used to defer costly subcommands until they're actually needed:
@@ -591,8 +588,7 @@ Although the default command-line expansion does not expand
 single-quoted strings, !lg will still expand any string used as a
 format, title, or stub.
 
-Defining new functions
-----------------------
+## Defining new functions
 
 Use !fn to define new functions:
 
@@ -601,3 +597,22 @@ Use !fn to define new functions:
 
 Functions may be recursive, but recursion depth is limited. !fn -ls
 lists user-defined functions and !fn -rm deletes a function.
+
+## Relaying commands to Sequell
+
+If you run a bot that relays commands to Sequell, you can use the !RELAY
+meta-command to tell Sequell who requested the command. !RELAY can also
+request a unique prefix that Sequell must use for the command output to
+unambiguously identify which query produced Sequell's command output.
+
+Use !RELAY as:
+
+    !RELAY -nick NICK -prefix uniquePrefix: [command or learndb query]
+
+As an example:
+
+    !RELAY -nick Atomjack -prefix atom: !lg . win 1
+    => atom:1/7. Atomjack the Convoker (L18 DESu of Vehumet), escaped with the Orb on 2007-03-16 21:31:14, with 507506 points after 21070 turns and 6:17:09.
+
+Note that !RELAY is a meta-command and cannot be used to define custom
+commands, in LearnDB do {} forms, and other places that expect real commands.

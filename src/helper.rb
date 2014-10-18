@@ -39,7 +39,7 @@ SHORT_DATEFORMAT = '%Y%m%d%H%M%S'
 module Helper
   def self.raise_private_messaging!
     if ENV['PRIVMSG'] == 'y'
-      raise "This operation is forbidden in private messaging"
+      raise "This command cannot be used in PM."
     end
   end
 
@@ -64,14 +64,15 @@ end
 
 def forbid_subcommand!
   if ENV['SUBCOMMAND'] == 'y'
-    puts "This command may not be used as a subcommand"
+    puts "This command may not be used as a subcommand."
     exit 1
   end
 end
 
 def forbid_proxying!
   if ENV['HENZELL_PROXIED'] == 'y'
-    puts "Proxying forbidden"
+    puts "This command must be issued directly."
+    exit 1
   end
 end
 

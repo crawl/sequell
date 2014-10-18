@@ -48,6 +48,12 @@ is(irc('!learn swap aa bb'), 'aa[2], bb[3] => bb[2], aa[3]');
 is(irc('??aa'), 'aa[1/3]: mellow');
 is(irc('!learn swap aa[2 aa[$'), 'Swapped aa[2] with aa[$].');
 
+irc('!learn add greeter Hi $nick');
+is(irc('??greeter'), 'greeter[1/1]: Hi greensnark');
+is(irc('!RELAY -nick mazda ??greeter'), 'greeter[1/1]: Hi mazda');
+is(irc('!RELAY -nick mazda -prefix Yak: ??greeter'), 'Yak:greeter[1/1]: Hi mazda');
+is(irc('!RELAY -nick mazda !learn add foo bar'), 'This command must be issued directly.');
+
 irc('!learn add src Test');
 irc('!learn add dst Hi');
 irc('!learn mv src[$] dst[$]');

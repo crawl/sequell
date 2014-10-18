@@ -52,9 +52,11 @@ sub runcmd($) {
   my $nick = $DEFAULT_NICK;
   my $pm;
   return unless $cmd =~ /\S/;
+  if ($cmd =~ s/^PM: *//) {
+    $pm = 'msg';
+  }
   if ($cmd =~ /^(\w*): (.*)/) {
     $nick = $1 || $DEFAULT_NICK;
-    $pm = 'msg' unless $1;
     $cmd = $2;
   }
 

@@ -66,6 +66,13 @@ sub _call_periodic_actions {
 
 sub say_paged {
   my ($self, %m) = @_;
+  my $prefix = $m{outprefix} || '';
+  my $PAGE = 400;
+  if (length($prefix) > $PAGE / 2) {
+    $prefix = substr($prefix, 0, int($PAGE / 2));
+  }
+  $PAGE -= length($prefix);
+
   my $output = $m{body};
   return unless defined($output) && $output =~ /\S/;
 
@@ -76,22 +83,23 @@ sub say_paged {
 
   if ($private) {
     my $length = length($output);
-    my $PAGE = 400;
     for (my $start = 0; $start < $length; $start += $PAGE) {
       if ($length - $start > $PAGE) {
         my $spcpos = rindex($output, ' ', $start + $PAGE - 1);
         if ($spcpos != -1 && $spcpos > $start) {
-          $self->say(%m, body => substr($output, $start, $spcpos - $start));
+          $self->say(%m,
+                     body => ($prefix .
+                                substr($output, $start, $spcpos - $start)));
           $start = $spcpos + 1 - $PAGE;
           next;
         }
       }
-      $self->say(%m, body => substr($output, $start, $PAGE));
+      $self->say(%m, body => ($prefix . substr($output, $start, $PAGE)));
     }
   }
   else {
-    $output = substr($output, 0, 400) . "..." if length($output) > 400;
-    $self->say(%m, body => $output);
+    $output = substr($output, 0, $PAGE) . "..." if length($output) > $PAGE;
+    $self->say(%m, body => ($prefix . $output));
   }
 }
 
@@ -107,11 +115,6 @@ sub post_message {
     $self->emote(%m, body => $output);
     return;
   }
-
-  # if ($output =~ s{^/notice }{}) {
-  #   $self->notice(%m, body => $output);
-  #   return;
-  # }
 
   $self->say_paged(%m, body => $output);
 }

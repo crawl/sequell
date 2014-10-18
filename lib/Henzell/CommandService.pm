@@ -8,6 +8,7 @@ use warnings;
 
 use File::Basename;
 use File::Spec;
+use Data::Dumper;
 
 use lib '..';
 use lib File::Spec->catfile(dirname(__FILE__), '../src');
@@ -101,8 +102,10 @@ sub _message_metadata {
   my $target = $verbatim;
   my $sigils = Henzell::Config::sigils();
   my $private = $$m{private};
+
   $target =~ s/^([\Q$sigils\E]\S*) *// or undef($target);
   my $command;
+
   if (defined $target) {
     $command = lc $1;
 
@@ -187,10 +190,11 @@ sub command_raw_output {
     print "LOAD: $nick: $verbatim\n";
     return $self->_load_commands();
   }
-  elsif ($self->recognized_command($m))
+
+  if ($self->recognized_command($m))
   {
     # Log all commands to Henzell.
-    print STDERR "CMD($private): $nick: $verbatim\n";
+    print STDERR "CMD($private): $nick: $verbatim (target: $target)\n";
     local $ENV{PRIVMSG} = $private ? 'y' : '';
     local $ENV{HENZELL_PROXIED} = $proxied ? 'y' : '';
     local $ENV{IRC_NICK_AUTHENTICATED} =

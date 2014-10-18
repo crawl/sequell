@@ -280,6 +280,35 @@ sub event_userquit {
                  body => "/quit $$m{body}" });
 }
 
+sub _parse_relay {
+  my ($self, $m, $target) = @_;
+  my ($params, $cmd) = $target =~ /^((?:-\w+ +\S+ +)*)(?:-- +)?(.*)/;
+  $$m{relayed} = 1;
+  $$m{proxied} = 1;
+  if ($params =~ /\S/) {
+    while ($params =~ /-(\w+) +(\S+) +/g) {
+      my ($key, $val) = ($1, $2);
+      $$m{"relay$key"} = $val;
+      if ($key eq 'prefix' && $val =~ /\S/) {
+        $$m{outprefix} = $val;
+      }
+      if ($key eq 'nick' && $val) {
+        $$m{orignick} = $$m{nick};
+        $$m{nick} = $val;
+      }
+    }
+  }
+  $$m{body} = $cmd;
+  $$m{verbatim} = $cmd;
+}
+
+sub _apply_relay {
+  my ($self, $m) = @_;
+  if ($$m{body} =~ s{^!RELAY +}{}) {
+    $self->_parse_relay($m, $$m{body});
+  }
+}
+
 sub react {
   my ($self, $m) = @_;
 
@@ -291,6 +320,8 @@ sub react {
     $$m{verbatim} =~ s/^\\\\//;
     s/^\s+//, s/\s+$// for ($$m{body}, $$m{verbatim});
   }
+
+  $self->_apply_relay($m);
 
   my @reactors = @{$self->{reactors}};
   my $i = 0;

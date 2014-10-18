@@ -1,7 +1,5 @@
 require 'cmd/option_parser'
 require 'query/listgame_arglist_combine'
-require 'query/operator_back_combine'
-require 'query/compact_parens'
 require 'query/query_string_template'
 require 'command_context'
 
@@ -63,17 +61,6 @@ module Query
 
     def empty?
       @args.empty?
-    end
-
-    # Applies the back-combine argument transform: arguments starting
-    # with an operator will be merged into the preceding argument.
-    #
-    # This is a useful transform to apply before looking for keyword
-    # arguments. i.e. to convert ['foo', '=', 'bar'] into ['foo=', 'bar'] and
-    # prevent a keyword argument check for 'foo' from matching 'foo='.
-    def operator_back_combine!
-      @args = CompactParens.apply(@args)
-      @args = OperatorBackCombine.apply(@args)
     end
 
     def normalize!
