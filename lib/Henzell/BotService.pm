@@ -73,8 +73,8 @@ sub say_paged {
   }
   $PAGE -= length($prefix);
 
-  my $output = $m{body};
-  return unless defined($output) && $output =~ /\S/;
+  my $output = $m{body} || '';
+  return unless (defined($output) && $output =~ /\S/) || $prefix;
 
   my $private = $m{channel} eq 'msg';
 
@@ -108,10 +108,10 @@ sub post_message {
   my $output = $m{body};
   $output = "$output" if defined($output);
 
-  return unless defined($output) && $output =~ /\S/;
+  return unless (defined($output) && $output =~ /\S/) || $m{outprefix};
 
   # Handle emotes (/me does foo)
-  if ($output =~ s{^/me }{}) {
+  if (!$m{outprefix} && $output =~ s{^/me }{}) {
     $self->emote(%m, body => $output);
     return;
   }
