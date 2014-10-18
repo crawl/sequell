@@ -315,13 +315,13 @@ sub react {
   return if $self->_executor()->irc_auth_process($m);
   return if $$m{self} || $$m{authenticator} || $$m{sibling} || !$$m{body};
   $self->_refresh();
+  $self->_apply_relay($m);
+
   if ($$m{body} =~ s/^\\\\//) {
     $$m{nobeh} = 1;
     $$m{verbatim} =~ s/^\\\\//;
     s/^\s+//, s/\s+$// for ($$m{body}, $$m{verbatim});
   }
-
-  $self->_apply_relay($m);
 
   my @reactors = @{$self->{reactors}};
   my $i = 0;
