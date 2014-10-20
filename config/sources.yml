@@ -151,7 +151,6 @@ sources:
     logs:
       - '{trunk,0.14}/{logfile,milestones}{,-sprint,-zotdef}*'
       - '0.15/{logfile,milestones}*'
-      - 'igni/{logfile,milestones}*': igni
     morgues:
       - [ 'lld.*-(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
       - http://lazy-life.ddo.jp:8080/morgue
