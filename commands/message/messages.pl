@@ -5,9 +5,12 @@ use warnings;
 use lib 'src';
 use Helper qw/demunge_xlogline/;
 use MessageDB;
+use Helper;
 
 binmode STDIN, ':utf8';
 binmode STDOUT, ':utf8';
+
+Helper::forbid_proxying();
 
 my $nick = $ARGV[1];
 my $handle = MessageDB::handle($nick, '<', "No messages for $nick.");

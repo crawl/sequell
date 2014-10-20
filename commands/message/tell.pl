@@ -7,6 +7,7 @@ use open qw/:std :utf8/;
 use lib 'src';
 use MessageDB;
 use Seen;
+use Helper;
 
 chomp(my @args = @ARGV);
 
@@ -14,6 +15,8 @@ sub fail() {
   print "I don't grok. Syntax is !tell PERSON MESSAGE.\n";
   exit;
 }
+
+Helper::forbid_proxying();
 
 my $message = $args[2];
 $message =~ s/^\S+ +//i;

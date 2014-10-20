@@ -478,16 +478,21 @@ sub proxied_command {
   $ENV{HENZELL_PROXIED}
 }
 
+sub forbid_proxying {
+  my $stub = shift;
+  if (proxied_command()) {
+    print($stub || "This command must be issued directly.", "\n");
+    exit 1;
+  }
+}
+
 sub forbid_private {
   my $stub = shift;
   if (private_messaging()) {
     print($stub || "This command cannot be used in PM.", "\n");
     exit 1;
   }
-  if (proxied_command()) {
-    print($stub || "This command must be issued directly.", "\n");
-    exit 1;
-  }
+  forbid_proxying($stub);
 }
 
 sub strip_text {
