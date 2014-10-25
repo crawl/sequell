@@ -70,10 +70,16 @@ module Cmd
           command_line,
           forbidden_commands: ['??'],
           suppress_stderr: true)
-        raise StandardError.new("Subcommand $(#{command_line}) failed: " +
-                                (exec[1] || '').strip) unless exec[0] == 0
+        report_subcommand_error(command_line, exec[1]) unless exec[0] == 0
         (exec[1] || '').strip
       }
+    end
+
+    def self.report_subcommand_error(command_line, err)
+      err ||= ''
+      raise err if err =~ /^\[\[\[/
+      raise StandardError.new("Subcommand $(#{command_line}) failed: " +
+        (err || '').strip)
     end
 
     def self.execute(command_line, options={})

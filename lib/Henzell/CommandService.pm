@@ -229,7 +229,7 @@ sub command_postprocess_output {
 
   if ($output =~ /^\[\[\[AUTHENTICATE: (.*?)\]\]\]/) {
     if ($reprocessed_command || $proxied ||
-          $auth->nick_identified($nick, 'attempted_auth')) {
+          !$auth || $auth->nick_identified($nick, 'attempted_auth')) {
       return "Cannot authenticate $nick with services, ignoring $verbatim";
     } else {
       $auth->authenticate_user($1, $m);
