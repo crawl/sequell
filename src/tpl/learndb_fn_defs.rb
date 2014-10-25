@@ -55,24 +55,30 @@ module Tpl
   }
 
   FunctionDef.define('ldb-add', [2, 3]) {
-    Helper.raise_private_messaging!
+    db = LearnDB::DB.default
+    term = self[0].to_s
+    IrcAuth.authorize!('db:' + db.canonical_term(term).downcase)
     have_index = self.arity == 3
-    LearnDB::DB.default.entry(self[0].to_s).add(self[-1], have_index ? self[-2].to_i : -1)
+    db.entry(term).add(self[-1], have_index ? self[-2].to_i : -1)
   }
 
   FunctionDef.define('ldb-rm!', 2) {
-    Helper.raise_private_messaging!
+    db = LearnDB::DB.default
+    term = self[0].to_s
+    IrcAuth.authorize!('db:' + db.canonical_term(term).downcase)
     begin
       term_index = self[-1]
       term_index = nil if term_index.to_s == '*'
-      LearnDB::DB.default.entry(self[0].to_s).delete(term_index)
+      db.entry(term).delete(term_index)
     rescue LearnDB::EntryIndexError
       nil
     end
   }
 
   FunctionDef.define('ldb-set!', 3) {
-    Helper.raise_private_messaging!
+    db = LearnDB::DB.default
+    term = self[0].to_s
+    IrcAuth.authorize!('db:' + db.canonical_term(term).downcase)
     begin
       LearnDB::DB.default.entry(self[0].to_s)[self[1].to_i] = self[2].to_s
     rescue LearnDB::EntryIndexError

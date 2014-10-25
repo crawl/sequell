@@ -18,6 +18,7 @@ TIME_LIMIT = 60
 logf = File.open('echo-pipe.log', 'w')
 logf.sync = true
 
+ENV['RAISE_AUTH_ERRORS'] = 'y'
 begin
   opid = nil
   while (line = STDIN.readline)

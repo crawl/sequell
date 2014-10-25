@@ -8,11 +8,10 @@ use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
 use LearnDB qw/read_entry num_entries replace_entry insert_entry unquote
                $RTERM_INDEXED $RTERM $RTEXT/;
+use LearnDB::Cmd;
 use Helper;
 use utf8;
 use open qw/:std :utf8/;
-
-Helper::forbid_private();
 
 Helper::eval_or_exit {
   my ($term, $index, $text);
@@ -33,9 +32,9 @@ Helper::eval_or_exit {
   my $old_entry = read_entry($term, $index);
   my $new_entry;
   if ($old_entry) {
-    $new_entry = replace_entry($term, $index, $text);
+    $new_entry = LearnDB::Cmd::replace_entry($term, $index, $text);
   } else {
-    $new_entry = insert_entry($term, $index, $text);
+    $new_entry = LearnDB::Cmd::insert_entry($term, $index, $text);
   }
   print $new_entry;
 }

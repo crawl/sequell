@@ -13,6 +13,7 @@ use File::Basename;
 
 use lib File::Spec->catfile(dirname(__FILE__), '../lib');
 use Henzell::IRCUtil;
+use Henzell::ACL;
 
 my $CONFIG_FILE = File::Spec->catfile(dirname(__FILE__), '..',
                                       'config/crawl-data.yml');

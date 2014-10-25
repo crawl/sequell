@@ -437,3 +437,127 @@ Terms may not contain the ` ` (space), `[` and `]` characters. Terms
 are case-insensitive and case-preserving, but case-insensitive
 matching for non-ASCII characters is undefined. Don't assume
 case-insensitive matching for non-ASCII text.
+
+
+## ACLs
+
+Access to Henzell's LearnDB, nick-mappings, keywords, and commands may
+be restricted by ACLs. ACLs are meta-LearnDB entries that can be used
+to restrict access to certain operations.
+
+An ACL is a LearnDB term of the form: :acl:[PERMISSION], with a
+corresponding entry specifying users and/or channels that have that
+permission.
+
+A *permission* is of the form [prefix]:[name] where *prefix* indicates the
+type of permission, usually one of `db`, `cmd`, `kw`, or `nick`, and *name*
+indicates the specific thing the user is trying to access. A *permission* may
+use a trailing `*` as a wildcard. If a non-wildcard permission must end with a
+trailing `*`, it may be suffixed with a trailing `.`.
+
+An ACL entry is at minimum a list of IRC nicks and/or channels that the ACL
+must be restricted to, in the form:
+
+    entry = term*;
+    term = atom | deny;
+    atom = nick | channel | nick-group | channel-group;
+    deny = "DENY:(" atom* ")" | "DENY:" atom;
+    nick = <any IRC nick, not starting with # or @> | "*" | "+authenticated";
+    channel = "#" <channel-name> | "#:pm" | "#*";
+    nick-group = "@" <group-name>;
+    channel-group = "#@" <group-name>;
+
+As an example, if we want to limit access to LearnDB behaviour entries (:beh:),
+to authenticated users (users who have registered and authenticated with
+NickServ), we may define an ACL as:
+
+    !learn set :acl:db::beh: +authenticated
+
+Thereafter, Sequell will refuse attempts to modify :beh: by unauthenticated
+users.
+
+
+ACLs may also specify explicit lists of nicks:
+
+    !learn set :acl:db::beh: nicka nickb nickc
+
+If an explicit list of nicks is used, only users in that list have the
+permission in question. Explicit nicks always require authentication with
+services, since unauthenticated nicks are trivial to impersonate.
+
+Wildcard ACLs are handy when you want to manage *all* access to the LearnDB
+or the relevant commands. For instance, to forbid nick remapping in private
+messages, use:
+
+    !learn set :acl:nick:* DENY:#:pm
+
+### ACL selection
+
+When a user invokes a command that requires a permission, say "nick:foo",
+Sequell picks the *longest* LearnDB term of the form ":acl:\*" that matches
+"nick:foo". So if there were ACLs labeled :acl:nick:foo and :acl:nick:\*,
+Sequell would prefer :acl:nick:foo in this case, since it is the longest
+permission match.
+
+Only *one* ACL is ever evaluated. If there are no matching ACLs, the user is
+granted the permission, i.e. missing ACLs fail open. The only exception to this
+is the `proxy` permission.
+
+### Groups
+
+To reduce duplication in ACLs, ACLs may refer to groups. A group named X is the
+list of users or channels defined in :group:X. As an example, if I want to
+give users oak, ash, and beech permissions to nick:tree, I might do:
+
+     !learn set :group:tree oak ash beech
+     !learn set :acl:nick:tree @tree
+
+Groups may be groups of user nicks or channels. For instance, if I'd like
+nick mappings to be changeable only on ##crawl or ##crawl-dev, I might do:
+
+     !learn set :group:crawl-channels ##crawl ##crawl-dev
+     !learn set :acl:nick:* #@crawl-channels
+
+Bear in mind that ACLs are not inherited. If you have an ACL on
+:acl:nick:\* and another on :acl:nick:foo, attempts to access nick:foo
+will completely ignore restrictions set in :acl:nick:\*.
+
+Groups are not themselves full ACLs, they are simple lists of nicks or
+channels. Groups may recursively refer to other groups as @group.
+
+### Linking ACLs
+
+If you have multiple identical ACLs, you may use LearnDB redirects as
+`see {:acl:other}` to link to the master ACL.
+
+
+### Permissions
+
+This is the list of permissions Sequell uses. To apply an ACL to any
+permission, you may add a LearnDB ACL entry of the form :acl:PERM.
+
+| Permission  | Description                                     |
+|-------------|-------------------------------------------------|
+| db:[TERM]   | LearnDB add/edit/delete for TERM                |
+| nick:[NICK] | !nick changes for NICK                          |
+| cmd:[CMD]   | !cmd changes for the command named CMD          |
+| kw:[KW]     | !kw changes for the keyword KW                  |
+| proxy       | Proxying permission (see [Proxying](#proxying)) |
+
+### Proxying
+
+Other IRC bots may proxy commands to Sequell on behalf of their channels. If
+an IRC bot is relaying commands on behalf of an end-user, and wants Sequell to
+treat that command as if the end-user issued it directly to Sequell, it may
+use the [!RELAY meta-command](commandline.md#relaying-commands-to-sequell).
+However, Sequell will still decline relayed commands such as !tell, UNLESS the
+relaying bot has the `proxy` permission.
+
+To give a bot the permission to proxy, add it to :acl:proxy. For instance:
+
+    !learn set :acl:proxy UltraBot
+
+If the relaying bot is in :acl:proxy and identified to NickServ, Sequell trusts
+the bot and treats relayed commands as if they were directly issued to Sequell
+by the end-user specified in the -nick option, on the channel specified in the
+-channel option.

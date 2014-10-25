@@ -104,13 +104,15 @@ sub irc_services {
 
   $reg->(Henzell::TellService->new(irc => $irc_bot));
 
+  my $auth = Henzell::IRCAuth->new(irc => $irc_bot);
   my $executor = Henzell::CommandService->new(
     irc => $irc_bot,
-    auth => Henzell::IRCAuth->new(irc => $irc_bot),
+    auth => $auth,
     config => $config_file,
     bus => $bus);
 
   $reg->(Henzell::ReactorService->new(irc => $irc_bot,
+                                      auth => $auth,
                                       executor => $executor,
                                       bus => $bus));
 

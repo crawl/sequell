@@ -51,6 +51,33 @@ sub each_term {
   }
 }
 
+sub query_rows {
+  my ($self, $query, @binds) = @_;
+  my @terms;
+
+  sub {
+    my $action = shift;
+    $self->init();
+    my $st = $self->prepare($query);
+    $self->execute_st($st, @binds) or die "Couldn't execute query: $self->errstr()\n";
+    while (my $row = $st->fetchrow_arrayref()) {
+      last if $action->($row) eq 'break';
+    }
+  }
+}
+
+sub terms_prefixed {
+  my ($self, $prefix) = @_;
+  my @terms;
+  $self->query_rows(
+    'select term from terms where term like ? order by term', "${prefix}%")
+    ->(sub {
+         my $row = shift;
+         push @terms, $row->[0];
+       });
+  \@terms
+}
+
 sub terms {
   my $self = shift;
   my @terms;

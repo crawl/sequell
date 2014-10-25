@@ -5,6 +5,7 @@ require 'tpl/tplike'
 require 'command_context'
 require 'date'
 require 'irc_color'
+require 'irc_auth'
 
 require 'tpl/learndb_fn_defs'
 require 'tpl/re_fn_defs'
@@ -126,6 +127,10 @@ module Tpl
     when 2
       [self[0]] + autosplit(self[-1]).to_a
     end
+  }
+
+  FunctionDef.define('permit', 1) {
+    IrcAuth.authorize!(self[0].to_s)
   }
 
   FunctionDef.define('typeof', 1) { self[0].class.to_s }

@@ -6,12 +6,11 @@ use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
-use LearnDB qw/read_entry num_entries replace_entry unquote normalize_term/;
+use LearnDB qw/read_entry num_entries unquote normalize_term/;
+use LearnDB::Cmd;
 use Helper;
 use utf8;
 use open qw/:std :utf8/;
-
-Helper::forbid_private();
 
 my ($term, $num, $rest);
 
@@ -104,5 +103,5 @@ Helper::eval_or_exit {
   LearnDB::check_text_length($text, 'New text')
 };
 
-replace_entry($term, $num, $text);
+LearnDB::Cmd::replace_entry($term, $num, $text);
 print read_entry($term, $num);

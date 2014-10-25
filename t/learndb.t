@@ -52,7 +52,7 @@ irc('!learn add greeter Hi $nick');
 is(irc('??greeter'), 'greeter[1/1]: Hi greensnark');
 is(irc('!RELAY -nick mazda ??greeter'), 'greeter[1/1]: Hi mazda');
 is(irc('!RELAY -nick mazda -prefix Yak: ??greeter'), 'Yak:greeter[1/1]: Hi mazda');
-is(irc('!RELAY -nick mazda !learn add foo bar'), 'This command must be issued directly.');
+is(irc('!RELAY -nick mazda !learn add foo bar'), 'Permission db:foo denied: proxying not permitted');
 
 irc('!learn add src Test');
 irc('!learn add dst Hi');

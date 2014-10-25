@@ -49,11 +49,20 @@ sub expand {
   my $broken_pipe;
   local $SIG{PIPE} = sub { $broken_pipe = 1; };
   my $opid = $self->_next_opid();
+  my $m = $opt{irc_msg};
+  my $auth = $self->{auth};
+  my $authenticated = !$auth || $auth->nick_identified($$m{nick});
+  my $effective_channel =
+    !$$m{proxied} ? $$m{relaychannel} || $$m{channel} : $$m{channel};
   print $out encode_json({ id => $opid,
                            msg => $template,
                            args => $argline,
                            command_env => {
-                             PRIVMSG => $opt{irc_msg}{private}
+                             PRIVMSG => $$m{private} || $$m{relaypm},
+                             HENZELL_ENV_CHANNEL => $$m{channel},
+                             HENZELL_ENV_NICK => $$m{nick},
+                             HENZELL_PROXIED => $$m{proxied} ? 'y' : '',
+                             IRC_NICK_AUTHENTICATED => $authenticated ? 'y' : ''
                            },
                            env => $opt{env} }), "\n";
   my $res = <$in>;
@@ -72,7 +81,11 @@ sub expand {
   }
 
   delete $self->{retried};
-  return $json->{err} if $json && $json->{err};
+  if ($json && $$json{err}) {
+    my $err = $$json{err};
+    die $err if $err =~ /^\[{3}/;
+    return $err;
+  }
   $json && $json->{res}
 }
 

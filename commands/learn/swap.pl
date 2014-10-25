@@ -6,13 +6,12 @@ use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
-use LearnDB qw/check_entry_exists swap_entries report_error unquote
+use LearnDB qw/check_entry_exists report_error unquote
                $RTERM_INDEXED $RTERM/;
+use LearnDB::Cmd;
 use Helper;
 use utf8;
 use open qw/:std :utf8/;
-
-Helper::forbid_private();
 
 eval {
   my $commandline = $ARGV[1];
@@ -23,7 +22,7 @@ eval {
     check_entry_exists($term, $num);
     check_entry_exists($term2, $num2);
 
-    if (swap_entries($term, $num, $term2, $num2)) {
+    if (LearnDB::Cmd::swap_entries($term, $num, $term2, $num2)) {
       print "Swapped $term"."[$num] with $term2"."[$num2].\n";
     } else {
       print "Failed to swap $term"."[$num] with $term2"."[$num2].\n";
@@ -38,7 +37,7 @@ eval {
     my $orig_term1count = LearnDB::num_entries($term1);
     my $orig_term2count = LearnDB::num_entries($term2);
 
-    LearnDB::swap_terms($term1, $term2);
+    LearnDB::Cmd::swap_terms($term1, $term2);
 
     my $new_term1count = LearnDB::num_entries($term1);
     my $new_term2count = LearnDB::num_entries($term2);

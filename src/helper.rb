@@ -69,11 +69,17 @@ def forbid_subcommand!
   end
 end
 
+class ProxyError < StandardError; end
+
+def assert_not_proxied!
+  raise ProxyError.new if ENV['HENZELL_PROXIED'] == 'y'
+end
+
 def forbid_proxying!
-  if ENV['HENZELL_PROXIED'] == 'y'
-    puts "This command must be issued directly."
-    exit 1
-  end
+  assert_not_proxied!
+rescue ProxyError
+  puts "This command must be issued directly."
+  exit 1
 end
 
 def die(msg)

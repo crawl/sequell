@@ -1,6 +1,8 @@
 require 'yaml'
 require 'henzell/config'
 
+class AuthError < StandardError; end
+
 class IrcAuth
   AUTH_FILE = 'config/auth.yml'
 
@@ -10,7 +12,11 @@ class IrcAuth
   end
 
   def self.acting_nick
-    ARGV[1]
+    ENV['HENZELL_ENV_NICK'] || ARGV[1]
+  end
+
+  def self.env_channel
+    ENV['HENZELL_ENV_CHANNEL'] || 'msg'
   end
 
   def self.nick_authenticated?
@@ -30,21 +36,38 @@ class IrcAuth
     help(help_msg + " Authorized users: #{display_auths(auths)}", force_help)
   end
 
-  def self.authorize!(auth_context)
-    forbid_proxying!
-    if ENV['PRIVMSG'] == 'y'
-      puts "This command may not be used on PM."
-      exit
-    end
-    auths = self.authorizations[auth_context.to_s]
-    unless auth_context == :any || auths.include?(self.acting_nick)
-      puts "Ignoring #{auth_context} request from #{acting_nick}: not authorized. Authorized users: #{display_auths(auths)}."
-      exit 1
+  def self.assert_authorized!(permission)
+    assert_not_proxied!
+    nick = self.acting_nick
+    chan = self.env_channel
+    result = nil
+    IO.popen("perl scripts/acl-perm.pl -", "r+") { |io|
+      begin
+        io.puts("#{permission} #{nick} #{chan}")
+        result = io.readline.strip
+      rescue EOFError
+      end
+    }
+    if $?.exitstatus != 0
+      if result =~ /DENY:(.*)/
+        raise AuthError.new("Permission #{permission} denied: #$1")
+      else
+        raise AuthError.new("Permission #{permission} denied.")
+      end
     end
 
-    unless self.nick_authenticated?
-      puts "[[[AUTHENTICATE: #{self.acting_nick}]]]"
-      exit 1
+    if result == 'authenticated' && !self.nick_authenticated?
+      raise AuthError.new("[[[AUTHENTICATE: #{self.acting_nick}]]]")
     end
+  rescue ProxyError
+    raise AuthError.new("Permission #{permission} denied: proxying not allowed")
+  end
+
+  def self.authorize!(permission)
+    assert_authorized!(permission)
+  rescue AuthError => e
+    raise e if ENV['RAISE_AUTH_ERRORS'] == 'y'
+    puts e.message
+    exit 1
   end
 end

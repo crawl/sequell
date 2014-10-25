@@ -3,7 +3,7 @@ class Env
     preserved_values = { }
     for key, value in vars
       preserved_values[key] = ENV[key.to_s.upcase]
-      ENV[key.to_s.upcase] = value
+      ENV[key.to_s.upcase] = value.to_s
     end
     begin
       yield

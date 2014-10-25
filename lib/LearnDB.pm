@@ -20,12 +20,12 @@ use base 'Exporter';
 my $DB_PATH = $ENV{LEARNDB} ||
   File::Spec->catfile($ENV{HENZELL_ROOT} || '.', 'dat/learn.db');
 
-my $DB = Henzell::SQLLearnDB->new($DB_PATH);
+our $DB = Henzell::SQLLearnDB->new($DB_PATH);
 
 our @EXPORT_OK = qw/cleanse_term normalize_term num_entries read_entry
                     print_to_entry del_entry replace_entry swap_entries
                     query_entry check_entry_exists report_error parse_query
-                    insert_entry unquote $RTERM $RTERM_INDEXED $RTEXT/;
+                    insert_entry db unquote $RTERM $RTERM_INDEXED $RTEXT/;
 
 our $RTERM = qr/('(?:[^']|\\[\\'])*'|"(?:[^"]|\\.)*"|[^\[\]\s]+)/;
 our $RTERM_INDEXED = qr/$RTERM\s*\[\s*([+-]?\d+|\$)\]?/;
@@ -33,6 +33,10 @@ our $RTEXT = qr/(.+)/;
 
 our $TERM_MAX_LENGTH = 100;
 our $TEXT_MAX_LENGTH = 375;
+
+sub db {
+  $DB
+}
 
 sub hidden_term {
   my $term = shift;
@@ -334,79 +338,14 @@ sub check_text_length($;$) {
                      $TEXT_MAX_LENGTH);
 }
 
-sub insert_entry {
-  my ($term, $num, $text) = @_;
-  my $original_term = $term;
-  check_term_length($term);
-  check_text_length($text);
-  $term = cleanse_term($term);
-  $num = -1 if ($num || '') eq '$';
-  $num = $DB->add($term, $text, $num);
-  return read_entry($original_term, $num);
-}
-
-sub del_entry {
-  my $term = normalize_term(shift);
-  my $entry_num = normalize_index($term, shift(), 'query');
-  $DB->remove($term, $entry_num);
-}
-
 sub del_term {
   my $term = normalize_term(shift);
   $DB->remove($term);
 }
 
-sub replace_entry
-{
-  my $term = normalize_term(shift);
-  my $entry_num = normalize_index($term, shift());
-  my $new_text = shift;
-  $DB->update_value($term, $entry_num, $new_text);
-  read_entry($term, $entry_num)
-}
-
-sub swap_terms {
-  my ($term1, $term2) = @_;
-  $DB->swap_terms($term1, $term2)
-}
-
-sub swap_entries {
-  my ($term1, $num1, $term2, $num2) = @_;
-  $_ = normalize_term($_) for ($term1, $term2);
-  $num1 = normalize_index($term1, $num1);
-  $num2 = normalize_index($term2, $num2);
-
-  my $def1 = $DB->definition($term1, $num1);
-  my $def2 = $DB->definition($term2, $num2);
-  $DB->update_value($term1, $num1, $def2);
-  $DB->update_value($term2, $num2, $def1);
-  return 1;
-}
-
 sub rename_entry($$) {
   my ($src, $dst) = @_;
   $DB->update_term(normalize_term($src), normalize_term($dst));
-}
-
-sub move_entry($$$;$) {
-  my ($src, $snum, $dst, $dnum) = @_;
-  check_term_length($src);
-  check_term_length($dst);
-  if (!$snum) {
-    check_entry_exists($src, 1);
-    if (lc($src) ne lc($dst) && term_exists($dst)) {
-      die "$dst exists, cannot overwrite it.\n";
-    }
-    rename_entry($src, $dst);
-    return "$src -> " . read_entry($dst, 1);
-  }
-  else {
-    check_entry_exists($src, $snum);
-    my $src_entry = read_entry($src, $snum, 'just-the-entry');
-    $snum = normalize_index($src, $snum, 'query');
-    del_entry($src, $snum);
-    return "$src\[$snum] -> " . insert_entry($dst, $dnum || -1, $src_entry);
-  }
 }
 
 sub report_error($) {

@@ -7,6 +7,10 @@ require 'cmd/user_defined_command'
 $ctx = CommandContext.new
 $ctx.extract_options!('rm', 'ls')
 
+def cname(name)
+  Cmd::UserDefinedCommand.canonicalize_name(name)
+end
+
 def main
   show_help
 
@@ -16,14 +20,12 @@ def main
   if $ctx[:ls]
     list_user_commands
   elsif $ctx[:rm] && name
-    forbid_private_messaging! "Cannot delete commands in PM."
-    IrcAuth.authorize!(:any)
+    IrcAuth.authorize!('cmd:' + cname(name))
     delete_user_command(name)
   elsif name && command.empty?
     display_user_command(name)
   elsif name && !command.empty?
-    forbid_private_messaging! "Cannot define commands in PM."
-    IrcAuth.authorize!(:any)
+    IrcAuth.authorize!('cmd:' + cname(name))
     define_user_command(name, command)
   else
     show_help(true)
@@ -50,7 +52,7 @@ end
 def display_user_command(name)
   command = Cmd::UserDefinedCommand.command(name)
   if command.nil?
-    name = Cmd::UserDefinedCommand.canonicalize_name(name)
+    name = cname(name)
     definition = Henzell::Config.default.commands.definition(name)
     if definition
       puts("Built-in: #{name} => #{command_source_url(definition)}")

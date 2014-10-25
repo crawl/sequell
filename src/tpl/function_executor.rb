@@ -30,6 +30,8 @@ module Tpl
       else
         begin
           self.new(fncall, evaluator, scope).eval()
+        rescue AuthError
+          raise
         rescue
           STDERR.puts($!, $!.backtrace.join("\n"))
           raise FunctionEvalError.new(fncall, $!)

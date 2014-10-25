@@ -58,6 +58,11 @@ sub event_userquit {
   }
 }
 
+sub event_chanpart {
+  my ($self, $part) = @_;
+  $self->event_userquit($part);
+}
+
 sub event_tick {
   my $self = shift;
   $self->_load_commands();
@@ -161,7 +166,11 @@ sub recognized_command {
 sub env_map {
   my ($self, $m) = @_;
   my %env = (%$m, bot => $self->{irc}->nick());
-  map(("HENZELL_ENV_\U$_" => $env{$_}), keys(%env))
+  my %envmap = map(("HENZELL_ENV_\U$_" => $env{$_}), keys(%env));
+  if (!$env{relayed} && !$env{proxied} && $env{relaychannel}) {
+    $envmap{HENZELL_ENV_CHANNEL} = $env{relaychannel};
+  }
+  %envmap
 }
 
 sub _command_processor {
@@ -182,7 +191,7 @@ sub command_raw_output {
   my $nick = $$m{nick};
   my $verbatim = $$m{verbatim};
   my $channel = $$m{channel};
-  my $private = $$m{private};
+  my $private = $$m{private} || $$m{relaypm} || '';
   my $proxied = $$m{proxied};
 
   if (!$proxied && $command eq '!load' && exists $admins{$nick})

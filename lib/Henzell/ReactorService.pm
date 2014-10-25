@@ -14,6 +14,7 @@ use lib File::Spec->catfile(dirname(__FILE__), '../src');
 use parent qw/Henzell::ServiceBase Henzell::Forkable/;
 use Henzell::LearnDBBehaviour;
 use Henzell::LearnDBLookup;
+use Henzell::ACL;
 
 use LearnDB;
 
@@ -24,9 +25,11 @@ sub new {
   my $self = bless { behaviour_key => $BEHAVIOUR_KEY, %opt }, $cls;
   $self->{reactors} = $self->_reactors();
   $self->{dblookup} =
-    Henzell::LearnDBLookup->new(executor => $self->_executor());
+    Henzell::LearnDBLookup->new(executor => $self->_executor(),
+                                auth => $self->{auth});
   $self->{beh} = Henzell::LearnDBBehaviour->new(irc => $opt{irc},
                                                 dblookup => $self->_lookup());
+  $self->{backlog} = [];
   $self->subscribe_event('learndb_service', 'indirect_query',
                          sub {
                            my ($alias, $event, @args) = @_;
@@ -248,6 +251,13 @@ sub _respond {
 
 sub event_tick {
   my $self = shift;
+  my $queued = shift @{$self->{backlog}};
+  if ($queued) {
+    print "Replaying queued reactor command: ", $queued->{body}, "\n";
+    delete $$queued{needauth};
+    $self->react($queued);
+  }
+
   $self->_executor()->event_tick();
 }
 
@@ -270,55 +280,116 @@ sub event_chanjoin {
 
 sub event_chanpart {
   my ($self, $m) = @_;
+  $self->unauthenticate($m);
   $self->react({ %$m, event => 'chanpart', chanpart => 1,
                  body => "/part $$m{body}" });
 }
 
 sub event_userquit {
   my ($self, $m) = @_;
+  $self->unauthenticate($m);
   $self->react({ %$m, event => 'userquit', userquit => 1,
                  body => "/quit $$m{body}" });
 }
 
+sub unauthenticate {
+  my ($self, $m) = @_;
+  my $auth = $self->{auth};
+  return unless $auth;
+  $auth->nick_unidentify($m->{who});
+}
+
 sub _parse_relay {
   my ($self, $m, $target) = @_;
+  $target =~ s/!RELAY +//;
+
+  my %change;
   my ($params, $cmd) = $target =~ /^((?:-\w+ +\S+ +)*)(?:-- +)?(.*)/;
   if ($params =~ /\S/) {
     while ($params =~ /-(\w+) +(\S+) +/g) {
       my ($key, $val) = ($1, $2);
-      $$m{"relay$key"} = $val;
+      $change{"relay$key"} = $val;
       if ($key eq 'prefix' && $val =~ /\S/) {
-        $$m{outprefix} = $val;
+        $change{outprefix} = $val;
       }
       if ($key eq 'nick' && $val) {
-        $$m{relayed} = 1;
-        $$m{proxied} = 1;
-        $$m{orignick} = $$m{nick};
-        $$m{nick} = $val;
+        my $auth = $self->{auth};
+        my $auth_req =
+          Henzell::ACL::has_permission('proxy', $$m{nick}, $$m{channel},
+                                       $auth &&
+                                         $auth->nick_identified($$m{nick}),
+                                       'deny');
+        if ($auth_req && $auth_req eq 'authenticate' && $auth &&
+              !$$m{reprocessed_command})
+        {
+          return $self->authenticate_command($m);
+        }
+
+        if (!$auth_req || $auth_req ne 'ok') {
+          $change{relayed} = 1;
+          $change{proxied} = 1;
+        }
+        $change{orignick} = $$m{nick};
+        $change{nick} = $val;
       }
       if ($key eq 'n' && $val > 0) {
-        $$m{nlines} = $val;
+        $change{nlines} = $val;
       }
     }
   }
-  $$m{body} = $cmd;
-  $$m{verbatim} = $cmd;
+  $change{body} = $cmd;
+  $change{verbatim} = $cmd;
+
+  %$m = (%$m, %change);
 }
 
 sub _apply_relay {
   my ($self, $m) = @_;
-  if ($$m{body} =~ s{^!RELAY +}{}) {
+  if ($$m{body} =~ /^!RELAY +/) {
     $self->_parse_relay($m, $$m{body});
   }
+}
+
+sub irc_auth_process {
+  my ($self, $m) = @_;
+  my $auth = $self->{auth};
+  return undef unless $auth;
+  if ($auth && $auth->nick_is_authenticator($$m{who})) {
+    $self->_process_auth_response($auth, $m);
+    return 1;
+  }
+  undef
+}
+
+sub _process_auth_response {
+  my ($self, $auth, $auth_response) = @_;
+  my @authorized_commands = $auth->authorized_commands($auth_response);
+  push @{$self->{backlog}}, @authorized_commands;
+}
+
+sub authenticate_command {
+  my ($self, $m) = @_;
+  my $auth = $self->{auth};
+  if (!$auth) {
+    print STDERR "Attempt to authenticate nick with no authenticator\n";
+    return;
+  }
+  if ($$m{reprocessed_command}) {
+    print STDERR "Attempt to authenticate nick for reprocessed command\n";
+    return;
+  }
+  $$m{needauth} = 1;
+  return $auth->authenticate_user($$m{nick}, $m);
 }
 
 sub react {
   my ($self, $m) = @_;
 
-  return if $self->_executor()->irc_auth_process($m);
+  return if $self->irc_auth_process($m);
   return if $$m{self} || $$m{authenticator} || $$m{sibling} || !$$m{body};
   $self->_refresh();
   $self->_apply_relay($m);
+  return if $$m{needauth};
 
   if ($$m{body} =~ s/^\\\\//) {
     $$m{nobeh} = 1;
@@ -333,7 +404,17 @@ sub react {
     unless ($result) {
       my $reactor = $reactors[$i++];
       if ($reactor) {
-        $reactor->($m, $REC);
+        eval {
+          $reactor->($m, $REC);
+        };
+        if ($@) {
+          my $err = $@;
+          if ($err =~ /^\[\[\[AUTHENTICATE: (.*)?\]\]\]/) {
+            print STDERR "LOL!\n";
+            $self->{irc}->post_message(%$m, body => "Ignoring $$m{body}: unexpected authentication check.");
+            return;
+          }
+        }
       }
     }
   };

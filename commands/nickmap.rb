@@ -20,8 +20,6 @@ def cmd_nicks(cmdline)
   cmdline.delete(rm) if rm
 
   if rm
-    forbid_private_messaging! "Cannot delete nicks in PM."
-    IrcAuth.authorize!(:any)
     delete_nicks(cmdline)
   else
     add_nicks(cmdline.join(' '))
@@ -37,8 +35,7 @@ def add_nicks(mapping_string)
   end
 
   if !parsed_nick.empty?
-    forbid_private_messaging! "Cannot add nicks in PM."
-    IrcAuth.authorize!(:any)
+    IrcAuth.authorize!('nick:' + parsed_nick.nick.downcase)
   end
 
   if parsed_nick.has_condition?
@@ -66,6 +63,7 @@ def add_nicks(mapping_string)
 end
 
 def delete_nicks(cmds)
+  IrcAuth.authorize!('nick:' + cmds[0].downcase)
   if not cmds.empty?
     if cmds.size == 1 then
       delete_src(cmds[0])

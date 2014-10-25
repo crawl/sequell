@@ -6,12 +6,11 @@ use File::Spec;
 use File::Basename;
 use lib File::Spec->catfile(dirname(__FILE__), '../../lib');
 use lib File::Spec->catfile(dirname(__FILE__), '../../src');
-use LearnDB qw/normalize_term num_entries read_entry del_entry unquote/;
+use LearnDB qw/normalize_term num_entries read_entry unquote/;
+use LearnDB::Cmd;
 use Helper;
 use utf8;
 use open qw/:std :utf8/;
-
-Helper::forbid_private();
 
 $ARGV[1] =~ y/ /_/;
 $ARGV[1] =~ /^([^\[\]]+)(?:\[\s*([+-]?\d+|\$)\s*\]?)?/ or do
@@ -41,6 +40,6 @@ elsif ($num > $entries)
 else
 {
   my $text = read_entry($term, $num);
-  del_entry($term, $num);
+  LearnDB::Cmd::del_entry($term, $num);
   print "Deleted $text";
 }

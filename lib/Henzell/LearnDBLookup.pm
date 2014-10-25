@@ -27,7 +27,7 @@ sub new {
 
 sub _expander {
   my $self = shift;
-  $self->{expander} ||= Henzell::TemplateExpander->new()
+  $self->{expander} ||= Henzell::TemplateExpander->new(auth => $self->{auth})
 }
 
 sub _executor {
@@ -107,7 +107,12 @@ sub expand_entry {
                                irc_msg => $m,
                                env => \%env)
   };
-  $res = $@ if $@;
+  if ($@) {
+    $res = $@;
+    if ($res =~ /^\[{3}/) {
+      die $res;
+    }
+  }
 
   $entry->with_new_value($res)
 }
