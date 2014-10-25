@@ -73,7 +73,8 @@ sub say_paged {
   }
   $PAGE -= length($prefix);
 
-  my $output = $m{body} || '';
+  my $output = $m{body};
+  $output = '' unless defined $output;
   return unless (defined($output) && $output =~ /\S/) || $prefix;
 
   my $private = $m{channel} eq 'msg';
