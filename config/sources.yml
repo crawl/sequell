@@ -146,6 +146,15 @@ sources:
     ttyrecs:
       - http://crawl.berotato.org/crawl/ttyrec
 
+  - name: cxc
+    base: http://crawl.xtahua.com/crawl/meta
+    logs:
+      - git/{logfile,milestones}{,-sprint,-zotdef}*
+    morgues:
+      - http://crawl.xtahua.com/crawl/morgue
+    ttyrecs:
+      - http://crawl.xtahua.com/crawl/ttyrec
+
   - name: lld
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
