@@ -149,7 +149,7 @@ sources:
   - name: cxc
     base: http://crawl.xtahua.com/crawl/meta
     logs:
-      - git/{logfile,milestones}{,-sprint,-zotdef}*
+      - '{git,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
       - http://crawl.xtahua.com/crawl/morgue
     ttyrecs:
