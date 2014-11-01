@@ -15,19 +15,32 @@ end
 
 db = Cmd::UserCommandDb.db
 
+def term_defs(pattern)
+  ldb = LearnDB::DB.default
+  ldb.terms_matching(pattern).map { |term|
+    e = ldb.entry(term)
+    [e.name, e.definitions.join(' ')]
+  }
+end
+
 tries = 10
 while tries > 0
   begin
     keywords = db.keywords
     commands = db.commands
     functions = db.functions
-    behaviours = LearnDB::DB.default.entry(':beh:').definitions
+    ldb = LearnDB::DB.default
+    behaviours = ldb.entry(':beh:').definitions
+    acls = term_defs(/^:acl:.*/)
+    groups = term_defs(/^:group:.*/)
 
     puts Haml::Engine.new(File.read(TEMPLATE)).render(
       Object.new,
       keywords: keywords,
       commands: commands,
       functions: functions,
+      acls: acls,
+      groups: groups,
       behaviours: behaviours.map { |x|
         res = x.split(':::')
         res.unshift(nil) if res.size == 1

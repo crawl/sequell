@@ -122,3 +122,45 @@
                   #{h beh[0]}
               %td.def= beh[1]
               %td.def= (beh[2] || '')
+
+    %section.acls
+      %a(name="acls")
+      %h2 ACLs
+      .subtext
+        See the
+        %a(href="https://github.com/greensnark/dcss_sequell/blob/master/docs/learndb.md#acls") ACL documentation
+      - if acls.empty?
+        .stub No ACLs
+      - else
+        %table
+          %colgroup
+            %col(span="1" style="width: 15%")
+            %col(span="1" style="width: 85%")
+          %tr
+            %th ACL
+            %th Definition
+          - acls.each do |acl|
+            %tr
+              %td= acl[0]
+              %td= acl[1]
+
+    %section.groups
+      %a(name="groups")
+      %h2 Groups
+      .subtext
+        See the
+        %a(href="https://github.com/greensnark/dcss_sequell/blob/master/docs/learndb.md#acls") ACL documentation
+      - if groups.empty?
+        .stub No groups.
+      - else
+        %table
+          %colgroup
+            %col(span="1" style="width: 15%")
+            %col(span="1" style="width: 85%")
+          %tr
+            %th Group
+            %th Members
+          - groups.each do |group|
+            %tr
+              %td= group[0]
+              %td= group[1]
