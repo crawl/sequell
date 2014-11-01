@@ -620,7 +620,7 @@ commands, in LearnDB do {} forms, and other places that expect real commands.
 !RELAY accepts these options:
 - `-nick` specifies the IRC nick who issued the original command.
 - `-channel` specifies the IRC channel where the request was originally issued.
-  Specify "PM" if the request was PMed to the relaying bot.
+  Specify "msg" if the request was PMed to the relaying bot.
 - `-prefix` a prefix that should be attached to every message produced in
    response to the command.
 - `-n` the maximum number of lines of output that must be returned. This is
