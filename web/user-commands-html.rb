@@ -31,7 +31,10 @@ while tries > 0
     functions = db.functions
     ldb = LearnDB::DB.default
     behaviours = ldb.entry(':beh:').definitions
-    acls = term_defs(/^:acl:.*/)
+    acls = term_defs(/^:acl:.*/).sort { |a, b|
+      lencomp = b[0].size <=> a[0].size
+      lencomp != 0 ? lencomp : a[0] <=> b[0]
+    }
     groups = term_defs(/^:group:.*/)
 
     puts Haml::Engine.new(File.read(TEMPLATE)).render(
