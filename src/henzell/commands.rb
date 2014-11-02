@@ -103,9 +103,6 @@ module Henzell
         target = env['nick'] || 'Plog'
 
         command_line = [command, arguments].join(' ')
-        unless ENV['HENZELL_TEST']
-          STDERR.puts("Cmd: " + command_line)
-        end
 
         if echo?(command)
           debug{"Echo: #{arguments}"}

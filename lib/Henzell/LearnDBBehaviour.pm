@@ -36,6 +36,7 @@ sub _parse_behaviour {
 
   my ($matcher, $action, $flags) = @pieces;
   +{ match => $self->_parse_matcher($matcher),
+     beh => $beh,
      action => $action,
      flags => $flags }
 }
@@ -55,6 +56,7 @@ sub perform_behaviour {
     my $flag = $res->{flags};
     my $empty = $res->{empty};
     if (!$empty) {
+      print STDERR "Behaviour match: $$m{who}($$m{channel}): $$m{body} ($$beh{beh})\n";
       $self->{irc}->post_message(%$m, body => $res->{text});
     }
     last if $flag eq 'break';

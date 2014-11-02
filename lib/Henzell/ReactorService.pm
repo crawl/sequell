@@ -160,6 +160,7 @@ sub db_search {
   return $chain->(undef) unless $m->{said};
   my $body = $$m{body};
   if ($body =~ qr{^\s*([?]/[<>]?)\s*(.*)\s*$}) {
+    print STDERR "DB search: $$m{who}($$m{channel}): $body\n";
     my ($search_mode, $search_term) = ($1, $2);
     if ($search_term =~ /\S/) {
       my $terms_only = $search_mode eq '?/<';
@@ -179,6 +180,7 @@ sub direct_query {
   return $chain->(undef) unless $m->{said};
   my $body = $$m{body};
   if ($body =~ /^\s*[?]{2}\s*(.+)\s*$/) {
+    print STDERR "Direct query: $$m{who}($$m{channel}): $body\n";
     return $chain->($self->_db_query($m, $1, undef, 'carp-if-missing'));
   }
   $chain->(undef)
@@ -189,6 +191,7 @@ sub maybe_query {
   return $chain->(undef) unless $m->{said};
   my $body = $$m{body};
   if ($body =~ /^\s*(.+)\s*[?]{2,}\s*$/) {
+    print STDERR "Indirect query: $$m{who}($$m{channel}): $body\n";
     return $chain->($self->_db_query($m, $1, 'bare'))
   }
   $chain->(undef)
@@ -223,6 +226,7 @@ sub command {
   my $exec = $self->_executor();
   my $command = $exec && $exec->recognized_command_name($m);
   if ($command) {
+    print STDERR "Input command: $$m{who}($$m{channel}): $$m{body}\n";
     $self->async($command,
                  sub {
                    $exec->command_raw_output($m)
@@ -346,6 +350,7 @@ sub _parse_relay {
 sub _apply_relay {
   my ($self, $m) = @_;
   if ($$m{body} =~ /^!RELAY +/) {
+    print STDERR "Relay request: $$m{who}($$m{channel}): $$m{body}\n";
     $self->_parse_relay($m, $$m{body});
   }
 }
@@ -410,7 +415,6 @@ sub react {
         if ($@) {
           my $err = $@;
           if ($err =~ /^\[\[\[AUTHENTICATE: (.*)?\]\]\]/) {
-            print STDERR "LOL!\n";
             $self->{irc}->post_message(%$m, body => "Ignoring $$m{body}: unexpected authentication check.");
             return;
           }

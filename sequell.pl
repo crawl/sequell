@@ -23,6 +23,9 @@ END {
   kill TERM => -$$;
 }
 
+open STDOUT, '|-', q{( while read line; do echo "[$(date +'%Y-%m-%d %H:%M:%S')] $line"; done )} or die "Couldn't reopen STDOUT: $!\n";
+open STDERR, '>&', \*STDOUT or die "Couldn't reopen STDERR: $!\n";
+
 my $daemon = 1;
 my $irc = 1;
 my $config_file = Henzell::Config::default_config();
