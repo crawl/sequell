@@ -164,3 +164,4 @@ sources:
       - [ 'lld.*-(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
       - http://lazy-life.ddo.jp:8080/morgue
     ttyrecs:
+      - http://lazy-life.ddo.jp/mirror/ttyrecs
