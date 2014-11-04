@@ -165,3 +165,12 @@ sources:
       - http://lazy-life.ddo.jp:8080/morgue
     ttyrecs:
       - http://lazy-life.ddo.jp/mirror/ttyrecs
+  - name: cpo
+    base: http://crawl.project357.org
+    logs:
+      - 'dcss-milestones-trunk'
+      - 'dcss-milestones-0.15'
+    morgues:
+      - http://crawl.project357.org/morgue
+    ttyrecs:
+      - http://crawl.project357.org/ttyrec
