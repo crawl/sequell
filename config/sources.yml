@@ -168,8 +168,7 @@ sources:
   - name: cpo
     base: http://crawl.project357.org
     logs:
-      - 'dcss-milestones-trunk'
-      - 'dcss-milestones-0.15'
+      - 'dcss-{milestones,logfiles}-{trunk,0.15}'
     morgues:
       - http://crawl.project357.org/morgue
     ttyrecs:
