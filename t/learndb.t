@@ -54,6 +54,8 @@ is(irc('!RELAY -nick mazda ??greeter'), 'greeter[1/1]: Hi mazda');
 is(irc('!RELAY -nick mazda -prefix Yak: ??greeter'), 'Yak:greeter[1/1]: Hi mazda');
 is(irc('!RELAY -nick mazda !learn add foo bar'), 'Permission db:foo denied: proxying not permitted');
 
+irc('!learn add xxx Yak');
+is(irc('!learn mv xxx yyy'), 'xxx -> yyy[1/1]: Yak');
 irc('!learn add src Test');
 irc('!learn add dst Hi');
 irc('!learn mv src[$] dst[$]');

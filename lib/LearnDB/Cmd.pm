@@ -49,7 +49,7 @@ sub move_entry($$$;$) {
     Henzell::Authorize::cmd_permit("db:$src");
     Henzell::Authorize::cmd_permit("db:$dst");
     LearnDB::rename_entry($src, $dst);
-    return "$osrc -> " . read_entry($dst, 1);
+    return "$osrc -> " . LearnDB::read_entry($dst, 1);
   }
   else {
     LearnDB::check_entry_exists($src, $snum);
