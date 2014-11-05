@@ -167,10 +167,10 @@ sources:
       - http://lazy-life.ddo.jp/mirror/ttyrecs
 
   - name: cpo
-    base: http://crawl.project357.org
+    base: https://crawl.project357.org
     logs:
       - dcss-{milestones,logfiles}-{trunk,0.15}*
     morgues:
-      - http://crawl.project357.org/morgue
+      - https://crawl.project357.org/morgue
     ttyrecs:
-      - http://crawl.project357.org/ttyrec
+      - https://crawl.project357.org/ttyrec
