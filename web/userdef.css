@@ -70,6 +70,7 @@ td, th {
   border-collapse: collapse;
   text-align: left;
   padding: 0.5em;
+  word-wrap: break-word;
 }
 
 td.index {
@@ -78,13 +79,13 @@ td.index {
 
 td.name {
   font-family: Monospace;
-  color: #300;
+  color: #333;
 }
 
 td.def {
   overflow: auto;
   font-family: Monospace;
-  color: #030;
+  color: #333;
 }
 
 .malformed {
