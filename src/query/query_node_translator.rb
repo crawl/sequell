@@ -56,9 +56,10 @@ module Query
     end
 
     def translate_funcall(node)
+      # Count foreign key ids instead of field values for count(distinct)
       if node.fn.count? && node.arguments[0].kind == :field
         f = node.arguments[0]
-        if f.reference?
+        if f.reference? && !f.case_sensitive?
           f.reference_id_only = true
         end
       end
