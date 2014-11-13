@@ -350,10 +350,12 @@ def extract_options(args, *keys)
   keyset = Set.new(keys)
   cargs = []
   found = { }
+  in_leading_opts = true
   for arg in args
-    if arg =~ /^-(\w+)(?::(.*))?$/ && keyset.include?($1)
+    if in_leading_opts && arg =~ /^-(\w+)(?::(.*))?$/ && keyset.include?($1)
       found[$1.to_sym] = $2 || true
     else
+      in_leading_opts = false
       cargs << arg
     end
   end
