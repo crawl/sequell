@@ -204,7 +204,7 @@ module TV
   end
 
   def self.tv_description(tv)
-    "#{tv} (#{TermcastConfig.client_urls.join(' or ')})"
+    "#{tv}: #{TermcastConfig.client_urls.join(' or ')}"
   end
 
   def self.request_game_verbosely(n, g, who, tv_opt)
