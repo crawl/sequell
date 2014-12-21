@@ -145,7 +145,6 @@ sources:
       - meta/ranged_combat/{logfile,milestones}*: rc
       - meta/weightless/{logfile,milestones}: weightless
       - meta/cards/{logfile,milestones}*: cards
-      - meta/salamander/{logfile,milestones}*: salamander
     morgues:
       - http://crawl.berotato.org/crawl/morgue
     ttyrecs:
