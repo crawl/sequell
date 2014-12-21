@@ -137,6 +137,9 @@ sources:
       - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}*
       - meta/new_nemelex/{logfile,milestones}: new-nemelex
       - meta/gods/{logfile,milestones}*: gods
+      - meta/faithful/{logfile,milestones}*: faithful
+      - meta/no_backtracking_god/{logfile,milestones}*: no-backtracking-god
+      - meta/salamander/{logfile,milestones}*: salamander
       - meta/chunkless/{logfile,milestones}*: chunkless
       - meta/plutonians/{logfile,milestones}*: plutonians
       - meta/ranged_combat/{logfile,milestones}*: rc
