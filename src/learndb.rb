@@ -14,7 +14,7 @@ module LearnDB
       require 'slave_process'
       @slave ||=
         SlaveProcess.singleton('ldb-similar',
-                               "perl #{ROOT}/scripts/ldb-similar")
+                               "perl -I#{ROOT}/lib #{ROOT}/scripts/ldb-similar")
     end
 
     def initialize(file)

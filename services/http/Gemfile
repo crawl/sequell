@@ -1,4 +1,4 @@
-source :rubygems
+source 'https://rubygems.org'
 
 gem 'sqlite3'
 gem 'dbi'
@@ -8,3 +8,5 @@ gem 'rest-client'
 gem 'rack-timeout'
 gem 'json'
 gem 'haml'
+gem 're2', git: 'https://github.com/greensnark/re2.git'
+gem 'parslet'

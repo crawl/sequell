@@ -10,11 +10,6 @@ sigils: "!@#$%&=;.,\\^?-"
 preferred_sigil: "!"
 
 startup_services:
-  - name: FooTV HTTP Service
+  - name: Sequell HTTP Service
     command: rackup -p 29880 config.ru
-    directory: services/http-tv
-
-respond_to:
-  - nick: Henzell
-    pattern: '(?i)^[^\[]+\[[^\]]+\]: see \{([@!.,].*)\}$'
-    executor: command
+    directory: services/http

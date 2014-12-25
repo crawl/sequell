@@ -148,8 +148,8 @@ class LearnDBQuery
       return command_res if command_res
     end
 
-    LearnDB::LookupResult.new(result.entry, result.index, result.size,
-      Tpl::Template.template_eval(result.text, scope))
+    res = scope ? Tpl::Template.template_eval(result.text, scope) : result.text
+    LearnDB::LookupResult.new(result.entry, result.index, result.size, res)
   end
 
   def command_eval(result, command)
