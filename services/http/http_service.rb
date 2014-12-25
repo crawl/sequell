@@ -13,7 +13,7 @@ require 'json'
 set :port, SERVICE_PORT
 
 get '/ldb' do
-  content_type :json
+  content_type :json, 'charset' => 'utf-8'
   search = params[:search].to_s
   lookup = params[:term].to_s
   unless search != '' || lookup != ''
