@@ -6,12 +6,12 @@ class LearnDBQuery
     /^\s*see\s+\{(.*)\}\s*$/i
   end
 
-  def self.query(db, scope, query, index=nil)
+  def self.query(db, scope, query, index=nil, fuzzy=true)
     if index.nil?
       query, index = self.parse_query(query)
     end
 
-    self.new(db, scope, query, index, { }).query
+    self.new(db, scope, query, index, { }, fuzzy).query
   end
 
   def self.lookup_string(query, index=nil)
@@ -59,13 +59,14 @@ class LearnDBQuery
   end
 
   attr_reader :db, :scope, :term, :original_term, :index, :visited
-  def initialize(db, scope, term, index, visited)
+  def initialize(db, scope, term, index, visited, fuzzy=true)
     @db = db
     @scope = scope
     @term = term
     @original_term = term
     @index = index
     @visited = visited
+    @fuzzy = fuzzy
   end
 
   def visited?(term, index=1)
@@ -80,11 +81,15 @@ class LearnDBQuery
     visited[key(term, index)] = true
   end
 
+  def fuzzy?
+    @fuzzy
+  end
+
   def query
     mark_visited!(term, index)
 
     entry = @db.entry(term)
-    unless entry.exists?
+    if !entry.exists? && fuzzy?
       candidates = @db.candidate_terms(term)
       if candidates.size == 1
         @term = candidates[0]

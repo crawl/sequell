@@ -59,7 +59,8 @@ module Services
       end
 
       def result_json
-        result = LearnDBQuery.query(::LearnDB::DB.default, nil, term.to_s)
+        result = LearnDBQuery.query(::LearnDB::DB.default, nil,
+                                    term.to_s, nil, false)
         raise NotFound.new(term.to_s) unless result
         {
           term: result.entry.name,
