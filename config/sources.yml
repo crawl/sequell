@@ -134,6 +134,7 @@ sources:
     base: http://crawl.berotato.org/crawl
     logs:
       - meta/nostalgia/{logfile,milestones}*
+      - meta/evoker-god/{logfile,milestones}*: evoker-god
       - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}*
       - meta/new_nemelex/{logfile,milestones}: new-nemelex
       - meta/gods/{logfile,milestones}*: gods
