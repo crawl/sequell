@@ -1083,7 +1083,7 @@ Non-aggregate functions may be applied to fields in query conditions,
 grouping clauses (s=X) and extra-field info (x=X).
 
 - `length(<text>)`       Length of a text field.
-- `now()`                Current time and date.
+- `now()`                Current time and date (UTC).
 - `day(<date>)`          Truncates the date to the closest prior midnight time.
 - `month(<date>)`        Truncates to midnight of the 1st day of the month
 - `year(<date>)`         Truncates to midnight of the 1st day of the year
