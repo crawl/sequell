@@ -46,10 +46,10 @@ module Query
 
     def expand_field_value!
       transformed_value = SQL_CONFIG.transform_value(value.to_s, field)
-      oper = op
+      oper = self.op
       if transformed_value.to_s.index('~') == 0
         transformed_value = transformed_value[1..-1]
-        op = Sql::Operator.op(op.equal? ? '=~' : '!~')
+        oper = ::Query::Operator.op(oper.equal? ? '=~' : '!~')
       end
       node.operator = oper
       node.value = transformed_value

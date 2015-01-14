@@ -46,6 +46,7 @@ $ rm dat/user_commands.db
 !apt Grotesk ::~ Gr: Fighting: \d
 
 !kw v ::= Built-in: v => place=~Vaults:*
+!kw yak vmsg!=~bar
 !kw d:2 ::= Built-in: d:2 => place=d:2
 !cmd =empty => .echo $(replace a '' a)
 !cmd =ifemptytest => .echo $(replace x1 $2 $(replace x0 $1 "x$(length $(sub 0 1 "$3"))"))
