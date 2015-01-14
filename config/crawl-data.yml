@@ -676,9 +676,10 @@ lookup-tables:
     generated-fields:
       - vlongnumIH?^
   killer: [killerS, ckillerS, ikillerS, cikillerS]
+  banisher: [banisherS, cbanisherS]
   map: [map, killermap]
   kaux: [kaux, ckaux]
-  msg: [tmsg, vmsg]
+  msg: [tmsgS, vmsgS]
   maxskills: [maxskills, fifteenskills]
 
 type-categories:
@@ -801,8 +802,8 @@ logrecord-fields-with-type:
   - turnI?
   - uruneI?
   - nruneI?
-  - tmsg^
-  - vmsg^
+  - tmsgS^
+  - vmsgS^
   - rstart*?
   - rend*?
   - ntvI
@@ -892,6 +893,7 @@ milestone-fields-with-type:
   - fifteenskills^+
   - status^+
   - banisherS?^
+  - cbanisherS?^
 
 milestone-verb-mappings:
   unique: uniq
