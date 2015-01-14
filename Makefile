@@ -1,7 +1,7 @@
 all: seqdb
 
 seqdb:
-	go get -u github.com/greensnark/go-sequell/cli/seqdb
+	go get -u github.com/greensnark/go-sequell/cmd/seqdb
 
 test: unit integration
 
