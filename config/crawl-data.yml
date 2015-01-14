@@ -891,6 +891,7 @@ milestone-fields-with-type:
   - maxskills^+
   - fifteenskills^+
   - status^+
+  - banisherS?^
 
 milestone-verb-mappings:
   unique: uniq
