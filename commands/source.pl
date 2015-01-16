@@ -3,9 +3,10 @@ use strict;
 use warnings;
 use lib "src";
 use File::Next;
+use File::Basename qw//;
 use Helper;
 
-help("Displays lines from the crawl source. The single argument should be either a filename (relative to the source directory) with an optional line range, or a string to search for as part of a function/#define/vault name. Prepend = to the string to force the search to match exactly.");
+help("Displays lines from the crawl source. The single argument should be either a filename (relative to the source directory) with an optional line range, or a string to search for as part of a function/#define/vault name.");
 
 # helper functions
 sub usage { # {{{
@@ -14,6 +15,11 @@ sub usage { # {{{
 sub parse_cmdline { # {{{
     my $cmd = shift;
     my ($filename, $function, $start_line, $end_line);
+
+    my $nth;
+    if ($cmd =~ s/\s+(\d+)$//) {
+      $nth = $1;
+    }
 
     if ($cmd =~ s/^(.*\.[^:]*):?//) {
         $filename = $1;
@@ -24,200 +30,132 @@ sub parse_cmdline { # {{{
         $end_line = $start_line unless defined $end_line;
         error "Start line must be before end line" if $end_line < $start_line;
     }
-    elsif ($cmd =~ s/^(\w+(?:::\w+)*)//) {
+    elsif ($cmd =~ s/^(~?[*\w]+(?:::~?\w+)*$)//) {
         $function = $1;
     }
 
-    return ($filename, $function, $start_line, $end_line, $cmd);
-} # }}}
-{ # closure to handle parsing out comments {{{
-my $in_comment = 0;
-my $filetype = '';
-sub open_file { # {{{
-    my ($path) = @_;
-    open my $fh, '<', $path or error "Couldn't open $path for reading";
-    $in_comment = 0;
-    ($filetype) = $path =~ /.*\.(\w+)/;
-    return $fh;
-} # }}}
-sub next_line_c { # {{{
-    my ($fh) = @_;
-    my $line;
-    while ($line = <$fh>) {
-        if ($in_comment) {
-            if ($line =~ s/.*?\*\///) {
-                $in_comment = 0;
-                redo;
-            }
-            else {
-                next;
-            }
-        }
-        else {
-            if ($line =~ s/\/\*.*?(\*\/)?/defined $1 ? $1 : ''/e) {
-                $in_comment = defined $1;
-                redo;
-            }
-            $line =~ s/\/\/.*//;
-        }
-        return $line;
-    }
-    return;
-} # }}}
-sub next_line_des { # {{{
-    my ($fh) = @_;
-    my $line;
-    while ($line = <$fh>) {
-        next if $line =~ /^#/;
-        $line =~ s/#.*//;
-        return $line;
-    }
-    return;
-} # }}}
-sub next_line { # {{{
-    return next_line_c @_ if $filetype eq 'cc' || $filetype eq 'h';
-    return next_line_des @_ if $filetype eq 'des';
-    return;
-} # }}}
-} # }}}
-sub scan_line { # {{{
-    my ($line, $paren_level) = @_;
-    for my $char (split //, $line) {
-        return if $char eq ';' || $char eq '}';
-        $paren_level++ if $char eq '(';
-        $paren_level-- if $char eq ')';
-        return if $paren_level < 0;
-        return "found" if $char eq '{';
-    }
-    return $paren_level;
-} # }}}
-sub check_function { # {{{
-    my ($function, $filename, $partial) = @_;
+    return ($filename, $function, $start_line || $nth, $end_line, $cmd);
+}
 
-    my $start_line;
-    my $looking_for = 'function';
-    my $paren_level = 0;
-    my $fh = open_file $filename;
-    while ($_ = next_line $fh) {
-        if ($looking_for eq 'function') {
-            next unless $partial ? s/((.*)$function)//i :
-                                   s/((.*)\b$function\b)//;
-            $start_line = $.;
-            if ($2 =~ /#define/) {
-                undef $start_line;
-                next;
-            }
-            $looking_for = 'openbrace';
-            redo;
-        }
-        elsif ($looking_for eq 'openbrace') {
-            $paren_level = scan_line $_, $paren_level;
-            if (!defined $paren_level) {
-                $looking_for = 'function';
-                $paren_level = 0;
-                next;
-            }
-            elsif ($paren_level eq 'found') {
-                $looking_for = 'closebrace';
-            }
-        }
-        elsif ($looking_for eq 'closebrace' && $_ =~ /^}/) {
-          return ($start_line);
-        }
-    }
-
-    return;
-} # }}}
-sub check_define { # {{{
-    my ($define, $filename, $partial) = @_;
-
-    my $start_line;
-    my $looking_for = 'define';
-    my $fh = open_file $filename;
-    while ($_ = next_line $fh) {
-        if ($looking_for eq 'define') {
-            next unless $partial ? s/^(\s*#define\s+\w*$define)//i :
-                                   s/^(\s*#define\s+$define\b)//;
-            return $.;
-        }
-    }
-
-    return;
-} # }}}
-sub check_vault { # {{{
-    my ($vault, $filename, $partial) = @_;
-
-    my $start_line;
-    my $looking_for = 'name';
-    my $fh = open_file $filename;
-    while ($_ = next_line $fh) {
-        if ($looking_for eq 'name') {
-            next unless $partial ? s/^(NAME:\s*\w*$vault)//i :
-                                   s/^(NAME:\s*$vault\b)//;
-            return $.;
-        }
-    }
-
-    return;
-} # }}}
-sub get_function { # {{{
-    my ($function, $search_for) = @_;
-    my $partial = !($function =~ s/^=//);
-
-    if ($search_for eq 'source' || $search_for eq 'function') {
-        my $files = File::Next::files({ descend_filter => sub { 0 },
-                                        file_filter    => sub { /\.(?:cc|h)$/ },
-                                      }, "$source_dir/source");
-        while (defined (my $file = $files->())) {
-            my $lines = check_function $function, $file, $partial;
-            return $lines, $file if defined $lines;
-        }
-    }
-    if ($search_for eq 'source' || $search_for eq 'cdefine') {
-        my $files = File::Next::files({ descend_filter => sub { 0 },
-                                        file_filter    => sub { /\.(?:cc|h)$/ },
-                                      }, "$source_dir/source");
-        while (defined (my $file = $files->())) {
-            my $lines = check_define $function, $file, $partial;
-            return $lines, $file if defined $lines;
-        }
-    }
-    if ($search_for eq 'source' || $search_for eq 'vault') {
-        my $files = File::Next::files({ descend_filter => sub { 1 },
-                                        file_filter    => sub { /\.des$/ },
-                                      }, "$source_dir/source/dat");
-        while (defined (my $file = $files->())) {
-            my $lines = check_vault $function, $file, $partial;
-            return $lines, $file if defined $lines;
-        }
-    }
-    error "Couldn't find $function in the Crawl source tree";
-} # }}}
-sub get_file { # {{{
-    my ($filename, $start, $end) = @_;
-
-    my $fh = open_file $filename;
-
-    my $lines = '';
-    if (defined $start && defined $end) {
-        while (<$fh>) {
-            $lines .= $_ if $start == $. .. $end == $.;
-        }
-    }
-    else {
-        $lines = do { local $/; <$fh> };
-    }
-
-    return $lines;
-} # }}}
-sub output { # {{{
-    my ($lines, $filename) = @_;
+sub output {
+    my (%result) = @_;
+    my $filename = $result{file};
     $filename =~ s/$source_dir\///;
+    my $lines = $result{line};
     chomp $lines if defined $lines;
-    print $git_browser_url . '?p=crawl.git;a=blob;f=crawl-ref/' .
+
+    my $prefix = '';
+    if ($result{n} && $result{total}) {
+      $prefix = "$result{n}/$result{total}. ";
+    }
+
+    print $prefix . $git_browser_url . '?p=crawl.git;a=blob;f=crawl-ref/' .
       $filename . ';hb=HEAD' . (defined $lines ? '#l' . $lines : "") .
 	    "\n";
 } # }}}
+
+sub find_file_relative {
+  my ($root, $pattern) = @_;
+  my $files = File::Next::files($root);
+  my $lcpattern = lc $pattern;
+  while (my $file = $files->()) {
+    my $base = File::Basename::basename($file);
+    if (lc($base) eq $lcpattern) {
+      $file =~ s{^\Q$root/*}{};
+      return $file;
+    }
+  }
+  undef
+}
+
+sub get_function {
+  my ($name, $nth) = @_;
+  my $fuzzy = $name =~ /\*/;
+  my ($tag, $n, $total) = find_tag("$source_dir/tags", $name, $fuzzy, $nth);
+  return unless $tag;
+  (lookup_tag_line($source_dir, $tag), n => $n, total => $total)
+}
+
+sub lookup_tag_line {
+  my ($source_dir, $tag) = @_;
+  return unless $tag;
+  my $file = "$source_dir/" . $$tag{file};
+  open my $inf, '<', $file or return;
+  while (<$inf>) {
+    chomp;
+    if ($_ eq $$tag{pattern}) {
+      return (line => $., file => $$tag{file});
+    }
+  }
+  return;
+}
+
+sub find_tag {
+  my ($tags_file, $tag, $fuzzy, $nth) = @_;
+  my @matches = tag_matches($tags_file, $tag, $fuzzy);
+  return unless @matches;
+  $nth ||= 1;
+  $nth--;
+  $nth = 0 if $nth < 0;
+  $nth = $nth % @matches;
+  ($matches[$nth], $nth + 1, scalar(@matches))
+}
+
+sub cleanse_tag_pattern {
+  for (@_) {
+    s{^/\^}{};
+    s{\$/;"$}{};
+    s{\\(.)}{$1}g;
+    return $_;
+  }
+}
+
+sub parse_tag_line {
+  for (@_) {
+    my @parts = split /\t/, $_;
+    return +{
+      tag => $parts[0],
+      file => $parts[1],
+      pattern => cleanse_tag_pattern($parts[2])
+    }
+  }
+}
+
+sub tag_line_match {
+  my ($tag, $search, $fuzzy) = @_;
+  $tag->{tag} =~ /^$search$/
+}
+
+sub search_re {
+  my ($search, $fuzzy) = @_;
+  if ($fuzzy) {
+    $search =~ s/\*+/\\w+/g;
+    return qr/^$search\t/;
+  } else {
+    return qr/^\Q$search\E\t/;
+  }
+}
+
+sub tag_matches {
+  my ($tags_file, $search, $fuzzy) = @_;
+
+  my $re = search_re($search, $fuzzy);
+  my @matches;
+  open my $tf, '<', $tags_file or return @matches;
+  # Dumb linear search:
+  my $didmatch;
+  while (my $line = <$tf>) {
+    next if $line =~ /^!/;
+
+    my $match = $line =~ $re;
+    last if $didmatch && !$match && !$fuzzy;
+    if ($match) {
+      $didmatch = 1;
+      push @matches, parse_tag_line($line);
+    }
+  }
+  @matches
+}
 
 my ($which) = split ' ', $ARGV[2];
 $which =~ s/^!//;
@@ -230,12 +168,22 @@ error "Bad filename: $filename"
 usage unless defined $filename || defined $function;
 
 my $lines;
+my %result;
 if (defined $function) {
-    ($lines, $filename) = get_function $function, $which;
+  %result = get_function $function, $start_line;
+  unless (%result) {
+    error "Can't find $function.";
+  }
 }
 else {
-    $lines = $start_line;
-    $filename = "source/$filename";
+    $result{line} = $start_line;
+    if (-f "$source_dir/source/$filename") {
+      $result{file} = "source/$filename";
+    } else {
+      my $found = find_file_relative($source_dir, $filename)
+        or error "Can't find $filename.";
+      $result{file} = $found;
+    }
 }
 
-output $lines, $filename;
+output %result;

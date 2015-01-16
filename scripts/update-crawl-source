@@ -11,3 +11,16 @@ fi
 
 cd $SOURCE_DIR
 git pull
+
+# ctags incantations courtesy |amethyst
+ctags -R \
+    --langdef=crawlmap \
+    --langmap=crawlmap:+.des \
+    --regex-crawlmap='/^ *NAME: *([^ ]*)/\1/q,map,map definition/' \
+    --regex-c++='/^ *DEF_BITFIELD *\( *([a-zA-Z0-9_:]*)/\1/t/' \
+    -I decltype+ \
+    --extra=+q \
+    --exclude=contrib \
+    --exclude=android-project \
+    --exclude=saves \
+    *
