@@ -21,16 +21,20 @@ sub parse_cmdline { # {{{
       $nth = $1;
     }
 
-    if ($cmd =~ s/^(.*\.[^:]*):?//) {
+    if ($cmd =~ s{^([\w/.-]+)(?::(\d+)(?:-(\d+))?)?(?= |$)}{}) {
         $filename = $1;
+        s/\.$// for $filename;
+        $start_line = $2;
+        $end_line = $3;
     }
 
+    my $fnregex = qr/^(~?[*\w]+(?:::~?\w+)*$)/;
     if ($cmd =~ s/^(\d+)(?:-(\d+))?//) {
         ($start_line, $end_line) = ($1, $2);
         $end_line = $start_line unless defined $end_line;
         error "Start line must be before end line" if $end_line < $start_line;
     }
-    elsif ($cmd =~ s/^(~?[*\w]+(?:::~?\w+)*$)//) {
+    elsif ($cmd =~ s/$fnregex// || $filename =~ /$fnregex/) {
         $function = $1;
     }
 
@@ -171,11 +175,12 @@ my $lines;
 my %result;
 if (defined $function) {
   %result = get_function $function, $start_line;
-  unless (%result) {
+  if (!%result && !$filename) {
     error "Can't find $function.";
   }
 }
-else {
+
+if (!%result && $filename) {
     $result{line} = $start_line;
     if (-f "$source_dir/source/$filename") {
       $result{file} = "source/$filename";
