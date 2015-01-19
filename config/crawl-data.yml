@@ -213,6 +213,13 @@ uniques:
   - Vashnia
   - Satan Claus
 
+# Used to handle fields that contain both monster killers and oddball
+# edge cases.
+special-killer-phrases:
+  - you
+  - unwield
+  - miscasting
+
 # Only used by !apt at the moment.
 skills:
   - Fighting
@@ -826,6 +833,8 @@ logrecord-fields-with-type:
   - maxskills^+
   - fifteenskills^+
   - status^+
+  - banisherS?^
+  - cbanisherS?^
 
 milestone-fields-with-type:
   - idI%
