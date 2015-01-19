@@ -122,7 +122,7 @@ module Query
         node.value = "(?:^|,)" + Regexp.quote(value) + '\y'
       end
 
-      if field === ['killer', 'ckiller', 'ikiller', 'cikiller'] &&
+      if field === ['killer', 'ckiller', 'ikiller', 'cikiller', 'banisher', 'cbanisher'] &&
           !value.empty? && !node.flags[:killer_expanded]
         if equality? && value !~ /^an? /i && !UNIQUES.include?(value) then
           if value.downcase == 'uniq' and field === ['killer', 'ikiller', 'ckiller']
