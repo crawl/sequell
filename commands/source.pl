@@ -86,8 +86,7 @@ sub lookup_tag_line {
   my $file = "$source_dir/" . $$tag{file};
   open my $inf, '<', $file or return;
   while (<$inf>) {
-    chomp;
-    if ($_ eq $$tag{pattern}) {
+    if (index($_, $$tag{pattern}) == 0) {
       return (line => $., file => $$tag{file});
     }
   }
@@ -108,7 +107,7 @@ sub find_tag {
 sub cleanse_tag_pattern {
   for (@_) {
     s{^/\^}{};
-    s{\$/;"$}{};
+    s{\$?/;"$}{};
     s{\\(.)}{$1}g;
     return $_;
   }
@@ -175,12 +174,12 @@ my $lines;
 my %result;
 if (defined $function) {
   %result = get_function $function, $start_line;
-  if (!%result && !$filename) {
+  if ((!%result || !$result{file}) && !$filename) {
     error "Can't find $function.";
   }
 }
 
-if (!%result && $filename) {
+if ((!%result || !$result{file}) && $filename) {
     $result{line} = $start_line;
     if (-f "$source_dir/source/$filename") {
       $result{file} = "source/$filename";
