@@ -10,7 +10,7 @@ class String
     substr = self[pos, len]
     while true
       match = re2_regexp.match(self, -1, pos)
-      break unless match && match.size > 0
+      break unless match && (match.end(0) - match.begin(0)) > 0
       fragments << self[pos, match.begin(0) - pos]
       fragments << (repl ? repl : yield(match))
       pos = match.end(0)
