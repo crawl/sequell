@@ -1015,6 +1015,7 @@ milestone-types:
   - uniq.ban
   - uniq.pac
   - uniq.ens
+  - uniq.slime
   - br.enter
   - br.end
   - br.mid
@@ -1046,6 +1047,9 @@ milestone-aliases:
   unique.ens: uniq.ens
   unique.enslave: uniq.ens
   uniq.enslave: uniq.ens
+  unique.slime: uniq.slime
+  unique.slimify: uniq.slime
+  uniq.slimify: uniq.slime
   began: begin
 
 tournament-prefixes:
