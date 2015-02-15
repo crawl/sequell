@@ -6,6 +6,7 @@ require 'command_context'
 require 'yaml'
 require 'fileutils'
 require 'henzell/config'
+require 'henzell/sources'
 require 'formatter/duration'
 require 'nick/db'
 
@@ -235,7 +236,6 @@ def morgue_time_dst?(e, key=nil)
 end
 
 def find_game_morgue(e)
-  require 'henzell/sources'
   Henzell::Sources.instance.morgue_for(e)
 end
 
@@ -317,9 +317,15 @@ def local_time(time)
 end
 
 def find_game_ttyrecs(game)
-  require 'henzell/sources'
   ttyrecs = Henzell::Sources.instance.ttyrecs_for(game)
-  ttyrec_list_string(game, ttyrecs)
+  class << ttyrecs
+    attr_accessor :game
+    def to_s
+      ttyrec_list_string(game, self)
+    end
+  end
+  ttyrecs.game = game
+  ttyrecs
 end
 
 def report_game_ttyrecs(n, game)
@@ -364,14 +370,6 @@ end
 
 def print_game_n(n, game)
   print "\n#{n}. :#{munge_game(game)}:"
-end
-
-def print_game_result(res)
-  if res.has_format?
-    puts res.format_game
-  else
-    print_game_n(res.qualified_index, res.game)
-  end
 end
 
 def pretty_duration(durseconds)

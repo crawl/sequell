@@ -16,6 +16,7 @@ require 'henzell/sources'
 
 require 'sql/config'
 require 'sql/query_result'
+require 'sql/result_set'
 require 'sql/version_number'
 require 'sql/crawl_query'
 require 'sql/summary_reporter'
@@ -24,6 +25,7 @@ require 'query/grammar'
 require 'query/listgame_query'
 require 'query/query_string'
 require 'query/summary_graph_builder'
+require 'query/query_executor'
 require 'crawl/branch_set'
 require 'crawl/gods'
 require 'crawl/config'
@@ -104,14 +106,6 @@ def sql_parse_query(default_nick, query_text)
   Query::ListgameQuery.parse(default_nick, query_text).query_list
 end
 
-def add_extra_fields_to_xlog_record(extra, xlog_record)
-  if extra && !extra.empty? && xlog_record
-    context = Sql::QueryContext.context
-    xlog_record['extra'] = extra.fields.map(&:to_s).join(';;;;')
-  end
-  xlog_record
-end
-
 # Given a set of arguments of the form
 #       nick num etc
 # runs the query and returns the matching game.
@@ -147,7 +141,7 @@ def sql_show_game(default_nick, args)
         if block_given?
           yield result
         else
-          print_game_result(result)
+          puts(q.formatter.format(result))
         end
       end
     end
@@ -162,22 +156,12 @@ end
 # also recognising -tv and -log options.
 def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
   combined_args = other_args_string.split() + extra_args
-  command_line = ::Query::QueryString.new(combined_args)
-  sql_show_game(ARGV[1], command_line) do |res|
-    if res.option(:tv)
-      TV.request_game_verbosely(res.qualified_index, res.game, ARGV[1],
-                                res.option(:tv))
-    elsif res.option(:log)
-      report_game_log(res.qualified_index, res.game)
-    elsif res.option(:ttyrec)
-      report_game_ttyrecs(res.qualified_index, res.game)
-    else
-      print_game_result(res)
-    end
-  end
+  command_line = ::Query::QueryString.new(combined_args).to_s
+  query = Query::ListgameQuery.parse(nick, command_line)
+  puts(Query::QueryExecutor.new(query.query_list).result)
 end
 
-def sql_exec_query(num, q, lastcount = nil)
+def sql_exec_query(num, q, lastcount=nil)
   return sql_random_row(q) if q.random_game?
 
   origindex = num
@@ -189,7 +173,7 @@ def sql_exec_query(num, q, lastcount = nil)
   # If it looks like we have to fetch several rows, see if we can reduce
   # our work by reversing the sort order.
   count = lastcount || sql_count_rows_matching(q)
-  return Sql::QueryResult.none(q) if count == 0
+  return Sql::ResultSet.empty(q) if count == 0
 
   if num < 0
     num = count + num
@@ -198,17 +182,19 @@ def sql_exec_query(num, q, lastcount = nil)
     raise "Index out of range: #{origindex}" if num >= count
   end
 
-  if !lastcount && num > count / 2
-    return sql_exec_query(num - count, q.reverse, count)
-  end
+  # if !lastcount && num > count / 2
+  #   return sql_exec_query(num - count, q.reverse, count)
+  # end
 
   n = num
-  sql_each_row_matching(q, n + 1) do |row|
-    index = lastcount ? n + 1 : count - n
-    return Sql::QueryResult.new(index, count, row, q)
+  resultset = Sql::ResultSet.new(q, count)
+  offset = 0
+  sql_each_row_matching(q, n + 1, q.requested_row_count) do |row|
+    index = lastcount ? n + 1 + offset : count - n - offset
+    resultset << Sql::QueryResult.new(index, count, row, q)
+    offset += 1
   end
-
-  Sql::QueryResult.none(q)
+  resultset
 end
 
 def sql_count_rows_matching(q)
@@ -238,14 +224,14 @@ QUERY
   sql_db_handle.execute(wrapped_random_query, *q.values) do |row|
     index, count, id = row.to_a
   end
-  return Sql::QueryResult.none(q) unless index
+  return Sql::ResultSet.empty(q) unless index
   q.with_contexts {
     return sql_game_by_id(id, index, count, q)
   }
 end
 
-def sql_each_row_matching(q, limit=0)
-  query = q.select_all(true, limit=limit)
+def sql_each_row_matching(q, record_index=0, count=1)
+  query = q.select_all(true, record_index, count)
   if DEBUG_HENZELL
     STDERR.puts("SELECT query: #{query}, values: #{q.values.inspect}")
   end
@@ -272,9 +258,10 @@ def sql_game_by_id(id, index, count, original_query)
   query_text = "#{Sql::QueryContext.context.name} * id=#{id}"
   q = Query::ListgameQuery.parse('.', query_text).primary_query
   sql_each_row_matching(q) { |row|
-    return Sql::QueryResult.new(index, count, row, original_query)
+    return Sql::ResultSet.new(original_query, count,
+      Sql::QueryResult.new(index, count, row, original_query))
   }
-  return Sql::QueryResult.none(original_query)
+  return Sql::ResultSet.none(original_query)
 end
 
 def sql_game_by_key(key, extra=nil)

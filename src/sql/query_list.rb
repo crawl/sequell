@@ -1,13 +1,13 @@
 module Sql
   class QueryList < Array
-    attr_accessor :ctx, :group_order, :filter
+    attr_accessor :group_order, :filter
 
     def ast
       self.primary_query.ast
     end
 
     def stub_message
-      ast.stub_message(self.primary_query.nick)
+      self.primary_query.stub_message
     end
 
     def result_prefix_title
@@ -28,6 +28,12 @@ module Sql
 
     def ratio_query?
       self.size == 2
+    end
+
+    alias :compound_query? :ratio_query?
+
+    def ctx
+      primary_query.ctx
     end
 
     def primary_query

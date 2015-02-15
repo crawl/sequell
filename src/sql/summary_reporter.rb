@@ -39,7 +39,7 @@ module Sql
       if @count == 0
         query_group.stub_message
       else
-        formatter = formatter || @formatter || Formatter::TextSummary
+        formatter ||= @formatter || Formatter::TextSummary
         formatter.format(self)
       end
     end

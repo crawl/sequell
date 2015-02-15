@@ -169,6 +169,10 @@ module Sql
       @value_field = Sql::Field.field(options[:value_field])
     end
 
+    def milestone?
+      @entity_name == 'milestone'
+    end
+
     def to_s
       "CTX[#{@table}]"
     end

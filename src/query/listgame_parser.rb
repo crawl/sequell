@@ -1,4 +1,5 @@
 require 'sql/query_context'
+require 'query/ast/keyed_option'
 
 module Query
   class ListgameParser
@@ -57,6 +58,13 @@ module Query
             #debug{"Resolved AST: #{translated_ast}"}
 
             fixed_ast = AST::ASTFixup.result(translated_ast)
+
+            if fixed_ast.option(:count) && !fixed_ast.option(:json) &&
+                !fixed_ast.key_value(:fmt)
+              ast.keys <<
+                ::Query::AST::KeyedOption.new('fmt', '$name L$xl $char ($src)$(and $x " [$x]")')
+            end
+
             #debug{"Fixed AST: #{fixed_ast}, head: #{fixed_ast.head}"}
             fixed_ast
           }

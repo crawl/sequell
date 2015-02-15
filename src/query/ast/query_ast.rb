@@ -156,6 +156,10 @@ module Query
         @opt_map[name.to_sym]
       end
 
+      def set_option(name, value)
+        @opt_map[name.to_sym] = value
+      end
+
       def random?
         option(:random)
       end

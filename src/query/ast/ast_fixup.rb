@@ -31,6 +31,7 @@ module Query
         ast.each_node { |node|
           fix_node(node)
         }
+
         ast
       end
 

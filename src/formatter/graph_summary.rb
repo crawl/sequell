@@ -1,4 +1,4 @@
-require 'formatter/json_summary'
+require 'formatter/graph_json_summary'
 require 'time'
 require 'graph/errors'
 
@@ -117,7 +117,7 @@ module Formatter
     end
 
     def format(summary)
-      @json_reporter = JsonSummary.new(summary)
+      @json_reporter = GraphJsonSummary.new(summary)
       json = @json_reporter.format
 
       if continuous?

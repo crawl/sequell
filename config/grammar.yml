@@ -5,6 +5,8 @@ options:
   - game
   - graph
   - random
+  - count
+  - json
 
 reserved-names:
   - '/='

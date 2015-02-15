@@ -25,6 +25,11 @@ module Query
         @arguments
       end
 
+      def <<(opt)
+        @option_map[opt.name] = opt.value
+        @arguments << opt
+      end
+
       def [](name)
         @option_map[name.to_s]
       end

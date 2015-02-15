@@ -208,6 +208,11 @@ module TV
   end
 
   def self.request_game_verbosely(n, g, who, tv_opt)
+    puts(self.request_game_msg(n, g, who, tv_opt))
+  end
+
+  def self.request_game_msg(n, g, who, tv_opt)
+    msg = nil
     summary = short_game_summary(g)
     if tv_opt && tv_opt[:channel]
       tv_opt[:channel] = tv_opt.channel_name(g)
@@ -216,10 +221,10 @@ module TV
 
     unless TV.channel_server?
       if tv_opt && tv_opt[:nuke]
-        puts "#{tv} playlist clear requested by #{who}."
+        msg = "#{tv} playlist clear requested by #{who}."
       else
         suffix = tv_opt && tv_opt[:cancel] ? ' cancel' : ''
-        puts "#{n}. #{summary}#{suffix} requested for #{tv_description(tv)}."
+        msg = "#{n}. #{summary}#{suffix} requested for #{tv_description(tv)}."
       end
 
       Sqlop::TVViewCount.increment(g)
@@ -228,10 +233,10 @@ module TV
 
     g = g.merge(tv_opt.opts) if tv_opt
     if TV.channel_server?
-      puts "#{n}. :#{munge_game(g)}:"
-      return
+      return "#{n}. :#{munge_game(g)}:"
     else
       request_game(g)
+      msg
     end
   end
 end

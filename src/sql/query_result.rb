@@ -19,6 +19,10 @@ module Sql
       query.ast
     end
 
+    def ctx
+      ast.context
+    end
+
     def has_format?
       ast.key_value(:fmt)
     end
@@ -67,10 +71,7 @@ module Sql
     def empty?
       @result.nil?
     end
-
-    def none?
-      self.empty?
-    end
+    alias :none? :empty?
 
     def fieldmap
       @fieldmap ||= row_fieldmap
@@ -88,6 +89,18 @@ module Sql
 
     def extra_field_values(map=self.fieldmap)
       extra_fields(map).map { |v| "#{v}=#{map[v]}" }.join(';')
+    end
+
+    def as_json
+      fieldmap
+    end
+
+    def format_string
+      if has_format?
+        format_game
+      else
+        print_game_n(self.qualified_index, self.game)
+      end
     end
 
     alias :game :fieldmap

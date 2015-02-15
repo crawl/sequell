@@ -4,12 +4,16 @@ require 'sql/query_tables'
 require 'sql/column_resolver'
 require 'sql/field_resolver'
 require 'sql/aggregate_expression'
+require 'formatter/json'
+require 'formatter/text'
 
 module Sql
   class CrawlQuery
     attr_accessor :ast, :argstr, :nick, :num, :raw, :extra, :ctx
     attr_accessor :summary_sort, :table, :game
     attr_reader   :query_fields
+
+    MAX_ROW_COUNT = 1000
 
     def initialize(ast, predicates, nick)
       @ast = ast
@@ -43,6 +47,14 @@ module Sql
       }
     end
 
+    def formatter
+      @formatter ||= create_formatter
+    end
+
+    def stub_message
+      ast.stub_message(self.nick)
+    end
+
     def title
       @ast.description(@nick, context: true, meta: true, tail: true,
                        no_parens: true)
@@ -50,6 +62,30 @@ module Sql
 
     def option(key)
       @ast.option(key)
+    end
+
+    def summarise?
+      @ast.summary?
+    end
+
+    def grouping_query?
+      self.summarise
+    end
+
+    def json?
+      @json || option(:json)
+    end
+
+    def json=(json)
+      ast.set_option(:json, json)
+    end
+
+    def count?
+      option(:count)
+    end
+
+    def requested_row_count
+      @requested_row_count ||= check_row_count
     end
 
     def extra=(extra)
@@ -77,7 +113,7 @@ module Sql
       unless extras.empty?
         map['extra_values'] = extras.map { |k, v| "#{k}@=@#{v}" }.join(";;;;")
       end
-      add_extra_fields_to_xlog_record(self.extra, map)
+      add_extra_fields_to_xlog_record(map)
     end
 
     def resolve_sort_fields(sorts, tables)
@@ -139,14 +175,6 @@ module Sql
 
     def summarise
       @summarise
-    end
-
-    def summarise?
-      @ast.summary?
-    end
-
-    def grouping_query?
-      self.summarise
     end
 
     def group_count
@@ -217,10 +245,15 @@ module Sql
       }
     end
 
-    def select_all(with_sorts=true, single_record_index=0)
-      if single_record_index > 0
+    ##
+    # select_all returns a query to retrieve one or more game/milestone records.
+    # When +record_index+ is non-zero, an OFFSET clause is used for that
+    #      (index - 1)
+    # When +count+ is non-zero a LIMIT clause is used for that count.
+    def select_all(with_sorts=true, record_index=0, count=1)
+      if record_index > 0 && count == 1
         resolve_sort_fields(@count_sorts, @count_tables)
-        id_subquery = self.select_id(with_sorts, single_record_index)
+        id_subquery = self.select_id(with_sorts, record_index, count)
         id_field = Sql::Field.field('id')
         id_sql = resolve_field(id_field, @tables).to_sql_output
         @values = self.with_values(query_fields, @values)
@@ -232,15 +265,16 @@ module Sql
       @values = self.with_values(query_fields, @values)
       @values += self.with_values(@sorts) if with_sorts
       "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " +
-         where(@pred, with_sorts && @sorts)
+         where(@pred, with_sorts && @sorts) + " " +
+         limit_clause(record_index, count)
     end
 
-    def select_id(with_sorts=false, single_record_index=0)
+    def select_id(with_sorts=false, record_index=0, count=1)
       id_field = Sql::Field.field('id')
       id_sql = resolve_field(id_field, @count_tables).to_sql
       where_clause = self.where(@count_pred, with_sorts && @count_sorts)
       "SELECT #{id_sql} FROM #{@count_tables.to_sql} " +
-        "#{where_clause} #{limit_clause(single_record_index)}"
+        "#{where_clause} #{limit_clause(record_index, count)}"
     end
 
     def select_count
@@ -248,10 +282,12 @@ module Sql
         where(@count_pred, false)
     end
 
-    def limit_clause(limit)
-      return '' unless limit > 0
-      return "LIMIT #{limit}" if limit == 1
-      "LIMIT 1 OFFSET #{limit - 1}"
+    def limit_clause(record_index, count)
+      return '' unless record_index > 0
+      fragments = []
+      fragments << "LIMIT #{count}" if count > 0
+      fragments << "OFFSET #{record_index - 1}" if record_index > 1
+      fragments.join(' ')
     end
 
     def resolve_summary_fields
@@ -380,6 +416,37 @@ module Sql
         rq = CrawlQuery.new(ast_copy, predicate_copy, @nick)
         rq.table = @table
         rq
+      end
+    end
+
+  private
+
+    def check_row_count
+      c = option(:count)
+      return 1 unless c
+      count = (c.option_arguments.first || '1').to_i
+      count = 1 if count <= 0
+      if count > MAX_ROW_COUNT
+        raise "row count greater than maximum (#{MAX_ROW_COUNT})"
+      end
+      count
+    end
+
+    def add_extra_fields_to_xlog_record(xlog_record)
+      if extra && !extra.empty? && xlog_record
+        field_expr = extra.fields.map(&:to_s)
+        field_expr = field_expr.join(';;;;') unless json?
+        xlog_record['extra'] = field_expr
+      end
+      xlog_record
+    end
+
+    def create_formatter
+      case
+      when json?
+        Formatter::JSON
+      else
+        Formatter::Text
       end
     end
   end
