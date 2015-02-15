@@ -24,3 +24,11 @@ ctags -R \
     --exclude=android-project \
     --exclude=saves \
     *
+
+# And compile the binary for playable:*
+cd source
+make clean && make -j5 HURRY=y
+
+if [[ -f crawl ]]; then
+    mv crawl crawl.build
+fi

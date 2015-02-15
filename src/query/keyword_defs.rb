@@ -1,6 +1,7 @@
 require 'query/keyword_matcher'
 require 'query/ast/expr'
 require 'cmd/user_keyword'
+require 'crawl/playable'
 
 module Query
   # These matches are applied in sequence, order is significant.
@@ -15,65 +16,29 @@ module Query
 
   KeywordMatcher.matcher(:playable_species) {
     if arg =~ /^playable:(?:sp|race|s|r)$/i
-      require 'crawl/species'
       crace = Sql::Field.field('crace')
-      Query::AST::Expr.or(*Crawl::Species.available_species.map { |sp|
-          Query::AST::Expr.new(expr.op, crace, sp.name)
+      Query::AST::Expr.or(*Crawl::Playable.species.map { |sp|
+          Query::AST::Expr.new(expr.op, crace, sp)
         })
     end
   }
 
   KeywordMatcher.matcher(:playable_class) {
     if arg =~ /^playable:(?:job|j|class|cls|c)$/i
-      require 'crawl/job'
       fclass = Sql::Field.field('class')
       Query::AST::Expr.or(
-        *Crawl::Job.available_jobs.map { |job|
-          Query::AST::Expr.new(expr.op, fclass, job.name)
+        *Crawl::Playable.jobs.map { |job|
+          Query::AST::Expr.new(expr.op, fclass, job)
         })
     end
   }
 
   KeywordMatcher.matcher(:playable_char) {
     if arg =~ /^playable(?::(?:char|combo))?$/
-      require 'crawl/combo'
       fchar = Sql::Field.field('char')
       Query::AST::Expr.or(
-        *Crawl::Combo.available_combos.map { |combo|
+        *Crawl::Playable.combos.map { |combo|
           Query::AST::Expr.new(expr.op, fchar, combo.to_s)
-        })
-    end
-  }
-
-  KeywordMatcher.matcher(:playable_goodchar) {
-    if arg =~ /^playable:good(?:char|combo)?$/
-      require 'crawl/combo'
-      fchar = Sql::Field.field('char')
-      Query::AST::Expr.or(
-        *Crawl::Combo.good_combos.map { |combo|
-          Query::AST::Expr.new(expr.op, fchar, combo.to_s)
-        })
-    end
-  }
-
-  KeywordMatcher.matcher(:playable_badchar) {
-    if arg =~ /^playable:bad(?:char|combo)?$/
-      require 'crawl/combo'
-      fchar = Sql::Field.field('char')
-      Query::AST::Expr.or(
-        *Crawl::Combo.bad_combos.map { |combo|
-          Query::AST::Expr.new(expr.op, fchar, combo.to_s)
-        })
-    end
-  }
-
-  KeywordMatcher.matcher(:playable_class) {
-    if arg == 'sp_playable'
-      require 'crawl/species'
-      fsp = Sql::Field.field('sp')
-      Query::AST::Expr.or(
-        *Crawl::Species.available_species.map { |sp|
-          Query::AST::Expr.new(expr.op, fsp, sp.name)
         })
     end
   }

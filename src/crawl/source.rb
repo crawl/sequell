@@ -12,6 +12,10 @@ module Crawl
     SOURCE_ROOT = 'current'
     SOURCES_PATH = 'source'
 
+    def self.crawl_executable
+      file_path('crawl.build')
+    end
+
     def self.file_path(filename)
       file = File.join(SOURCE_ROOT, SOURCES_PATH, filename)
       raise MissingSourceFile.new(file) unless File.exists?(file)
