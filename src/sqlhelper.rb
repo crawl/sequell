@@ -159,6 +159,9 @@ def sql_show_game_with_extras(nick, other_args_string, extra_args = [])
   command_line = ::Query::QueryString.new(combined_args).to_s
   query = Query::ListgameQuery.parse(nick, command_line)
   puts(Query::QueryExecutor.new(query.query_list).result)
+rescue
+  puts($!)
+  raise
 end
 
 def sql_exec_query(num, q, lastcount=nil)
