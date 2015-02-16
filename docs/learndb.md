@@ -561,3 +561,7 @@ If the relaying bot is in :acl:proxy and identified to NickServ, Sequell trusts
 the bot and treats relayed commands as if they were directly issued to Sequell
 by the end-user specified in the -nick option, on the channel specified in the
 -channel option.
+
+## API
+
+See [the LearnDB API](api.md#learndb).

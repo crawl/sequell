@@ -170,8 +170,6 @@ def sql_exec_query(num, q, lastcount=nil)
   # -1 is the natural index 0, -2 = 1, etc.
   num = -num - 1
 
-  # If it looks like we have to fetch several rows, see if we can reduce
-  # our work by reversing the sort order.
   count = lastcount || sql_count_rows_matching(q)
   return Sql::ResultSet.empty(q) if count == 0
 
@@ -182,9 +180,11 @@ def sql_exec_query(num, q, lastcount=nil)
     raise "Index out of range: #{origindex}" if num >= count
   end
 
-  # if !lastcount && num > count / 2
-  #   return sql_exec_query(num - count, q.reverse, count)
-  # end
+  # If it looks like we have to fetch several rows, see if we can reduce
+  # our work by reversing the sort order.
+  if !lastcount && num > count / 2
+    return sql_exec_query(num - count, q.reverse, count)
+  end
 
   n = num
   resultset = Sql::ResultSet.new(q, count)

@@ -45,7 +45,7 @@ module Services
 
       def build
         return params[:q] if params[:q]
-        "#{ctx.name} #{params[:nick] || '*'}#{count_clause}#{index_clause}"
+        "#{ctx.name} #{params[:nick] || '*'}#{count_clause}#{index_clause}#{misc_clauses}"
       end
 
       def index_clause
@@ -56,6 +56,15 @@ module Services
       def count_clause
         return "" unless params[:count].to_i > 0
         " -count:#{params[:count].to_i}"
+      end
+
+      def misc_clauses
+        ignored_keys = Set.new(['count', 'index', 'q'])
+        res = params.keys.find_all { |k| !ignored_keys.include?(k) }.map { |k|
+          "#{k.to_s}=#{params[k].to_s}"
+        }.join(" ")
+        return res if res.empty?
+        " #{res}"
       end
     end
   end

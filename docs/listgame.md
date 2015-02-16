@@ -1551,3 +1551,6 @@ Examples
                                   
 `!lg * !boring s=day(end) -graph`   Graph games by date completed.
 
+## API
+
+See [the listgame API](api.md#listgame).
