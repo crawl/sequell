@@ -72,7 +72,7 @@ module Query
       elsif option(:game) || option(:log)
         milestone_game = first.milestone_game
         unless milestone_game
-          return report_mile_game_with(milestone_game)
+          return report_mile_game_with(first, milestone_game)
         end
         case
         when option(:log)

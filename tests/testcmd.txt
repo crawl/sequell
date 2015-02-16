@@ -40,6 +40,8 @@ $ rm dat/user_commands.db
 !lg * dur<1
 !lg * max=cv x=cv ::~ cv=0.12-a
 
+!lm elliptic 1 -log
+
 !lg * win s=name -json ::~ \["hyperbolic",82.*"78291",61
 !lg * win -count:10 ::~ : jeanjacques L24 GhFi \(cdo\)
 !lg * win -count:1 max=sc x=sc ::= 1/1039 games for * (win): hyperbolic L27 DEFE (cdo) [sc=35019863]
