@@ -36,7 +36,7 @@ progress.
                          [<keyed_option>]
                          [<option>]
                          [<number>]
-    
+
 Where:
 - `<target-player>` may be one of:
   1. `<name>`: a player name as used on public servers (such as 'elliptic')
@@ -91,7 +91,7 @@ Where:
 
   If you have a value that should be tested against multiple fields,
   you can use an expression of the form `x|y<op>val`. For instance:
- 
+
       killer|ikiller=uniq => ((killer=uniq || ikiller=uniq))
       map|kmap!=          => ((map!= || kmap!= ))
 
@@ -138,9 +138,8 @@ Where:
 
   ###### Examples:
     `!lg * x=avg(turn)` shows average turn count of all games
-  
-    `!lg * x=avg(dur),max(turn)` shows average duration and the max
-                                 turn count.
+
+    `!lg * x=avg(dur),max(turn)` shows average duration and the max turn count.
 
   You cannot mix `x=field` and `x=aggregate(field)` in the same listgame
   query, i.e. you can use either simple fields or aggregates, but not
@@ -189,9 +188,9 @@ Where:
 
   For instance:
     `!lg * win min=dur` finds the fastest win by real time spent.
-    
+
     `!lg * win max=turn` finds the slowest win by turns used.
-    
+
     `!lg * win min=start` finds the winning game with the earliest start
                           time, and so on.
 
@@ -208,7 +207,7 @@ Where:
   * `fmt/format`:
          For grouped (`s=foo`) queries, the display format of the
          innermost group.
-         
+
          The default fmt is `"${n_x}${.} ${%} [${n_ratio};${x}]"`, where
          `${n_x}` produces the `"45x "` prefix in groups such as `45x HEFE`,
          `${.}` displays the actual group value, `${%}` displays the percentage
@@ -227,19 +226,19 @@ Where:
          For ungrouped queries, this is the display format for the
          game itself. You may use any of the game fields (`$name`,
          `$turn`, `$sc`), `$x` to display `x=foo` values, and so on.
-         
+
   * `pfmt`: For nested (`s=foo,bar`) queries, the display format of non-inner
           groups. Defaults to `${n_x}${.} ${%} (${child})`, with `${child}`
           being replaced by a comma-separated list of inner-group strings.
   * `stub`: Displayed when no results match the query condition.
   * `title`: Displayed as a prefix to grouped and aggregate queries. For
            instance:
-           
+
            !lg * win s=name title:"Winners"
            => Winners: 392x ...
-               
+
   * `join`: The string used to join individual groups, defaulting to ", "
-  
+
 - `<option>`
   Some options modify the behaviour of !lg:
   * `-log`  Get a URL to the game morgue instead of displaying the game details.
@@ -249,7 +248,8 @@ Where:
              "[Graphs](#graphs)" section.
   * `-ttyrec` Get URLs to the game's ttyrecs.
   * `-random` Return a random game matching the filter conditions.
-  
+  * `-count:N` For non-grouped, non-aggregate queries, request N games instead of 1. `-count:N` sets `fmt:'$name L$xl $char ($src)$(and $x " [$x]")'` unless `fmt:` is explicitly specified.
+
   These options are not applicable to summary queries (queries using s=foo),
   with the exception of `-graph`, which is *only* applicable to summary queries.
 
@@ -263,7 +263,7 @@ Where:
       !lg * win
 
   Listgame will show *one* game matching the query as:
-  
+
       [N]. X the Y ...  escaped with the Orb ...
 
   Where [N] is the number of games that matched the query. The game
@@ -299,9 +299,9 @@ Ratio Queries
 In this case, *two* queries are executed:
 
     !lg * <expressions-A> s=<something>
-    
+
   and
-  
+
     !lg * <expressions-B> <expressions-A> s=something
 
 i.e. a broad query is run first (expressions-A), and then narrowed
@@ -341,7 +341,7 @@ the *last* thing on the !lg line.
 
 `!lg * s=name / win o=% ?: N>10` (show players by win rate, excluding
                                  players with <= 10 *winning games*.)
-                                    
+
 Use `%>0` or `%=0` to select groups where the *percentage* is nonzero or 0.
 
 Use `N>0` or `N=0` to select only groups where the numerator is >0 or =0.
@@ -349,7 +349,7 @@ The numerator is the count from the more *specific* query.
 
 Use `den.N` if you want to filter by denominator instead of numerator.
 The denominator is the count from the more *general* query.
-                           
+
 !lm
 ===
 Mnemonic: lm = Last Milestone or List Milestone
@@ -364,9 +364,9 @@ same as !lg, with a few nuances:
   belonging to a completed game matching that filter condition.
 
   For instance:
-  
+
   `!lm * rune win` finds the most recent rune milestone from a winning game.
-  
+
   `!lm * rune killer=centaur` finds the most recent rune milestone from
                               a game where the character died to a centaur.
 
@@ -388,11 +388,11 @@ same as !lg, with a few nuances:
         milestone.
   `-random` returns a random milestone matching the filters.
   `-game` gets the game correponding to the chosen milestone.
-  
+
   ###### Example:
     `!lm * rune !win -game` finds the non-winning game corresponding to
                             the most recent milestone.
-                                
+
     You may combine `-game` with the usual `-log`, `-tv`, and `-ttyrec`
     options.
 
@@ -412,7 +412,7 @@ same as !lg, with a few nuances:
   Example: `!lm * rune=barnacled` = `!lm * type=rune noun=barnacled`
            `!lm * god.worship=Lugonu` = `!lm * type=god.worship noun=Lugonu`
 
-           
+
 !won
 ====
 
@@ -456,7 +456,7 @@ Listgame keywords may be one of:
    both species and class abbreviations will be rejected. You may
    disambiguate ambiguous species abbreviations using a -- placeholder
    for the class (eg: "Hu--" => Human)
-   
+
 2. Class abbreviations such as 'He', 'Cr', etc. For any class
    abbreviation XX used as a keyword, the !lg query is restricted as
    cls=XX.
@@ -507,7 +507,7 @@ Listgame keywords may be one of:
 
    Recognisable god name prefixes/abbreviations such as `ely`, `nem`,
    `tso`, `kik`, `jiy`.
-   
+
 8. Game versions:
    - `X.Y` where X and Y are numbers finds games of versions X.Y, including
      minor versions (X.Y.0, X.Y.1, etc.)
@@ -567,7 +567,7 @@ Listgame keywords may be one of:
     ###### Examples:
 
     `!lg * xom|nemelex` (games worshipping Xom or Nemelex)
-    
+
     `!lg * alpha|0.11`  (alpha versions or any cv=0.11)
 
 17. A negated parenthesized group of keywords separated by | to indicate
@@ -992,7 +992,7 @@ so for instance:
 
     god=nemelex => god='Nemelex Xobeh'
     god=oka     => god=Okawaru
- 
+
 
 ### killermap/map:
 
@@ -1188,7 +1188,7 @@ You may also define new keywords for common listgame filters:
     !kw meatsprint sprint map=meatsprint
 
 !kw accepts -ls and -rm switches to list and delete entries.
-  
+
 
 Nick Aliases
 ============
@@ -1262,7 +1262,7 @@ with a name=@foo expression:
 You can delete a nick mapping using:
 
     !nick -rm <ircnick>
-    
+
 or remove one server character name from a mapping with:
 
     !nick -rm nick <servercharactername>
@@ -1285,23 +1285,23 @@ TV options
 
 `-tv:new`            requests a new TV channel (automatically named) instead of
                      FooTV
-                     
+
 `-tv:channel=<name>` requests a specifically named TV channel instead of FooTV
 
 `-tv:<N`             starts playback N times farther from the end. -tv normally
                      starts playback a little way before the end of game, or
                      a little way before the milestone (when used with !lm).
-                     
+
                      If you'd like to start twice as far back, you can
                      use -tv:<2 or -tv:<N in general. N can be <1
                      (-tv:<0 or -tv:<0.5 are both valid).
-                     
+
 `-tv:>N`             ends playback at Nx the normal time after the milestone.
                      This is only relevant when used with !lm
-                     
+
 `-tv:>$`             continues playback to the end of the ttyrec (note: not end
                      of game)
-                     
+
 `-tv:>>`             continues playback to the (known) end of game. Does nothing
                      when using !lg. If using !lm, and the milestone has a game
                      associated with it (i.e. the game is completed), playback
@@ -1309,22 +1309,22 @@ TV options
                      the milestone belongs to an incomplete game, FooTV will
                      play the game up to the last timestamp recorded in the
                      game's .ts file.
-                     
+
 `-tv:T[turncount]`   Start playback before the given turncount (if not divisible
                      by 100, rounds up to the next highest turn. For milestones,
                      this is the same as >T[turncount], i.e. this is the end of
                      playback
-                     
+
 `-tv:>T[turncount]`  End playback near the given turncount (rounded up to
                      nearest 100)
-                     
+
 `-tv:<T[turncount]`  Start playback near the given turncount (rounded down to
                      nearest 100). `<T0` starts from the beginning of the game.
-                     
+
 `-tv:T[+-][delta]`   Playback to the turn count of the milestone (or end
                      of game) + the delta. i.e. `T+3000` => turn count of
                      the milestone + 3000 turns.
-                     
+
 `-tv:x[N]`           Change playback speed. For instance, `-tv:x5` plays back
                      the game at 5x normal speed. N may be in the range [0.1,50]
 
@@ -1386,7 +1386,7 @@ axis value. For instance, to see the median intelligence of different winning
 characters by god:
 
     !lg * win s=god x=median(int) o=-. -graph
- 
+
 Multi-series graphs can be produced using a double-grouping or
 multiple x=foo terms:
 
@@ -1395,7 +1395,7 @@ multiple x=foo terms:
 Graphs of median stats in wins by god:
 
     !lg * win s=god x=median(int),median(str),median(dex) -graph
-  
+
 
 ###### Graph types:
  - Column (default)
@@ -1520,35 +1520,35 @@ Examples
 
 `!lg * xl>20 min=turn`              Fastest win (turncount) for characters with
                                     XL>20.
-                                    
+
 `!lm * rune s=god`                  Summary of gods worshipped at the time of
                                     finding runes.
-                                    
+
 `!lg * s=ktyp`                      Show all the different types of death
 
 `!lg * s=ckiller`                   Show all the different monsters/types of death
 
 `!lg qwqw D:10 -log`                Get the character dump for qwqw's last game
                                   that ended on D:10
-                                  
+
 `!lg @78291 Zot 1 -log`             Get the character dump for 78291's first
                                   Zot death.
-                                  
+
 `!lm * orb min=turn -tv`            Watch the fastest Orb grab (turn count) on
                                   FooTV.
-                                  
+
 `!lm * rune=golden min=xl -tv`      Watch the lowest-experience character to
                                   fetch the golden rune doing their rune grab
                                   on FooTV.
-                                  
+
 `!lm * br.enter=Tomb -tv:<0:>20`    Watch the last character to reach Tomb:3,
                                   but start playback as the character descends
                                   the stairs and play 20 times more of the
                                   ttyrec than FooTV normally would.
-                                  
+
 `!lm * rune=obsidian lg:place=Coc`  Last obsidian-rune (Geh) milestone for a game
                                   that ended in Cocytus.
-                                  
+
 `!lg * !boring s=day(end) -graph`   Graph games by date completed.
 
 ## API
