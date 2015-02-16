@@ -399,11 +399,6 @@ module Sql
       if with_sorts && !with_sorts.empty?
         @query << " " unless @query.empty?
         @query << "ORDER BY " << with_sorts.first.to_sql
-
-        unless ast.primary_sort.unique_valued?
-          @query << ", " <<
-                 Query::Sort.new(resolve_field('id'), 'ASC').to_sql
-        end
       end
       @query
     end
