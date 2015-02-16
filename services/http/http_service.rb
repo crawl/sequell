@@ -23,6 +23,11 @@ rescue
   { err: $!.to_s }.to_json
 end
 
+not_found do
+  status 404
+  'Not Found'
+end
+
 get '/game' do
   Services::RequestThrottle.throttle(CONCURRENT_LG_MAX, self) {
     reporting_errors {
