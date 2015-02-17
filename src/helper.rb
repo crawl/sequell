@@ -321,7 +321,11 @@ def find_game_ttyrecs(game)
   class << ttyrecs
     attr_accessor :game
     def to_s
-      ttyrec_list_string(game, self)
+      if empty?
+        "Can't find ttyrec"
+      else
+        ttyrec_list_string(game, self)
+      end
     end
   end
   ttyrecs.game = game

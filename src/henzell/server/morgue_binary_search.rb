@@ -52,23 +52,23 @@ module Henzell
 
     private
       def binary_search(morgues, name)
-        size = arr.size
+        size = morgues.size
         if size == 1
-          return what < arr[0] ? arr[0] : nil
+          return what < morgues[0] ? morgues[0] : nil
         end
         s = 0
         e = size
         while e - s > 1
           pivot = (s + e) / 2
-          if arr[pivot] == what
-            return arr[pivot]
-          elsif arr[pivot] < what
+          if morgues[pivot] == what
+            return morgues[pivot]
+          elsif morgues[pivot] < what
             s = pivot
           else
             e = pivot
           end
         end
-        e < size ? arr[e] : nil
+        e < size ? morgues[e] : nil
       end
     end
   end
