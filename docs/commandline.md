@@ -483,10 +483,10 @@ Unknown functions will be ignored:
      Takes a string query in the form `"<term>[<num>]"` and returns
      the definition. Otherwise identical in behavior to `ldb`.
 
-   - `$(ldb-similar-terms "term" [<edit-distance>])`
+   - `$(ldb-similar-terms "term")`
 
-     Returns a list of terms most similar to `term`, within the given
-     Levenshtein distance (defaults to 2). This is not an exhaustive
+     Returns a list of terms most similar to `term`, within an edit
+     distance (Levenshtein-Damerau) of 2. This is not an exhaustive
      list of terms within the edit distance, but the set of terms at
      the smallest possible edit distance from the given term.
 
