@@ -23,11 +23,6 @@ rescue
   { err: $!.to_s }.to_json
 end
 
-not_found do
-  status 404
-  'Not Found'
-end
-
 get '/game' do
   Services::RequestThrottle.throttle(CONCURRENT_LG_MAX, self) {
     reporting_errors {
@@ -62,11 +57,16 @@ get '/ldb' do
       end
     rescue Services::LearnDB::NotFound => e
       status 404
-      return {err: e.to_s}.to_json
+      body({err: e.to_s}.to_json)
     rescue
       status 500
       STDERR.puts($!.to_s + ": " + $!.backtrace.join("\n"))
-      return {err: $!.to_s}.to_json
+      body({err: $!.to_s}.to_json)
     end
   }
+end
+
+error Sinatra::NotFound do
+  status 404
+  'Not Found'
 end
