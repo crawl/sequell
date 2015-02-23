@@ -120,8 +120,8 @@ sources:
   - name: ckr
     base: http://kr.dobrazupa.org
     logs:
-      - www/{trunk,0.15,0.13}/{logfile,milestones}*
-      - www/0.14/{logfile,milestone}*
+      - www/{trunk,0.15,0.13}/{logfile,milestones}
+      - www/0.14/{logfile,milestone}
     morgues:
       - ['ckr.*-(?:svn|git)', 'http://kr.dobrazupa.org/morgue/trunk']
       - ['ckr.*-(\d+[.]\d+)$', 'http://kr.dobrazupa.org/morgue/$1']
