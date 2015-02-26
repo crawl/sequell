@@ -67,6 +67,13 @@ sub said {
   return undef;
 }
 
+sub help {
+  my ($self, $m) = @_;
+  print "help: ", Dumper($m), "\n" if $ENV{DEBUG_HENZELL};
+  $self->_each_service_call('event_said', $self->_message_metadata($m));
+  return undef;
+}
+
 sub tick {
   my $self = shift;
   $self->_each_service_call('event_tick');
