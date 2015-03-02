@@ -40,6 +40,7 @@ $ rm dat/user_commands.db
 !lg * dur<1
 !lg * max=cv x=cv ::~ cv=0.12-a
 
+!lm Kellhus br.enter=tomb -game ::~ Kellhus the Farming Archmage.*slain
 !lm elliptic 1 -log
 
 !lg * win s=name -json ::~ \["hyperbolic",82.*"78291",61

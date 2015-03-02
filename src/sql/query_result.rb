@@ -8,6 +8,10 @@ module Sql
       self.new(nil, nil, nil, query)
     end
 
+    def self.game(game_hash, result)
+      self.new(nil, nil, game_hash, result.query)
+    end
+
     def initialize(index, count, result, query)
       @index = index
       @count = count || 0
@@ -56,7 +60,12 @@ module Sql
         self.game_key && sql_game_by_key(self.game_key, ast.extra)
     end
 
+    def unindexed?
+      index.nil?
+    end
+
     def qualified_index
+      return game_key if unindexed?
       if index < count
         "#{index}/#{count}"
       else
@@ -107,6 +116,7 @@ module Sql
 
   private
     def row_fieldmap
+      return @result if @result.is_a?(Hash)
       return nil unless @result
       rowmap = @query.row_to_fieldmap(@result)
       rowmap.merge(

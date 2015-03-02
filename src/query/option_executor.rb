@@ -93,7 +93,7 @@ module Query
             tv: TV.request_game_verbosely(
               first.game_key, milestone_game, q.nick, option(:tv)))
         else
-          report_game_with(first)
+          report_game_with(Sql::QueryResult.game(milestone_game, first))
         end
       elsif option(:ttyrec)
         report_game_with(first, ttyrecs: execute_ttyrec(first))
