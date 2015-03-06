@@ -165,6 +165,7 @@ sources:
     base: http://crawl.xtahua.com/crawl/meta
     logs:
       - '{git,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
+      - '{0.16}/{logfile,milestones}{,-sprint}*'
     morgues:
       - http://crawl.xtahua.com/crawl/morgue
     ttyrecs:
