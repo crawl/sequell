@@ -84,7 +84,7 @@ module Query
     end
 
     def self.error_place(cause)
-      ([cause.pos] + (cause.children || []).map { |child|
+      ([cause.pos.bytepos] + (cause.children || []).map { |child|
         error_place(child)
       }).max
     end
