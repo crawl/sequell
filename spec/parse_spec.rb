@@ -79,8 +79,8 @@ describe Grammar::Query do
   end
 
   it 'should recognize nicks' do
-    nick(q.parse('!lg *')).should == '*'
-    nick(q.parse('!lg 22')).should == '22'
-    nick(q.parse('!lg |amethyst')).should == '|amethyst'
+    expect(nick(q.parse('!lg *'))).to eq('*')
+    expect(nick(q.parse('!lg 22'))).to eq('22')
+    expect(nick(q.parse('!lg |amethyst'))).to eq('|amethyst')
   end
 end

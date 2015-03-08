@@ -146,9 +146,9 @@ describe 'LearnDB functions' do
     end
 
     it 'will report if terms are full redirects' do
-      expect(e('$(ldb-redirect-term? LINK)')).to be_true
-      expect(e('$(ldb-redirect-term? recur-a)')).to be_true
-      expect(e('$(ldb-redirect-term? non-redir)')).to be_false
+      expect(e('$(ldb-redirect-term? LINK)')).to be_truthy
+      expect(e('$(ldb-redirect-term? recur-a)')).to be_truthy
+      expect(e('$(ldb-redirect-term? non-redir)')).to be_falsy
     end
 
     it 'will lookup similar terms iwth ldb-similar-terms' do

@@ -13,8 +13,8 @@ describe Nick::Entry do
       expect(nick.listgame_conditions).to be_nil
       expect(nick.expansions).to eql(['cow'])
       expect(nick.raw_expansions).to eql([])
-      expect(nick.stub?).to be_true
-      expect(nick.empty?).to be_true
+      expect(nick.stub?).to be_truthy
+      expect(nick.empty?).to be_truthy
     end
 
     it 'will parse nick mappings with slashes' do
@@ -29,8 +29,8 @@ describe Nick::Entry do
       expect(nick.listgame_conditions).to be_nil
       expect(nick.expansions).to eql(['foo', 'bar', 'cow'])
       expect(nick.raw_expansions).to eql(nick.expansions)
-      expect(nick.stub?).to be_false
-      expect(nick.empty?).to be_false
+      expect(nick.stub?).to be_falsy
+      expect(nick.empty?).to be_falsy
     end
 
     it 'will parse nick mappings with expansions and a condition' do
@@ -39,8 +39,8 @@ describe Nick::Entry do
       expect(nick.listgame_conditions).to eql('win')
       expect(nick.expansions).to eql(['foo', 'bar'])
       expect(nick.raw_expansions).to eql(nick.expansions)
-      expect(nick.stub?).to be_false
-      expect(nick.empty?).to be_false
+      expect(nick.stub?).to be_falsy
+      expect(nick.empty?).to be_falsy
     end
 
     it 'will parse nick mappings with expansions and a condition' do
@@ -49,8 +49,8 @@ describe Nick::Entry do
       expect(nick.listgame_conditions).to eql('win god=Xom')
       expect(nick.expansions).to eql(['bar'])
       expect(nick.raw_expansions).to eql(nick.expansions)
-      expect(nick.stub?).to be_false
-      expect(nick.empty?).to be_false
+      expect(nick.stub?).to be_falsy
+      expect(nick.empty?).to be_falsy
     end
 
     it 'will parse nick mappings with just a condition' do
@@ -59,8 +59,8 @@ describe Nick::Entry do
       expect(nick.listgame_conditions).to eql('win')
       expect(nick.expansions).to eql([])
       expect(nick.raw_expansions).to eql([])
-      expect(nick.stub?).to be_false
-      expect(nick.empty?).to be_false
+      expect(nick.stub?).to be_falsy
+      expect(nick.empty?).to be_falsy
     end
 
     it 'will parse nick mappings with an empty condition' do
@@ -69,8 +69,8 @@ describe Nick::Entry do
       expect(nick.listgame_conditions).to eql('')
       expect(nick.expansions).to eql(['cow'])
       expect(nick.raw_expansions).to eql([])
-      expect(nick.stub?).to be_true
-      expect(nick.empty?).to be_false
+      expect(nick.stub?).to be_truthy
+      expect(nick.empty?).to be_falsy
     end
   end
 end

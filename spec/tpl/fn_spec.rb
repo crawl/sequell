@@ -34,10 +34,10 @@ describe "Template functions" do
 
   context 'not' do
     it 'will boolean-negate its argument' do
-      expect(e('$(not 0)')).to be_true
-      expect(e('$(not 1)')).to be_false
-      expect(e('$(not (void))')).to be_true
-      expect(e('$(not (list))')).to be_true
+      expect(e('$(not 0)')).to be_truthy
+      expect(e('$(not 1)')).to be_falsy
+      expect(e('$(not (void))')).to be_truthy
+      expect(e('$(not (list))')).to be_truthy
     end
   end
 

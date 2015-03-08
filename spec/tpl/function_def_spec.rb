@@ -5,6 +5,6 @@ describe Tpl::FunctionDef do
   subject { Tpl::FunctionDef }
 
   it 'will find global functions by name' do
-    subject.global_function_value('+').should be_an_instance_of(Tpl::FunctionValue)
+    expect(subject.global_function_value('+')).to be_instance_of(Tpl::FunctionValue)
   end
 end

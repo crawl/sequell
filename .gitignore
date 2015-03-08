@@ -31,7 +31,6 @@ nicks-test.map
 *.rbc
 henzell.rc
 password.txt
-Gemfile.lock
 *.el
 /*.sql
 *.json
@@ -42,7 +41,6 @@ henzell-todo.txt
 crawl-repository
 banned_words.txt
 dirserv.queue.log
-*.lock
 henzell.out
 henzell.out.*
 .rvmrc.*
@@ -55,3 +53,4 @@ www/*.html
 bin/parallelhttpfetch
 pkg
 src/github.com
+.*.lock

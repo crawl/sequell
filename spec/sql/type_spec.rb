@@ -11,7 +11,7 @@ describe Sql::Type do
   it 'will categorize I and F as numeric' do
     expect(t('I').category).to eq('F')
     expect(t('F').category).to eq('F')
-    expect(t('I').numeric?).to be_true
-    expect(t('F').numeric?).to be_true
+    expect(t('I').numeric?).to be_truthy
+    expect(t('F').numeric?).to be_truthy
   end
 end
