@@ -140,11 +140,13 @@ sources:
       - cbo
     base: http://crawl.berotato.org/crawl
     logs:
+      - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}*
+      - meta/{0.16}/{logfile,milestones}{,-sprint}*
       - meta/nostalgia/{logfile,milestones}*
       - meta/evoker-god/{logfile,milestones}*: evoker-god
       - meta/bearkin/{logfile,milestones}*: bearkin
       - meta/shoals-lite/{logfile,milestones}*: shoals-lite
-      - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}*
+      - meta/imp/{logfile,milestones}*: imp
       - meta/new_nemelex/{logfile,milestones}: new-nemelex
       - meta/gods/{logfile,milestones}*: gods
       - meta/faithful/{logfile,milestones}*: faithful
