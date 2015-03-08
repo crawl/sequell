@@ -3,13 +3,14 @@
 from datetime import datetime, timedelta
 import time
 import helper
+import socket
 
 TOURNEY = helper.default_tourney()
 TOURNEY_BEGIN = TOURNEY.start_date()
 TOURNEY_END   = TOURNEY.end_date()
 TOURNEY_NAME = '%d %s tournament' % (TOURNEY_BEGIN.year, TOURNEY.game_version())
 
-helper.help('Shows the UTC time on crawl.akrasiac.org.')
+helper.help('Shows the UTC time on %s.' % socket.getfqdn())
 
 def pretty_delta(delta):
   seconds = delta.seconds
