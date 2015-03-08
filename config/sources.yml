@@ -29,6 +29,7 @@ sources:
       - '{logfile,milestones}09'
       - '{logfile,milestones}10*'
       - '{logfile,milestones}{11,12,13,14,15,-git}{,-sprint,-zotdef}*'
+      - '{logfile,milestones}{16}{,-sprint}*'
       - '{logfile,milestones}-lorcs': lorcs
 
     # Regex -> location; player name is automatically appended.
