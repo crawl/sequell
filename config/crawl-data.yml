@@ -511,6 +511,7 @@ prefix-field-fixups:
     mon: mon
     beam: beam
     lava: lava
+    wizmode: wizmode
 
 # cdist and count are both count distinct
 aggregate-functions:
