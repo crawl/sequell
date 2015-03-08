@@ -65,6 +65,8 @@ sources:
       - cßo
     base: http://dobrazupa.org
     logs:
+      - meta/{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*
+      - meta/{0.16}/{logfile,milestones}{,-sprint}*
       - meta/chunkless/{logfile,milestones}*: chunkless
       - meta/iashol/{logfile,milestones}*: iashol
       - meta/new_nemelex/{logfile,milestones}: new-nemelex
@@ -80,7 +82,6 @@ sources:
       - meta/smithgod_rebased/{logfile,milestones}*: smithgod_rebased
       - meta/ranged_combat/{logfile,milestones}*: rc
       - meta/nostalgia/{logfile,milestones}*
-      - meta/{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*
     morgues:
       - http://dobrazupa.org/morgue
     ttyrecs:
