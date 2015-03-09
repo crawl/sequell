@@ -135,7 +135,8 @@ sources:
     logs:
       - '{0.13,0.14,0.15,trunk}/{logfile,milestones}*'
     morgues:
-      - http://webzook.net:82/morgue
+      - ['cwz.*-(?:git)', 'http://webzook.net:82/morgue/trunk']
+      - ['cwz.*-(\d+[.]\d+)$', 'http://webzook.net:82/morgue/$1']
 
   - name: cbro
     aliases:

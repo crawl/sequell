@@ -561,7 +561,7 @@ value-functions:
     types:
       - type: []
         return: D
-    expr: "current_timestamp at time zone 'utc'"
+    expr: "(current_timestamp at time zone 'utc')"
   int:
     type: '*'
     return: 'I'
