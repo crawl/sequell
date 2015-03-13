@@ -114,7 +114,7 @@ sources:
       - cln
     base: http://crawl.lantea.net/crawl
     logs:
-      - meta/{0.16}/{logfile,milestones}*
+      - meta/{0.16}/{logfile,milestones}{,-sprint}*
       - meta/{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*
     morgues:
       - http://crawl.lantea.net/crawl/morgue
