@@ -1096,7 +1096,7 @@ tournament-data:
       version: "0.15"
       time: [2014082920, 2014091420]
     '2015a':
-      version: "0.16|0.16-a"
+      version: ["0.16", "0.16-a"]
       time: [2015031320, 2015032920]
 
   sprint:
