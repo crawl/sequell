@@ -38,7 +38,10 @@ class Tournament (object):
         return self.date_from_string(self.raw_end_date())
 
     def game_version(self):
-        return self.data['version']
+        ver = self.data['version']
+        if isinstance(ver, list):
+            return ver[0]
+        return ver
 
     def date_from_string(self, raw_date_string):
         date_string = str(raw_date_string).ljust(14, '0')
