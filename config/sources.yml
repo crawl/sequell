@@ -191,7 +191,7 @@ sources:
   - name: cpo
     base: https://crawl.project357.org
     logs:
-      - dcss-{milestones,logfiles}-{trunk,0.15}*
+      - dcss-{milestones,logfiles}-{trunk,0.15,0.16}*
     morgues:
       - https://crawl.project357.org/morgue
     ttyrecs:
