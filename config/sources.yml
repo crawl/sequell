@@ -49,6 +49,7 @@ sources:
     logs:
       - '{allgames,milestones}-0.{3,4,5,6}.txt'
       - '{allgames,milestones}{,-spr}-0.7.txt'
+      - '{allgames,milestones}-0.16.txt*'
       - '{allgames,milestones}{,-spr,-zd}-0.{8,10,11,12,13,14,15}.txt*'
       - '{allgames,milestones}{,-spr,-zd}-svn.txt*'
     morgues:
