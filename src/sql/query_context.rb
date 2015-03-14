@@ -24,7 +24,7 @@ module Sql
     attr_accessor :entity_name, :name
     attr_accessor :fields, :synthetic, :defsort
     attr_accessor :table_alias
-    attr_reader   :raw_time_field
+    attr_reader   :time_field
     attr_reader   :alt
 
     def with
@@ -163,7 +163,7 @@ module Sql
       @fields = options[:fields]
       @synthetic = options[:synthetic_fields]
       @defsort = Sql::Field.field(options[:default_sort])
-      @raw_time_field = Sql::Field.field(options[:raw_time_field])
+      @time_field = Sql::Field.field(options[:time_field])
       @value_keys = options[:value_keys]
       @key_field  = Sql::Field.field(options[:key_field])
       @value_field = Sql::Field.field(options[:value_field])

@@ -64,6 +64,7 @@ module Sql
     def timestamp_value(value)
       return "#{value}0101" if value =~ /^\d{4}$/
       return "#{value}01" if value =~ /^\d{4}\d{2}$/
+      return "#$1-#$2-#$3 #$4:00:00" if value =~ /^(\d{4})(\d{2})(\d{2})(\d{2})$/
       return "#$1 #$2:#$3:#$4" if value =~ /^(\d{8})[\- ]?(\d{2})(\d{2})(\d{2})$/
       value
     end

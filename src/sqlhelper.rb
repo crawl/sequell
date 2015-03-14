@@ -69,7 +69,7 @@ CTX_LOG =
                         :fields => SQL_CONFIG.logfields,
                         :synthetic_fields => SQL_CONFIG.fakefields,
                         :default_sort => 'end',
-                        :raw_time_field => 'rend')
+                        :time_field => 'end')
 
 CTX_STONE =
   Sql::QueryContext.new(SQL_CONFIG, '!lm', 'milestone', 'milestone', CTX_LOG,
@@ -78,7 +78,7 @@ CTX_STONE =
                         :synthetic_fields => SQL_CONFIG.fakefields,
                         :default_sort => 'time',
                         :value_keys => SQL_CONFIG.milestone_types,
-                        :raw_time_field => 'rtime',
+                        :time_field => 'time',
                         :key_field => 'verb',
                         :value_field => 'noun')
 

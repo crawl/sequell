@@ -59,9 +59,7 @@ module Tourney
     ##
     # Convert a regular YYYYMMDD date into a POSIX date with 0-indexed months.
     def raw_date(date)
-      date.to_s.sub(/^(\d{4})(\d{2})(\d{2})/) { |m|
-        "#$1#{sprintf('%02d', $2.to_i - 1)}#$3"
-      }
+      date
     end
 
     def tourney_for_version(version)

@@ -206,18 +206,18 @@ module Query
           in_tourney = op.equal?
 
           clause_op = (in_tourney ? :and : :or)
-          lop = in_tourney ? '>' : '<'
-          rop = in_tourney ? '<' : '>'
+          lop = in_tourney ? '>=' : '<'
+          rop = in_tourney ? '<' : '>='
           eqop = in_tourney ? '=' : '!='
 
           tstart = tourney.tstart
           tend   = tourney.tend
 
-          time_field = context.raw_time_field
+          time_field = context.time_field
 
           return AST::Expr.new(clause_op,
-            AST::Expr.field_predicate(lop, 'rstart', tstart),
-            AST::Expr.field_predicate(rop, time_field, tend),
+            AST::Expr.field_predicate(lop, 'start', tstart.to_s),
+            AST::Expr.field_predicate(rop, time_field, tend.to_s),
             AST::Expr.new(in_tourney ? :or : :and,
               *cv.map { |cv_i|
                 AST::Expr.field_predicate(eqop, 'cv', cv_i)
