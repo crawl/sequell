@@ -4,11 +4,13 @@ use lib 'lib';
 use LearnDB;
 use JSON qw//;
 use utf8;
-use open qw/:std :utf8/;
 
 local $| = 1;
+binmode $outf;
+binmode STDIN;
 while (<STDIN>) {
   if ($_) {
+    my $input = $_;
     my $task = eval { JSON::decode_json($_) };
     unless ($@) {
       if ($task && $task->{term}) {
@@ -18,5 +20,5 @@ while (<STDIN>) {
       }
     }
   }
-  print JSON::encode_json({ error => "Malformed input" }), "\n";
+  print JSON::encode_json({ error => "Malformed input: $@" }), "\n";
 }
