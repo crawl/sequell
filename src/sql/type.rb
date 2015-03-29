@@ -198,7 +198,7 @@ module Sql
       return Sql::VersionNumber.version_numberize(raw_value) if self.version?
       return raw_value.to_f if self.real?
       return raw_value.to_i if self.integer?
-      return (raw_value || '').downcase if self.text?
+      return raw_value.to_s.downcase if self.text?
       return raw_value.to_s if self.boolean?
       raw_value
     end
