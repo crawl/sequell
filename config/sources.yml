@@ -57,7 +57,7 @@ sources:
           version_match: '0.9'
         - http://crawl.develz.org/morgues/0.9
       - ['cdo.*-svn', 'http://crawl.develz.org/morgues/trunk']
-      - ['cdo.*-(\d+[.]\d+)$', 'http://crawl.develz.org/morgues/$1']
+      - ['cdo.*-(\d+[.]\d+)', 'http://crawl.develz.org/morgues/$1']
     ttyrecs:
       - https://termcast.shalott.org/ttyrecs/crawl.develz.org/ttyrec
       - http://crawl.develz.org/ttyrecs
@@ -128,7 +128,7 @@ sources:
       - www/0.14/{logfile,milestone}
     morgues:
       - ['ckr.*/trunk', 'http://kr.dobrazupa.org/morgue/trunk']
-      - ['ckr.*/(\d+[.]\d+)$', 'http://kr.dobrazupa.org/morgue/$1']
+      - ['ckr.*/(\d+[.]\d+)', 'http://kr.dobrazupa.org/morgue/$1']
     ttyrecs:
       - http://kr.dobrazupa.org/ttyrecs
 
@@ -139,7 +139,7 @@ sources:
       - '{0.13,0.14,0.15,0.16,trunk}/{logfile,milestones}*'
     morgues:
       - ['cwz.*/trunk', 'http://webzook.net:82/morgue/trunk']
-      - ['cwz.*/(\d+[.]\d+)$', 'http://webzook.net:82/morgue/$1']
+      - ['cwz.*/(\d+[.]\d+)', 'http://webzook.net:82/morgue/$1']
 
   - name: cbro
     aliases:
