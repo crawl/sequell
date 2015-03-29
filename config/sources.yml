@@ -56,7 +56,7 @@ sources:
       - - time_gt: '20110819-1740'
           version_match: '0.9'
         - http://crawl.develz.org/morgues/0.9
-      - ['cdo.*-(?:svn|git)', 'http://crawl.develz.org/morgues/trunk']
+      - ['cdo.*-svn', 'http://crawl.develz.org/morgues/trunk']
       - ['cdo.*-(\d+[.]\d+)$', 'http://crawl.develz.org/morgues/$1']
     ttyrecs:
       - https://termcast.shalott.org/ttyrecs/crawl.develz.org/ttyrec
@@ -127,7 +127,7 @@ sources:
       - www/{trunk,0.15,0.13}/{logfile,milestones}
       - www/0.14/{logfile,milestone}
     morgues:
-      - ['ckr.*-(?:svn|git)', 'http://kr.dobrazupa.org/morgue/trunk']
+      - ['ckr.*-trunk', 'http://kr.dobrazupa.org/morgue/trunk']
       - ['ckr.*-(\d+[.]\d+)$', 'http://kr.dobrazupa.org/morgue/$1']
     ttyrecs:
       - http://kr.dobrazupa.org/ttyrecs
@@ -138,7 +138,7 @@ sources:
       - '0.16/{logfile,milestones}-old'
       - '{0.13,0.14,0.15,0.16,trunk}/{logfile,milestones}*'
     morgues:
-      - ['cwz.*-(?:git)', 'http://webzook.net:82/morgue/trunk']
+      - ['cwz.*-trunk', 'http://webzook.net:82/morgue/trunk']
       - ['cwz.*-(\d+[.]\d+)$', 'http://webzook.net:82/morgue/$1']
 
   - name: cbro
