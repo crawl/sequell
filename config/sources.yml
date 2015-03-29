@@ -135,6 +135,7 @@ sources:
   - name: cwz
     base: http://webzook.net:82
     logs:
+      - '0.16/{logfile,milestones}-old'
       - '{0.13,0.14,0.15,0.16,trunk}/{logfile,milestones}*'
     morgues:
       - ['cwz.*-(?:git)', 'http://webzook.net:82/morgue/trunk']
