@@ -920,6 +920,10 @@ field-input-transforms: &inputtransforms
       - [Translocation, Translocations]
       - [Transmutation, Transmutations]
       - [Transmigration, Transmutations]
+  explbr:
+    regexp-replace:
+      - ["(?i)^head$", ""]
+      - ["^crawl-.*", ""]
   crace:
     source: race
     regexp-replace:
