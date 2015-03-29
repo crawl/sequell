@@ -54,3 +54,4 @@ bin/parallelhttpfetch
 pkg
 src/github.com
 .*.lock
+server-xlogs/*
