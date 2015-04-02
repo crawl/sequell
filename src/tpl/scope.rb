@@ -10,6 +10,7 @@ module Tpl
   end
 
   class Scope
+    @@default_scope = nil
     def self.with_scope(scope)
       old_scope = @@default_scope
       @@default_scope = scope
