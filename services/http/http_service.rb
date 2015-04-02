@@ -23,6 +23,10 @@ rescue
   { err: $!.to_s }.to_json
 end
 
+before do
+  headers "Access-Control-Allow-Origin" => "*"
+end
+
 get '/game' do
   Services::RequestThrottle.throttle(CONCURRENT_LG_MAX, self) {
     reporting_errors {
