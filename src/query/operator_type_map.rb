@@ -30,6 +30,11 @@ module Query
       end
     end
 
+    def polymorphic_form(arguments)
+      return nil if !arguments || arguments.empty? || !polymorphic?
+      matching_typemap(arguments).polymorphic_form
+    end
+
     def result_type(arguments)
       return self.result if !arguments || arguments.empty?
       argument_type = arguments.map(&:type).reduce(&:+)
@@ -90,6 +95,7 @@ module Query
       type = mapping['argtype']
       type = [type] unless type.is_a?(Array)
       OpenStruct.new(argtype: type.map { |t| Sql::Type.type(t) },
+                     polymorphic_form: mapping['polymorphic_form'],
                      result: Sql::Type.type(mapping['result'] || '*'))
     end
   end

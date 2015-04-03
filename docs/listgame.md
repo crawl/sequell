@@ -1110,6 +1110,7 @@ grouping clauses (s=X) and extra-field info (x=X).
                        discarding everything before (and including) the
                        first '; '.
 - `size(<field>)`       For comma-separated values, counts the number of values.
+- `regexp_replace(<string>, <regexp>, <repl>)` Postgres [regexp_replace](http://www.postgresql.org/docs/9.1/static/functions-string.html)
 
 
 Expressions

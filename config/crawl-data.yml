@@ -649,6 +649,11 @@ value-functions:
     type: 'S'
     expr: "regexp_replace(%s, '^.*?; ', '')"
     summarisable: true
+  regexp_replace:
+    types:
+      - type: ['S', 'S', 'S']
+        result: 'S'
+    expr: "regexp_replace(:1, :2, :3)"
   size:
     type: 'S'
     summarisable: true

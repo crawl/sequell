@@ -158,6 +158,7 @@ E !lg * killer=crazy yiuf ::~ No keyword 'yiuf'
 
 !kw dragon => killer~~(dragon|draconian|drake|tiamat|xtahua)
 !kw recent cv>=0.11
+!lg * s=regexp_replace(name, 'Sebi', race + '!')
 !lm . abyss.enter recent s=lg:place x=cdist(gid) o=cdist(gid)
 !lg * map~~^hell_ ::~ hell_entry
 !lg * x=${2+2} ::~ 2\+2=4

@@ -20,7 +20,7 @@ module Query
       REGISTRY[name.to_s] = op
     end
 
-    attr_reader :name
+    attr_reader :name, :polymorphic_form
 
     def initialize(name, negated, sql_operator, options)
       @name = name
@@ -43,7 +43,7 @@ module Query
     end
 
     def sql_operator
-      @sql_operator || " #{@name.upcase} "
+      polymorphic_form || @sql_operator || " #{@name.upcase} "
     end
 
     def negate
@@ -72,6 +72,7 @@ module Query
     end
 
     def result_type(args)
+      @polymorphic_form = argtypes.polymorphic_form(args) || self.sql_operator
       argtypes.result_type(args)
     end
 

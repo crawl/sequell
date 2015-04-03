@@ -7,7 +7,7 @@ module Sql
     def type_match(args)
       @types.find { |t|
         t.type.size == args.size && types_match(t.type, args)
-      } or raise Sql::TypeError.new("Cannot apply to #{args}")
+      } or raise Sql::TypeError.new("Cannot apply to #{args} (want #{@types})")
     end
 
     def return_type(args)

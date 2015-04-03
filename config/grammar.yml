@@ -180,6 +180,9 @@ operators:
         result: ETD
       - argtype: I
         result: I
+      - argtype: S
+        result: S
+        polymorphic_form: '||'
     precedence: 60
 
   - op: '-'
