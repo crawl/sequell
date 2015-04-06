@@ -13,6 +13,7 @@ cd $SOURCE_DIR
 git pull
 git submodule update --init
 
+cd crawl-ref
 # ctags incantations courtesy |amethyst
 ctags -R \
     --langdef=crawlmap \
@@ -27,7 +28,7 @@ ctags -R \
     *
 
 # And compile the binary for playable:*
-cd crawl-ref/source
+cd source
 make clean && make -j5 HURRY=y
 
 if [[ -f crawl ]]; then
