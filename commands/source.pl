@@ -164,7 +164,7 @@ my ($which) = split ' ', $ARGV[2];
 $which =~ s/^!//;
 my $cmd = strip_cmdline $ARGV[2], case_sensitive => 1;
 my ($filename, $function, $start_line, $end_line, $rest) = parse_cmdline $cmd;
-error "Couldn't understand $rest" if $rest;
+$function .= $rest if $rest;
 # Paranoid filename check (sorear)
 error "Bad filename: $filename"
   unless !$filename || ($filename =~ m{^[\w/+.-]+$} && $filename !~ /[.][.]/);
