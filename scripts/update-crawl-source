@@ -21,6 +21,7 @@ ctags -R \
     --regex-crawlmap='/^ *NAME: *([^ ]*)/\1/q,map,map definition/' \
     --regex-c++='/^ *DEF_BITFIELD *\( *([a-zA-Z0-9_:]*)/\1/t/' \
     --regex-c++='/^ *\{ *\/\/ Book of (.*)/\1/t/i' \
+    --regex-c++='/^ *\{ *\/\/ (.*)/\1/t/i' \
     -I decltype+ \
     --extra=+q \
     --exclude=contrib \
