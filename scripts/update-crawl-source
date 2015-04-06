@@ -29,7 +29,6 @@ ctags -R \
 # And compile the binary for playable:*
 cd crawl-ref/source
 make clean && make -j5 HURRY=y
-rm -rf rltiles
 
 if [[ -f crawl ]]; then
     mv crawl crawl.build

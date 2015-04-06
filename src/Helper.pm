@@ -39,10 +39,10 @@ our %EXPORT_TAGS = (
     gods    => [grep /god/,   @EXPORT_OK],
 );
 
-our $source_dir = 'current';
+our $source_dir = 'current/crawl-ref';
 
 ## Set to the URL to the git browser, e.g.
-our $GIT_BROWSER_URL = 'https://github.com/crawl/crawl/blob/master/';
+our $GIT_BROWSER_URL = 'https://github.com/crawl/crawl/blob/master/crawl-ref/';
 
 sub eval_or_exit(&) {
   my $proc = shift();
