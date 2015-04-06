@@ -2,7 +2,7 @@
 
 set -e
 
-GIT_URL=git://gitorious.org/crawl/crawl.git
+GIT_URL=https://github.com/crawl/crawl.git
 SOURCE_DIR=current
 
 if [[ ! -d "$SOURCE_DIR" ]]; then

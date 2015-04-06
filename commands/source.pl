@@ -53,8 +53,8 @@ sub output {
       $prefix = "$result{n}/$result{total}. ";
     }
 
-    print $prefix . $git_browser_url . '?p=crawl.git;a=blob;f=crawl-ref/' .
-      $filename . ';hb=HEAD' . (defined $lines ? '#l' . $lines : "") .
+    print $prefix . $Helper::GIT_BROWSER_URL .
+      $filename . (defined $lines ? '#l' . $lines : "") .
 	    "\n";
 } # }}}
 
