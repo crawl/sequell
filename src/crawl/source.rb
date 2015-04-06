@@ -9,7 +9,7 @@ module Crawl
   end
 
   class Source
-    SOURCE_ROOT = 'current'
+    SOURCE_ROOT = 'current/crawl-ref'
     SOURCES_PATH = 'source'
 
     def self.crawl_executable
