@@ -1,9 +1,21 @@
 #! /bin/bash
 
-set -e
-
 GIT_URL=https://github.com/crawl/crawl.git
 SOURCE_DIR=current
+LOCK="$PWD/.crawl-fetch.lock"
+
+set -e
+
+if ! mkdir $LOCK 2>/dev/null; then
+    echo >&2 "Unable to lock $LOCK, exiting."
+    exit 1
+fi
+
+cleanup_lock() {
+    rmdir $LOCK
+}
+
+trap cleanup_lock EXIT
 
 if [[ ! -d "$SOURCE_DIR" ]]; then
     git clone $GIT_URL $SOURCE_DIR
