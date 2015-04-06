@@ -27,6 +27,7 @@ ctags -R \
     --exclude=contrib \
     --exclude=android-project \
     --exclude=saves \
+    --exclude='tiledef-*' \
     *
 
 # And compile the binary for playable:*
