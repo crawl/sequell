@@ -26,7 +26,7 @@ ctags -R \
     *
 
 # And compile the binary for playable:*
-cd source
+cd crawl-ref/source
 make clean && make -j5 HURRY=y
 
 if [[ -f crawl ]]; then
