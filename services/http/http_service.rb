@@ -14,7 +14,7 @@ require 'json'
 
 $LG_THROTTLE = Services::RequestThrottle.new(5)
 $LDB_THROTTLE = Services::RequestThrottle.new(5)
-$BUILD_DEBOUNCE = Services::Debounce.new(30000)
+$BUILD_DEBOUNCE = Services::Debounce.new(10000)
 
 set :port, SERVICE_PORT
 
