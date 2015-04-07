@@ -6,12 +6,15 @@ require 'bundler/setup'
 require 'sinatra'
 
 require 'cmd/executor'
-require 'services/request_throttle'
+require 'services/throttle'
 require 'services/learndb'
 require 'services/listgame'
+require 'services/crawl_build'
 require 'json'
 
-CONCURRENT_LG_MAX = 5
+$LG_THROTTLE = Services::RequestThrottle.new(5)
+$LDB_THROTTLE = Services::RequestThrottle.new(5)
+$BUILD_DEBOUNCE = Services::Debounce.new(30000)
 
 set :port, SERVICE_PORT
 
@@ -27,8 +30,14 @@ before do
   headers "Access-Control-Allow-Origin" => "*"
 end
 
+post '/crawl-build/' do
+  $BUILD_DEBOUNCE.debounce {
+    Services::CrawlBuild.rebuild
+  }
+end
+
 get '/game' do
-  Services::RequestThrottle.throttle(CONCURRENT_LG_MAX, self) {
+  $LG_THROTTLE.throttle(self) {
     reporting_errors {
       Services::Listgame::Query.new(CTX_LOG, params).result
     }
@@ -36,7 +45,7 @@ get '/game' do
 end
 
 get '/milestone' do
-  Services::RequestThrottle.throttle(CONCURRENT_LG_MAX, self) {
+  $LG_THROTTLE.throttle(self) {
     reporting_errors {
       Services::Listgame::Query.new(CTX_STONE, params).result
     }
@@ -52,7 +61,7 @@ get '/ldb' do
     return {err: "Bad request: must specify query with ?term=X or ?search=X"}.to_json
   end
 
-  Services::RequestThrottle.throttle(10, self) {
+  $LDB_THROTTLE.throttle(self) {
     begin
       if !search.empty?
         Services::LearnDB::Search.new(search).result_json.to_json

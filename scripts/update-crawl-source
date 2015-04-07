@@ -6,10 +6,10 @@ LOCK="$PWD/.crawl-fetch.lock"
 
 set -e
 
-if ! mkdir $LOCK 2>/dev/null; then
-    echo >&2 "Unable to lock $LOCK, exiting."
-    exit 1
-fi
+while ! mkdir $LOCK 2>/dev/null; do
+    echo >&2 "Unable to lock $LOCK, waiting..."
+    sleep 5
+done
 
 cleanup_lock() {
     rmdir $LOCK
