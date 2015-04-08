@@ -60,7 +60,7 @@ sub output {
 
 sub find_file_relative {
   my ($root, $pattern) = @_;
-  my $files = File::Next::files($root);
+  my $files = File::Next::everything($root);
   my $lcpattern = lc $pattern;
   while (my $file = $files->()) {
     my $base = File::Basename::basename($file);
@@ -181,7 +181,7 @@ if (defined $function) {
 
 if ((!%result || !$result{file}) && $filename) {
     $result{line} = $start_line;
-    if (-f "$source_dir/source/$filename") {
+    if (-e "$source_dir/source/$filename") {
       $result{file} = "source/$filename";
     } else {
       my $found = find_file_relative($source_dir, $filename)
