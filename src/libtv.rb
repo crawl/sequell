@@ -5,6 +5,7 @@ require 'helper'
 require 'sqlop/tv_view_count'
 require 'fileutils'
 require 'termcast_config'
+require 'thread'
 
 module TV
   @@tv_args = nil
@@ -53,6 +54,27 @@ module TV
     end
   end
 
+  class SyncQueue < Array
+    attr_reader :mutex, :c
+    def initialize(*args)
+      super
+      @mutex = Mutex.new
+      @c = ConditionVariable.new
+    end
+
+    def wait
+      c.wait(mutex)
+    end
+
+    def signal
+      c.signal
+    end
+
+    def synchronize(&block)
+      mutex.synchronize(&block)
+    end
+  end
+
   # Serves TV requests to FooTV instances.
   class TVServ < GServer
     def initialize(port = 21976, host = "0.0.0.0")
@@ -65,23 +87,15 @@ module TV
     end
 
     def bootstrap_client
-      queue = []
-      class << queue
-        def mutex
-          @tmutex ||= Mutex.new
-        end
-      end
-
-      # Create the mutex now.
-      queue.mutex
+      client_request_queue = SyncQueue.new
 
       @mutex.synchronize do
-        @clients << queue
+        @clients << client_request_queue
         unless @monitor
           @monitor = Thread.new { run_monitor }
         end
       end
-      queue
+      client_request_queue
     end
 
     def run_monitor
@@ -101,8 +115,9 @@ module TV
 
               clients = @mutex.synchronize { @clients }
               clients.each do |c|
-                c.mutex.synchronize do
+                c.synchronize do
                   c.push(*new_lines)
+                  c.signal
                 end
               end
             end
@@ -115,25 +130,25 @@ module TV
     end
 
     def serve(sock)
-      queue = nil
+      client_queue = nil
       begin
-        queue = bootstrap_client()
+        client_queue = bootstrap_client()
         while true
-          queue.mutex.synchronize do
-            queue.each do |q|
+          client_queue.synchronize do
+            client_queue.wait
+            client_queue.each do |q|
               sock.write(q)
               sock.flush
             end
-            queue.clear
+            client_queue.clear
           end
-          sleep 3
         end
       rescue
         puts "Ack: #$!"
       ensure
-        if queue
+        if client_queue
           @mutex.synchronize do
-            @clients.delete_if { |q| q.object_id == queue.object_id }
+            @clients.delete_if { |q| q.equal?(client_queue) }
           end
         end
       end
