@@ -22,15 +22,15 @@ Dependencies
   1. Install PostgreSQL, create a database 'sequell' and a user
      'sequell', and give the user access to the database with password
      'sequell'.
-  
+
   2. In the 'sequell' database, install the PostgreSQL citext and orafce
      extensions by running (as an admin user):
          CREATE EXTENSION citext;
          CREATE EXTENSION orafce;
-  
+
      citext is available as part of Postgres contrib; orafce is available at:
-         http://orafce.projects.postgresql.org/
-  
+         [https://github.com/orafce/orafce](https://github.com/orafce/orafce)
+
      Sequell needs the CITEXT extension for case-insensitive
      comparison and grouping and the orafce extension for the median
      aggregate function. You may choose to skip the orafce extension
@@ -40,7 +40,7 @@ Dependencies
      if you run it as a Postgres admin user:
 
      Build seqdb from the Sequell root directory:
-     
+
           $ make
 
      Then create the database:
@@ -62,7 +62,7 @@ Dependencies
      automates the process of creating the database and `sequell`
      database user and creating the extensions in the database; it
      cannot install the extensions system-wide.
-  
+
   2. Set up the database:
 
      Build Sequell's DB ops tool using `make` (this requires Go 1.3):
@@ -70,7 +70,7 @@ Dependencies
           $ make
 
      Create the database tables in the schema:
-    
+
           $ seqdb create-tables
 
      Populate the database: first fetch the server logs, then load them:
@@ -98,7 +98,7 @@ Dependencies
 
   Perl >= 5.14
 
-  
+
 Sequell wants Perl modules for IRC, YAML parsing, DB connectivity,
 etc. In addition the SQL query commands require several Ruby gems. To
 install Sequell's dependencies, use:
