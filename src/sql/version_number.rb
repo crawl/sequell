@@ -7,6 +7,7 @@ module Sql
     end
 
     def self.version_numberize(version_string)
+      return 0 if version_string.to_s.empty?
       version, qualifier = version_string.split('-', 2)
       qualifier ||= ''
 
