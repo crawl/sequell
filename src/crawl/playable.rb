@@ -1,4 +1,5 @@
 require 'crawl/source'
+require 'json'
 
 module Crawl
   class Playable
@@ -26,10 +27,10 @@ module Crawl
   private
 
     def load_playable
-      playable_things = %x{#{Source.crawl_executable} -list-combos}
-      @species, @jobs, @combos = playable_things.split("\n").map { |s|
-        s.strip.split(",")
-      }
+      playable_things = JSON.parse(%x{#{Source.crawl_executable} -playable-json})
+      @species = playable_things["species"].map { |sp| sp["name"] }
+      @jobs = playable_things["jobs"].map { |j| j["name"] }
+      @combos = playable_things["combos"]
     end
   end
 end
