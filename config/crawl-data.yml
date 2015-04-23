@@ -401,7 +401,7 @@ species:
 
 species-flavours:
   draconian:
-    - base
+    - ''
     - red
     - white
     - green

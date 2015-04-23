@@ -28,7 +28,8 @@ module Crawl
 
     def load_playable
       playable_things = JSON.parse(%x{#{Source.crawl_executable} -playable-json})
-      @species = playable_things["species"].map { |sp| sp["name"] }
+      @species = playable_things["species"].find_all { |sp| !sp["derives"] }.
+                                            map { |sp| sp["name"] }
       @jobs = playable_things["jobs"].map { |j| j["name"] }
       @combos = playable_things["combos"]
     end

@@ -153,7 +153,7 @@ sub species_flavours($) {
   my $species_flavours = $CFG->{'species-flavours'};
   if ($$species_flavours{lc $species}) {
     my @flavours = @{$$species_flavours{lc $species}};
-    return map("$_ $species", @flavours)
+    return map($_ ? "$_ $species" : $species, @flavours)
   } else {
     return $species;
   }
@@ -239,9 +239,11 @@ my %normalize_race = (
     (%canonical_race_names),
     (map { lc } (reverse %code_races)),
     (map { lc } (reverse %short_races)),
-    'draconian' => 'base draconian',
-    'base draconian' => 'base draconian'
-);
+    (map { (lc() => lc()) } keys(%short_races)),
+    'draconian' => 'draconian',
+    'base draconian' => 'draconian'
+   );
+
 # }}}
 sub genus_to_races { # {{{
     my $genus = shift;
@@ -251,7 +253,7 @@ sub normalize_race { # {{{
     my $race = shift;
     $race = lc $race;
     $race =~ s/(?:^\s*|\s*$)//g;
-    return $normalize_race{$race}
+    return $normalize_race{$race};
 } # }}}
 sub short_race { # {{{
     my $race = shift;

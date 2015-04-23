@@ -3,87 +3,37 @@ use strict;
 use warnings;
 use lib 'src';
 use Helper qw/:DEFAULT :skills :races/;
+use JSON qw//;
+use Data::Dumper;
 
 help("Looks up aptitudes for specified race/skill combination.");
 
 my %apts;
 
 # helper functions
-sub parse_apt_file { # {{{
-    my %apts;
-    my $aptfile = shift;
-    open(my $fh, '<', $aptfile) or error "Couldn't open $aptfile for reading";
-    my $race;
-    while (<$fh>) {
-        if (/^\s*APT\(\s*(\w+)\s*,\s*(\w+)\s*,\s*(-?\d+)/) {
-            my ($raw_race, $raw_aptname, $raw_aptvalue) = ($1, $2, $3);
-            $race = normalize_race($raw_race) or next;
-            my $apt = $raw_aptvalue;
-            my $skill = normalize_skill($raw_aptname);
-            $apts{$race}{$skill} = $apt;
-        }
+sub read_apts {
+  my $crawl = shift;
+  my $apt_json = qx/$crawl -playable-json/;
+  die "Cannot read apts" if $?;
+  my $apt = JSON::decode_json($apt_json);
+  my %apts;
+  for my $sp (@{$apt->{species}}) {
+    my $spname = lc($sp->{name});
+    if (!$spname) {
+      die "No normalized name for $$sp{name}\n";
     }
-    close $fh;
-    return %apts;
-} # }}}
-sub add_extra_apts { # {{{
-    my $aptref = shift;
-    my %apts = %{ $aptref };
-    my $aptfile = shift;
-    open(my $fh, '<', $aptfile) or error "Couldn't open $aptfile for reading";
-    my (@races, $genus);
-    while (<$fh>) {
-        if (/int species_exp_modifier\(/ .. /^}/) {
-            if (/(GENPC_\w+)/) {
-                @races = genus_to_races($1);
-            }
-            elsif (/(SP_\w+)/) {
-                push @races, normalize_race($1);
-            }
-            elsif (/return (-?\d+);/) {
-                for my $race (@races) {
-                    next unless $race;
-                    $apts{$race}{experience} = $1;
-                    $apts{$race}{hp} = 0;
-                    $apts{$race}{mp} = 0;
-                }
-                @races = ();
-            }
-        }
-        if (/int species_hp_modifier\(/ .. /^}/) {
-            if (/(GENPC_\w+)/) {
-                @races = genus_to_races($1);
-            }
-            if (/(SP_\w+)/) {
-                push @races, normalize_race($1);
-            }
-            elsif (/return (-?\d+);/) {
-                for my $race (@races) {
-                    next unless $race;
-                    $apts{$race}{hp} = $1;
-                }
-                @races = ();
-            }
-        }
-        if (/int species_mp_modifier\(/ .. /^}/) {
-            if (/(GENPC_\w+)/) {
-                @races = genus_to_races($1);
-            }
-            if (/(SP_\w+)/) {
-                push @races, normalize_race($1);
-            }
-            elsif (/return (-?\d+);/) {
-                for my $race (@races) {
-                    next unless $race;
-                    $apts{$race}{mp} = $1;
-                }
-                @races = ();
-            }
-        }
+    my $spapt = $sp->{apts};
+    for my $sk (keys %$spapt) {
+      $apts{$spname}{lc $sk} = $spapt->{$sk};
     }
-    close $fh;
-    return %apts;
-} # }}}
+    my $spmod = $sp->{modifiers};
+    for my $mod (keys %$spmod) {
+      my $key = $mod eq 'xp' ? 'experience' : $mod;
+      $apts{$spname}{lc $key} = $spmod->{$mod};
+    }
+  }
+  %apts
+}
 
 sub is_best_apt { # {{{
     my ($skill, $apt) = @_;
@@ -101,8 +51,8 @@ sub is_worst_apt { # {{{
     return 1;
 } # }}}
 sub format_apt { # {{{
-    my ($skill, $apt) = @_;
-    if ($apt == -99) {
+    my ($skill, $apt, $who) = @_;
+    if (!defined($apt) || $apt == -99) {
         return 'N/A';
     }
     return $apt . (is_best_apt($skill, $apt) ? "!" :
@@ -133,10 +83,10 @@ sub check_long_option { # {{{
     }
 } # }}}
 sub print_single_apt { # {{{
-    my ($race, $skill) = @_;
+  my ($race, $skill) = @_;
     print short_race($race),
           " (", code_skill($skill), ")=",
-          format_apt($skill, $apts{$race}{$skill}), "\n";
+          format_apt($skill, $apts{$race}{$skill}, $race), "\n";
 } # }}}
 sub print_race_apt { # {{{
     my ($race, $sort) = @_;
@@ -151,7 +101,7 @@ sub print_race_apt { # {{{
     }
     my @out;
     for (@keys) {
-        push @out, short_skill($_) . ': ' . format_apt($_, $race_apts{$_});
+        push @out, short_skill($_) . ': ' . format_apt($_, $race_apts{$_}, $race);
     }
     print short_race($race), ": ", join(', ', @out), "\n";
 } # }}}
@@ -169,16 +119,15 @@ sub print_skill_apt { # {{{
     }
     my @out;
     for (@keys) {
-        my $draconian = $_ =~ /draconian/ && $_ ne 'base draconian';
-        next if $draconian && $skill_apts{$_} == $skill_apts{'base draconian'};
-        push @out, short_race($_) . ': ' . format_apt($skill, $skill_apts{$_});
+        my $draconian = $_ =~ /draconian/ && $_ ne 'draconian';
+        next if $draconian && $skill_apts{$_} == $skill_apts{'draconian'};
+        push @out, short_race($_) . ': ' . format_apt($skill, $skill_apts{$_}, $draconian);
     }
     print short_skill($skill), ": ", join(', ', @out), "\n";
 } # }}}
 
 # get the aptitudes out of the source file
-%apts = parse_apt_file "$source_dir/source/aptitudes.h";
-%apts = add_extra_apts \%apts, "$source_dir/source/species.cc";
+%apts = read_apts "$source_dir/source/crawl.build";
 # get the request
 my @words = split ' ', strip_cmdline $ARGV[2];
 my @rest;

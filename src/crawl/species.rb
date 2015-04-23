@@ -35,7 +35,7 @@ module Crawl
     def self.lower_flavoured_species
       Set.new(Config['species-flavours'].map { |sp, values|
         values.map { |flavour|
-          flavour.downcase + ' ' + sp.downcase
+          (flavour.downcase + ' ' + sp.downcase).strip
         }
       }.flatten)
     end
