@@ -28,6 +28,7 @@ sub read_apts {
     }
     my $spmod = $sp->{modifiers};
     for my $mod (keys %$spmod) {
+      next if $mod eq 'stealth';
       my $key = $mod eq 'xp' ? 'experience' : $mod;
       $apts{$spname}{lc $key} = $spmod->{$mod};
     }
