@@ -856,6 +856,9 @@ when stored in the database.
 A human-readable description for the map in which the player was at
 end of game, usually empty. Example: 'Sprint II: "The Violet Keep of Menkaure"'
 
+`ntv`:
+Integer count of number of times the game has been requested for FooTV.
+
 Milestone Fields
 ================
 
