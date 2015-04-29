@@ -870,7 +870,7 @@ Fields in common with logfile:
 alpha, v, cv, name, race, crace, cls, char, xl, sk, sklev, title,
 place, br, lvl, ltyp, hp, mhp, mmhp, str, int, dex, god, dur, turn,
 urune, nrune, rstart, tiles, maxskills, status, gold, goldfound,
-goldspent, kills, ac, ev, sh, aut.
+goldspent, kills, ac, ev, sh, aut, ntv.
 
 These fields are unique to milestones:
 
