@@ -109,10 +109,10 @@ sources:
     ttyrecs:
       - http://rl.heh.fi/ttyrec
 
-  - name: clan
+  - name: cue
     aliases:
       - cln
-      - cue
+      - clan
     base: http://underhound.eu:81/crawl/meta
     logs:
       - '{0.16}/{logfile,milestones}{,-sprint}*'
