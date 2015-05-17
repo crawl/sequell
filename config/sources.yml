@@ -112,14 +112,15 @@ sources:
   - name: clan
     aliases:
       - cln
-    base: http://crawl.lantea.net/crawl
+      - cue
+    base: http://underhound.eu:81/crawl/meta
     logs:
-      - meta/{0.16}/{logfile,milestones}{,-sprint}*
-      - meta/{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*
+      - '{0.16}/{logfile,milestones}{,-sprint}*'
+      - '{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
-      - http://crawl.lantea.net/crawl/morgue
+      - http://underhound.eu:81/crawl/morgue
     ttyrecs:
-      - http://crawl.lantea.net/crawl/ttyrec
+      - http://underhound.eu:81/crawl/ttyrec
 
   - name: ckr
     base: http://kr.dobrazupa.org
