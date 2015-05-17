@@ -29,7 +29,7 @@ eval {
     print(LearnDB::Cmd::move_entry(unquote($1), undef, unquote($2)));
   }
   else {
-    print "Syntax: !learn $0 SRC[x] DST[y] or SRC[x] DST or SRC DST\n";
+    print "Syntax: !learn mv SRC[x] DST[y] or SRC[x] DST or SRC DST\n";
   }
 };
 if ($@) {
