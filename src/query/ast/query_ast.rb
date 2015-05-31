@@ -248,6 +248,11 @@ module Query
         pieces << @nick if @nick
         pieces << head.to_query_string(false)
         pieces << @summarise.to_s if summary?
+        pieces << group_order.to_s if group_order
+        pieces << extra.to_s if extra
+        pieces << options.to_s if options && !options.empty?
+        pieces << keys.to_s if keys && !keys.empty?
+        pieces << sorts[0].to_s if sorts && !sorts.empty?
         pieces << "/" << @tail.to_query_string(false) if @tail
         pieces << "?:" << @filter.to_s if @filter
         pieces.select { |x| !x.empty? }.join(' ')

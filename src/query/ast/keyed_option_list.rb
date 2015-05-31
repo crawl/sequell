@@ -39,7 +39,7 @@ module Query
       end
 
       def to_s
-        "-opt:(" + arguments.map(&:to_s).join(", ") + ")"
+        arguments.map(&:to_s).join(" ")
       end
     end
   end

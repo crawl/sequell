@@ -9,6 +9,8 @@ require 'irc_auth'
 
 require 'tpl/learndb_fn_defs'
 require 'tpl/re_fn_defs'
+require 'tpl/parser_defs'
+require 'tpl/lg_defs'
 require 'formatter/duration'
 
 module Tpl

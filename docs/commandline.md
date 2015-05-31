@@ -429,6 +429,71 @@ Functions may be used as `$(<fn> ...)`.
 
      Returns the null value.
 
+   - `$(text/cmdline <command-line>)`
+
+     Parses a command-line string into an array of words, treating single and
+     double-quoted strings as separate words.
+
+          $(elt 2 $(text/cmdline "arc bell 'this is one arg' \"so is this\""))
+          => this is one arg
+
+   - `$(lg/parse-cmd <lg-command-line>)`
+
+     Parses an !lg or !lm command-line (possibly including the !lg or !lm
+     prefix). See the [listgame manual](listgame.md) for !lg syntax. Returns an
+     AST object that can be queried further with these functions:
+
+     - `$(lg/ast-context <ast>)`
+
+       Returns "!lg" or "!lm", depending on the context of the query.
+
+     - `$(lg/ast-head <ast>)`
+
+       Returns the expressions in the first half of an !lg query (i.e. before the /, if any).
+       This includes only query filters, not sorts, extra-fields, options, etc.
+
+     - `$(lg/ast-tail <ast>)`
+
+       Returns the second half of an !lg query for ratio (/) queries, or `(void)` for simple
+       queries.
+
+     - `$(lg/ast-number <ast>)`
+
+       Returns the game number requested in the !lg query.
+
+     - `$(lg/ast-nick <ast>)`
+
+       Returns the nick the !lg query targets.
+
+     - `$(lg/ast-default-nick <ast>)`
+
+       Returns the *default* nick the query will operate against if unspecified.
+
+     - `$(lg/ast-order <ast>)`
+
+       Returns the o=X term, if any.
+
+     - `$(lg/ast-sort <ast>)`
+
+       Returns the max=X or min=X term, if any.
+
+     - `$(lg/ast-summarise <ast>)`
+
+       Returns the s=foo term, if any.
+
+     - `$(lg/ast-extra <ast>)`
+
+       Returns the x=foo,bar term if any.
+
+     - `$(lg/ast-options <ast>)`
+
+       Returns any -options (such as -tv).
+
+     - `$(lg/ast-keys <ast>)`
+
+       Returns any keyed options (such as fmt:"x"). This object can be indexed using elt.
+       For instance `$(elt fmt (lg/ast "* fmt:'x'"))` => `x`
+
    - `$(try <form> [<catch>])`
 
      Evaluates and returns the value of `<form>`. If evaluating

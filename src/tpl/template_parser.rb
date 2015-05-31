@@ -210,7 +210,7 @@ module Tpl
     }
 
     rule(:identifier) {
-      (match["a-zA-Z_0-9*"] >> match["a-zA-Z_0-9*+-"].repeat >>
+      (match["a-zA-Z_0-9*"] >> match["a-zA-Z_0-9*/+-"].repeat >>
         match["?!"].maybe |
        str(".") | str("*") | str("%")).as(:identifier)
     }
