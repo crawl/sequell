@@ -41,6 +41,13 @@ describe "Template functions" do
     end
   end
 
+  context 'range' do
+    it 'will return a range enumeration' do
+      expect(e('$(range 3 7)').to_a).to eql([3, 4, 5, 6, 7])
+      expect(e('$(length (range 3 7))')).to eql(5)
+    end
+  end
+
   context 'replace' do
     it 'will replace strings' do
       expect(e('$(replace a x yak)')).to eql('yxk')

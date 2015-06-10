@@ -345,7 +345,7 @@ module Tpl
 
   FunctionDef.define('length', 1) {
     val = self[-1]
-    if val.is_a?(Array)
+    if val.respond_to?(:size)
       val.size
     else
       val.to_s.size
