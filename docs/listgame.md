@@ -1088,11 +1088,13 @@ grouping clauses (s=X) and extra-field info (x=X).
 - `length(<text>)`       Length of a text field.
 - `now()`                Current time and date (UTC).
 - `day(<date>)`          Truncates the date to the closest prior midnight time.
+- `week(<date>)`         Truncates to midnight of the 1st day of the week
 - `month(<date>)`        Truncates to midnight of the 1st day of the month
 - `year(<date>)`         Truncates to midnight of the 1st day of the year
 - `nhour(<date>)`        Hour as a number (0-23)
 - `nmin(<date>)`         Minute as a number (0-59)
 - `ndayofmonth(<date>)`  Day of the month as a number (1-31)
+- `nweekofyear(<date>)`  Week of the year as a number (0-53)
 - `nmonth(<date>)`       Month as a number (1-12)
 - `ndayofweek(<date>)`   Day of week as a number (0-6, 0 being Sunday)
 - `log(<number>)`        Base 10 logarithm of <field>, truncated down

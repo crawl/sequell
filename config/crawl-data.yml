@@ -615,6 +615,11 @@ value-functions:
     return: 'I'
     expr: "date_part('month', %s)"
     summarisable: true
+  nweekofyear:
+    type: 'D'
+    return: 'I'
+    expr: "date_part('week', %s)"
+    summarisable: true
   ndayofweek:
     type: 'D'
     return: 'I'
@@ -626,6 +631,11 @@ value-functions:
     return: 'D'
     summarisable: true
     display-format: '%Y%m%d'
+  week:
+    type: 'D'
+    expr: "date_trunc('week', %s)"
+    summarisable: true
+    display-format: '%Y%U'
   month:
     type: 'D'
     expr: "date_trunc('month', %s)"
