@@ -9,6 +9,8 @@ use MessageDB;
 use Seen;
 use Helper;
 
+my $MAX_MESSAGE_LENGTH = 340;
+
 chomp(my @args = @ARGV);
 
 sub fail() {
@@ -31,9 +33,9 @@ if (!Seen::seen($to)) {
 
 $message = $2;
 
-if (length $message > 300)
+if (length $message > $MAX_MESSAGE_LENGTH)
 {
-  printf "Maximum message length is 300 characters, but you had %d. ",
+  printf "Maximum message length is $MAX_MESSAGE_LENGTH characters, but you had %d. ",
          length $message;
   print "Eschew verbosity, Gladys!\n";
   exit;
