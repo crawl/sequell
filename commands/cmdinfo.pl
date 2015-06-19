@@ -8,7 +8,7 @@ use lib 'src';
 use Henzell::Config qw/%CMDPATH/;
 use Helper;
 
-help("Lists available Henzell commands");
+help("Lists available commands");
 
 Henzell::Config::read();
 print(join(' ', sort keys %CMDPATH));
