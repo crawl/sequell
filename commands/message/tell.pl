@@ -33,7 +33,9 @@ $message = $2;
 
 if (length $message > 300)
 {
-  print "Maximum message length is 300 characters. Eschew verbosity, Gladys!\n";
+  printf "Maximum message length is 300 characters, but you had %d. ",
+         length $message;
+  print "Eschew verbosity, Gladys!\n";
   exit;
 }
 
