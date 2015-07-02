@@ -333,6 +333,7 @@ E !lg * ${ac + ev} > 15
 !won elliptic 10
 
 !streak elliptic
+!streak elliptic be
 
 # Game is not a Xom or a Nemelex or a 0.10 game
 !lg * !(xom|nemelex|0.10)

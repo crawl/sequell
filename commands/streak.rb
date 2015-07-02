@@ -32,8 +32,6 @@ $wins = 0
 $seen_win = false
 $last_win = false
 
-$name = nil
-
 def finish_streak(reset)
   if $streak_games > 0
     if $streak_games > $longest_streak
@@ -52,7 +50,6 @@ end
 sql_each_row_matching(query.reverse) do |row|
   game = query.row_to_fieldmap(row)
 
-  $name ||= game['name']
   $games += 1
   win = game['ktyp'] == 'winning'
 
@@ -75,8 +72,6 @@ sql_each_row_matching(query.reverse) do |row|
   $last_win = win
 end
 finish_streak(false)
-
-$name ||= default_nick
 
 def best_streaks
   $longest_streak_chars.map { |chars| chars.join(', ') }.join('; ')
@@ -101,31 +96,33 @@ def p(n, what)
 end
 
 begin
-  raise "No games for #{query.argstr}" if $games == 0
-  raise "#$name has not won in #$games games." if $wins == 0
+  desc = query.argstr
+  raise "No games for #{desc}." if $games == 0
+  raise "#{desc} has not won in #$games games." if $wins == 0
+
 
   if $wins == 1
     if $streak_games > 0
-      puts "#$name has one win (#{cstreak}) " +
+      puts "#{desc} has one win (#{cstreak}) " +
         "in #$games games, and can keep going!"
     else
-      puts "#$name has one win (#{best_streaks}) in #{p($games, "game")}, and has played #{p($between_wins, "game")} since."
+      puts "#{desc} has one win (#{best_streaks}) in #{p($games, "game")}, and has played #{p($between_wins, "game")} since."
     end
   else
     # Is there streak at all?
     if $longest_streak > 1
       # Is the longest streak the same as the current streak?
       if $longest_streak == $streak_games
-        puts "#$name has #$longest_streak consecutive wins (#{cstreak}), and can keep going!"
+        puts "#{desc} has #$longest_streak consecutive wins (#{cstreak}), and can keep going!"
       else
-        print "#$name has #$longest_streak consecutive wins (#{best_streaks})"
+        print "#{desc} has #$longest_streak consecutive wins (#{best_streaks})"
         cstreak_suffix
       end
     else
       if $streak_games > 0
-        puts "#$name has #{p($wins, "win")}, none consecutive, but has just won (#{cstreak}) and can keep going!"
+        puts "#{desc} has #{p($wins, "win")}, none consecutive, but has just won (#{cstreak}) and can keep going!"
       else
-        puts "#$name has #{p($wins, "win")}, none consecutive, with a minimum of #{p($least_between, "game")} between wins."
+        puts "#{desc} has #{p($wins, "win")}, none consecutive, with a minimum of #{p($least_between, "game")} between wins."
       end
     end
   end
