@@ -477,13 +477,6 @@ Listgame keywords may be one of:
    `playable:sp` and `playable:job` may also be used to select only
    playable species and jobs respectively.
 
-   `playable:good` selects only playable unrestricted combos.
-   `playable:bad` selects only playable restricted combos.
-
-   playable:good and playable:bad are deprecated and may not be
-   consistent with what Crawl itself recommends. They may be removed
-   at any point.
-
 5. Death types:
    - `won` / `win` / `winning`: select only winning games.
    - `quit`                   : select only quitters
