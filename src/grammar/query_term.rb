@@ -30,7 +30,12 @@ module Grammar
     }
 
     rule(:body_term) {
-      summary_term | extra_term | minmax_term | order_term | game_number | term
+      summary_term | extra_term | minmax_term | order_term | game_number | term |
+        subquery
+    }
+
+    rule(:subquery) {
+      QueryBody.new.subquery
     }
 
     rule(:game_number) {
@@ -121,7 +126,11 @@ module Grammar
     }
 
     rule(:extra_field_expr) {
-      ordered_expr(field_expr.as(:extra_term)).as(:extra_expr)
+      ordered_expr(field_expr.as(:extra_term) >> field_alias.maybe.as(:extra_alias)).as(:extra_expr)
+    }
+
+    rule(:field_alias) {
+      space? >> Atom.new.suffix_alias
     }
 
     rule(:term_field_expr) {
@@ -132,15 +141,16 @@ module Grammar
 
     rule(:term) {
       term_field_expr.as(:term_expr) >> space? >> op >> field_value.as(:value) |
+      function_expr |
       SqlExpr.new
     }
 
     rule(:field_expr) {
-      function_expr | field | SqlExpr.new
+      SqlExpr.new | function_expr | field
     }
 
     rule(:field_value_boundary) {
-      str("||") | str("))") | str("/") | str("?:")
+      str("||") | str(")") | str("/") | str("?:") | str("]")
     }
 
     rule(:field_value) {
@@ -151,11 +161,11 @@ module Grammar
 
     rule(:function_expr) {
       (function_name >> space? >> str("(") >> space? >>
-        function_arguments.maybe >> space? >> str(")")).as(:function_call)
+        function_arguments.maybe.as(:arguments) >> space? >> str(")")).as(:function_call)
     }
 
     rule(:function_arguments) {
-      SqlExpr.new.function_arguments.as(:arguments)
+      SqlExpr.new.function_arguments
     }
 
     rule(:function_name) {

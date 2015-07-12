@@ -4,7 +4,29 @@ require 'parslet'
 # Precedence: && ||, (in)equality, + -, bitwise math, * / %, **,
 module Grammar
   class SqlExpr < Parslet::Parser
-    root(:escaped_expr)
+    root(:sql_expr)
+
+    rule(:sql_expr) {
+      escaped_expr | window_function_expr
+    }
+
+    rule(:window_function_expr) {
+      (function_call >> space? >> str("::") >> space? >> partition_expr).as(:window_funcall)
+    }
+
+    rule(:partition_expr) {
+      (str("partition(") >> partition_fields.as(:partition_fields) >>
+       (space? >> str(",") >> space? >> order_term).maybe.as(:partition_order) >>
+       space? >> str(")")).as(:partition)
+    }
+
+    rule(:order_term) {
+      QueryTerm.new.order_term
+    }
+
+    rule(:partition_fields) {
+      expr >> ( space? >> str(",") >> space? >> (order_term.absent? >> expr) ).repeat
+    }
 
     rule(:escaped_expr) {
       str("${") >> space? >> expr.as(:sql_expr) >> space? >> str("}") |

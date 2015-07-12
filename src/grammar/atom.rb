@@ -9,6 +9,15 @@ module Grammar
       match["a-zA-Z0-9_.[^\x00-\x7f]".force_encoding('UTF-8')].repeat
     }
 
+    rule(:name) {
+      match["a-zA-Z_".force_encoding('UTF-8')] >>
+        match["a-zA-Z0-9_".force_encoding('UTF-8')].repeat
+    }
+
+    rule(:suffix_alias) {
+      str(":") >> space? >> name.as(:suffix_alias)
+    }
+
     rule(:quoted_string) {
       single_quoted_string | double_quoted_string
     }
@@ -66,6 +75,14 @@ module Grammar
 
     rule(:digits) {
       match["0-9"].repeat(1)
+    }
+
+    rule(:space) {
+      match["\s"].repeat(1)
+    }
+
+    rule(:space?) {
+      space.maybe
     }
   end
 end

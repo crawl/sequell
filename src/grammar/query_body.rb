@@ -15,6 +15,17 @@ module Grammar
         body_root.as(:body).maybe).as(:nick_and_body)
     }
 
+    rule(:subquery) {
+      (str("$") >> Atom.new.name.maybe.as(:context) >>
+       str("[") >> space? >> body_root.as(:body).maybe >> space? >> str("]") >>
+       suffix_alias.maybe.as(:alias)
+      ).as(:subquery)
+    }
+
+    rule(:suffix_alias) {
+      space? >> Atom.new.suffix_alias
+    }
+
     rule(:body_root) {
       body_alternation | body_expressions
     }
