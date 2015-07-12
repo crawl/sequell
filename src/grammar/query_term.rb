@@ -30,12 +30,20 @@ module Grammar
     }
 
     rule(:body_term) {
-      summary_term | extra_term | minmax_term | order_term | game_number | term |
-        subquery
+      summary_term | extra_term | minmax_term | order_term | term |
+        game_number
     }
 
     rule(:subquery) {
       QueryBody.new.subquery
+    }
+
+    rule(:exists_subquery_clause) {
+      str("!") >> exists_subquery.as(:negated) | exists_subquery
+    }
+
+    rule(:exists_subquery) {
+      (str("exists(") >> space? >> subquery >> space? >> str(")")).as(:exists_subquery)
     }
 
     rule(:game_number) {
@@ -141,12 +149,14 @@ module Grammar
 
     rule(:term) {
       term_field_expr.as(:term_expr) >> space? >> op >> field_value.as(:value) |
+      exists_subquery_clause |
+      subquery |
       function_expr |
       SqlExpr.new
     }
 
     rule(:field_expr) {
-      SqlExpr.new | function_expr | field
+      SqlExpr.new | subquery | function_expr | field
     }
 
     rule(:field_value_boundary) {

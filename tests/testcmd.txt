@@ -43,6 +43,14 @@ $ rm dat/user_commands.db
 !lg greensnark x=sc fmt:'$(nvl ${x[1]:-moo})' ::= moo
 
 !lg * turn=0 -log
+
+!lg * $lm[uniq=Boris s=gid]:m gid=m:gid max=m:count
+!lg * $[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char
+!lg * !exists($lm[br.enter=Lair])
+!lg * $lm[gid=root:gid x=count(*)]=1
+!lg * !exists($lm[])
+!lg * !exists($lm[br.enter=Lair])
+
 !lg * dur<0:00:01
 !lg * dur<1
 !lg * max=cv x=cv ::~ cv=0.12-a

@@ -64,12 +64,13 @@ describe Grammar::Query do
     '!lg * ktyp=  killer=foo',
     '!lm * rune  1',
     '!lg * abyss:*',
+    '!lg * ${lm}[uniq=Boris s=gid]:m gid=m:gid max=m:count',
     '!lg * $lm[uniq=Boris s=gid]:m gid=m:gid max=m:count',
     '!lg * $[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char',
-    '!lg * !exist($lm[br.enter=Lair])',
-    '!lg * $lm[eq(gid) x=count(*)]=1',
-    '!lg * !exist($lm[])',
-    '!lg * !exist($lm[br.enter=Lair])',
+    '!lg * !exists($lm[br.enter=Lair])',
+    '!lg * $lm[gid=root:gid x=count(*)]=1',
+    '!lg * !exists($lm[])',
+    '!lg * !exists($lm[br.enter=Lair])',
   ]
 
   QUERIES.each { |query|

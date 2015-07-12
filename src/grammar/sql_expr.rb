@@ -92,8 +92,12 @@ module Grammar
       simple_expr
     }
 
+    rule(:subquery) {
+      QueryBody.new.subquery
+    }
+
     rule(:simple_expr) {
-      parenthesized_expr | function_call | atom
+      parenthesized_expr | function_call | subquery | atom
     }
 
     rule(:atom) {

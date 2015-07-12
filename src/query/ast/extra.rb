@@ -5,11 +5,12 @@ module Query
     class Extra < Term
       include HasExpression
 
-      attr_reader :ordering
+      attr_reader :ordering, :ealias
 
-      def initialize(expr, ordering=nil)
+      def initialize(expr, ordering=nil, ealias=nil)
         self.expr = expr
         @ordering = ordering.to_s
+        @ealias = ealias
       end
 
       def dup

@@ -236,9 +236,10 @@ module Query
 
       rule(extra_expr: {
           ordering: simple(:ordering),
-          extra_term: simple(:term)
+          extra_term: simple(:term),
+          extra_alias: simple(:ealias)
         }) {
-        Extra.new(term, ordering.to_s)
+        Extra.new(term, ordering.to_s, ealias.to_s)
       }
 
       rule(extra: sequence(:extra)) { ExtraList.new(*extra) }

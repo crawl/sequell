@@ -15,8 +15,13 @@ module Grammar
         body_root.as(:body).maybe).as(:nick_and_body)
     }
 
+    def maybe_braced(expr)
+      str("{") >> expr >> str("}") |
+      expr
+    end
+
     rule(:subquery) {
-      (str("$") >> Atom.new.name.maybe.as(:context) >>
+      (str("$") >> maybe_braced(Atom.new.name.maybe.as(:context)) >>
        str("[") >> space? >> body_root.as(:body).maybe >> space? >> str("]") >>
        suffix_alias.maybe.as(:alias)
       ).as(:subquery)
