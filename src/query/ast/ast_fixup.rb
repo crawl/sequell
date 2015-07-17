@@ -11,12 +11,13 @@ module Query
 
       def initialize(ast)
         @ast = ast
+        @ast.bind_context(Sql::QueryContext.context)
         @head = ast.respond_to?(:head) ? ast.head : ast
-        @ctx = Sql::QueryContext.context
       end
 
       def result(fragment=false)
-        #debug{"AST Fixup: #{ast}"}
+        bind_subquery_contexts(ast)
+
         fix_value_fields!
         fixup_full_query! unless fragment
 
@@ -32,7 +33,77 @@ module Query
           fix_node(node)
         }
 
+        lift_joins!(ast)
+        bind_subquery_game_type(ast)
+
         ast
+      end
+
+    private
+
+      def bind_subquery_contexts(ast)
+        context = ast.context
+        ast.transform_nodes_shallow! { |node|
+          node.bind_context(context)
+          bind_subquery_contexts(node) if node.kind == :query
+          node
+        }
+      end
+
+      def bind_subquery_game_type(ast)
+        ast.join_tables.each { |jt|
+          jt.game = ast.game
+          bind_subquery_game_type(jt)
+        }
+      end
+
+      def lift_joins!(ast)
+        ast.transform_nodes_shallow! { |node|
+          if node.kind == :query && node.table_subquery?
+            n = lift_joins!(node)
+            if ast.context.table_alias?(n.subquery_alias)
+              raise StandardError.new("Subquery alias for #{n} conflicts with context.")
+            end
+            if n
+              ast.add_join_table(n)
+            end
+
+            nil
+          else
+            node
+          end
+        }
+        bind_joins!(ast)
+      end
+
+      def bind_joins!(ast)
+        ast.transform_nodes! { |node|
+          bind_join_condition(ast, node)
+        }
+      end
+
+      ##
+      # If the node is a predicate joining two tables, lift it to the special
+      # list of join_conditions.
+      def bind_join_condition(ast, node)
+        STDERR.puts("Considering node as join candidate: #{node.to_s}")
+        return node unless node.field_value_predicate? || node.field_field_predicate?
+
+        left_col = ast.resolve_table_column(node.left)
+        return node unless left_col
+        right = coerce_to_field(node.right)
+        right_col = ast.resolve_table_column(right)
+        return node unless right_col
+
+        node.left.table = left_col.table
+        right.table = right_col.table
+        node.right = right
+
+        STDERR.puts("*** Join condition found: #{node.to_s}")
+
+        ast.join_conditions << node
+
+        nil
       end
 
       def fixup_full_query!
@@ -42,7 +113,7 @@ module Query
         }
 
         if !ast.has_sorts? && ast.needs_sort?
-          ast.sorts << Query::Sort.new(@ctx.defsort)
+          ast.sorts << Query::Sort.new(ast.context.defsort)
         end
 
         if ast.sorts
@@ -73,18 +144,19 @@ module Query
       end
 
       def fix_value_fields!
+        # FIXME: this will hoist subquery fields to the top, bad news!
         values = []
         head.map_fields { |field|
           if field.value_key?
             values << field.name
-            Sql::Field.field(@ctx.value_field)
+            Sql::Field.field(field.context.value_field)
           else
             field
           end
         }
         unless values.empty?
           head << Expr.and(*values.map { |v|
-              Expr.field_predicate('=', @ctx.key_field, v)
+              Expr.field_predicate('=', head.context.key_field, v)
             })
         end
       end
@@ -175,6 +247,11 @@ module Query
 
       def ast_empty?(ast)
         ast.operator && ast.arguments.empty?
+      end
+
+      def coerce_to_field(node)
+        return node if node.kind == :field
+        Sql::Field.field(node.value)
       end
     end
   end

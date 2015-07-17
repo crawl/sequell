@@ -6,7 +6,7 @@ module Sql
       self.new(thing)
     end
 
-    attr_accessor :name, :alias
+    attr_accessor :name, :expr, :alias
 
     def initialize(name)
       @name = name
@@ -16,14 +16,19 @@ module Sql
     def dup
       copy = QueryTable.new(@name)
       copy.alias = self.alias
+      copy.expr = self.expr.dup if self.expr
       copy
     end
 
     def column_list
-      @column_list ||=
-        Sql::ColumnList.new(SQL_CONFIG,
-                            SQL_CONFIG["#{@name}-fields-with-type"],
-                            SQL_CONFIG.column_substitutes)
+      if self.expr
+        expr.column_list
+      else
+        @column_list ||=
+          Sql::ColumnList.new(SQL_CONFIG,
+                              SQL_CONFIG["#{@name}-fields-with-type"],
+                              SQL_CONFIG.column_substitutes)
+      end
     end
 
     def generated_columns

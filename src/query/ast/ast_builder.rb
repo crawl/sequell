@@ -242,6 +242,23 @@ module Query
         Extra.new(term, ordering.to_s, ealias.to_s)
       }
 
+      rule(suffix_alias: simple(:alias_name)) {
+        alias_name.to_s
+      }
+
+      rule(subquery: {
+             context: simple(:context),
+             body: simple(:expr),
+             alias: simple(:query_alias)
+           }) {
+        QueryAST.new(context.to_s, expr, nil, nil).as_subquery(query_alias.to_s)
+      }
+
+      rule(table_subquery: simple(:subquery)) {
+        subquery.table_subquery = true
+        subquery
+      }
+
       rule(extra: sequence(:extra)) { ExtraList.new(*extra) }
       rule(extra: simple(:extra)) { ExtraList.new(extra) }
 

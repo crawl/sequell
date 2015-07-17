@@ -10,7 +10,14 @@ module Sql
     end
 
     def self.named(name)
+      name = name.to_s
+      return nil if name.empty?
       CONTEXT_MAP[name] || self.context
+    end
+
+    def self.register(name, context)
+      CONTEXT_MAP[name] = context
+      CONTEXT_MAP[name.gsub('!', '')] = context
     end
 
     def self.context
@@ -21,11 +28,13 @@ module Sql
       @@global_context = ctx
     end
 
+    attr_reader   :config
     attr_accessor :entity_name, :name
     attr_accessor :fields, :synthetic, :defsort
     attr_accessor :table_alias
     attr_reader   :time_field
     attr_reader   :alt
+    attr_accessor :joined_tables
 
     def with
       old_context = @@global_context
@@ -37,14 +46,73 @@ module Sql
       end
     end
 
+    ##
+    # Returns a copy of this context modified to look up the
+    # joined tables in addition to the context's fields.
+    def with_joined_tables(joined_tables)
+      clone = self.dup
+      clone.joined_tables = joined_tables
+      clone
+    end
+
+    ##
+    # Returns true if the given name is a table alias for this context
+    # or its alt.
+    def table_alias?(name)
+      name == self.table_alias || (alt && name == alt.table_alias)
+    end
+
+    ##
+    # Looks up the field definition for the given field name String or
+    # Sql::Field object and returns a Sql::Column object if found, or +nil+ if
+    # there is no column corresponding to the given field.
+    #
+    # The column_def lookup will consider both fields local to this context
+    # and any auto-join fields. If you wish to ignore auto-joined fields,
+    # use local_column_def.
+    def column_def(field)
+      lookup_column(field, self, @alt)
+    end
+
+    ##
+    # Looks up the field definition for the given field name String or
+    # Sql::Field object in the local context, and returns a Sql::Column object
+    # if found, or +nil+ if there is no column corresponding to the given field.
+    #
+    # This lookup will consider only fields local to this context. If you wish
+    # to include auto-joined fields, use column_def instead.
+    def local_column_def(field)
+      field = Sql::Field.field(field)
+      (!field.prefixed? || field.has_prefix?(@table_alias)) &&
+        (@columns[field.name] || @synthetic_columns[field.name])
+    end
+
+    ##
+    # Returns a list of all local db columns in this query context. This does not
+    # include auto-joined columns.
+    #
+    # The return value is an Array of Sql::Column objects.
     def db_columns
-      @fields.columns
+      @columns.columns
     end
 
+    ##
+    # Returns +true+ if the given field name represents a real or synthetic
+    # field in this context
     def field?(field)
-      self.field_def(field) || self.value_key?(field)
+      self.column_def(field) || self.value_key?(field)
     end
 
+    ##
+    # Returns +true+ if the given name is really a known field value for a field
+    # such as a milestone type. This is used to decide when to rewrite
+    # expressions such as rune=barnacled.
+    def value_key?(field)
+      self.canonical_value_key(field)
+    end
+
+    ##
+    # Returns true if the function name is a real function in this context.
     def function?(function)
       self.function_type(function)
     end
@@ -65,26 +133,16 @@ module Sql
       @value_keys && @value_keys.canonicalize(field.to_s)
     end
 
-    def value_key?(field)
-      self.canonical_value_key(field)
-    end
-
-    def local_field_def(field)
-      field = Sql::Field.field(field)
-      (!field.prefixed? || field.has_prefix?(@table_alias)) &&
-        (@fields[field.name] || @synthetic[field.name])
-    end
-
     # Given a field, returns a field that references this field in a
     # join table, if the field is a local field that is a reference type.
     def field_ref(field)
-      local_column = self.local_field_def(field)
+      local_column = self.local_column_def(field)
       return field unless local_column && local_column.reference?
       field.reference_field
     end
 
     def table_qualified(field)
-      fdef = self.local_field_def(field)
+      fdef = self.local_column_def(field)
       if fdef
         clone = field.dup
         clone.table = Sql::QueryTable.new(self.table)
@@ -95,46 +153,14 @@ module Sql
       field
     end
 
-    def field_def(field)
-      return nil unless field
-      field = Sql::Field.field(field)
-      if field.prefixed?
-        if field.has_prefix?(@table_alias)
-          @fields[field.name] || @synthetic[field.name]
-        else
-          @alt && @alt.field_def(field)
-        end
-      else
-        @fields[field.name] || @synthetic[field.name] ||
-          (@alt && @alt.field_def(field))
-      end
-    end
-
     def table(game=GameContext.game)
       GAME_PREFIXES[game] + @table
-    end
-
-    def field_table(field)
-      return field.table if field.table
-      if self.local_field_def(field)
-        self.table
-      elsif @alt && @alt.local_field_def(field)
-        @alt.table
-      else
-        raise "Unknown field: #{field}"
-      end
     end
 
     def db_column_expr(fdef, table_set)
       table = table_set.table(self.table)
       raise "Could not resolve #{self.table} in #{table_set}" unless table
       table.field_sql(fdef)
-    end
-
-    def summarisable?(field)
-      return true if value_key?(field)
-      fdef = self.field_def(field)
-      fdef && fdef.summarisable?
     end
 
     def join_field
@@ -150,7 +176,7 @@ module Sql
     end
 
     def initialize(config, name, table, entity_name, alt_context, options)
-      CONTEXT_MAP[name] = self
+      self.class.register(name, self)
       @name = name
       @config = config
       @table = table
@@ -160,8 +186,8 @@ module Sql
 
       @noun_verb = { }
       @table_alias = options[:alias]
-      @fields = options[:fields]
-      @synthetic = options[:synthetic_fields]
+      @columns = options[:columns]
+      @synthetic_columns = options[:synthetic_columns]
       @defsort = Sql::Field.field(options[:default_sort])
       @time_field = Sql::Field.field(options[:time_field])
       @value_keys = options[:value_keys]
@@ -175,6 +201,24 @@ module Sql
 
     def to_s
       "CTX[#{@table}]"
+    end
+
+    def inspect
+      to_s
+    end
+
+  private
+
+    def lookup_column(field, *contexts)
+      return nil unless field
+      field = Sql::Field.field(field)
+      for ctx in contexts
+        if ctx
+          column = ctx.local_column_def(field)
+          return column if column
+        end
+      end
+      return nil
     end
   end
 end

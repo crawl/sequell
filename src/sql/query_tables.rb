@@ -5,37 +5,42 @@ module Sql
   # Tracks the set of tables referenced in a query with one primary table
   # and any number of additional join tables.
   class QueryTables
-    attr_reader :primary_table, :tables
+    attr_reader :primary_table, :tables, :joins
 
     def initialize(primary_table)
       @primary_table = Sql::QueryTable.table(primary_table)
-      @table_aliases = { @primary_table.alias => @primary_table }
+      @table_aliases = {  }
       @tables = [@primary_table]
       @joins = []
       @alias_index = 0
     end
 
-    def dup
-      tables = self.class.new(@primary_table.dup)
-      tables.instance_variable_set(:@joins, @joins.map { |j| j.dup })
-      tables.instance_variable_set(:@tables, @tables.map { |t| t.dup })
-      tables.instance_variable_set(:@table_aliases, @table_aliases.dup)
-      tables
+    def initialize_copy(o)
+      super
+      @joins = @joins.map(&:dup)
+      @tables = @tables.map(&:dup)
+      @table_aliases = @table_aliases.dup
     end
 
     def lookup!(table)
-      self[table.alias] or raise "Lookup failed: #{table} is not in #{self}"
+      self[table.alias] or raise("Lookup failed: #{table} is not in #{self}")
     end
 
-    def resolve!(table, force_new_alias=false)
+    def find_join(join_condition)
+      @joins.find { |j|
+        j.tables_match?(join_condition)
+      }
+    end
+
+    def register_table(table, force_new_alias=false)
       return table if !force_new_alias && self[table.alias] == table
 
       # Is this table's alias already taken? Give it a new one if so
       new_alias = table.alias
       if self[new_alias]
         new_alias = disambiguate_alias(table.alias)
+        table.alias = new_alias
       end
-      table.alias = new_alias
       register_table(table)
       @table_aliases[new_alias] = table
     end
@@ -50,17 +55,13 @@ module Sql
     end
 
     def join(join_condition)
-      unless join_clause_matches?(join_condition)
-        raise "The join condition: #{join_condition} does not match the existing tables in #{self}"
-      end
-
       if @joins.include?(join_condition)
         update_join_table_aliases(join_condition)
         return
       end
 
-      self.resolve!(join_condition.left_table)
-      self.resolve!(join_condition.right_table, :force_new_alias)
+      self.register_table(join_condition.left_table)
+      self.register_table(join_condition.right_table, :force_new_alias)
 
       @joins << join_condition
       self
@@ -69,11 +70,17 @@ module Sql
     # Returns the table name and joins, suitable for the FROM clause
     # of a query.
     def to_sql
-      sql = @primary_table.to_sql
-      for join in @joins
-        sql << " " << join.to_sql
+      sql_frags = []
+      if !@joins.empty?
+        include_left_table = true
+        for join in @joins
+          sql_frags << join.to_sql(include_left_table)
+          include_left_table = false
+        end
+      else
+        sql_frags = primary_table.to_sql
       end
-      sql
+      sql_frags.join(' ')
     end
 
     def to_s
@@ -81,9 +88,6 @@ module Sql
     end
 
   private
-    def join_clause_matches?(join)
-      known_table?(join.left_table)
-    end
 
     def register_table(table)
       @tables << table unless known_table?(table)

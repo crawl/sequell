@@ -21,6 +21,8 @@ module Sql
     attr_reader :prefix, :aliased_name, :full_name, :canonical_name
     attr_accessor :table, :sql_name
     attr_accessor :name
+    attr_writer :context
+    attr_writer   :column
 
     @@aliased_name_cache = { }
 
@@ -33,6 +35,12 @@ module Sql
       @prefix, @aliased_name = split_aliased_name(@aliased_name)
       @name = SQL_CONFIG.column_aliases[@aliased_name] || @aliased_name
       @canonical_name = @name
+    end
+
+    def initialize_copy(o)
+      super
+      @full_name = @full_name.dup
+      @name = @name.dup
     end
 
     def reference_id_only=(id_only)
@@ -54,16 +62,16 @@ module Sql
       @@aliased_name_cache[aliased_name] ||= split_prefixed_name(aliased_name)
     end
 
+    def context
+      @context || Sql::QueryContext.context
+    end
+
     def fields
       [self]
     end
 
     def kind
       :field
-    end
-
-    def context
-      Sql::QueryContext.context
     end
 
     # Returns a copy of this field that is qualified with the table of
@@ -98,7 +106,7 @@ module Sql
     end
 
     def column
-      @column ||= context.field_def(self)
+      @column ||= context.column_def(self)
     end
 
     def expr?
@@ -121,21 +129,14 @@ module Sql
       self.type.version_number?
     end
 
-    def dup
-      copy = Field.new(@full_name.dup)
-      copy.table = @table.dup if @table
-      copy.name = self.name.dup
-      copy.sql_name = @sql_name
-      copy.reference_id_only = @reference_id_only
-      copy
-    end
-
     def display_format
       nil
     end
 
+    ##
+    # Returns true if this field has been qualified and bound to a specific table.
     def qualified?
-      @table
+      !!@table
     end
 
     alias :resolved? :qualified?
@@ -209,7 +210,7 @@ module Sql
     end
 
     def prefixed_name
-      @prefix ? "#{@prefix}:#{@name}" : to_s
+      to_s
     end
 
     def to_sql
@@ -225,7 +226,7 @@ module Sql
     end
 
     def to_s
-      @name.to_s
+      @prefix ? "#{@prefix}:#{@name}" : @name.to_s
     end
 
   private

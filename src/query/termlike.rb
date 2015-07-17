@@ -3,6 +3,11 @@ require 'query/ast/ast_walker'
 module Query
   module Termlike
     attr_accessor :arguments
+    attr_accessor :context
+
+    def bind_context(context)
+      @context ||= context
+    end
 
     def next_sibling(parent)
       return nil unless parent
@@ -103,26 +108,52 @@ module Query
       arguments[1]
     end
 
+    def right=(r)
+      arguments[1] = r
+    end
+
     def single_argument?
       operator && arguments.size == 1
     end
 
+    ##
+    # Returns true if this is a function or expr of a field and a value.
     def field_value?
       arguments.size == 2 &&
         self.left.kind == :field &&
         self.right.kind == :value
     end
 
-    def field
-      self.left if self.field_value?
+    ##
+    # Returns true if this is a function or expr of two fields.
+    def field_field?
+      arguments.size == 2 &&
+        self.left.kind == :field &&
+        self.right.kind == :field
     end
 
+    ##
+    # Returns the first argument iff it is a field.
+    def field
+      self.left if self.left && self.left.kind == :field
+    end
+
+    ##
+    # Assign the first argument to the given expression.
     def field=(field)
       self.arguments[0] = field
     end
 
+    ##
+    # Returns true if this is a predicate function or expr of a field and a value
     def field_value_predicate?
       boolean? && field_value?
+    end
+
+    ##
+    # Returns true if this is a predicate function or expr of a field and a field
+    def field_field_predicate?
+      boolean? && field_field?
     end
 
     def field_equality?

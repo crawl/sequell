@@ -22,18 +22,12 @@ module Query
         block.call(node, parent)
       end
 
+      def self.map_nodes_shallow(ast, parent=nil, condition=nil, &block)
+        ASTMapper.new(ast, parent, condition, true, block).apply
+      end
+
       def self.map_nodes(ast, parent=nil, condition=nil, &block)
-        return nil if ast.nil?
-        debug{"map_nodes: #{ast}: #{ast.class}"} if debugging?
-        ast.arguments = ast.arguments.map { |arg|
-          map_nodes(arg, ast, condition, &block)
-        }.compact
-        debug{ "Post-map: #{ast}"} if debugging?
-        if !condition || condition.call(ast)
-          debug{ "Self-call: #{ast}"} if debugging?
-          return block_call(block, ast, parent)
-        end
-        ast
+        ASTMapper.new(ast, parent, condition, false, block).apply
       end
 
       def self.each_node(ast, parent=nil, condition=nil, &block)
@@ -87,6 +81,52 @@ module Query
 
       def self.map_values(ast, &block)
         map_kinds(ast, :value, &block)
+      end
+
+      def self.map_subqueries(ast, &block)
+        map_kinds(ast, :query, &block)
+      end
+    end
+
+    class ASTMapper
+      def initialize(ast, parent, condition, parent_first, block)
+        @ast = ast
+        @parent = parent
+        @condition = condition
+        @parent_first = parent_first
+        @block = block
+      end
+
+      def apply
+        map(@ast, nil)
+      end
+
+    private
+
+      def map(node, parent)
+        return nil if @ast.nil?
+        if @parent_first
+          node = map_node(node, parent)
+          map_args(node, parent) if node
+        else
+          node = map_args(node, parent)
+          map_node(node, parent) if node
+        end
+      end
+
+      def map_node(node, parent)
+        if !@condition || @condition.call(node)
+          @block.call(node, parent)
+        else
+          node
+        end
+      end
+
+      def map_args(node, parent)
+        node.arguments = node.arguments.map { |arg|
+          map(arg, node)
+        }.compact
+        node
       end
     end
   end

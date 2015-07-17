@@ -150,8 +150,8 @@ module Grammar
     rule(:term) {
       term_field_expr.as(:term_expr) >> space? >> op >> field_value.as(:value) |
       exists_subquery_clause |
-      subquery |
-      function_expr |
+      subquery.as(:table_subquery) |
+      boolean_function_expr |
       SqlExpr.new
     }
 
@@ -167,6 +167,10 @@ module Grammar
       (SqlExpr.new |
         Atom.new.quoted_string |
         (field_value_boundary.absent? >> Atom.new.safe_value).repeat.as(:field_value))
+    }
+
+    rule(:boolean_function_expr) {
+      function_expr
     }
 
     rule(:function_expr) {

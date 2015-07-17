@@ -15,13 +15,11 @@ module Sql
 
     MAX_ROW_COUNT = 1000
 
-    def initialize(ast, predicates, nick)
+    def initialize(ast)
       @ast = ast
       @ctx = @ast.context
-      @tables = QueryTables.new(@ctx.table(@ast.game))
-      @original_pred = predicates.dup
-      @pred = predicates.dup
-      @nick = nick
+      @original_query = @ast.dup
+      @nick = ast.default_nick
       @num = @ast.game_number
       self.extra = ast.extra
       @argstr = ast.description(nick)
@@ -35,15 +33,13 @@ module Sql
       @joins = false
 
       with_contexts {
-        resolve_predicate_columns(@pred)
-        @count_pred = @pred.dup
-        @summary_pred = @pred.dup
+        @ast.autojoin_lookup_columns!
+        @count_ast = @ast.dup
+        @summary_ast = @ast.dup
 
-        @count_tables = @tables.dup
-        @summary_tables = @tables.dup
-
-        resolve_sort_fields(@sorts, @tables)
-        @query_fields = resolve_query_fields
+        # Don't resolve sort fields until we've cloned the previous tables.
+        resolve_sort_fields(@sorts, @ast)
+        @query_fields = resolve_query_fields(@ast)
       }
     end
 
@@ -56,7 +52,7 @@ module Sql
     end
 
     def title
-      @ast.description(@nick, context: true, meta: true, tail: true,
+      @ast.description(ast.default_nick, context: true, meta: true, tail: true,
                        no_parens: true)
     end
 
@@ -132,18 +128,6 @@ module Sql
       end
     end
 
-    def resolve_predicate_columns(predicates, table_set=@tables)
-      Sql::ColumnResolver.resolve(@ctx, table_set, predicates)
-    end
-
-    # When predicates are updated after initial resolution, update the
-    # table sets for joins.
-    def update_predicate_columns
-      resolve_predicate_columns(@pred, @tables)
-      resolve_predicate_columns(@summary_pred, @summary_tables)
-      resolve_predicate_columns(@count_pred, @count_tables)
-    end
-
     def select_query_fields
       fields = @ctx.db_columns.map { |c| Sql::Field.field(c.name) }
       if @extra && @extra.fields
@@ -154,17 +138,17 @@ module Sql
       fields
     end
 
-    def resolve_query_fields
+    def resolve_query_fields(ast)
       if @extra
         res = @extra.fields.each { |extra|
           extra.each_field { |field|
-            resolve_field(field, @tables)
+            resolve_field(field, ast)
           }
         }
         res
       end
       self.select_query_fields.each { |field|
-        resolve_field(field, @tables)
+        resolve_field(field, ast)
       }
     end
 
@@ -189,38 +173,22 @@ module Sql
       @ast.random?
     end
 
-    def resolve_field(field, table=@tables)
+    def resolve_field(field, ast=@ast)
       with_contexts {
-        Sql::FieldResolver.resolve(@ctx, table, field)
-      }
-    end
-
-    def summarise= (s)
-      raise "WTF"
-      @summarise = s
-      resolve_summary_fields
-      @query = nil
-    end
-
-    def add_predicate(operator, pred)
-      with_contexts {
-        new_pred = Query::QueryStruct.new(operator, pred)
-        @pred << new_pred
-        @count_pred << new_pred.dup
-        @summary_pred << new_pred.dup
-        update_predicate_columns
+        Sql::FieldResolver.resolve(ast, field)
       }
     end
 
     def select(field_expressions, with_sorts=true)
-      table_context = @count_tables.dup
+      # TODO: Odd dichotomy here: @count_pred vs @pred in where clause:
+      ast = @count_pred.dup
       with_contexts {
         select_cols = field_expressions.map { |fe|
-          resolve_field(fe, table_context).to_sql
+          resolve_field(fe, ast).to_sql
         }.join(", ")
 
         @values = self.with_values(field_expressions, @values)
-        "SELECT #{select_cols} FROM #{table_context.to_sql} " +
+        "SELECT #{select_cols} FROM #{ast.to_table_list_sql} " +
            where(@pred, with_sorts && @sorts)
       }
     end
@@ -248,33 +216,33 @@ module Sql
     # When +count+ is non-zero a LIMIT clause is used for that count.
     def select_all(with_sorts=true, record_index=0, count=1)
       if record_index > 0 && count == 1
-        resolve_sort_fields(@count_sorts, @count_tables)
+        resolve_sort_fields(@count_sorts, @count_pred)
         id_subquery = self.select_id(with_sorts, record_index, count)
         id_field = Sql::Field.field('id')
-        id_sql = resolve_field(id_field, @tables).to_sql_output
+        id_sql = resolve_field(id_field, @pred).to_sql_output
         @values = self.with_values(query_fields, @values)
         @values += self.with_values(@count_sorts)
         return ("SELECT #{query_columns.join(", ")} " +
-                "FROM #{@tables.to_sql} WHERE #{id_sql} = (#{id_subquery})")
+                "FROM #{@pred.to_table_list_sql} WHERE #{id_sql} = (#{id_subquery})")
       end
 
       @values = self.with_values(query_fields, @values)
       @values += self.with_values(@sorts) if with_sorts
-      "SELECT #{query_columns.join(", ")} FROM #{@tables.to_sql} " +
+      "SELECT #{query_columns.join(", ")} FROM #{@pred.to_table_list_sql} " +
          where(@pred, with_sorts && @sorts) + " " +
          limit_clause(record_index, count)
     end
 
     def select_id(with_sorts=false, record_index=0, count=1)
       id_field = Sql::Field.field('id')
-      id_sql = resolve_field(id_field, @count_tables).to_sql
+      id_sql = resolve_field(id_field, @count_pred).to_sql
       where_clause = self.where(@count_pred, with_sorts && @count_sorts)
-      "SELECT #{id_sql} FROM #{@count_tables.to_sql} " +
+      "SELECT #{id_sql} FROM #{@count_pred.to_table_list_sql} " +
         "#{where_clause} #{limit_clause(record_index, count)}"
     end
 
     def select_count
-      "SELECT COUNT(*) FROM #{@count_tables.to_sql} " +
+      "SELECT COUNT(*) FROM #{@count_pred.to_table_list_sql} " +
         where(@count_pred, false)
     end
 
@@ -289,13 +257,13 @@ module Sql
     def resolve_summary_fields
       if summarise
         summarise.each_field { |field|
-          resolve_field(field, @summary_tables)
+          resolve_field(field, @summary_pred)
         }
       end
 
       if @summary_extra
         @summary_extra.each_field { |field|
-          resolve_field(field, @summary_tables)
+          resolve_field(field, @summary_pred)
         }
       end
     end
@@ -311,7 +279,7 @@ module Sql
 
       summary_field_text = self.summary_fields
       summary_group_text = self.summary_group
-      %{SELECT #{summary_field_text} FROM #{@summary_tables.to_sql}
+      %{SELECT #{summary_field_text} FROM #{@summary_pred.to_table_list_sql}
         #{where_clause} #{summary_group_text} #{summary_order}}
     end
 
@@ -366,7 +334,7 @@ module Sql
           raise "Extra fields (#{@summary_extra}) contain non-aggregates"
         end
         extras = @summary_extra.fields.map { |f|
-          Sql::AggregateExpression.aggregate_sql(@summary_tables, f)
+          Sql::AggregateExpression.aggregate_sql(@summary_pred, f)
         }.join(", ")
       end
       if basefields.empty? && extras.empty?

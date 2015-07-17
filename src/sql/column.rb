@@ -7,13 +7,21 @@ module Sql
   class Column
     include TypePredicates
 
-    attr_reader :decorated_name, :ordered_column_alias
+    attr_reader :decorated_name, :ordered_column_alias, :table
 
     def initialize(config, decorated_name, alias_map)
       @config = config
       @decorated_name = decorated_name
       @ordered_column_alias =
         alias_map && alias_map['ordered'] && alias_map['ordered'][self.name]
+    end
+
+    ##
+    # Binds this column to a table definition.
+    def bind(table)
+      clone = self.dup
+      clone.instance_variable_set(:@table, table)
+      clone
     end
 
     def to_s

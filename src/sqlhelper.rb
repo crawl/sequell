@@ -66,16 +66,16 @@ DB_NICKS = { }
 CTX_LOG =
   Sql::QueryContext.new(SQL_CONFIG, '!lg', 'logrecord', 'game', nil,
                         :alias => 'lg',
-                        :fields => SQL_CONFIG.logfields,
-                        :synthetic_fields => SQL_CONFIG.fakefields,
+                        :columns => SQL_CONFIG.logfields,
+                        :synthetic_columns => SQL_CONFIG.fakefields,
                         :default_sort => 'end',
                         :time_field => 'end')
 
 CTX_STONE =
   Sql::QueryContext.new(SQL_CONFIG, '!lm', 'milestone', 'milestone', CTX_LOG,
                         :alias => 'lm',
-                        :fields => SQL_CONFIG.milefields,
-                        :synthetic_fields => SQL_CONFIG.fakefields,
+                        :columns => SQL_CONFIG.milefields,
+                        :synthetic_columns => SQL_CONFIG.fakefields,
                         :default_sort => 'time',
                         :value_keys => SQL_CONFIG.milestone_types,
                         :time_field => 'time',

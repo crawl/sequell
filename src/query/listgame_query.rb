@@ -1,6 +1,6 @@
 require 'query/listgame_parser'
 require 'sql/query_list'
-require 'query/ast/ast_query_builder'
+require 'sql/crawl_query'
 
 module Query
   # Parslet grammar backed listgame query.
@@ -41,12 +41,12 @@ module Query
 
   private
     def build_primary_query
-      AST::ASTQueryBuilder.build(self.default_nick, self.ast, self.ast.head.dup)
+      Sql::CrawlQuery.new(self.ast.dup)
     end
 
     def build_secondary_query
-      AST::ASTQueryBuilder.build(self.default_nick, self.ast,
-                                 self.ast.full_tail.dup)
+      tail_ast = self.ast.tail_ast
+      Sql::CrawlQuery.new(tail_ast)
     end
 
     def build_query_list

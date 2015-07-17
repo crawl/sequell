@@ -4,15 +4,23 @@ require 'sql/field'
 
 module Sql
   class FieldResolver
-    def self.resolve(context, table_set, field)
+    def self.resolve(ast, field)
       return unless field
-      self.new(context, table_set, field).resolve
+      self.new(ast, field).resolve
     end
 
-    def initialize(context, table_set, field)
-      @context = context
-      @tables = table_set
+    attr_reader :ast
+    def initialize(ast, field)
+      @ast = ast
       @field = field.is_a?(String) ? Sql::Field.field(field) : field
+    end
+
+    def context
+      @ast.context
+    end
+
+    def tables
+      @ast.query_tables
     end
 
     def resolve
@@ -30,11 +38,11 @@ module Sql
       return field if field.qualified?
 
       column = field.column
-      raise "Unknown field: #{field}" unless column
+      raise "Unknown field: #{field} (#{field.context})" unless column
 
       # If this is not a local field, we need to join to the alt table first:
-      if !@context.local_field_def(field)
-        apply_alt_join(@context)
+      if !context.local_field_def(field)
+        apply_alt_join(context)
       end
 
       return resolve_simple_field(field) if !field.reference? || field.reference_id_only?
@@ -48,7 +56,7 @@ module Sql
       # Set up the join
       join = Sql::Join.new(qualified_field.table,
                            reference_table,
-                           qualified_field.resolve(column.fk_name))
+                           [qualified_field.resolve(column.fk_name)])
 
       # Register the join
       @tables.join(join)
@@ -65,6 +73,8 @@ module Sql
       field
     end
 
+  private
+
     def apply_alt_join(context)
       alt = context.alt
       return unless alt
@@ -74,7 +84,8 @@ module Sql
     end
 
     def resolve_simple_field(field)
-      table = Sql::QueryTable.table(@context.field_table(field))
+      col = ast.resolve_table_column(field)
+      table = col.table
       field.table = @tables.lookup!(table)
       field.sql_name = field.column.fk_name.to_s if field.reference_id_only?
       field

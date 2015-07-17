@@ -16,7 +16,7 @@ module Sql
     end
 
     def [](column_name)
-      self.column_map[column_name]
+      column_map[column_name]
     end
 
     def type(field_name)
@@ -24,11 +24,12 @@ module Sql
       field && field.type
     end
 
+  private
+
     def column_map
       @column_map ||= Hash[ @columns.map { |c| [c.name, c] } ]
     end
 
-  private
     def add_derived_columns
       all_lookup_tables.each { |table|
         table.generated_columns.each { |col|
