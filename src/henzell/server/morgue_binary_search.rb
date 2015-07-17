@@ -54,15 +54,15 @@ module Henzell
       def binary_search(morgues, what)
         size = morgues.size
         if size == 1
-          return what < morgues[0] ? morgues[0] : nil
+          return what < morgues[0].filename ? morgues[0] : nil
         end
         s = 0
         e = size
         while e - s > 1
           pivot = (s + e) / 2
-          if morgues[pivot] == what
+          if morgues[pivot].filename == what
             return morgues[pivot]
-          elsif morgues[pivot] < what
+          elsif morgues[pivot].filename < what
             s = pivot
           else
             e = pivot

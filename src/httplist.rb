@@ -18,6 +18,8 @@ module HttpList
   end
 
   class HttpFile
+    include Comparable
+    
     attr_reader :filename, :baseurl
 
     def initialize(filename, baseurl)
