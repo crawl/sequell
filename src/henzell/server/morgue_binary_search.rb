@@ -51,7 +51,7 @@ module Henzell
       end
 
     private
-      def binary_search(morgues, name)
+      def binary_search(morgues, what)
         size = morgues.size
         if size == 1
           return what < morgues[0] ? morgues[0] : nil

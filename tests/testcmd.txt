@@ -36,6 +36,7 @@ $ rm dat/user_commands.db
 !lg zap
 !nick zap () ::= Deleted zap => (quit)
 
+!lg * turn=0 -log
 !lg * dur<0:00:01
 !lg * dur<1
 !lg * max=cv x=cv ::~ cv=0.12-a
