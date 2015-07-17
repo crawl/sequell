@@ -22,7 +22,7 @@ module Query
         block.call(node, parent)
       end
 
-      def self.map_nodes_shallow(ast, parent=nil, condition=nil, &block)
+      def self.map_nodes_breadthfirst(ast, parent=nil, condition=nil, &block)
         ASTMapper.new(ast, parent, condition, true, block).apply
       end
 

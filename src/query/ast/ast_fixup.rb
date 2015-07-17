@@ -17,24 +17,26 @@ module Query
 
       def result(fragment=false)
         bind_subquery_contexts(ast)
-
-        fix_value_fields!
-        fixup_full_query! unless fragment
-
-        ast.transform_nodes! { |node|
-          collapse_negated_node(node)
-        }
-
-        ast.transform! { |node|
-          collapse_empty_nodes(node)
-        }
-
-        ast.each_node { |node|
-          fix_node(node)
-        }
-
         lift_joins!(ast)
-        bind_subquery_game_type(ast)
+
+        ast.each_query { |q|
+          fix_milestone_value_fields!(q)
+          fixup_full_query!(q)
+
+          q.transform_nodes! { |node|
+            collapse_negated_node(node)
+          }
+
+          q.transform! { |node|
+            collapse_empty_nodes(node)
+          }
+
+          q.each_node { |node|
+            fix_node(node)
+          }
+
+          bind_subquery_game_type(q)
+        }
 
         ast
       end
@@ -43,7 +45,7 @@ module Query
 
       def bind_subquery_contexts(ast)
         context = ast.context
-        ast.transform_nodes_shallow! { |node|
+        ast.transform_nodes_breadthfirst! { |node|
           node.bind_context(context)
           bind_subquery_contexts(node) if node.kind == :query
           node
@@ -51,6 +53,7 @@ module Query
       end
 
       def bind_subquery_game_type(ast)
+        return unless ast.kind == :query
         ast.join_tables.each { |jt|
           jt.game = ast.game
           bind_subquery_game_type(jt)
@@ -58,7 +61,7 @@ module Query
       end
 
       def lift_joins!(ast)
-        ast.transform_nodes_shallow! { |node|
+        ast.transform_nodes_breadthfirst! { |node|
           if node.kind == :query && node.table_subquery?
             n = lift_joins!(node)
             if ast.context.table_alias?(n.subquery_alias)
@@ -106,7 +109,9 @@ module Query
         nil
       end
 
-      def fixup_full_query!
+      def fixup_full_query!(ast)
+        return unless ast.kind == :query
+
         ast.game_number = -1
         ast.transform_nodes! { |node|
           kill_meta_nodes(node)
@@ -143,10 +148,12 @@ module Query
         }
       end
 
-      def fix_value_fields!
-        # FIXME: this will hoist subquery fields to the top, bad news!
+      ##
+      # Convert milestones value fields X=Y (such as rune=barnacled) into the
+      # noun=Y type=X form.
+      def fix_milestone_value_fields!(ast)
         values = []
-        head.map_fields { |field|
+        ast.head.map_fields { |field|
           if field.value_key?
             values << field.name
             Sql::Field.field(field.context.value_field)
@@ -155,8 +162,8 @@ module Query
           end
         }
         unless values.empty?
-          head << Expr.and(*values.map { |v|
-              Expr.field_predicate('=', head.context.key_field, v)
+          ast.head << Expr.and(*values.map { |v|
+              Expr.field_predicate('=', ast.context.key_field, v)
             })
         end
       end

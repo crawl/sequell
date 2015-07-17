@@ -67,10 +67,10 @@ module Sql
     # Sql::Field object and returns a Sql::Column object if found, or +nil+ if
     # there is no column corresponding to the given field.
     #
-    # The column_def lookup will consider both fields local to this context
-    # and any auto-join fields. If you wish to ignore auto-joined fields,
-    # use local_column_def.
-    def column_def(field)
+    # The resolve_column lookup will consider both fields local to this context
+    # and any auto-join fields. If you wish to ignore auto-joined fields, use
+    # resolve_local_column
+    def resolve_column(field)
       lookup_column(field, self, @alt)
     end
 
@@ -80,8 +80,8 @@ module Sql
     # if found, or +nil+ if there is no column corresponding to the given field.
     #
     # This lookup will consider only fields local to this context. If you wish
-    # to include auto-joined fields, use column_def instead.
-    def local_column_def(field)
+    # to include auto-joined fields, use resolve_column instead.
+    def resolve_local_column(field)
       field = Sql::Field.field(field)
       (!field.prefixed? || field.has_prefix?(@table_alias)) &&
         (@columns[field.name] || @synthetic_columns[field.name])
@@ -100,7 +100,7 @@ module Sql
     # Returns +true+ if the given field name represents a real or synthetic
     # field in this context
     def field?(field)
-      self.column_def(field) || self.value_key?(field)
+      self.resolve_column(field) || self.value_key?(field)
     end
 
     ##

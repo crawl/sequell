@@ -5,6 +5,19 @@ module Query
     attr_accessor :arguments
     attr_accessor :context
 
+    ##
+    # Returns the primary body predicate for this term. In most cases the term
+    # is its own head, but :query objects return their actual WHERE predicate
+    # here.
+    #
+    # You mainly want to use head if you want to explicitly visit a thing's
+    # children: QueryAST objects have no arguments, so applying ASTWalker to
+    # a QueryAST will just visit the QueryAST itself. Apply ASTWalker to a
+    # term's head guarantees descending into the term's children.
+    def head
+      self
+    end
+
     def bind_context(context)
       @context ||= context
     end
@@ -12,6 +25,16 @@ module Query
     def next_sibling(parent)
       return nil unless parent
       parent.child_offset_from(self, 1)
+    end
+
+    def each_query(&block)
+      ASTWalker.each_kind(self, :query, &block)
+
+      # Cheat and call the block on ourselves as well, even if this is not a
+      # query.
+      if self.kind != :query
+        block.call(self)
+      end
     end
 
     def child_offset_from(child, offset)

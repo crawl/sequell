@@ -106,7 +106,7 @@ module Sql
     end
 
     def column
-      @column ||= context.column_def(self)
+      @column ||= context.resolve_column(self)
     end
 
     def expr?

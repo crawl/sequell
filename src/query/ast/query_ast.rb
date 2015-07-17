@@ -145,6 +145,14 @@ module Query
       end
 
       ##
+      # Calls block for this query and all subqueries, in sequence.
+      def each_query(&block)
+        block.call(self)
+        join_tables.each(&block)
+        ASTWalker.each_kind(head, :query, &block)
+      end
+
+      ##
       # Returns a clone of this AST with the tail predicate as the only
       # predicate.
       def tail_ast
@@ -158,10 +166,6 @@ module Query
 
       def query_tables
         @query_tables = Sql::QueryTables.new(@context.table(self.game))
-      end
-
-      def arguments
-        [head]
       end
 
       def add_join_table(j)
@@ -194,12 +198,31 @@ module Query
       ##
       # Given a Sql::Field, resolves it as a column either on the context, or on
       # any of the join tables.
-      def resolve_table_column(field)
+      def resolve_column(field)
         join_tables.each { |jt|
-          col = jt.resolve_table_column(field)
+          col = jt.resolve_column(field)
           return col if col
         }
-        resolve_local_table_column(field)
+        resolve_local_column(field)
+      end
+
+      def resolve_local_column(field)
+        column = context.resolve_local_column(field)
+        if column
+          STDERR.puts("#{self}::resolve_local_table_column(#{field}) == #{column}")
+          return column.bind(self)
+        end
+
+        if grouped?
+          # If this is a grouped query, we must recognize the *implicit* count
+          # column.
+          STDERR.puts("#{self}::resolve_local_table_column(#{field}) == count (synthetic)")
+          return Sql::Column.new(context.config, "countI", nil).bind(self)
+        end
+
+        STDERR.puts("#{self}::resolve_local_table_column(#{field}) == NOT FOUND (context: #{context.name})")
+        # Not my field!
+        nil
       end
 
       ##
@@ -428,8 +451,8 @@ module Query
         self.map_nodes_as!(:map_nodes, &block)
       end
 
-      def transform_nodes_shallow!(&block)
-        self.map_nodes_as!(:map_nodes_shallow, &block)
+      def transform_nodes_breadthfirst!(&block)
+        self.map_nodes_as!(:map_nodes_breadthfirst, &block)
       end
 
       def each_node(&block)
@@ -506,25 +529,6 @@ module Query
 
       def ast_sql
         @ast_sql ||= Sql::QueryASTSQL.new(self)
-      end
-
-      def resolve_local_table_column(field)
-        column = context.column_def(field)
-        if column
-          STDERR.puts("#{self}::resolve_local_table_column(#{field}) == #{column}")
-          return column.bind(self)
-        end
-
-        if grouped?
-          # If this is a grouped query, we must recognize the *implicit* count
-          # column.
-          STDERR.puts("#{self}::resolve_local_table_column(#{field}) == count (synthetic)")
-          return Sql::Column.new(context.config, "countI", nil).bind(self)
-        end
-
-        STDERR.puts("#{self}::resolve_local_table_column(#{field}) == NOT FOUND (context: #{context.name})")
-        # Not my field!
-        nil
       end
     end
   end
