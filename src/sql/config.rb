@@ -91,5 +91,9 @@ module Sql
     def [](name)
       @cfg[name.to_s]
     end
+
+    def inspect
+      self.class.to_s
+    end
   end
 end

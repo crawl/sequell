@@ -180,16 +180,17 @@ module Sql
     end
 
     def select(field_expressions, with_sorts=true)
-      # TODO: Odd dichotomy here: @count_pred vs @pred in where clause:
-      ast = @count_pred.dup
+      # TODO: Odd use here: @count_ast vs @ast in where clause: is this a bug?
+      ast = @count_ast.dup
       with_contexts {
         select_cols = field_expressions.map { |fe|
           resolve_field(fe, ast).to_sql
         }.join(", ")
 
         @values = self.with_values(field_expressions, @values)
+        @values += ast.table_list_values
         "SELECT #{select_cols} FROM #{ast.to_table_list_sql} " +
-           where(@pred, with_sorts && @sorts)
+           where(@ast.head, with_sorts && @sorts)
       }
     end
 
@@ -216,34 +217,34 @@ module Sql
     # When +count+ is non-zero a LIMIT clause is used for that count.
     def select_all(with_sorts=true, record_index=0, count=1)
       if record_index > 0 && count == 1
-        resolve_sort_fields(@count_sorts, @count_pred)
+        resolve_sort_fields(@count_sorts, @count_ast)
         id_subquery = self.select_id(with_sorts, record_index, count)
         id_field = Sql::Field.field('id')
-        id_sql = resolve_field(id_field, @pred).to_sql_output
+        id_sql = resolve_field(id_field, @ast).to_sql_output
         @values = self.with_values(query_fields, @values)
         @values += self.with_values(@count_sorts)
-        return ("SELECT #{query_columns.join(", ")} " +
-                "FROM #{@pred.to_table_list_sql} WHERE #{id_sql} = (#{id_subquery})")
+        return ("SELECT #{query_columns.sjoin(", ")} " +
+                "FROM #{ast.to_table_list_sql} WHERE #{id_sql} = (#{id_subquery})")
       end
 
       @values = self.with_values(query_fields, @values)
       @values += self.with_values(@sorts) if with_sorts
-      "SELECT #{query_columns.join(", ")} FROM #{@pred.to_table_list_sql} " +
-         where(@pred, with_sorts && @sorts) + " " +
+      "SELECT #{query_columns.join(", ")} FROM #{@ast.to_table_list_sql} " +
+         where(@ast.head, with_sorts && @sorts) + " " +
          limit_clause(record_index, count)
     end
 
     def select_id(with_sorts=false, record_index=0, count=1)
       id_field = Sql::Field.field('id')
-      id_sql = resolve_field(id_field, @count_pred).to_sql
-      where_clause = self.where(@count_pred, with_sorts && @count_sorts)
-      "SELECT #{id_sql} FROM #{@count_pred.to_table_list_sql} " +
+      id_sql = resolve_field(id_field, @count_ast).to_sql
+      where_clause = self.where(@count_ast, with_sorts && @count_sorts)
+      "SELECT #{id_sql} FROM #{@count_ast.to_table_list_sql} " +
         "#{where_clause} #{limit_clause(record_index, count)}"
     end
 
     def select_count
-      "SELECT COUNT(*) FROM #{@count_pred.to_table_list_sql} " +
-        where(@count_pred, false)
+      "SELECT COUNT(*) FROM #{@count_ast.to_table_list_sql} " +
+        where(@count_ast.head, false)
     end
 
     def limit_clause(record_index, count)
@@ -257,13 +258,13 @@ module Sql
     def resolve_summary_fields
       if summarise
         summarise.each_field { |field|
-          resolve_field(field, @summary_pred)
+          resolve_field(field, @summary_ast)
         }
       end
 
       if @summary_extra
         @summary_extra.each_field { |field|
-          resolve_field(field, @summary_pred)
+          resolve_field(field, @summary_ast)
         }
       end
     end
@@ -274,7 +275,7 @@ module Sql
       @query = nil
       sortdir = @summary_sort
 
-      where_clause = where(@summary_pred, false)
+      where_clause = where(@summary_ast.head, false)
       @values = self.with_values([summarise, extra].compact, @values)
 
       summary_field_text = self.summary_fields

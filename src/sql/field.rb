@@ -48,6 +48,13 @@ module Sql
     end
 
     ##
+    # When rebinding contexts, zap the column.
+    def context=(new_context)
+      @column = nil
+      @context = new_context
+    end
+
+    ##
     # Returns true if this is a foreign key field that is deliberately
     # being queried for the foreign key id (the referencing id)
     # instead of its value in the foreign table. For instance if the
@@ -77,7 +84,11 @@ module Sql
     # Returns a copy of this field that is qualified with the table of
     # the context.
     def context_qualified
-      context.table_qualified(self)
+      table = context.field_origin_table(self)
+      raise("Cannot find table for #{self}") unless table
+      clone = self.dup
+      clone.table = Sql::QueryTable.table(table)
+      clone
     end
 
     def unique_valued?
@@ -106,7 +117,7 @@ module Sql
     end
 
     def column
-      @column ||= context.resolve_column(self)
+      @column ||= context.resolve_column(self, :internal_expr)
     end
 
     def expr?
@@ -155,7 +166,10 @@ module Sql
 
     def resolve(new_name)
       new_name = new_name.name if new_name.is_a?(self.class)
-      self.class.new(@prefix ? "#{@prefix}:#{new_name}" : new_name)
+      new_field = self.class.new(@prefix ? "#{@prefix}:#{new_name}" : new_name)
+      new_field.table = self.table
+      new_field.context = self.context
+      new_field
     end
 
     def reference_field

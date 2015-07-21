@@ -30,6 +30,9 @@ module Query
         ASTMapper.new(ast, parent, condition, false, block).apply
       end
 
+      ##
+      # Visits each node in the AST that satisfies the condition
+      # block, depth-first.
       def self.each_node(ast, parent=nil, condition=nil, &block)
         return nil if ast.nil?
         ast.arguments.each { |arg|

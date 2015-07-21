@@ -74,25 +74,26 @@ module Sql
       query_ast.autojoin_lookup_columns!
       load_values([query_ast.head])
 
-      resolve(group_fields)
-      load_values(group_fields)
-
       resolve(order_fields)
       load_values(order_fields)
 
       ["SELECT #{query_columns.join(', ')}",
-       "FROM #{query_tables.to_sql}",
+       "FROM #{query_tables_sql}",
        query_where_clause,
        query_group_by,
        query_order_by].compact.join(' ')
     end
 
     def query_fields
-      query_ast.fields
+      query_ast.select_expressions
     end
 
     def query_columns
       query_fields.map(&:to_sql_output)
+    end
+
+    def query_tables_sql
+      query_ast.to_table_list_sql
     end
 
     def query_where_clause

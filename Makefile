@@ -11,3 +11,6 @@ unit:
 
 integration:
 	perl ./scripts/test-henzell.pl --fail-fast
+
+rdoc:
+	find src -name '*.rb' | xargs rdoc

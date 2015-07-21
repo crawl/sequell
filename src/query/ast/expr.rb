@@ -37,6 +37,10 @@ module Query
             arg
           end
         }
+        if caller.size > 200
+          STDERR.puts("Stackoverflow LOL")
+          raise("Stack overflow")
+        end
         @original = @arguments.map { |a| a.dup }
       end
 
@@ -111,7 +115,7 @@ module Query
       end
 
       def << (term)
-        self.arguments << term
+        self.arguments << bind(term)
         self
       end
 

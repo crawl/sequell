@@ -14,6 +14,10 @@ module Query
       def to_s
         @name
       end
+
+      def to_sql
+        raise("Not implemented by #{self}")
+      end
     end
   end
 end

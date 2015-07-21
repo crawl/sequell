@@ -7,23 +7,24 @@ module Sql
   class QueryTables
     attr_reader :primary_table, :tables, :joins
 
-    def initialize(primary_table)
+    def initialize(query_ast, primary_table)
+      @query_ast = query_ast
       @primary_table = Sql::QueryTable.table(primary_table)
       @table_aliases = {  }
-      @tables = [@primary_table]
+      @tables = []
       @joins = []
       @alias_index = 0
     end
 
-    def initialize_copy(o)
-      super
-      @joins = @joins.map(&:dup)
-      @tables = @tables.map(&:dup)
-      @table_aliases = @table_aliases.dup
-    end
-
     def lookup!(table)
-      self[table.alias] or raise("Lookup failed: #{table} is not in #{self}")
+      return lookup!(primary_table) if table.equal?(@query_ast)
+
+      found_table = self[table.alias]
+      unless found_table
+        return register_table(@primary_table) if table == @primary_table
+        raise("Lookup failed: #{table} is not in #{self}")
+      end
+      found_table
     end
 
     def find_join(join_condition)
@@ -41,7 +42,7 @@ module Sql
         new_alias = disambiguate_alias(table.alias)
         table.alias = new_alias
       end
-      register_table(table)
+      record_table(table)
       @table_aliases[new_alias] = table
     end
 
@@ -60,13 +61,14 @@ module Sql
         return
       end
 
-      self.register_table(join_condition.left_table)
-      self.register_table(join_condition.right_table, :force_new_alias)
+      register_table(join_condition.left_table)
+      register_table(join_condition.right_table, :force_new_alias)
 
       @joins << join_condition
       self
     end
 
+    ##
     # Returns the table name and joins, suitable for the FROM clause
     # of a query.
     def to_sql
@@ -83,13 +85,25 @@ module Sql
       sql_frags.join(' ')
     end
 
+    ##
+    # Returns any SQL ? placeholder values from JOINed subqueries.
+    def values
+      values = []
+      include_left_table = true
+      @joins.each { |j|
+        values += j.values(include_left_table)
+        include_left_table = false
+      }
+      values
+    end
+
     def to_s
       "QueryTables[#{@tables.map(&:name).join(',')}]"
     end
 
   private
 
-    def register_table(table)
+    def record_table(table)
       @tables << table unless known_table?(table)
     end
 

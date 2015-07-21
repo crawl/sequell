@@ -12,6 +12,9 @@ module Sql
     attr_reader :ast
     def initialize(ast, field)
       @ast = ast
+      if caller.size > 400
+        raise("Stack overflow!")
+      end
       @field = field.is_a?(String) ? Sql::Field.field(field) : field
     end
 
@@ -20,7 +23,7 @@ module Sql
     end
 
     def tables
-      @ast.query_tables
+      @tables ||= @ast.query_tables
     end
 
     def resolve
@@ -41,8 +44,8 @@ module Sql
       raise "Unknown field: #{field} (#{field.context})" unless column
 
       # If this is not a local field, we need to join to the alt table first:
-      if !context.local_field_def(field)
-        apply_alt_join(context)
+      if column.table != field.context && field.context.autojoin?(column.table)
+        apply_alt_join(field)
       end
 
       return resolve_simple_field(field) if !field.reference? || field.reference_id_only?
@@ -54,12 +57,16 @@ module Sql
       qualified_field = field.context_qualified
 
       # Set up the join
+      right_field = Sql::Field.field('id')
+      right_field.table = reference_table
       join = Sql::Join.new(qualified_field.table,
                            reference_table,
-                           [qualified_field.resolve(column.fk_name)])
+                           [qualified_field.resolve(column.fk_name)],
+                           :inner,
+                           [right_field])
 
       # Register the join
-      @tables.join(join)
+      tables.join(join)
 
       # And qualify the field with the reference table. NOTE: the
       # reference table *instance* will be bound to an alias specific
@@ -75,18 +82,22 @@ module Sql
 
   private
 
-    def apply_alt_join(context)
-      alt = context.alt
+    def apply_alt_join(field)
+      unless field.context.respond_to?(:alt)
+        require 'pry'
+        binding.pry
+      end
+      alt = field.context.alt
       return unless alt
       ref_field = context.join_field
-      @tables.join(Join.new(@tables.primary_table, alt.table,
-                            ref_field, ref_field))
+      tables.join(Join.new(tables.primary_table, alt.table,
+                           ref_field, ref_field))
     end
 
     def resolve_simple_field(field)
-      col = ast.resolve_table_column(field)
+      col = ast.resolve_column(field, :internal_expr)
       table = col.table
-      field.table = @tables.lookup!(table)
+      field.table = tables.lookup!(table)
       field.sql_name = field.column.fk_name.to_s if field.reference_id_only?
       field
     end

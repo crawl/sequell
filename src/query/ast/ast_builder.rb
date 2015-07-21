@@ -251,7 +251,7 @@ module Query
              body: simple(:expr),
              alias: simple(:query_alias)
            }) {
-        QueryAST.new(context.to_s, expr, nil, nil).as_subquery(query_alias.to_s)
+        QueryAST.new(context.to_s, expr, nil, nil, :subquery).as_subquery(query_alias.to_s)
       }
 
       rule(table_subquery: simple(:subquery)) {

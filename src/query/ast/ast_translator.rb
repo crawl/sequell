@@ -16,14 +16,36 @@ module Query
       end
 
       def apply
+        @ast.bind_context(Sql::QueryContext.context)
+        bind_subquery_contexts(@ast)
         @ast.transform! { |node|
-          translate_ast(node)
+          translate_ast(node) if node
+        }
+      end
+
+      private
+
+      def bind_subquery_contexts(ast)
+        ast.transform_nodes_breadthfirst! { |node|
+          if node.kind == :query
+            bind_subquery_contexts(node)
+          else
+            STDERR.puts("Binding context #{ast.class} to #{node.to_s}")
+            node.bind_context(ast)
+          end
+          node
         }
       end
 
       def translate_ast(ast)
+        ast = ASTWalker.map_kinds(ast, :query) { |q|
+          STDERR.puts("Recursing into #{q}")
+          ASTTranslator.new(q).apply
+        }
+
         ast = ASTWalker.map_raw_fields(ast) { |field|
-          Sql::Field.field(field.name)
+          STDERR.puts("Converting field: #{field} to Sql::Field")
+          Sql::Field.field(field.name).bind_context(field.context)
         }
 
         ast = ASTWalker.map_keywords(ast) { |kw, parent|
@@ -31,24 +53,16 @@ module Query
             nil
           else
             Cmd::UserKeyword.kill_recursive_keyword {
-              ::Query::QueryKeywordParser.parse(kw.value)
+              kw.bind(::Query::QueryKeywordParser.parse(kw.value))
             }
           end
         }
 
         ast = ASTWalker.map_nodes(ast) { |node, parent|
-          ::Query::QueryNodeTranslator.translate(node, parent)
-        }
-
-        ast = ASTWalker.map_nodes(ast) { |node|
-          value_fixup(node)
+          node.bind(::Query::QueryNodeTranslator.translate(node, parent))
         }
 
         ast
-      end
-
-      def value_fixup(node)
-        node
       end
     end
   end

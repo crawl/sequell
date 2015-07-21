@@ -25,10 +25,18 @@ module Sql
                    right_fields=['id'])
       @left_table = Sql::QueryTable.table(left_table)
       @right_table = Sql::QueryTable.table(right_table)
+      if @left_table.is_a?(Sql::QueryContext) || @right_table.is_a?(Sql::QueryContext)
+        require 'pry'
+        binding.pry
+      end
       @left_fields = left_fields.map { |f| Sql::Field.field(f) }
       @right_fields = right_fields.map { |f| Sql::Field.field(f) }
       @join_mode = join_mode
       @join_mode_name = JOIN_MODES[@join_mode] or raise "Bad join mode: #{join_mode}"
+    end
+
+    def swap
+      self.class.new(right_table, left_table, right_fields, join_mode, left_fields)
     end
 
     ##
@@ -42,6 +50,7 @@ module Sql
     # Merge the other's join conditions into our own.
     def merge!(other)
       raise "Incompatible join condition!" unless tables_match?(other)
+      return self if self == other || self.swap == other
 
       # Direct match
       if left_table == other.left_table
@@ -61,21 +70,41 @@ module Sql
     def == (other)
       self.left_table.name == other.left_table.name &&
         self.right_table.name == other.right_table.name &&
-        self.left_field.name == other.left_field.name &&
-        self.right_field.name == other.right_field.name
+        self.left_fields == other.left_fields &&
+        self.right_fields == other.right_fields
     end
 
     def to_sql(include_left=false)
       join_sql_left = include_left ? left_table.to_sql + ' ' : ''
       join_base = "#{join_sql_left}#{join_mode_name} #{@right_table.to_sql} ON"
       join_base + ' ' + (0...@left_fields.size).map { |i|
-        "#{@left_table.field_sql(@left_fields[i])} = " +
-        "#{@right_table.field_sql(@right_fields[i])}"
+        "#{@left_fields[i].to_sql} = #{@right_fields[i].to_sql}"
       }.join(' AND ')
+    rescue
+      STDERR.puts("Unable to sqlize join condition: #{self}")
+      raise
+    end
+
+    def values(include_left=false)
+      if include_left
+        left_table.values + right_table.values
+      else
+        right_table.values
+      end
     end
 
     def to_s
-      "Join[#{@left_table.name}.#{@left_field.name}=#{@right_table.name}.#{@right_field.name}]"
+      "Join[#{field_join_conditions}]"
+    end
+
+  private
+
+    def field_join_conditions
+      left_table_name = @left_table.name
+      right_table_name = @right_table.name
+      (0...left_fields.size).map { |i|
+        "#{left_table_name}.#{left_fields[i].name}=#{right_table_name}.#{right_fields[i].name}]"
+      }.join(' ')
     end
   end
 end

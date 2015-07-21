@@ -9,12 +9,15 @@ require 'sql/query_tables'
 require 'sql/column_resolver'
 require 'sql/join_resolver'
 require 'sql/query_ast_sql'
+require 'sql/query_context'
 
 module Query
   module AST
     ##
     # Represents an entire !lg/!lm query or subquery fragment.
     class QueryAST < Term
+      include Sql::TableContext
+
       ##
       # The query context.
       #
@@ -24,10 +27,6 @@ module Query
       # auto-join context, where referring to a field in the auto-joined context
       # implies automatically joining to that table.
       attr_reader :context
-
-      ##
-      # The query context name, possibly nil.
-      attr_accessor :context_name
 
       ##
       # The head of the query for !lg queries "!lg HEAD / TAIL". The head is
@@ -96,7 +95,7 @@ module Query
       # instances of Sql::QueryTable and anonymous nested QueryAST objects.
       attr_reader :query_tables
 
-      def initialize(context_name, head, tail, filter)
+      def initialize(context_name, head, tail, filter, subquery=false)
         @game = GameContext.game
         @context = Sql::QueryContext.named(context_name.to_s)
         @head = head || Expr.and()
@@ -121,7 +120,7 @@ module Query
           kw.value if kw.is_a?(AST::Keyword) && (kw.value =~ /^[@:]/ || kw.value == '*')
         }
 
-        if !@nick
+        if !@nick && !subquery
           if @keyword_nick
             @nick = '*'
           else
@@ -145,11 +144,55 @@ module Query
       end
 
       ##
-      # Calls block for this query and all subqueries, in sequence.
+      # Returns an array of expressions that are selected from this QueryAST.
+      #
+      # For grouped queries, returns the grouping fields, the count(*)
+      # expression, and any other extra expressions.
+      #
+      # For ungrouped queries, returns any explicitly joined fields.
+      def select_expressions
+        if grouped?
+          grouped_select_expressions
+        else
+          joined_expressions
+        end
+      end
+
+      ##
+      # Returns the context alias, including the !
+      def context_name
+        context.name
+      end
+
+      ##
+      # Returns the bare context alias (no !)
+      def context_alias
+        context.alias
+      end
+
+      ##
+      # Returns a representation of this query.
+      def name
+        to_s
+      end
+
+      ##
+      # Returns true if this AST autojoins the specified table. This is a direct
+      # lookup on the context: we never autojoin subqueries.
+      def autojoin?(table)
+        context.autojoin?(table)
+      end
+
+      ##
+      # Calls block for all subqueries, join queries, and then this query.
+      #
+      # If join queries have not yet been lifted from the general expression
+      # list, then the block will be called on them as they're found in the
+      # AST. The block is always called on this query last.
       def each_query(&block)
-        block.call(self)
-        join_tables.each(&block)
         ASTWalker.each_kind(head, :query, &block)
+        join_tables.each(&block)
+        block.call(self)
       end
 
       ##
@@ -165,7 +208,7 @@ module Query
       end
 
       def query_tables
-        @query_tables = Sql::QueryTables.new(@context.table(self.game))
+        @query_tables ||= Sql::QueryTables.new(self, @context.table(self.game))
       end
 
       def add_join_table(j)
@@ -184,6 +227,7 @@ module Query
       # and build a final set of query tables (in query_tables).
       def autojoin_lookup_columns!
         @autojoined_lookups = true
+        STDERR.puts("Resolving fields in #{self}")
         join_tables.each(&:autojoin_lookup_columns!)
         Sql::JoinResolver.resolve(self)
         Sql::ColumnResolver.resolve(self)
@@ -198,31 +242,87 @@ module Query
       ##
       # Given a Sql::Field, resolves it as a column either on the context, or on
       # any of the join tables.
-      def resolve_column(field)
+      #
+      # If internal_expr is true, that implies that the expression being resolved
+      # is within the body of this query. If false, it implies that the expression
+      # belongs to an outer query.
+      #
+      # When internal_expr=true, fields resolved against the context are bound
+      # to the context. When false, fields are always bound to the AST itself,
+      # since the AST itself is the table that the outer query is selecting
+      # from.
+      def resolve_column(field, internal_expr)
+        col = resolve_local_column(field, internal_expr)
+        return col if col
+
         join_tables.each { |jt|
-          col = jt.resolve_column(field)
+          col = jt.resolve_column(field, false)
           return col if col
         }
-        resolve_local_column(field)
+
+        nil
       end
 
-      def resolve_local_column(field)
-        column = context.resolve_local_column(field)
-        if column
-          STDERR.puts("#{self}::resolve_local_table_column(#{field}) == #{column}")
-          return column.bind(self)
+      ##
+      # Returns true if this prefix can be considered as a lookup in the query
+      # context.
+      def context_prefix?(prefix)
+        !prefix || (!subquery? && prefix == context.alias) || prefix == self.alias
+      end
+
+      ##
+      # Returns true if this prefix can be considered as a lookup in the query's
+      # local field expressions.
+      def local_prefix?(prefix)
+        !prefix || prefix == self.alias
+      end
+
+      ##
+      # Given a Sql::Field, resolves it as a column either on the context, or in
+      # this query.
+      def resolve_local_column(field, internal_expr)
+        prefix = field.prefix
+        return if prefix && prefix != self.alias && prefix != context.alias
+
+        if context_prefix?(prefix)
+          column = context.resolve_local_column(field, :internal_expr, :ignore_prefix)
+          if column
+            return column.bind(internal_expr ? context_table(context) : self)
+          end
         end
 
-        if grouped?
-          # If this is a grouped query, we must recognize the *implicit* count
-          # column.
-          STDERR.puts("#{self}::resolve_local_table_column(#{field}) == count (synthetic)")
-          return Sql::Column.new(context.config, "countI", nil).bind(self)
+        if local_prefix?(prefix)
+          if grouped?
+            if field == "count"
+              # If this is a grouped query, we must recognize the *implicit* count
+              # column.
+              return Sql::Column.new(context.config, "countI", nil).bind(self)
+            end
+          end
         end
 
-        STDERR.puts("#{self}::resolve_local_table_column(#{field}) == NOT FOUND (context: #{context.name})")
         # Not my field!
         nil
+      end
+
+      ##
+      # Returns the field's table property.
+      def field_origin_table(field)
+        col = resolve_local_column(field, :internal_expr)
+        col.table if col
+      end
+
+      ##
+      # Returns true if this field is really a special value
+      # that implies a simple expression transform.
+      def value_key?(field)
+        context.value_key?(field)
+      end
+
+      ##
+      # Returns the value field for the value_key? transform.
+      def value_field
+        context.value_field
       end
 
       ##
@@ -338,7 +438,7 @@ module Query
       ##
       # Returns true if this query is a grouped (s=foo) query.
       def grouped?
-        self.summarise
+        self.summarise != nil
       end
 
       ##
@@ -489,7 +589,7 @@ module Query
 
       def to_s
         is_subquery = subquery?
-        pieces = is_subquery ? [] : ["#{context_name}"]
+        pieces = is_subquery ? [] : [context_name]
         pieces << @nick if @nick && !is_subquery
         pieces << head.to_query_string(false)
         pieces << @summarise.to_s if summary?
@@ -501,21 +601,30 @@ module Query
         pieces << "/" << @tail.to_query_string(false) if @tail
         pieces << "?:" << @filter.to_s if @filter
         text = pieces.select { |x| !x.empty? }.join(' ')
-        text = "$#{context_name.to_s}[#{text}]" if subquery?
+        text = "$#{context_alias.to_s}[#{text}]" if subquery?
         text
       end
 
       ##
       # Returns the SQL clause for the FROM table list.
       def to_table_list_sql
-        autojoin_lookup_columns! unless autojoined_lookups?
         query_tables.to_sql
       end
 
       ##
-      # Returns the SQL clause for the FROM table list
+      # Returns the SQL ? placeholder values for the FROM table list. This will
+      # be an empty array unless the FROM list includes joined subqueries with
+      # WHERE clause conditions including literals.
+      #
+      # This is a subset of the values returned by sql_values.
+      def table_list_values
+        query_tables.values
+      end
+
+      ##
+      # Returns the SQL for the entire query.
       def to_sql
-        ast_sql.sql
+        ast_sql.to_sql
       end
 
       ##
@@ -525,10 +634,45 @@ module Query
         ast_sql.sql_values
       end
 
+      def inspect
+        to_s
+      end
+
+      def == (other)
+        self.equal?(other)
+      end
+
     private
 
       def ast_sql
         @ast_sql ||= Sql::QueryASTSQL.new(self)
+      end
+
+      def grouped_select_expressions
+        summarise.arguments + [implied_group_count_expression] + (extra ? extra.arguments : [])
+      end
+
+      def implied_group_count_expression
+        Query::AST::Funcall.new('count_all') { |count|
+          count.alias = "count"
+        }
+      end
+
+      def joined_expressions
+        fields = []
+        join_conditions.each { |jc|
+          jc.each_field { |f|
+            fields << f if f.column.ast.equal?(self)
+          }
+        }
+        fields
+      end
+
+      ##
+      # Given a context object, returns a QueryTable.
+      def context_table(context)
+        @context_table ||= { }
+        @context_table[context.alias] ||= Sql::QueryTable.table(context)
       end
     end
   end

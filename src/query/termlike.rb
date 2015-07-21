@@ -4,6 +4,7 @@ module Query
   module Termlike
     attr_accessor :arguments
     attr_accessor :context
+    attr_accessor :alias
 
     ##
     # Returns the primary body predicate for this term. In most cases the term
@@ -11,15 +12,37 @@ module Query
     # here.
     #
     # You mainly want to use head if you want to explicitly visit a thing's
-    # children: QueryAST objects have no arguments, so applying ASTWalker to
-    # a QueryAST will just visit the QueryAST itself. Apply ASTWalker to a
+    # children: QueryAST objects have no arguments, so applying ASTWalker to a
+    # QueryAST will just visit the QueryAST itself. Applying ASTWalker to a
     # term's head guarantees descending into the term's children.
     def head
       self
     end
 
-    def bind_context(context)
-      @context ||= context
+    ##
+    # Binds this term to a context, if not already bound. This does not affect
+    # children of this term.
+    #
+    # bind_context explicitly declines to modify an existing binding to a
+    # context. To force-overwrite, use context=.
+    def bind_context(ctx)
+      self.context = ctx unless self.context
+      self
+    end
+
+    ##
+    # Binds a term to use the same context as this term, recursively. Does
+    # nothing if this term is not bound.
+    def bind(term)
+      return term unless term
+      ctx = self.context
+      return unless ctx
+      ::Query::AST::ASTWalker.each_node(term.head) { |n|
+        n.bind_context(ctx)
+      }
+      # Bind the term explicitly for terms where term.head != term:
+      term.bind_context(ctx)
+      term
     end
 
     def next_sibling(parent)
@@ -123,6 +146,10 @@ module Query
 
     def left
       arguments[0]
+    end
+
+    def left=(r)
+      arguments[0] = r
     end
 
     alias :first :left

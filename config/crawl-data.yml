@@ -517,7 +517,9 @@ prefix-field-fixups:
 # cdist and count are both count distinct
 aggregate-functions:
   count_all:
-    type: '*'
+    types:
+      - type: []
+        return: I
     expr: "COUNT(*)"
     return: I
     count: true

@@ -1,14 +1,23 @@
+require 'sql/query_context'
+
 module Sql
   # A single table referenced in a query.
   class QueryTable
+    include TableContext
+
     def self.table(thing)
-      return thing if thing.is_a?(self)
+      return thing.query_table if thing.respond_to?(:query_table)
+      return thing if thing.is_a?(Sql::TableContext)
       self.new(thing)
     end
 
     attr_accessor :name, :expr, :alias
 
     def initialize(name)
+      unless name
+        require 'pry'
+        binding.pry
+      end
       @name = name
       @alias = name
     end
@@ -16,19 +25,14 @@ module Sql
     def dup
       copy = QueryTable.new(@name)
       copy.alias = self.alias
-      copy.expr = self.expr.dup if self.expr
       copy
     end
 
     def column_list
-      if self.expr
-        expr.column_list
-      else
-        @column_list ||=
-          Sql::ColumnList.new(SQL_CONFIG,
-                              SQL_CONFIG["#{@name}-fields-with-type"],
-                              SQL_CONFIG.column_substitutes)
-      end
+      @column_list ||=
+        Sql::ColumnList.new(SQL_CONFIG,
+                            SQL_CONFIG["#{@name}-fields-with-type"],
+                            SQL_CONFIG.column_substitutes)
     end
 
     def generated_columns

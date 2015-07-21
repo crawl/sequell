@@ -7,19 +7,16 @@ module Query
         self.new(ast).result(fragment)
       end
 
-      attr_reader :ast, :head
+      attr_reader :query_ast, :head
 
       def initialize(ast)
-        @ast = ast
-        @ast.bind_context(Sql::QueryContext.context)
+        @query_ast = ast
+        @query_ast.bind_context(Sql::QueryContext.context)
         @head = ast.respond_to?(:head) ? ast.head : ast
       end
 
       def result(fragment=false)
-        bind_subquery_contexts(ast)
-        lift_joins!(ast)
-
-        ast.each_query { |q|
+        query_ast.each_query { |q|
           fix_milestone_value_fields!(q)
           fixup_full_query!(q)
 
@@ -35,22 +32,16 @@ module Query
             fix_node(node)
           }
 
+          lift_join_conditions!(q)
           bind_subquery_game_type(q)
         }
 
-        ast
+        query_ast.autojoin_lookup_columns!
+
+        query_ast
       end
 
     private
-
-      def bind_subquery_contexts(ast)
-        context = ast.context
-        ast.transform_nodes_breadthfirst! { |node|
-          node.bind_context(context)
-          bind_subquery_contexts(node) if node.kind == :query
-          node
-        }
-      end
 
       def bind_subquery_game_type(ast)
         return unless ast.kind == :query
@@ -60,10 +51,10 @@ module Query
         }
       end
 
-      def lift_joins!(ast)
+      def lift_join_conditions!(ast)
         ast.transform_nodes_breadthfirst! { |node|
           if node.kind == :query && node.table_subquery?
-            n = lift_joins!(node)
+            n = lift_join_conditions!(node)
             if ast.context.table_alias?(n.subquery_alias)
               raise StandardError.new("Subquery alias for #{n} conflicts with context.")
             end
@@ -92,17 +83,17 @@ module Query
         STDERR.puts("Considering node as join candidate: #{node.to_s}")
         return node unless node.field_value_predicate? || node.field_field_predicate?
 
-        left_col = ast.resolve_table_column(node.left)
+        left_col = ast.resolve_column(node.left, :internal_expr)
         return node unless left_col
         right = coerce_to_field(node.right)
-        right_col = ast.resolve_table_column(right)
-        return node unless right_col
+        right_col = ast.resolve_column(right, :internal_expr)
 
-        node.left.table = left_col.table
-        right.table = right_col.table
+        return node unless right_col && left_col.table != right_col.table
+
+        STDERR.puts("**** Join node: #{node}")
+        #node.left.table = left_col.table
+        #right.table = right_col.table
         node.right = right
-
-        STDERR.puts("*** Join condition found: #{node.to_s}")
 
         ast.join_conditions << node
 
@@ -114,7 +105,7 @@ module Query
 
         ast.game_number = -1
         ast.transform_nodes! { |node|
-          kill_meta_nodes(node)
+          kill_meta_nodes(ast, node)
         }
 
         if !ast.has_sorts? && ast.needs_sort?
@@ -133,13 +124,13 @@ module Query
           ast.group_order = ast.default_group_order
         end
 
-        validate_filters(ast.filter)
-        validate_filters(ast.group_order)
+        validate_filters(ast, ast.filter)
+        validate_filters(ast, ast.group_order)
 
         ast.bind_tail!
       end
 
-      def validate_filters(filter)
+      def validate_filters(ast, filter)
         return unless filter
         filter.each_node { |node|
           if node.kind == :filter_term
@@ -156,7 +147,7 @@ module Query
         ast.head.map_fields { |field|
           if field.value_key?
             values << field.name
-            Sql::Field.field(field.context.value_field)
+            Sql::Field.field(field.context.value_field).bind_context(field.context)
           else
             field
           end
@@ -168,7 +159,7 @@ module Query
         end
       end
 
-      def kill_meta_nodes(node)
+      def kill_meta_nodes(ast, node)
         if node.field_value_predicate? && node.field === 'game'
           ast.game = node.value
           return nil
@@ -258,7 +249,7 @@ module Query
 
       def coerce_to_field(node)
         return node if node.kind == :field
-        Sql::Field.field(node.value)
+        Sql::Field.field(node.value).bind_context(node.context)
       end
     end
   end

@@ -82,6 +82,8 @@ CTX_STONE =
                         :key_field => 'verb',
                         :value_field => 'noun')
 
+CTX_STONE.alt = CTX_LOG
+
 # Query context - can be either logrecord or milestone, NOT thread safe.
 Sql::QueryContext.context = CTX_LOG
 
