@@ -35,8 +35,7 @@ module Sql
 
       found_table = self[table.alias]
       unless found_table
-        return register_table(@primary_table) if table == @primary_table
-        raise("Lookup failed: #{table} is not in #{self}")
+        return register_table(table)
       end
       found_table
     end
@@ -144,8 +143,6 @@ module Sql
         seen_tables << next_join_condition.right_table
       end
       @joins = sorted_joins
-      require 'pry'
-      binding.pry
     end
 
     def find_next_join_condition(table_set, join_list)

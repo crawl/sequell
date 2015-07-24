@@ -240,8 +240,8 @@ module Query
         @autojoined_lookups = true
         STDERR.puts("Resolving fields in #{self}")
         join_tables.each(&:autojoin_lookup_columns!)
-        Sql::JoinResolver.resolve(self)
         Sql::ColumnResolver.resolve(self)
+        Sql::JoinResolver.resolve(self)
       end
 
       ##
