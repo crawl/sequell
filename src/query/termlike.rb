@@ -232,6 +232,10 @@ module Query
       self.map_nodes_as!(:map_nodes, &block)
     end
 
+    def transform_nodes_breadthfirst!(&block)
+      self.map_nodes_as!(:map_nodes_breadthfirst, &block)
+    end
+
     def transform!(&block)
       block.call(self)
     end

@@ -35,8 +35,14 @@ module Sql
       @join_mode_name = JOIN_MODES[@join_mode] or raise "Bad join mode: #{join_mode}"
     end
 
-    def swap
+    def flip
       self.class.new(right_table, left_table, right_fields, join_mode, left_fields)
+    end
+
+    def flip!
+      @left_table, @right_table = @right_table, @left_table
+      @left_fields, @right_fields = @right_fields, @left_fields
+      self
     end
 
     ##
@@ -94,14 +100,14 @@ module Sql
     end
 
     def to_s
-      "Join[#{field_join_conditions}]"
+      "(#{field_join_conditions})"
     end
 
   private
 
     def field_join_conditions
-      left_table_name = @left_table.name
-      right_table_name = @right_table.name
+      left_table_name = @left_table.to_s
+      right_table_name = @right_table.to_s
       (0...left_fields.size).map { |i|
         "#{left_table_name}.#{left_fields[i].name}=#{right_table_name}.#{right_fields[i].name}]"
       }.join(' ')

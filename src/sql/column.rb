@@ -9,7 +9,7 @@ module Sql
 
     attr_reader :decorated_name, :ordered_column_alias, :table
 
-    def initialize(config, decorated_name, alias_map)
+    def initialize(config, decorated_name, alias_map=nil)
       @config = config
       @decorated_name = decorated_name
       @ordered_column_alias =
@@ -22,6 +22,13 @@ module Sql
       clone = self.dup
       clone.instance_variable_set(:@table, table)
       clone
+    end
+
+    ##
+    # Binds the given field to the underlying table as in use. This may provoke
+    # an additional join on the table for autojoining fields.
+    def bind_table_field(field)
+      table.bind_table_field(field)
     end
 
     def to_s

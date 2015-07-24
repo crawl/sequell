@@ -14,6 +14,10 @@ module Query
       @parent = parent
     end
 
+    def context
+      @context ||= node.context
+    end
+
     def value
       node.value
     end
@@ -28,10 +32,6 @@ module Query
 
     def equality?
       node.equality?
-    end
-
-    def context
-      ::Sql::QueryContext.context
     end
 
     def translate
@@ -75,24 +75,25 @@ module Query
         values = value.gsub(/^\(|\)$/, '').split('|')
         operator = (op.equal? ? :or : :and)
         return reexpand(
-          AST::Expr.new(operator, *values.map { |val|
-              AST::Expr.new(self.op, self.field, val)
-            }))
+          node.bind(AST::Expr.new(operator, *values.map { |val|
+                                    AST::Expr.new(self.op, self.field, val)
+                                  })))
       end
 
       if equality? && field === 'name'
         return nil if value =~ /^[@:]*[*]$/
         if value =~ /^[@:.]/ || node.is_a?(::Query::NickExpr)
-          return ::Query::NickExpr.expr(value, !op.equal?)
+          return node.bind(::Query::NickExpr.expr(value, !op.equal?))
         end
       end
 
       if field.multivalue? && op.equality? && value.index(',')
         values = value.split(',').map { |s| s.strip }
         operator = (op.equal? ? :and : :or)
-        return reexpand(AST::Expr.new(operator, *values.map { |v|
-              AST::Expr.new(op, field, v)
-            }))
+        return reexpand(node.bind(
+                         AST::Expr.new(operator, *values.map { |v|
+                                         AST::Expr.new(op, field, v)
+                                       })))
       end
 
       expand_field_value! if equality?
@@ -104,8 +105,9 @@ module Query
       if field.version_number? && op.relational? &&
           Sql::VersionNumber.version_number?(value)
         return reexpand(
+          node.bind(
             AST::Expr.new(op, field.bind_ordered_column!,
-                          Sql::VersionNumber.version_numberize(value)))
+                          Sql::VersionNumber.version_numberize(value))))
       end
 
       if god_field?(field)
@@ -135,6 +137,7 @@ module Query
             uniq = op.equal?
             operator = (uniq ? :and : :or)
             return reexpand(
+                     node.bind(
               AST::Expr.new(operator,
                 AST::Expr.new(op.negate, field, ''),
                 AST::Expr.new(operator,
@@ -145,22 +148,22 @@ module Query
                 AST::Expr.new(uniq ? '!~~' : '~~', field, "^an? |^the "),
                 AST::Expr.new(uniq ? '!~' : '~~', field, "ghost"),
                 AST::Expr.new(uniq ? '!~' : '~~', field, "pandemonium lord"),
-                AST::Expr.new(uniq ? '!~' : '~~', field, "illusion")).recursive_flag!(:killer_expanded))
+                AST::Expr.new(uniq ? '!~' : '~~', field, "illusion"))).recursive_flag!(:killer_expanded))
           else
-            return AST::Expr.new(op.equal? ? :or : :and,
+            return node.bind(AST::Expr.new(op.equal? ? :or : :and,
               AST::Expr.new(op, field, value),
               AST::Expr.new(op, field, "a " + value),
-              AST::Expr.new(op, field, "an " + value)).recursive_flag!(:killer_expanded)
+              AST::Expr.new(op, field, "an " + value))).recursive_flag!(:killer_expanded)
           end
         end
       end
 
       if field.value_key?
         return reexpand(
-          AST::Expr.and(
-            AST::Expr.field_predicate('=', context.key_field,
-              context.canonical_value_key(field.to_s)),
-            AST::Expr.field_predicate(op, context.value_field, value)))
+          field.bind(AST::Expr.and(
+                      AST::Expr.field_predicate('=', context.key_field,
+                                                context.canonical_value_key(field.to_s)),
+                      AST::Expr.field_predicate(op, context.value_field, value))))
       end
 
       if (field === 'place' || field === 'oplace') and !value.index(':') and
@@ -180,8 +183,8 @@ module Query
           node.operator = op.equal? ? '=~' : '!~'
           node.value = "*draconian"
         else
-          return AST::Expr.field_predicate(op, field,
-            RACE_EXPANSIONS[value.downcase] || value)
+          return node.bind(AST::Expr.field_predicate(op, field,
+            RACE_EXPANSIONS[value.downcase] || value))
         end
       end
 
@@ -190,16 +193,16 @@ module Query
       end
 
       if field === 'cls' && op.equality?
-        return AST::Expr.field_predicate(op, field,
-          CLASS_EXPANSIONS[value.downcase] || value)
+        return node.bind(AST::Expr.field_predicate(op, field,
+          CLASS_EXPANSIONS[value.downcase] || value))
       end
 
       if field === ['place', 'oplace'] && op.equality? then
         fixed_up_places = PLACE_FIXUPS.fixup(value)
-        return AST::Expr.new(op.equal? ? :or : :and,
+        return node.bind(AST::Expr.new(op.equal? ? :or : :and,
           *fixed_up_places.map { |place|
             AST::Expr.field_predicate(op, field, place)
-          })
+          }))
       end
 
       if field === 'when'
@@ -224,7 +227,7 @@ module Query
 
           time_field = context.time_field
 
-          return AST::Expr.new(clause_op,
+          return node.bind(AST::Expr.new(clause_op,
             AST::Expr.field_predicate(lop, 'start', tstart.to_s),
             AST::Expr.field_predicate(rop, time_field, tend.to_s),
             AST::Expr.new(in_tourney ? :or : :and,
@@ -233,7 +236,7 @@ module Query
               }),
             AST::Expr.field_predicate(eqop, 'explbr', ''),
             (tourney.tmap &&
-              AST::Expr.field_predicate(eqop, 'map', tourney.tmap)))
+              AST::Expr.field_predicate(eqop, 'map', tourney.tmap))))
         else
           raise "Bad selector #{field} (#{field}=t for tourney games)"
         end

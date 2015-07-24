@@ -5,7 +5,7 @@ module Query
     class Summary < Term
       include HasExpression
 
-      attr_reader :field, :ordering, :percentage
+      attr_reader :ordering, :percentage
 
       def initialize(expr, ordering='', percentage=nil)
         @arguments = [expr]
@@ -22,7 +22,7 @@ module Query
       end
 
       def simple?
-        self.first.kind == :field
+        self.arity == 1 && self.first.kind == :field
       end
 
       def reverse?

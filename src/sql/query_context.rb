@@ -3,6 +3,14 @@ require 'sql/field'
 module Sql
   module TableContext
     ##
+    # Formally registers a field belonging to this context as required. This
+    # implies asking for the field's column to be SELECTed, and autojoining any
+    # lookup table if necessary.
+    def bind_table_field(field)
+      not_implemented
+    end
+
+    ##
     # Returns the full/long name of this context. For instance, this might be
     # the full table name "logrecord", as opposed to the alias "lg".
     #
@@ -71,6 +79,12 @@ module Sql
     end
 
     ##
+    # Given a milestone value, canonicalizes it.
+    def canonical_value_key(value)
+      not_implemented
+    end
+
+    ##
     # Returns the default value field for the value_key? transform.
     # For milestones, always returns noun.
     def value_field
@@ -95,6 +109,20 @@ module Sql
     ##
     # Returns the table that the given field belongs to.
     def field_origin_table(field)
+      not_implemented
+    end
+
+    ##
+    # Returns the field used to select the key: for milestones, this is the
+    # "type" or "verb" field.
+    def key_field
+      not_implemented
+    end
+
+    ##
+    # Returns the field used to select the value: for milestones this is the
+    # "noun" field.
+    def value_field
       not_implemented
     end
 
@@ -214,6 +242,11 @@ module Sql
     end
 
     ##
+    #
+    def bind_table_field(field)
+    end
+
+    ##
     # Returns a list of all local db columns in this query context. This does not
     # include auto-joined columns.
     #
@@ -311,11 +344,11 @@ module Sql
     end
 
     def key_field
-      @key_field.dup
+      @key_field.dup if @key_field
     end
 
     def value_field
-      @value_field.dup
+      @value_field.dup if @value_field
     end
 
     def initialize(config, name, table, entity_name, alt_context, options)

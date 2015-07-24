@@ -31,6 +31,8 @@ module Sql
       @fields ||= find_fields
     end
 
+    ##
+    # The field (usually a text field) in the lookup table. Example: "name".
     def lookup_field(field_name)
       if field_name_match?(field_name)
         return self.fields[0].name.dup
@@ -38,6 +40,9 @@ module Sql
       field_name
     end
 
+    ##
+    # The foreign key (_id) field in the primary table referencing the id in the
+    # lookup table.
     def fk_field(field_name)
       if self.generated_columns.any? { |c| c.name == field_name }
         return Sql::Field.new(self.fields[0].name).reference_field

@@ -3,6 +3,11 @@ require 'sql/query_table'
 require 'sql/field'
 
 module Sql
+  ##
+  # Resolves Sql::Fields in the given AST, binding them to the tables they're
+  # from. Automatically joins the base context table to the autojoin table for
+  # fields that belong to the autojoin table. Automatically joins lookup tables
+  # to the main table for lookup (reference) fields.
   class FieldResolver
     def self.resolve(ast, field)
       return unless field
@@ -42,6 +47,8 @@ module Sql
 
       column = field.column
       raise "Unknown field: #{field} (#{field.context})" unless column
+
+      column.bind_table_field(field)
 
       # If this is not a local field, we need to join to the alt table first:
       if column.table != field.context && field.context.autojoin?(column.table)
@@ -83,10 +90,6 @@ module Sql
   private
 
     def apply_alt_join(field)
-      unless field.context.respond_to?(:alt)
-        require 'pry'
-        binding.pry
-      end
       alt = field.context.alt
       return unless alt
       ref_field = context.join_field
@@ -100,6 +103,10 @@ module Sql
       field.table = tables.lookup!(table)
       field.sql_name = field.column.fk_name.to_s if field.reference_id_only?
       field
+    rescue
+      require 'pry'
+      binding.pry
+      raise
     end
   end
 end

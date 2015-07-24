@@ -26,12 +26,12 @@ module Query
       private
 
       def bind_subquery_contexts(ast)
+        context = ast.is_a?(Sql::TableContext) ? ast : ast.context
         ast.transform_nodes_breadthfirst! { |node|
           if node.kind == :query
             bind_subquery_contexts(node)
           else
-            STDERR.puts("Binding context #{ast.class} to #{node.to_s}")
-            node.bind_context(ast)
+            node.bind_context(context)
           end
           node
         }
@@ -39,13 +39,16 @@ module Query
 
       def translate_ast(ast)
         ast = ASTWalker.map_kinds(ast, :query) { |q|
-          STDERR.puts("Recursing into #{q}")
           ASTTranslator.new(q).apply
         }
 
         ast = ASTWalker.map_raw_fields(ast) { |field|
-          STDERR.puts("Converting field: #{field} to Sql::Field")
           Sql::Field.field(field.name).bind_context(field.context)
+        }
+
+        STDERR.puts("Field context report for #{ast}:")
+        ast.each_field { |f|
+          STDERR.puts("Field: #{f}, context: #{f.context}")
         }
 
         ast = ASTWalker.map_keywords(ast) { |kw, parent|

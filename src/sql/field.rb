@@ -21,7 +21,6 @@ module Sql
     attr_reader :prefix, :aliased_name, :full_name, :canonical_name
     attr_accessor :table, :sql_name
     attr_accessor :name
-    attr_writer :context
     attr_writer   :column
 
     @@aliased_name_cache = { }
@@ -43,15 +42,8 @@ module Sql
       @name = @name.dup
     end
 
-    def reference_id_only=(id_only)
-      @reference_id_only = id_only
-    end
-
-    ##
-    # When rebinding contexts, zap the column.
-    def context=(new_context)
-      @column = nil
-      @context = new_context
+    def arity
+      1
     end
 
     ##
@@ -65,12 +57,36 @@ module Sql
       @reference_id_only
     end
 
-    def split_aliased_name(aliased_name)
-      @@aliased_name_cache[aliased_name] ||= split_prefixed_name(aliased_name)
+    def reference_id_only=(id_only)
+      @reference_id_only = id_only
+    end
+
+    ##
+    # When rebinding contexts, zap the column.
+    def context=(new_context)
+      @column = nil
+      @context = new_context
     end
 
     def context
       @context || Sql::QueryContext.context
+    end
+
+    def bind_context(new_context)
+      if !new_context.is_a?(Sql::TableContext)
+        require 'pry'
+        binding.pry
+      end
+      self.context = new_context unless @context
+      self
+    end
+
+    def split_aliased_name(aliased_name)
+      @@aliased_name_cache[aliased_name] ||= split_prefixed_name(aliased_name)
+    end
+
+    def field
+      self
     end
 
     def fields
@@ -84,10 +100,13 @@ module Sql
     # Returns a copy of this field that is qualified with the table of
     # the context.
     def context_qualified
-      table = context.field_origin_table(self)
-      raise("Cannot find table for #{self}") unless table
+      return self if self.table
+      tbl = context.field_origin_table(self)
+      unless tbl
+        raise("Cannot find table for #{self}")
+      end
       clone = self.dup
-      clone.table = Sql::QueryTable.table(table)
+      clone.table = Sql::QueryTable.table(tbl)
       clone
     end
 

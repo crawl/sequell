@@ -22,6 +22,10 @@ module Sql
       @alias = name
     end
 
+    def bind_table_field(field)
+      # Nothing to do
+    end
+
     def dup
       copy = QueryTable.new(@name)
       copy.alias = self.alias
@@ -62,7 +66,15 @@ module Sql
     end
 
     def to_s
-      @name
+      if @alias
+        "#{@alias}:#{@name}"
+      else
+        @name
+      end
+    end
+
+    def inspect
+      "QueryTable[#{to_s}]"
     end
   end
 end

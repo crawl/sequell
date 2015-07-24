@@ -95,6 +95,8 @@ module Query
       # instances of Sql::QueryTable and anonymous nested QueryAST objects.
       attr_reader :query_tables
 
+      attr_reader :bound_select_expressions
+
       def initialize(context_name, head, tail, filter, subquery=false)
         @game = GameContext.game
         @context = Sql::QueryContext.named(context_name.to_s)
@@ -105,6 +107,7 @@ module Query
         @subquery_alias = nil
         @join_tables = []
         @join_conditions = []
+        @bound_select_expressions = []
 
         @filter = filter
         @options = []
@@ -154,7 +157,7 @@ module Query
         if grouped?
           grouped_select_expressions
         else
-          joined_expressions
+          bound_select_expressions
         end
       end
 
@@ -181,6 +184,14 @@ module Query
       # lookup on the context: we never autojoin subqueries.
       def autojoin?(table)
         context.autojoin?(table)
+      end
+
+      def key_field
+        context.key_field
+      end
+
+      def value_field
+        context.value_field
       end
 
       ##
@@ -240,6 +251,14 @@ module Query
       end
 
       ##
+      # Sets the alias for this table. For subqueries with defined aliases,
+      # does nothing.
+      def alias=(new_alias)
+        return self.alias if subquery_alias
+        @alias = new_alias
+      end
+
+      ##
       # Given a Sql::Field, resolves it as a column either on the context, or on
       # any of the join tables.
       #
@@ -267,7 +286,7 @@ module Query
       # Returns true if this prefix can be considered as a lookup in the query
       # context.
       def context_prefix?(prefix)
-        !prefix || (!subquery? && prefix == context.alias) || prefix == self.alias
+        !prefix || prefix == context.alias
       end
 
       ##
@@ -278,37 +297,35 @@ module Query
       end
 
       ##
+      # Binds a field to this query AST, forcing it to be selected. This is also
+      # an invitation to twiddle the field or the field's column if it requires
+      # special treatment. This is mainly used by subqueries to prevent the
+      # field from autojoining a lookup table when the subquery already
+      # autojoins that table.
+      def bind_table_field(field)
+        unless grouped?
+          @bound_select_expressions << field unless @bound_select_expressions.include?(field)
+        end
+      end
+
+      ##
       # Given a Sql::Field, resolves it as a column either on the context, or in
       # this query.
       def resolve_local_column(field, internal_expr)
         prefix = field.prefix
         return if prefix && prefix != self.alias && prefix != context.alias
 
-        if context_prefix?(prefix)
-          column = context.resolve_local_column(field, :internal_expr, :ignore_prefix)
-          if column
-            return column.bind(internal_expr ? context_table(context) : self)
-          end
+        if grouped?
+          resolve_local_grouped_column(field, internal_expr)
+        else
+          resolve_local_ungrouped_column(field, internal_expr)
         end
-
-        if local_prefix?(prefix)
-          if grouped?
-            if field == "count"
-              # If this is a grouped query, we must recognize the *implicit* count
-              # column.
-              return Sql::Column.new(context.config, "countI", nil).bind(self)
-            end
-          end
-        end
-
-        # Not my field!
-        nil
       end
 
       ##
       # Returns the field's table property.
       def field_origin_table(field)
-        col = resolve_local_column(field, :internal_expr)
+        col = resolve_column(field, :internal_expr)
         col.table if col
       end
 
@@ -323,6 +340,10 @@ module Query
       # Returns the value field for the value_key? transform.
       def value_field
         context.value_field
+      end
+
+      def canonical_value_key(value)
+        context.canonical_value_key(value)
       end
 
       ##
@@ -653,19 +674,9 @@ module Query
       end
 
       def implied_group_count_expression
-        Query::AST::Funcall.new('count_all') { |count|
+        Query::AST::Funcall.new('count_all').tap { |count|
           count.alias = "count"
         }
-      end
-
-      def joined_expressions
-        fields = []
-        join_conditions.each { |jc|
-          jc.each_field { |f|
-            fields << f if f.column.ast.equal?(self)
-          }
-        }
-        fields
       end
 
       ##
@@ -673,6 +684,58 @@ module Query
       def context_table(context)
         @context_table ||= { }
         @context_table[context.alias] ||= Sql::QueryTable.table(context)
+      end
+
+      ##
+      # Returns true if the field name matches the expression alias, or if the
+      # field is a direct reference to the expression field.
+      def external_field_matches_expr?(field, expr)
+        field == expr.alias || (expr.field && field.name == expr.field.name && expr.arity == 1)
+      end
+
+      def resolve_local_grouped_column(field, internal_expr)
+        prefix = field.prefix
+        if internal_expr
+          if context_prefix?(prefix)
+            column = context.resolve_local_column(field, :internal_expr, :ignore_prefix)
+            if column
+              return column.bind(internal_expr ? context_table(context) : self)
+            end
+          end
+        else
+          if local_prefix?(prefix)
+            if field == "count"
+              # If this is a grouped query, we must recognize the *implicit* count
+              # column.
+              return Sql::Column.new(context.config, "countI", nil).bind(self)
+            end
+
+            # First look for summary expression with the alias:
+            summarise.each { |summary_expr|
+              if external_field_matches_expr?(field, summary_expr)
+                return Sql::Column.new(context.config, field.name + summary_expr.type.type_id).bind(self)
+              end
+            }
+
+            # Then look for extra expressions with the alias:
+            if self.extra
+              self.extra.each { |extra_expr|
+                if external_field_matches_expr?(field, extra_expr)
+                  return Sql::Column.new(context.config, field.name + extra_expr.type.type_id).bind(self)
+                end
+              }
+            end
+          end
+        end
+      end
+
+      def resolve_local_ungrouped_column(field, internal_expr)
+        if internal_expr ? context_prefix?(field.prefix) : local_prefix?(field.prefix)
+          column = context.resolve_local_column(field, :internal_expr, :ignore_prefix)
+          if column
+            return column.bind(internal_expr ? context_table(context) : self)
+          end
+        end
       end
     end
   end

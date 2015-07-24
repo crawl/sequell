@@ -189,7 +189,7 @@ module Sql
 
         @values = self.with_values(field_expressions, @values)
         @values += ast.table_list_values
-        "SELECT #{select_cols} FROM #{ast.to_table_list_sql} " +
+        "SELECT #{select_cols}\n  FROM #{ast.to_table_list_sql}\n" +
            where(@ast.head, with_sorts && @sorts)
       }
     end

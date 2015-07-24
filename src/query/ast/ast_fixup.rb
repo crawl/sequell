@@ -11,7 +11,6 @@ module Query
 
       def initialize(ast)
         @query_ast = ast
-        @query_ast.bind_context(Sql::QueryContext.context)
         @head = ast.respond_to?(:head) ? ast.head : ast
       end
 
@@ -143,8 +142,14 @@ module Query
       # Convert milestones value fields X=Y (such as rune=barnacled) into the
       # noun=Y type=X form.
       def fix_milestone_value_fields!(ast)
+        STDERR.puts("Fixing milestone value fields for #{ast}")
         values = []
         ast.head.map_fields { |field|
+          STDERR.puts("milestone_value: #{field} value_key?: #{field.value_key?}")
+          if field == 'uniq'
+            require 'pry'
+            binding.pry
+          end
           if field.value_key?
             values << field.name
             Sql::Field.field(field.context.value_field).bind_context(field.context)
@@ -157,6 +162,7 @@ module Query
               Expr.field_predicate('=', ast.context.key_field, v)
             })
         end
+        STDERR.puts("Done binding milestone fields: #{ast}")
       end
 
       def kill_meta_nodes(ast, node)

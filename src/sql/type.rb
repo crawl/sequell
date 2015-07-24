@@ -16,7 +16,7 @@ module Sql
 
     def self.promoted_type(a, b)
       return a unless a.compatible?(b)
-      promotion = promotion_map[a.type] || promotion_map[b.type]
+      promotion = promotion_map[a.type_id] || promotion_map[b.type_id]
       if promotion && promotion.category.compatible?(a) &&
           promotion.category.compatible?(b)
         return self.type(promotion.target).with_unit(a.unit || b.unit)
@@ -33,12 +33,13 @@ module Sql
     end
 
     attr_accessor :unit
+    attr_reader :type_string
 
     def initialize(type_string)
       @type_string = type_string.sub(/(?:.*?)([A-Z]*[\W]*)$/, '\1')
     end
 
-    def type
+    def type_id
       @type ||= find_type
     end
 
@@ -92,7 +93,7 @@ module Sql
     end
 
     def category
-      @category ||= (Type.type_categories[self.type] || 'S')
+      @category ||= (Type.type_categories[self.type_id] || 'S')
     end
 
     def with_unit(unit)
@@ -109,11 +110,11 @@ module Sql
     end
 
     def any?
-      self.type == '*'
+      self.type_id == '*'
     end
 
     def case_sensitive?
-      self.type == 'S'
+      self.type_id == 'S'
     end
 
     def version_number?
@@ -125,15 +126,15 @@ module Sql
     end
 
     def date?
-      self.type == 'D'
+      self.type_id == 'D'
     end
 
     def duration_type?
-      self.type == 'ET' || self.type == 'ETD'
+      self.type_id == 'ET' || self.type_id == 'ETD'
     end
 
     def interval?
-      self.type == 'ETD'
+      self.type_id == 'ETD'
     end
 
     def duration?
@@ -141,11 +142,11 @@ module Sql
     end
 
     def version?
-      self.type == 'VER'
+      self.type_id == 'VER'
     end
 
     def vault?
-      self.type == 'MAP'
+      self.type_id == 'MAP'
     end
 
     def numeric?
@@ -153,15 +154,15 @@ module Sql
     end
 
     def integer?
-      self.type == 'I'
+      self.type_id == 'I'
     end
 
     def real?
-      self.type == 'F'
+      self.type_id == 'F'
     end
 
     def boolean?
-      self.type == '!'
+      self.type_id == '!'
     end
 
     def display_value(value, display_format=nil)
@@ -224,7 +225,7 @@ module Sql
     alias :type_match? :compatible?
 
     def == (other)
-      self.type == Type.type(other).type
+      self.type_id == Type.type(other).type_id
     end
 
     def + (other)
