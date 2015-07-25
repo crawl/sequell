@@ -70,7 +70,6 @@ module Sql
 
     def join(join_condition)
       join_with(join_condition) { |joins|
-        STDERR.puts("#{self} Appending join condition: #{join_condition}")
         joins << join_condition
       }
     end
@@ -109,11 +108,11 @@ module Sql
 
     ##
     # Returns any SQL ? placeholder values from JOINed subqueries.
-    def values
+    def sql_values
       values = []
       include_left_table = true
       @joins.each { |j|
-        values += j.values(include_left_table)
+        values += j.sql_values(include_left_table)
         include_left_table = false
       }
       values
@@ -136,7 +135,9 @@ module Sql
       until unsorted_joins.empty?
         next_join_condition = find_next_join_condition(seen_tables, unsorted_joins)
         unless next_join_condition
-          raise("Bad join condition chain: no condition in #{unsorted_joins} matches the table set #{seen_tables.to_a.map(&:to_s)}")
+          require 'pry'
+          binding.pry
+          raise("Bad join condition chain: no condition in #{unsorted_joins.map(&:to_s)} matches the table set #{seen_tables.to_a.map(&:to_s)}")
         end
         sorted_joins << next_join_condition
         seen_tables << next_join_condition.left_table

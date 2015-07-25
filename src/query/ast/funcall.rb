@@ -52,11 +52,16 @@ module Query
       end
 
       def to_sql
-        @fn.expr.gsub(/%s/) { |m|
+        expr = @fn.expr.gsub(/%s/) { |m|
           self.first.to_sql
         }.gsub(/:(\d+)\b/) { |m|
           arguments[$1.to_i - 1].to_sql
         }
+        if self.alias
+          "#{expr} AS #{self.alias}"
+        else
+          expr
+        end
       end
 
       def sql_values

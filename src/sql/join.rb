@@ -91,11 +91,11 @@ module Sql
       raise
     end
 
-    def values(include_left=false)
+    def sql_values(include_left=false)
       if include_left
-        left_table.values + right_table.values
+        left_table.sql_values + right_table.sql_values
       else
-        right_table.values
+        right_table.sql_values
       end
     end
 

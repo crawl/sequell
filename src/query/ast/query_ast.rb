@@ -639,7 +639,7 @@ module Query
       #
       # This is a subset of the values returned by sql_values.
       def table_list_values
-        query_tables.values
+        query_tables.sql_values
       end
 
       ##
@@ -661,6 +661,14 @@ module Query
 
       def == (other)
         self.equal?(other)
+      end
+
+      def eql?(other)
+        self == other
+      end
+
+      def hash
+        self.object_id
       end
 
     private

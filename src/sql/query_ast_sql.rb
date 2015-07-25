@@ -130,10 +130,6 @@ module Sql
       }
     end
 
-    def sql_values
-      @sql_values
-    end
-
     ##
     # Converts expressions on fields that belong in lookup tables into the
     # fields in the lookup tables.

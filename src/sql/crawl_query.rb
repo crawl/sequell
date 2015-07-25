@@ -6,6 +6,7 @@ require 'sql/field_resolver'
 require 'sql/aggregate_expression'
 require 'formatter/json'
 require 'formatter/text'
+require 'ostruct'
 
 module Sql
   class CrawlQuery
@@ -173,14 +174,13 @@ module Sql
       @ast.random?
     end
 
-    def resolve_field(field, ast=@ast)
+    def resolve_field(field, ast)
       with_contexts {
         Sql::FieldResolver.resolve(ast, field)
       }
     end
 
     def select(field_expressions, with_sorts=true)
-      # TODO: Odd use here: @count_ast vs @ast in where clause: is this a bug?
       ast = @count_ast.dup
       with_contexts {
         select_cols = field_expressions.map { |fe|
@@ -189,8 +189,12 @@ module Sql
 
         @values = self.with_values(field_expressions, @values)
         @values += ast.table_list_values
-        "SELECT #{select_cols}\n  FROM #{ast.to_table_list_sql}\n" +
-           where(@ast.head, with_sorts && @sorts)
+
+        where_values = where(ast, with_sorts && @sorts)
+        query = "SELECT #{select_cols}\n  FROM #{ast.to_table_list_sql}\n" +
+                where_values.where_clause
+        @values += where_values.values
+        query
       }
     end
 
@@ -219,32 +223,40 @@ module Sql
       if record_index > 0 && count == 1
         resolve_sort_fields(@count_sorts, @count_ast)
         id_subquery = self.select_id(with_sorts, record_index, count)
+        id_values = @values.dup
         id_field = Sql::Field.field('id')
         id_sql = resolve_field(id_field, @ast).to_sql_output
         @values = self.with_values(query_fields, @values)
         @values += self.with_values(@count_sorts)
-        return ("SELECT #{query_columns.sjoin(", ")} " +
-                "FROM #{ast.to_table_list_sql} WHERE #{id_sql} = (#{id_subquery})")
+        @values += id_values
+        result = ("SELECT #{query_columns.join(", ")} " +
+                  "FROM #{@ast.to_table_list_sql} WHERE #{id_sql} = (#{id_subquery})")
+        return result
       end
 
       @values = self.with_values(query_fields, @values)
       @values += self.with_values(@sorts) if with_sorts
       "SELECT #{query_columns.join(", ")} FROM #{@ast.to_table_list_sql} " +
-         where(@ast.head, with_sorts && @sorts) + " " +
+         where(@ast, with_sorts && @sorts) + " " +
          limit_clause(record_index, count)
     end
 
     def select_id(with_sorts=false, record_index=0, count=1)
       id_field = Sql::Field.field('id')
       id_sql = resolve_field(id_field, @count_ast).to_sql
-      where_clause = self.where(@count_ast, with_sorts && @count_sorts)
+      @values = @count_ast.table_list_values
+      where_values = where(@count_ast, with_sorts && @count_sorts)
+      @values += where_values.values
       "SELECT #{id_sql} FROM #{@count_ast.to_table_list_sql} " +
-        "#{where_clause} #{limit_clause(record_index, count)}"
+        "#{where_values.where_clause} #{limit_clause(record_index, count)}"
     end
 
     def select_count
-      "SELECT COUNT(*) FROM #{@count_ast.to_table_list_sql} " +
-        where(@count_ast.head, false)
+      "SELECT COUNT(*) FROM #{@count_ast.to_table_list_sql} " + count_where.where_clause
+    end
+
+    def count_values
+      @count_ast.table_list_values + count_where.values
     end
 
     def limit_clause(record_index, count)
@@ -275,7 +287,7 @@ module Sql
       @query = nil
       sortdir = @summary_sort
 
-      where_clause = where(@summary_ast.head, false)
+      where_clause = where(@summary_ast, false)
       @values = self.with_values([summarise, extra].compact, @values)
 
       summary_field_text = self.summary_fields
@@ -344,11 +356,6 @@ module Sql
       [basefields, extras].find_all { |x| x && !x.empty? }.join(", ")
     end
 
-    def where(predicates, with_sorts)
-      @aliases = { }
-      build_query(predicates, with_sorts)
-    end
-
     def values
       raise "Must build a query first" unless @values
       @values
@@ -356,20 +363,6 @@ module Sql
 
     def version_predicate
       %{v #{OPERATORS['=~']} ?}
-    end
-
-    def build_query(predicates, with_sorts=nil)
-      @query, @values = predicates.to_sql_output, predicates.sql_values
-      @query = "WHERE #{@query}" unless @query.empty?
-      if with_sorts && !with_sorts.empty?
-        @query << " " unless @query.empty?
-        @query << "ORDER BY " << with_sorts.first.to_sql
-        unless ast.primary_sort.unique_valued?
-          @query << ", " <<
-                 Query::Sort.new(resolve_field('id'), 'ASC').to_sql
-        end
-      end
-      @query
     end
 
     def reverse
@@ -384,6 +377,29 @@ module Sql
     end
 
   private
+
+    def build_query(ast, with_sorts=nil)
+      query, values = ast.head.to_sql_output, ast.sql_values
+      query = "WHERE #{query}" unless query.empty?
+      if with_sorts && !with_sorts.empty?
+        query << " " unless query.empty?
+        query << "ORDER BY " << with_sorts.first.to_sql
+        unless ast.primary_sort.unique_valued?
+          query << ", " <<
+            Query::Sort.new(resolve_field('id', ast), 'ASC').to_sql
+        end
+      end
+      OpenStruct.new(where_clause: query, values: values)
+    end
+
+    def where(ast, with_sorts)
+      @aliases = { }
+      build_query(ast, with_sorts)
+    end
+
+    def count_where
+      @count_where ||= where(@count_ast, false)
+    end
 
     def check_row_count
       c = option(:count)

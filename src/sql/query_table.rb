@@ -26,6 +26,10 @@ module Sql
       # Nothing to do
     end
 
+    def sql_values
+      []
+    end
+
     def dup
       copy = QueryTable.new(@name)
       copy.alias = self.alias
@@ -58,6 +62,14 @@ module Sql
 
     def == (other)
       self.name == other.name && self.alias == other.alias
+    end
+
+    def eql?(other)
+      self == other
+    end
+
+    def hash
+      to_s.hash
     end
 
     def to_sql
