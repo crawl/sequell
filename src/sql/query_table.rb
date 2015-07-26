@@ -1,4 +1,4 @@
-require 'sql/query_context'
+require 'sql/table_context'
 
 module Sql
   # A single table referenced in a query.

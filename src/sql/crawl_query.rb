@@ -235,9 +235,15 @@ module Sql
       end
 
       @values = self.with_values(query_fields, @values)
+      @values += @ast.table_list_values
+
+      where_clause = where(@ast, with_sorts && @sorts)
+      @values += where_clause.values
+
       @values += self.with_values(@sorts) if with_sorts
+
       "SELECT #{query_columns.join(", ")} FROM #{@ast.to_table_list_sql} " +
-         where(@ast, with_sorts && @sorts) + " " +
+         where_clause.where_clause + " " +
          limit_clause(record_index, count)
     end
 
@@ -367,10 +373,10 @@ module Sql
 
     def reverse
       with_contexts do
-        predicate_copy = @original_pred.dup
+        predicate_copy = @original_query.dup
         ast_copy = @ast.dup
         ast_copy.reverse_sorts!
-        rq = CrawlQuery.new(ast_copy, predicate_copy, @nick)
+        rq = CrawlQuery.new(ast_copy)
         rq.table = @table
         rq
       end

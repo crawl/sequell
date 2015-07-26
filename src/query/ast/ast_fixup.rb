@@ -79,7 +79,6 @@ module Query
       # If the node is a predicate joining two tables, lift it to the special
       # list of join_conditions.
       def bind_join_condition(ast, node)
-        STDERR.puts("Considering node as join candidate: #{node.to_s}")
         return node unless node.field_value_predicate? || node.field_field_predicate?
 
         left_col = ast.resolve_column(node.left, :internal_expr)
@@ -145,11 +144,6 @@ module Query
         STDERR.puts("Fixing milestone value fields for #{ast}")
         values = []
         ast.head.map_fields { |field|
-          STDERR.puts("milestone_value: #{field} value_key?: #{field.value_key?}")
-          if field == 'uniq'
-            require 'pry'
-            binding.pry
-          end
           if field.value_key?
             values << field.name
             Sql::Field.field(field.context.value_field).bind_context(field.context)
@@ -162,7 +156,6 @@ module Query
               Expr.field_predicate('=', ast.context.key_field, v)
             })
         end
-        STDERR.puts("Done binding milestone fields: #{ast}")
       end
 
       def kill_meta_nodes(ast, node)
