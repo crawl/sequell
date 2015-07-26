@@ -64,11 +64,30 @@ describe Grammar::Query do
     '!lg * ktyp=  killer=foo',
     '!lm * rune  1',
     '!lg * abyss:*',
+
+    # Subqueries:
+
+    # Subquery join:
     '!lg * ${lm}[uniq=Boris s=gid]:m gid=m:gid max=m:count',
     '!lg * $lm[uniq=Boris s=gid]:m gid=m:gid max=m:count',
-    '!lg * $[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char',
+
+    # Exists query (autojoins by gid since there's no explicit join)
+    # (finds games that didn't do Lair)
     '!lg * !exists($lm[br.enter=Lair])',
+
+    # The same query with an explicit join:
+    '!lg * !exists($lm[br.enter=Lair gid=outer:gid])',
+
+    # Exists query with explicit join
+    # Finds players whose ghosts have killed someone else:
+    %{!lg * exists($lg[killer=${outer:name + '\'s ghost'} src=outer:src])},
+
+    # Subquery expression
     '!lg * $lm[gid=root:gid x=count(*)]=1',
+
+    # Window function
+    '!lg * $[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char',
+
     '!lg * !exists($lm[])',
     '!lg * !exists($lm[br.enter=Lair])',
   ]

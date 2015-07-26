@@ -97,6 +97,15 @@ module Query
 
       attr_reader :bound_select_expressions
 
+      ##
+      # Set to true for exists queries.
+      attr_writer :exists_query
+
+      ##
+      # If this happens to be a subquery, the parent query must be set as the
+      # outer query.
+      attr_accessor :outer_query
+
       def initialize(context_name, head, tail, filter, subquery=false)
         @game = GameContext.game
         @context = Sql::QueryContext.named(context_name.to_s)
@@ -144,6 +153,10 @@ module Query
         @join_tables = @join_tables.map(&:dup)
         @join_conditions = @join_conditions.map(&:dup)
         @query_tables = @query_tables.dup if @query_tables
+      end
+
+      def exists_query?
+        @exists_query
       end
 
       ##
@@ -542,7 +555,7 @@ module Query
       end
 
       def needs_sort?
-        !summary? && !compound_query?
+        !summary? && !compound_query? && !exists_query?
       end
 
       def primary_sort
@@ -622,8 +635,15 @@ module Query
         pieces << "/" << @tail.to_query_string(false) if @tail
         pieces << "?:" << @filter.to_s if @filter
         text = pieces.select { |x| !x.empty? }.join(' ')
-        text = "$#{context_alias.to_s}[#{text}]" if subquery?
+        if subquery?
+          text = "$#{context_alias.to_s}[#{text}]"
+          text += ":${subquery_alias}" if subquery_alias
+        end
         text
+      end
+
+      def to_query_string
+        to_s
       end
 
       ##

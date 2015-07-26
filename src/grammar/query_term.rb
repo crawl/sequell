@@ -39,11 +39,11 @@ module Grammar
     }
 
     rule(:exists_subquery_clause) {
-      str("!") >> exists_subquery.as(:negated) | exists_subquery
+      str("!") >> exists_subquery_clause.as(:negated) | exists_subquery
     }
 
     rule(:exists_subquery) {
-      (str("exists(") >> space? >> subquery >> space? >> str(")")).as(:exists_subquery)
+      (str("exist") >> str("s").maybe >> str("(") >> space? >> subquery >> space? >> str(")")).as(:exists_subquery)
     }
 
     rule(:game_number) {

@@ -88,8 +88,6 @@ module Sql
             if seen_tables.include?(join.right_table)
               join.flip!
             else
-              require 'pry'
-              binding.pry
               raise("Bad join condition: #{join}: references table that's not in the list of priors: #{seen_tables.to_a.map(&:to_s)}")
             end
           end
@@ -101,7 +99,7 @@ module Sql
           include_left_table = false
         end
       else
-        sql_frags = primary_table.to_sql
+        sql_frags = [primary_table.to_sql]
       end
       sql_frags.join("\n ")
     end
@@ -127,6 +125,8 @@ module Sql
     # Reorder join conditions so that each join refers to one of the tables in
     # one of the prior joins.
     def sort_join_conditions!
+      return if @joins.empty?
+
       seen_tables = Set.new
       unsorted_joins = @joins.dup
       sorted_joins = [unsorted_joins.shift]

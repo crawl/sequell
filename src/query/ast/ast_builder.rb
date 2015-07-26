@@ -18,6 +18,7 @@ require 'query/ast/group_order_list'
 require 'query/ast/keyed_option_list'
 require 'query/ast/keyed_option'
 require 'query/ast/funcall'
+require 'query/ast/exists_expr'
 require 'query/nick_expr'
 require 'query/sort'
 require 'sql/field'
@@ -257,6 +258,10 @@ module Query
       rule(table_subquery: simple(:subquery)) {
         subquery.table_subquery = true
         subquery
+      }
+
+      rule(exists_subquery: simple(:subquery)) {
+        ExistsExpr.new(subquery)
       }
 
       rule(extra: sequence(:extra)) { ExtraList.new(*extra) }

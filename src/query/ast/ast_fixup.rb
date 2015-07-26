@@ -16,6 +16,8 @@ module Query
 
       def result(fragment=false)
         query_ast.each_query { |q|
+          q.outer_query = query_ast unless q.equal?(query_ast)
+
           fix_milestone_value_fields!(q)
           fixup_full_query!(q)
 

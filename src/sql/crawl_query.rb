@@ -385,7 +385,7 @@ module Sql
   private
 
     def build_query(ast, with_sorts=nil)
-      query, values = ast.head.to_sql_output, ast.sql_values
+      query, values = ast.head.to_sql_output, ast.head.sql_values
       query = "WHERE #{query}" unless query.empty?
       if with_sorts && !with_sorts.empty?
         query << " " unless query.empty?

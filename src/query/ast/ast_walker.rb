@@ -22,22 +22,27 @@ module Query
         block.call(node, parent)
       end
 
-      def self.map_nodes_breadthfirst(ast, parent=nil, condition=nil, &block)
-        ASTMapper.new(ast, parent, condition, true, block).apply
+      def self.map_nodes_breadthfirst(ast, parent=nil, condition=nil, visit_subqueries=false, &block)
+        ASTMapper.new(ast, parent, condition, true, visit_subqueries, block).apply
       end
 
-      def self.map_nodes(ast, parent=nil, condition=nil, &block)
-        ASTMapper.new(ast, parent, condition, false, block).apply
+      def self.map_nodes(ast, parent=nil, condition=nil, visit_subqueries=false, &block)
+        ASTMapper.new(ast, parent, condition, false, visit_subqueries, block).apply
       end
 
       ##
       # Visits each node in the AST that satisfies the condition
       # block, depth-first.
-      def self.each_node(ast, parent=nil, condition=nil, &block)
+      def self.each_node(ast, parent=nil, condition=nil, visit_subqueries=false, &block)
         return nil if ast.nil?
         ast.arguments.each { |arg|
           each_node(arg, ast, condition, &block)
         }
+
+        if ast.kind == :query && visit_subqueries
+          each_node(ast.head, ast, condition, visit_subqueries, &block)
+        end
+
         if !condition || condition.call(ast)
           return block_call(block, ast, parent)
         end
@@ -56,14 +61,14 @@ module Query
         map_nodes(ast, nil, Proc.new { |node| node.type.boolean? }, &block)
       end
 
-      def self.map_kinds(ast, kinds, &block)
+      def self.map_kinds(ast, kinds, visit_subqueries=false, &block)
         kinds = Set.new([kinds]) unless kinds.is_a?(Set)
-        map_nodes(ast, nil, Proc.new { |node| kinds.include?(node.kind) }, &block)
+        map_nodes(ast, nil, Proc.new { |node| kinds.include?(node.kind) }, visit_subqueries, &block)
       end
 
-      def self.each_kind(ast, kinds, &block)
+      def self.each_kind(ast, kinds, visit_subqueries=false, &block)
         kinds = Set.new([kinds]) unless kinds.is_a?(Set)
-        each_node(ast, nil, Proc.new { |node| kinds.include?(node.kind) }, &block)
+        each_node(ast, nil, Proc.new { |node| kinds.include?(node.kind) }, visit_subqueries, &block)
       end
 
       def self.map_fields(ast, &block)
@@ -83,7 +88,7 @@ module Query
       end
 
       def self.map_values(ast, &block)
-        map_kinds(ast, :value, &block)
+        map_kinds(ast, :value, :visit_subqueries, &block)
       end
 
       def self.map_subqueries(ast, &block)
@@ -92,11 +97,12 @@ module Query
     end
 
     class ASTMapper
-      def initialize(ast, parent, condition, parent_first, block)
+      def initialize(ast, parent, condition, parent_first, visit_subqueries, block)
         @ast = ast
         @parent = parent
         @condition = condition
         @parent_first = parent_first
+        @visit_subqueries = visit_subqueries
         @block = block
       end
 
@@ -106,8 +112,16 @@ module Query
 
     private
 
+      def visit_subqueries?
+        @visit_subqueries
+      end
+
+      def condition_match?(node)
+        !@condition || @condition.call(node)
+      end
+
       def map(node, parent)
-        return nil if @ast.nil?
+        return nil if node.nil?
         if @parent_first
           node = map_node(node, parent)
           map_args(node, parent) if node
@@ -118,7 +132,7 @@ module Query
       end
 
       def map_node(node, parent)
-        if !@condition || @condition.call(node)
+        if condition_match?(node)
           @block.call(node, parent)
         else
           node
@@ -129,6 +143,11 @@ module Query
         node.arguments = node.arguments.map { |arg|
           map(arg, node)
         }.compact
+
+        if visit_subqueries? && node.kind == :query
+          node.head = map(node.head, node)
+        end
+
         node
       end
     end

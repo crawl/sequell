@@ -58,7 +58,7 @@ module Sql
     end
 
     def build_query
-      sql = if subquery?
+      sql = if subquery? && !exists_query?
               "(#{query_sql}) AS #{query_alias}"
             else
               query_sql
@@ -155,6 +155,10 @@ module Sql
 
     def subquery?
       query_ast.subquery?
+    end
+
+    def exists_query?
+      query_ast.exists_query?
     end
 
     def query_alias
