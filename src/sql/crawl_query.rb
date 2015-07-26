@@ -222,10 +222,12 @@ module Sql
     def select_all(with_sorts=true, record_index=0, count=1)
       if record_index > 0 && count == 1
         resolve_sort_fields(@count_sorts, @count_ast)
+        @values = []
         id_subquery = self.select_id(with_sorts, record_index, count)
         id_values = @values.dup
         id_field = Sql::Field.field('id')
         id_sql = resolve_field(id_field, @ast).to_sql_output
+        @values = []
         @values = self.with_values(query_fields, @values)
         @values += self.with_values(@count_sorts)
         @values += id_values
