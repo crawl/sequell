@@ -61,6 +61,7 @@ module Sql
     end
 
     def == (other)
+      return false unless other
       self.name == other.name && self.alias == other.alias
     end
 

@@ -35,6 +35,13 @@ module Sql
       @join_mode_name = JOIN_MODES[@join_mode] or raise "Bad join mode: #{join_mode}"
     end
 
+    def rebind_table(old_table, new_table)
+      @left_table = new_table if @left_table == old_table
+      @right_table = new_table if @right_table == old_table
+      @left_fields.each { |f| rebind_field_table(f, old_table, new_table) }
+      @right_fields.each { |f| rebind_field_table(f, old_table, new_table) }
+    end
+
     def flip
       self.class.new(right_table, left_table, right_fields, join_mode, left_fields)
     end
@@ -111,6 +118,10 @@ module Sql
       (0...left_fields.size).map { |i|
         "#{left_table_name}.#{left_fields[i].name}=#{right_table_name}.#{right_fields[i].name}]"
       }.join(' ')
+    end
+
+    def rebind_field_table(field, old_table, new_table)
+      field.table = new_table if field.table == old_table
     end
   end
 end

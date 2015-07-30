@@ -51,7 +51,7 @@ module Query
     end
 
     def each_query(&block)
-      ASTWalker.each_kind(self, :query, &block)
+      Query::AST::ASTWalker.each_kind(self, :query, &block)
 
       # Cheat and call the block on ourselves as well, even if this is not a
       # query.

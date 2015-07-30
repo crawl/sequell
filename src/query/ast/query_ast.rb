@@ -95,8 +95,6 @@ module Query
       # instances of Sql::QueryTable and anonymous nested QueryAST objects.
       attr_reader :query_tables
 
-      attr_reader :bound_select_expressions
-
       ##
       # Set to true for exists queries.
       attr_writer :exists_query
@@ -106,7 +104,13 @@ module Query
       # outer query.
       attr_accessor :outer_query
 
+      def self.next_id
+        @@id ||= 0
+        @@id += 1
+      end
+
       def initialize(context_name, head, tail, filter, subquery=false)
+        @id = self.class.next_id
         @game = GameContext.game
         @context = Sql::QueryContext.named(context_name.to_s)
         @head = head || Expr.and()
@@ -146,6 +150,7 @@ module Query
 
       def initialize_copy(o)
         super
+        @id = self.class.next_id
         @head = @head.dup
         @original_head = @head.dup
         @tail = @tail && @tail.dup
@@ -153,6 +158,8 @@ module Query
         @join_tables = @join_tables.map(&:dup)
         @join_conditions = @join_conditions.map(&:dup)
         @query_tables = @query_tables.dup if @query_tables
+        ASTBinder.bind(self)
+        rebind_table(o)
       end
 
       def exists_query?
@@ -232,7 +239,7 @@ module Query
       end
 
       def query_tables
-        @query_tables ||= Sql::QueryTables.new(self, @context.table(self.game))
+        @query_tables ||= create_query_tables
       end
 
       def add_join_table(j)
@@ -284,6 +291,10 @@ module Query
       # since the AST itself is the table that the outer query is selecting
       # from.
       def resolve_column(field, internal_expr)
+        if exists_query? && field.parent_prefix? && self.outer_query
+          return self.outer_query.resolve_column(field.unqualified, false)
+        end
+
         col = resolve_local_column(field, internal_expr)
         return col if col
 
@@ -319,6 +330,15 @@ module Query
         unless grouped?
           @bound_select_expressions << field unless @bound_select_expressions.include?(field)
         end
+      end
+
+      ##
+      # Returns a list of columns that this QueryAST selects from its tables.
+      def bound_select_expressions
+        if @bound_select_expressions.empty?
+          @bound_select_expressions << Sql::Field.field('id').bind_context(self)
+        end
+        @bound_select_expressions
       end
 
       ##
@@ -676,7 +696,7 @@ module Query
       end
 
       def inspect
-        to_s
+        "Query\##{@id}[#{to_s}]"
       end
 
       def == (other)
@@ -691,7 +711,11 @@ module Query
         self.object_id
       end
 
-    private
+      private
+
+      def create_query_tables
+        Sql::QueryTables.new(self, @context.table(self.game), self.outer_query)
+      end
 
       def ast_sql
         @ast_sql ||= Sql::QueryASTSQL.new(self)
@@ -764,6 +788,24 @@ module Query
             return column.bind(internal_expr ? context_table(context) : self)
           end
         end
+      end
+
+      ##
+      # Replaces all references to old with self in query_tables and in resolved
+      # fields of this table.
+      def rebind_table(old)
+        if @query_tables
+          table_set = @query_tables.tables.dup
+          each_query { |q|
+            q.query_tables.tables = table_set
+          }
+          rebind_query_tables(old, @query_tables)
+        end
+        ASTBinder.rebind_field_tables(old, self)
+      end
+
+      def rebind_query_tables(old, query_tables)
+        query_tables.rebind_table(old, self)
       end
     end
   end

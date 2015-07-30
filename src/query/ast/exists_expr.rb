@@ -13,6 +13,10 @@ module Query
         subquery.exists_query = true
       end
 
+      def initialize_copy(original)
+        @arguments = @arguments.map(&:dup)
+      end
+
       def resolved?
         true
       end

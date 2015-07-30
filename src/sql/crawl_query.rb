@@ -260,7 +260,11 @@ module Sql
     end
 
     def select_count
-      "SELECT COUNT(*) FROM #{@count_ast.to_table_list_sql} " + count_where.where_clause
+      # This sequencing is important: generating the where clause may autojoin
+      # tables that must be included in the table list.
+      where = count_where.where_clause
+      table_list = @count_ast.to_table_list_sql
+      "SELECT COUNT(*) FROM #{table_list} #{where}"
     end
 
     def count_values

@@ -21,7 +21,6 @@ module Sql
         join = create_join(jc)
         apply_join(join)
       }
-      sanity_check!
     end
 
   private
@@ -54,24 +53,6 @@ module Sql
       require 'pry'
       binding.pry
       raise
-    end
-
-    def sanity_check!
-      # Table aliases are guaranteed unique, so check those:
-      table_aliases = Set.new
-      table_aliases << tables.primary_table.alias
-      for join in tables.joins
-        table_aliases << join.left_table.alias
-        table_aliases << join.right_table.alias
-      end
-
-      # The join resolver only looks at join conditions, so it can't be sure if
-      # there are references to columns aimed directly at the primary table,
-      # so accept both the with/without primary table cases:
-      table_delta = table_aliases.size - tables.tables.size
-      if table_delta < 0 || table_delta > 1
-        raise "Bad join: #{table_aliases.size} tables joined, but #{tables.tables.size} tables are referenced: #{tables.joins.map(&:to_s).join(' ')}"
-      end
     end
   end
 end

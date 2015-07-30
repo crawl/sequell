@@ -1,4 +1,5 @@
 require 'query/ast/ast_walker'
+require 'query/ast/ast_binder'
 require 'query/query_keyword_parser'
 require 'query/query_node_translator'
 
@@ -16,26 +17,13 @@ module Query
       end
 
       def apply
-        @ast.bind_context(Sql::QueryContext.context)
-        bind_subquery_contexts(@ast)
+        ASTBinder.bind(@ast)
         @ast.transform! { |node|
           translate_ast(node) if node
         }
       end
 
       private
-
-      def bind_subquery_contexts(ast)
-        context = ast.is_a?(Sql::TableContext) ? ast : ast.context
-        ast.transform_nodes_breadthfirst! { |node|
-          if node.kind == :query
-            bind_subquery_contexts(node)
-          else
-            node.bind_context(context)
-          end
-          node
-        }
-      end
 
       def translate_ast(ast)
         ast = ASTWalker.map_kinds(ast, :query) { |q|

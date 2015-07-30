@@ -1,6 +1,13 @@
 module Sql
   module TableContext
     ##
+    # Returns the outer query that contains this query context, if any, or nil
+    # otherwise.
+    def outer_query
+      nil
+    end
+
+    ##
     # Formally registers a field belonging to this context as required. This
     # implies asking for the field's column to be SELECTed, and autojoining any
     # lookup table if necessary.

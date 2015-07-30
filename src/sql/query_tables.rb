@@ -1,43 +1,49 @@
 require 'sql/query_table'
+require 'sql/table_set'
 require 'set'
 
 module Sql
   # Tracks the set of tables referenced in a query with one primary table
   # and any number of additional join tables.
   class QueryTables
-    attr_reader :primary_table, :tables, :joins
+    attr_reader :primary_table, :outer_table, :tables, :joins
 
     def self.next_id
       @@id ||= 0
       @@id += 1
     end
 
-    def initialize(query_ast, primary_table)
+    def initialize(query_ast, primary_table, outer_table)
       @id = self.class.next_id
       @query_ast = query_ast
       @primary_table = Sql::QueryTable.table(primary_table)
-      @table_aliases = { }
-      @tables = []
+      @outer_table = outer_table
+
+      # Share a set of tables with the outer table if possible.
+      @tables = (@outer_table && @outer_table.query_tables.tables) || TableSet.new
       @joins = []
-      @alias_index = 0
     end
 
     def initialize_copy(other)
       super
       @id = self.class.next_id
-      @table_aliases = @table_aliases.dup
-      @tables = @tables.dup
       @joins = @joins.dup
+    end
+
+    def rebind_table(old_table, new_table)
+      @tables.rebind(old_table, new_table)
+      @joins.each { |j|
+        j.rebind_table(old_table, new_table)
+      }
+    end
+
+    def size
+      @tables.size
     end
 
     def lookup!(table)
       return lookup!(primary_table) if table.equal?(@query_ast)
-
-      found_table = self[table.alias]
-      unless found_table
-        return register_table(table)
-      end
-      found_table
+      @tables.lookup!(table)
     end
 
     def find_join(join_condition)
@@ -47,25 +53,16 @@ module Sql
     end
 
     def register_table(table, force_new_alias=false)
-      return table if !force_new_alias && self[table.alias] == table
-
-      # Is this table's alias already taken? Give it a new one if so
-      new_alias = table.alias
-      if self[new_alias]
-        new_alias = disambiguate_alias(table.alias)
-        table.alias = new_alias
-      end
-      record_table(table)
-      @table_aliases[new_alias] = table
+      raise("Cannot register outer table (#{outer_table}) in subquery #{@query_ast} (primary:#{@primary_table})") if table == outer_table
+      @tables.register_table(table, force_new_alias)
     end
 
     def [](table_alias)
-      table_alias = table_alias.alias if table_alias.respond_to?(:alias)
-      @table_aliases[table_alias]
+      @tables[table_alias]
     end
 
     def table(table_name)
-      @tables.find { |t| t.name == table_name }
+      @tables.table(table_name)
     end
 
     def join(join_condition)
@@ -173,26 +170,10 @@ module Sql
       self
     end
 
-    def record_table(table)
-      @tables << table unless known_table?(table)
-    end
-
-    def known_table?(table)
-      @tables.index(table)
-    end
-
     def update_join_table_aliases(join)
       existing_join = @joins.find { |j| j == join }
       join.left_table.alias = existing_join.left_table.alias
       join.right_table.alias = existing_join.right_table.alias
-    end
-
-    def disambiguate_alias(table_alias)
-      while true
-        @alias_index += 1
-        new_alias = "#{table_alias}_#{@alias_index}"
-        return new_alias unless self[new_alias]
-      end
     end
   end
 end

@@ -16,8 +16,6 @@ module Query
 
       def result(fragment=false)
         query_ast.each_query { |q|
-          q.outer_query = query_ast unless q.equal?(query_ast)
-
           fix_milestone_value_fields!(q)
           fixup_full_query!(q)
 
@@ -91,6 +89,14 @@ module Query
         return node unless right_col && left_col.table != right_col.table
 
         STDERR.puts("**** Join node: #{node}")
+
+        outer = ast.outer_query
+        if left_col.table.equal?(outer) || right_col.table.equal?(outer)
+          node.right = right
+          return node
+        end
+
+
         #node.left.table = left_col.table
         #right.table = right_col.table
         node.right = right

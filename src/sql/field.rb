@@ -18,7 +18,8 @@ module Sql
 
     include FieldPredicates
 
-    attr_reader :prefix, :aliased_name, :full_name, :canonical_name
+    attr_reader   :aliased_name, :full_name, :canonical_name
+    attr_accessor :prefix
     attr_accessor :table, :sql_name
     attr_accessor :name
     attr_writer   :column
@@ -40,6 +41,12 @@ module Sql
       super
       @full_name = @full_name.dup
       @name = @name.dup
+    end
+
+    def unqualified
+      copy = self.dup
+      copy.prefix = nil
+      copy
     end
 
     def arity
@@ -73,10 +80,6 @@ module Sql
     end
 
     def bind_context(new_context)
-      if !new_context.is_a?(Sql::TableContext)
-        require 'pry'
-        binding.pry
-      end
       self.context = new_context unless @context
       self
     end
@@ -236,6 +239,10 @@ module Sql
 
     def has_prefix?(prefix)
       @prefix == prefix
+    end
+
+    def parent_prefix?
+      @prefix == 'parent' || @prefix == 'outer'
     end
 
     def to_query_string(paren=false)
