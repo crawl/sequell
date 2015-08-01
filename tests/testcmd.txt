@@ -50,10 +50,18 @@ $ rm dat/user_commands.db
 # Implicit join by gid for exists with no obvious join:
 !lg elliptic win !exists($lm[br.enter=Lair])
 
-!lg * $[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char
+# Find elliptic wins with no silver rune:
+!lg elliptic win !exists($lm[rune=silver])
+
+# Explicit lookup id column reference:
+!lg * x=game_key_id
+
+# Games with one milestone:
 !lg * $lm[gid=root:gid x=count(*)]=1
-!lg * !exists($lm[])
-!lg * !exists($lm[br.enter=Lair])
+
+# Window function query: this is should be a select from
+# a simple subquery with no joins.
+!lg * $[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char
 
 !lg * dur<0:00:01
 !lg * dur<1

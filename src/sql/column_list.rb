@@ -8,6 +8,10 @@ module Sql
       @columns = @column_list.map { |column_config|
         Sql::Column.new(config, column_config, column_alias_map)
       }
+      @foreign_key_columns = @columns.find_all { |c| c.reference? }.map { |rf|
+        Sql::Column.new(@config, "#{rf.fk_name}I", nil)
+      }
+
       add_derived_columns
     end
 
@@ -16,7 +20,7 @@ module Sql
     end
 
     def [](column_name)
-      column_map[column_name]
+      column_map[column_name] || fk_column_map[column_name]
     end
 
     def type(field_name)
@@ -28,6 +32,10 @@ module Sql
 
     def column_map
       @column_map ||= Hash[ @columns.map { |c| [c.name, c] } ]
+    end
+
+    def fk_column_map
+      @fk_column_map ||= Hash[ @foreign_key_columns.map { |c| [c.name, c] } ]
     end
 
     def add_derived_columns

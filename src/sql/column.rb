@@ -7,7 +7,17 @@ module Sql
   class Column
     include TypePredicates
 
-    attr_reader :decorated_name, :ordered_column_alias, :table
+    ##
+    # The name of the column with type and metadata annotations.
+    attr_reader :decorated_name
+
+    ##
+    # If non-nil, then the alias column MUST be used for ORDER BY and < >
+    # comparison operators. This is used to make ordering by versions use the
+    # synthetic version number instead of the string version.
+    attr_reader :ordered_column_alias
+
+    attr_reader :table
 
     def initialize(config, decorated_name, alias_map=nil)
       @config = config
@@ -69,6 +79,8 @@ module Sql
       lookup_config.lookup_field(self.name)
     end
 
+    ##
+    # The name of the foreign key reference column (the foo_id column).
     def fk_name
       return @name unless self.reference?
       lookup_config.fk_field(self.name)
