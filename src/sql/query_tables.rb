@@ -6,7 +6,8 @@ module Sql
   # Tracks the set of tables referenced in a query with one primary table
   # and any number of additional join tables.
   class QueryTables
-    attr_reader :primary_table, :outer_table, :tables, :joins
+    attr_reader :primary_table, :outer_table, :joins
+    attr_accessor :tables
 
     def self.next_id
       @@id ||= 0

@@ -21,6 +21,17 @@ module Sql
       @tables.size
     end
 
+    ##
+    # Replaces old_table with new_table in this table list.
+    def rebind(old_table, new_table)
+      @tables = @tables.map { |t| t == old_table ? new_table : t }
+
+      if old_table.alias != new_table.alias
+        raise("Cannot rebind #{old_table} -> #{new_table}: alias mismatch")
+      end
+      @table_aliases[old_table.alias] = new_table if @table_aliases[old_table.alias]
+    end
+
     def table(table_name)
       @tables.find { |t| t.name == table_name }
     end

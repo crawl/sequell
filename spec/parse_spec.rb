@@ -74,6 +74,7 @@ describe Grammar::Query do
     # Exists query (autojoins by gid since there's no explicit join)
     # (finds games that didn't do Lair)
     '!lg * !exists($lm[br.enter=Lair])',
+    '!lg elliptic win !exists($lm[br.enter=Lair])',
 
     # The same query with an explicit join:
     '!lg * !exists($lm[br.enter=Lair gid=outer:gid])',
