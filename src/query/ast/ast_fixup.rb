@@ -19,6 +19,9 @@ module Query
           fix_milestone_value_fields!(q)
           fixup_full_query!(q)
 
+          lift_join_conditions!(q)
+          autojoin_exists_queries(q)
+
           q.transform_nodes! { |node|
             collapse_negated_node(node)
           }
@@ -31,7 +34,6 @@ module Query
             fix_node(node)
           }
 
-          lift_join_conditions!(q)
           bind_subquery_game_type(q)
         }
 
@@ -69,6 +71,24 @@ module Query
         bind_joins!(ast)
       end
 
+      ##
+      # For any exists query that is so tactless as to not specify an outer
+      # query column condition, force a gid=outer:gid on it.
+      def autojoin_exists_queries(ast)
+        ast.each_query { |q|
+          if q.exists_query? && !q.flag(:outer_field_reference)
+            gid_autojoin_exists(ast)
+          end
+        }
+      end
+
+      def gid_autojoin_exists(ast)
+        ast.head << Query::AST::Expr.field_predicate('=',
+                                                     Sql::Field.field('gid').bind_context(ast),
+                                                     Sql::Field.field('outer:gid').bind_context(ast))
+        ast.flag!(:outer_field_reference)
+      end
+
       def bind_joins!(ast)
         ast.transform_nodes! { |node|
           bind_join_condition(ast, node)
@@ -93,9 +113,9 @@ module Query
         outer = ast.outer_query
         if left_col.table.equal?(outer) || right_col.table.equal?(outer)
           node.right = right
+          ast.flag!(:outer_field_reference)
           return node
         end
-
 
         #node.left.table = left_col.table
         #right.table = right_col.table
