@@ -5,9 +5,13 @@ module Query
 
       def initialize(name, *arguments)
         @name = name
-        @fn = SQL_CONFIG.functions.function(name)
+        if @name.downcase == "count" && arguments.size == 1 && arguments.first == "*"
+          @name = "count_all"
+          arguments = []
+        end
+        @fn = SQL_CONFIG.functions.function(@name)
         unless @fn
-          @fn = SQL_CONFIG.aggregate_functions.function(name) or
+          @fn = SQL_CONFIG.aggregate_functions.function(@name) or
             raise "Unknown function: #{name}"
           @aggregate = true
         end

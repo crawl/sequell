@@ -115,8 +115,14 @@ module Query
           argument
         end
       }
+      rule(star: simple(:star)) {
+        star.to_s
+      }
       rule(function_name: simple(:name)) {
         Funcall.new(name.to_s)
+      }
+      rule(function_name: simple(:name), star: simple(:star)) {
+        Funcall.new(name.to_s, star)
       }
       rule(function_name: simple(:name),
            arguments: simple(:argument)) {

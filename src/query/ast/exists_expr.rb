@@ -11,6 +11,7 @@ module Query
         @arguments = [subquery]
         @type = Sql::Type.type('!')
         subquery.exists_query = true
+        subquery.subquery_expression = true
       end
 
       def initialize_copy(original)

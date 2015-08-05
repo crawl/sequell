@@ -33,6 +33,9 @@ module Query
         @arguments = arguments.compact.map { |arg|
           if !arg.respond_to?(:kind)
             Value.new(arg)
+          elsif arg.kind == :query
+            arg.subquery_expression = true
+            arg
           else
             arg
           end

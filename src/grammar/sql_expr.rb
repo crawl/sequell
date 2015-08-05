@@ -151,7 +151,7 @@ module Grammar
     }
 
     rule(:function_arguments) {
-      function_arg >> (space? >> str(",") >> space? >> function_arg).repeat
+      str("*").as(:star) | function_arg >> (space? >> str(",") >> space? >> function_arg).repeat
     }
 
     rule(:function_arg) {

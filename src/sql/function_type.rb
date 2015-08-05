@@ -1,6 +1,9 @@
 module Sql
   class FunctionType
-    def initialize(arg_type, return_type)
+    attr_reader :fn_name
+
+    def initialize(fn_name, arg_type, return_type)
+      @fn_name = fn_name
       @types = normalize(arg_type, return_type)
     end
 

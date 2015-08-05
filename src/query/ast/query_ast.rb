@@ -167,6 +167,13 @@ module Query
       end
 
       ##
+      # Returns the type of this expression; if it's a subquery used as an
+      # expression, the first bound select expression's type.
+      def type
+        subquery_expression? && extra ? extra.arguments.first.type : Sql::Type.type('*')
+      end
+
+      ##
       # Returns an array of expressions that are selected from this QueryAST.
       #
       # For grouped queries, returns the grouping fields, the count(*)
@@ -291,7 +298,7 @@ module Query
       # since the AST itself is the table that the outer query is selecting
       # from.
       def resolve_column(field, internal_expr)
-        if exists_query? && field.parent_prefix? && self.outer_query
+        if subquery_expression? && field.parent_prefix? && self.outer_query
           return self.outer_query.resolve_column(field.unqualified, false)
         end
 
@@ -335,10 +342,9 @@ module Query
       ##
       # Returns a list of columns that this QueryAST selects from its tables.
       def bound_select_expressions
-        if @bound_select_expressions.empty?
-          @bound_select_expressions << Sql::Field.field('id').bind_context(self)
-        end
-        @bound_select_expressions
+        exprs = @bound_select_expressions + (extra ? extra.arguments : [])
+        return exprs unless exprs.empty?
+        @bound_select_expressions << Sql::Field.field('id').bind_context(self)
       end
 
       ##
@@ -662,7 +668,7 @@ module Query
         text
       end
 
-      def to_query_string
+      def to_query_string(parens_ignored=false)
         to_s
       end
 
@@ -685,7 +691,7 @@ module Query
       ##
       # Returns the SQL for the entire query.
       def to_sql
-        ast_sql.to_sql
+        "(" + ast_sql.to_sql + ")"
       end
 
       ##

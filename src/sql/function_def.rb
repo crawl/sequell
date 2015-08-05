@@ -24,7 +24,8 @@ module Sql
       if @cfg.is_a?(String)
         @cfg = { 'type' => @cfg }
       end
-      @argtypes = Sql::FunctionType.new(@cfg['type'] || @cfg['types'],
+      @argtypes = Sql::FunctionType.new(@name,
+                                        @cfg['type'] || @cfg['types'],
                                         @cfg['return'])
       @summarisable = @cfg['summarisable']
       @display_format = @cfg['display-format']
