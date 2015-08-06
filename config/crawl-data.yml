@@ -514,6 +514,28 @@ prefix-field-fixups:
     lava: lava
     wizmode: wizmode
 
+window-functions:
+  rank:
+    types:
+      - type: []
+        return: I
+    expr: "rank()"
+  rownum:
+    types:
+      - type: []
+        return: I
+    expr: "row_number()"
+  lag:
+    types:
+      - type: ['*', 'I', '*']
+        return: '*'
+    expr: "lag(%s, %s, %s)"
+  lead:
+    types:
+      - type: ['*', 'I', '*']
+        return: '*'
+    expr: "lead(%s, %s, %s)"
+
 # cdist and count are both count distinct
 aggregate-functions:
   count_all:

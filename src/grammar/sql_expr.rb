@@ -11,11 +11,11 @@ module Grammar
     }
 
     rule(:window_function_expr) {
-      (function_call >> space? >> str("::") >> space? >> partition_expr).as(:window_funcall)
+      (function_call.as(:window_function_expr) >> space? >> str("::") >> space? >> partition_expr).as(:window_funcall)
     }
 
     rule(:partition_expr) {
-      (str("partition(") >> partition_fields.as(:partition_fields) >>
+      (str("partition(") >> partition_exprs.as(:partition_exprs) >>
        (space? >> str(",") >> space? >> order_term).maybe.as(:partition_order) >>
        space? >> str(")")).as(:partition)
     }
@@ -24,7 +24,7 @@ module Grammar
       QueryTerm.new.order_term
     }
 
-    rule(:partition_fields) {
+    rule(:partition_exprs) {
       expr >> ( space? >> str(",") >> space? >> (order_term.absent? >> expr) ).repeat
     }
 
@@ -97,7 +97,7 @@ module Grammar
     }
 
     rule(:simple_expr) {
-      parenthesized_expr | function_call | subquery | atom
+      parenthesized_expr | window_function_expr | function_call | subquery | atom
     }
 
     rule(:atom) {

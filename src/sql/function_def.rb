@@ -16,6 +16,7 @@ module Sql
 
     attr_reader :name, :id
     attr_accessor :argtypes, :summarisable, :expr, :display_format
+    attr_writer :aggregate, :window
 
     def initialize(name, cfg)
       @name = name
@@ -32,6 +33,14 @@ module Sql
       @preserve_unit = @cfg['preserve-unit']
       @unit = @cfg['unit']
       @expr = @cfg['expr']
+    end
+
+    def aggregate?
+      @aggregate
+    end
+
+    def window?
+      @window
     end
 
     def count?

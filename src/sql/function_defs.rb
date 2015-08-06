@@ -3,14 +3,27 @@ require 'sql/errors'
 
 module Sql
   class FunctionDefs
-    def initialize(functions)
+    def initialize(functions, aggregate=nil, window=nil)
       @functions = functions
+      @aggregate = aggregate
+      @window = window
+    end
+
+    def aggregate?
+      @aggregate
+    end
+
+    def window?
+      @window
     end
 
     def function_defs
       @function_defs ||= Hash[ @functions.map { |name, fdef|
-          [name, Sql::FunctionDef.new(name, fdef)]
-        } ]
+                                 fn = Sql::FunctionDef.new(name, fdef)
+                                 fn.aggregate = self.aggregate?
+                                 fn.window = self.window?
+                                 [name, fn]
+                               } ]
     end
 
     def [](name)

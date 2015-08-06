@@ -3,18 +3,22 @@ module Query
     class Funcall < Term
       attr_reader :name, :fn
 
+      def self.function_lookup(name)
+        SQL_CONFIG.functions.function(name) ||
+          SQL_CONFIG.aggregate_functions.function(name) ||
+          SQL_CONFIG.window_functions.function(name)
+      end
+
       def initialize(name, *arguments)
         @name = name
         if @name.downcase == "count" && arguments.size == 1 && arguments.first == "*"
           @name = "count_all"
           arguments = []
         end
-        @fn = SQL_CONFIG.functions.function(@name)
-        unless @fn
-          @fn = SQL_CONFIG.aggregate_functions.function(@name) or
-            raise "Unknown function: #{name}"
-          @aggregate = true
-        end
+
+        @fn = self.class.function_lookup(@name) or raise("Unknown function: #{@name}")
+        @aggregate = @fn.aggregate?
+        @window = @fn.window?
         @arguments = arguments
       end
 
@@ -32,10 +36,8 @@ module Query
         @aggregate
       end
 
-      def typecheck!
-        @fn.typecheck!(arguments)
-      rescue Sql::TypeError => e
-        raise Sql::TypeError.new("#{self}: #{e}")
+      def window?
+        @window
       end
 
       def convert_types!
@@ -78,6 +80,14 @@ module Query
           ''
         }
         argrefs.map(&:sql_values).flatten
+      end
+
+    private
+
+      def typecheck!
+        @fn.typecheck!(arguments)
+      rescue Sql::TypeError => e
+        raise Sql::TypeError.new("#{self}: #{e}")
       end
     end
   end

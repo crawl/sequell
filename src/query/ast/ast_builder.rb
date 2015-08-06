@@ -19,6 +19,8 @@ require 'query/ast/keyed_option_list'
 require 'query/ast/keyed_option'
 require 'query/ast/funcall'
 require 'query/ast/exists_expr'
+require 'query/ast/window_funcall'
+require 'query/ast/window_partition'
 require 'query/nick_expr'
 require 'query/sort'
 require 'sql/field'
@@ -105,6 +107,25 @@ module Query
 
       rule(field: { identifier: simple(:field) }) {
         Field.new(field)
+      }
+
+      rule(window_function_expr: simple(:window_funcexp),
+           partition: simple(:partition)) {
+        WindowFuncall.new(window_funcexp, partition)
+      }
+
+      rule(window_funcall: simple(:window_funcall)) {
+        window_funcall
+      }
+
+      rule(partition_exprs: simple(:expr),
+           partition_order: simple(:partition_group_order)) {
+        WindowPartition.new([expr], partition_group_order)
+      }
+
+      rule(partition_exprs: sequence(:exprs),
+           partition_order: simple(:partition_group_order)) {
+        WindowPartition.new(exprs, partition_group_order)
       }
 
       rule(function_call: simple(:funcall)) { funcall }

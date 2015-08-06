@@ -144,8 +144,6 @@ module Query
             @head << ::Query::NickExpr.nick('.')
           end
         end
-
-        STDERR.puts("QueryAST.new: #{self}, context: #{context.name}")
       end
 
       def initialize_copy(o)

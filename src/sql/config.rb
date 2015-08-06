@@ -20,6 +20,10 @@ module Sql
       @aggregate_functions ||= Sql::FunctionDefs.new(@cfg['aggregate-functions'])
     end
 
+    def window_functions
+      @window_functions ||= Sql::FunctionDefs.new(@cfg['window-functions'])
+    end
+
     def lookup_table(column)
       self.lookup_table_registry.lookup_table(column)
     end

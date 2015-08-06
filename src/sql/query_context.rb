@@ -14,7 +14,7 @@ module Sql
 
     def self.named(name)
       name = name.to_s
-      return nil if name.empty?
+      return self.context if name.empty?
       CONTEXT_MAP[name] || self.context
     end
 
