@@ -208,7 +208,7 @@ Where:
          For grouped (`s=foo`) queries, the display format of the
          innermost group.
 
-         The default fmt is `"${n_x}${.} ${%} [${n_ratio};${x}]"`, where
+         The default fmt for inner groups is `"${n_x}${.} ${%} [${n_ratio};${x}]"`, where
          `${n_x}` produces the `"45x "` prefix in groups such as `45x HEFE`,
          `${.}` displays the actual group value, `${%}` displays the percentage
          of the total that the group represents, `${n_ratio}` displays the
@@ -219,13 +219,16 @@ Where:
          You may also refer to the user issuing the command with `$user`
          and the user referenced in the command as `$name` or `$target`.
          `$target` will be set to the first name-like thing in the
-         query (which may be *), while `$name` will look for the first
+         query (which may be `*`), while `$name` will look for the first
          non-* name referenced in the query. So in `!lg * s=name / @foo`,
          `$target` will be `*`, but `$name` will be `foo`.
 
          For ungrouped queries, this is the display format for the
          game itself. You may use any of the game fields (`$name`,
-         `$turn`, `$sc`), `$x` to display `x=foo` values, and so on.
+         `$turn`, `$sc`), `$x` to display `x=foo` values, and so on.  `$n` 
+         gives the total count of games matching the query.  Caveat: `$n` 
+         will not work in the `fmt` key for grouped queries, and 
+         `${n_x}` will not work for the `fmt` key ungrouped queries.
 
   * `pfmt`: For nested (`s=foo,bar`) queries, the display format of non-inner
           groups. Defaults to `${n_x}${.} ${%} (${child})`, with `${child}`
@@ -236,6 +239,8 @@ Where:
 
            !lg * win s=name title:"Winners"
            => Winners: 392x ...
+           
+    The total count field `$n` will work in the title format for grouped queries.
 
   * `join`: The string used to join individual groups, defaulting to ", "
 
@@ -1526,6 +1531,10 @@ Examples
 `!lg * s=ktyp`                      Show all the different types of death
 
 `!lg * s=ckiller`                   Show all the different monsters/types of death
+
+`!lg * ckiller=a_player_ghost fmt:"Ghost kills: ${n}"`
+                                    Display the count of characters killed by a ghost,
+                                  with special formatting.
 
 `!lg qwqw D:10 -log`                Get the character dump for qwqw's last game
                                   that ended on D:10
