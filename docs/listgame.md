@@ -647,14 +647,14 @@ All milestones for the same game will share the same game_key.
 game_keys should be unique to their games, barring bugs.
 
 
-`race/sp/species/r`:
+`race/sp/species`:
 Character race (for instance: "Deep Dwarf")
 
 `crace`:
 Canonicalised character race with draconians merged. For instance,
 when race = "Red Draconian", crace = "Draconian".
 
-`class/cls/role/c`:
+`class/cls/role`:
 Character class or job. Example: "Berserker", "Wanderer"
 
 `char/ch`:

@@ -474,16 +474,12 @@ column-aliases:
   job: cls
   species: race
   sp: race
-  r: race
   ktype: ktyp
   score: sc
   turns: turn
   skill: sk
   ch: char
   kmap: killermap
-  c: cls
-  cl: xl
-  clev: xl
   type: verb
   gid: game_key
   game_id: game_key

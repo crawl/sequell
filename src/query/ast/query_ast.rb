@@ -661,7 +661,7 @@ module Query
         text = pieces.select { |x| !x.empty? }.join(' ')
         if subquery?
           text = "$#{context_alias.to_s}[#{text}]"
-          text += ":${subquery_alias}" if subquery_alias
+          text += ":#{subquery_alias}" if subquery_alias
         end
         text
       end

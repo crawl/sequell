@@ -21,6 +21,7 @@ require 'query/ast/funcall'
 require 'query/ast/exists_expr'
 require 'query/ast/window_funcall'
 require 'query/ast/window_partition'
+require 'query/ast/partition_order_list'
 require 'query/nick_expr'
 require 'query/sort'
 require 'sql/field'
@@ -120,12 +121,12 @@ module Query
 
       rule(partition_exprs: simple(:expr),
            partition_order: simple(:partition_group_order)) {
-        WindowPartition.new([expr], partition_group_order)
+        WindowPartition.new([expr], PartitionOrderList.from_group_order(partition_group_order))
       }
 
       rule(partition_exprs: sequence(:exprs),
            partition_order: simple(:partition_group_order)) {
-        WindowPartition.new(exprs, partition_group_order)
+        WindowPartition.new(exprs, PartitionOrderList.from_group_order(partition_group_order))
       }
 
       rule(function_call: simple(:funcall)) { funcall }

@@ -121,7 +121,7 @@ module Query
           @use_grouped_value = true
         else
           if term.to_s.downcase != 'n' &&
-              (!extra || !extra.fields.any? { |x| x.to_s == term.to_s })
+             (!extra || !extra.fields.any? { |x| x.to_s == term.to_s })
             raise "Bad filter condition: '#{self}' (extra: #{extra})"
           end
         end
