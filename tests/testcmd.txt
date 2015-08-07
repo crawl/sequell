@@ -36,6 +36,8 @@ $ rm dat/user_commands.db
 !lg zap
 !nick zap () ::= Deleted zap => (quit)
 
+!lg greensnark x=sc fmt:'$(nvl ${x[1]:-moo})' ::= moo
+
 !lg * turn=0 -log
 !lg * dur<0:00:01
 !lg * dur<1

@@ -26,6 +26,9 @@ module Tpl
     def initialize(identifier, subscript=nil)
       @identifier = identifier
       @subscript = subscript
+      if !@subscript && identifier.respond_to?(:subscript)
+        @subscript = identifier.subscript
+      end
       @eval_subscript = @subscript.is_a?(Tplike)
       if @identifier.is_a?(LookupFragment) && @identifier.simple?
         @identifier = @identifier.identifier
@@ -93,8 +96,14 @@ module Tpl
     end
 
     def to_s
+      "${#{qualified_identifier}}"
+    end
+
+    protected
+
+    def qualified_identifier
       qualifier = "[#{@subscript}]" if @subscript
-      "${#{@identifier}#{qualifier}}"
+      "#{@identifier}#{qualifier}"
     end
   end
 end

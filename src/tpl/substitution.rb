@@ -17,7 +17,7 @@ module Tpl
     end
 
     def to_s
-      "${#{@identifier}:-#{@replacement}}"
+      "${#{qualified_identifier}:-#{@replacement.to_s}}"
     end
   end
 end

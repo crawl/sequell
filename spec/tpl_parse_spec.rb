@@ -25,6 +25,12 @@ describe Tpl::Template do
     expect(e('${cow:-Moo!}', 'cow' => '')).to eq('Moo!')
   end
 
+  it 'will substitute empty indexed vars with :-' do
+    expect(e('${cow[1]:-Moo!}', {'cow' => ['', '']})).to eq('Moo!')
+    expect(e('${cow[1]:-Moo!}', {'cow' => []})).to eq('${cow[1]:-Moo!}')
+    expect(e('$(nvl ${cow[1]:-Moo!})', {'cow' => []})).to eq('Moo!')
+  end
+
   it 'will parse function calls' do
     expect(tpl('$(map $x 1,2,3,4)')).to be_instance_of(Tpl::Funcall)
   end
