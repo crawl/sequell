@@ -22,6 +22,7 @@ require 'query/ast/exists_expr'
 require 'query/ast/window_funcall'
 require 'query/ast/window_partition'
 require 'query/ast/partition_order_list'
+require 'query/ast/from_subquery'
 require 'query/nick_expr'
 require 'query/sort'
 require 'sql/field'
@@ -273,6 +274,10 @@ module Query
 
       rule(suffix_alias: simple(:alias_name)) {
         alias_name.to_s
+      }
+
+      rule(from_subquery: simple(:subquery)) {
+        FromSubquery.new(subquery)
       }
 
       rule(subquery: {

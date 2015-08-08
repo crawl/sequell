@@ -38,6 +38,12 @@ module Grammar
       QueryBody.new.subquery
     }
 
+    # from:$lg[x=rank()::partition(name)] for instance. Used to select from a
+    # subquery
+    rule(:from_subquery_clause) {
+      str("tab:") >> space? >> subquery.as(:from_subquery)
+    }
+
     rule(:exists_subquery_clause) {
       str("!") >> exists_subquery_clause.as(:negated) | exists_subquery
     }
@@ -149,10 +155,11 @@ module Grammar
 
     rule(:term) {
       term_field_expr.as(:term_expr) >> space? >> op >> field_value.as(:value) |
-      exists_subquery_clause |
-      subquery.as(:table_subquery) |
-      boolean_function_expr |
-      SqlExpr.new
+        exists_subquery_clause |
+        from_subquery_clause |
+        subquery.as(:table_subquery) |
+        boolean_function_expr |
+        SqlExpr.new
     }
 
     rule(:field_expr) {

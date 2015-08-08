@@ -81,13 +81,13 @@ describe Grammar::Query do
 
     # Exists query with explicit join
     # Finds players whose ghosts have killed someone else:
-    %{!lg * exists($lg[killer=${outer:name + '\'s ghost'} src=outer:src])},
+    %{!lg * exists($lg[killer=${outer:name + '\\'s ghost'} src=outer:src])},
 
     # Subquery expression
     '!lg * $lm[gid=root:gid x=count(*)]=1',
 
-    # Window function
-    '!lg * $[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char',
+    # Window function + subquery
+    '!lg * tab:$[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char',
 
     '!lg * !exists($lm[])',
     '!lg * !exists($lm[br.enter=Lair])',

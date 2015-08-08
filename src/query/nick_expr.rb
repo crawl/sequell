@@ -89,6 +89,10 @@ module Query
       @nick.value
     end
 
+    def to_s
+      to_query_string
+    end
+
   private
 
     def self.recursive_expansion_protect(mapping)

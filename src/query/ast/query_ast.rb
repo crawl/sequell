@@ -104,6 +104,8 @@ module Query
       # outer query.
       attr_accessor :outer_query
 
+      attr_accessor :from_subquery
+
       def self.next_id
         @@id ||= 0
         @@id += 1
@@ -158,6 +160,16 @@ module Query
         @query_tables = @query_tables.dup if @query_tables
         ASTBinder.bind(self)
         rebind_table(o)
+      end
+
+      alias :table_alias :subquery_alias
+
+      def from_subquery=(q)
+        if @from_subquery
+          raise("Attempt to bind from-subquery:#{q} to #{self} with existing from-subquery:#{@from_subquery}")
+        end
+        @from_subquery = q
+        @context = q
       end
 
       def exists_query?
@@ -348,9 +360,9 @@ module Query
       ##
       # Given a Sql::Field, resolves it as a column either on the context, or in
       # this query.
-      def resolve_local_column(field, internal_expr)
+      def resolve_local_column(field, internal_expr, ignore_prefix=false)
         prefix = field.prefix
-        return if prefix && prefix != self.alias && prefix != context.alias
+        return if !ignore_prefix && prefix && prefix != self.alias && prefix != context.alias
 
         if grouped?
           resolve_local_grouped_column(field, internal_expr)
@@ -774,24 +786,33 @@ module Query
             }
 
             # Then look for extra expressions with the alias:
-            if self.extra
-              self.extra.each { |extra_expr|
-                if external_field_matches_expr?(field, extra_expr)
-                  return Sql::Column.new(context.config, field.name + extra_expr.type.type_id).bind(self)
-                end
-              }
-            end
+            extra_column = extra_column_lookup(field)
+            return extra_column if extra_column
           end
         end
       end
 
       def resolve_local_ungrouped_column(field, internal_expr)
         if internal_expr ? context_prefix?(field.prefix) : local_prefix?(field.prefix)
-          column = context.resolve_local_column(field, :internal_expr, :ignore_prefix)
+          column = context.resolve_local_column(field, :internal_expr, :ignore_prefix) ||
+                   extra_column_lookup(field)
+
           if column
             return column.bind(internal_expr ? context_table(context) : self)
           end
         end
+      end
+
+      ##
+      # Find an extra expression that matches the field.
+      def extra_column_lookup(field)
+        return unless self.extra
+        self.extra.each { |extra_expr|
+          if external_field_matches_expr?(field, extra_expr)
+            return Sql::Column.new(context.config, field.name + extra_expr.type.type_id).bind(self)
+          end
+        }
+        nil
       end
 
       ##

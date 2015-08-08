@@ -46,7 +46,9 @@ module Sql
       return field if field.qualified?
 
       column = field.column
-      raise "Unknown field: #{field} (#{field.context})" unless column
+      unless column
+        raise "Unknown field: #{field} (#{field.context})"
+      end
 
       column.bind_table_field(field)
 
