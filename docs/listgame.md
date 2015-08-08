@@ -227,7 +227,7 @@ Where:
      `$turn`, `$sc`), `$x` to display `x=foo` values, and so on.  `$n`
      gives the total count of games matching the query.  Caveat: `$n`
      will not work in the `fmt` key for grouped queries, and
-     `${n_x}` will not work for the `fmt` key ungrouped queries.
+     `${n_x}` will not work for the `fmt` key in ungrouped queries.
 
   * `pfmt`: For nested (`s=foo,bar`) queries, the display format of non-inner
     groups. Defaults to `${n_x}${.} ${%} (${child})`, with `${child}` being

@@ -43,6 +43,8 @@ module Sql
 
     def format_key_value(key, row)
       case key
+      when 'n'
+        row.count_string
       when 'n_x'
         row.count_prefix
       when '.'
