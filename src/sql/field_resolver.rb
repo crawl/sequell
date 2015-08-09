@@ -17,9 +17,6 @@ module Sql
     attr_reader :ast
     def initialize(ast, field)
       @ast = ast
-      if caller.size > 400
-        raise("Stack overflow!")
-      end
       @field = field.is_a?(String) ? Sql::Field.field(field) : field
     end
 
@@ -47,7 +44,7 @@ module Sql
 
       column = field.column
       unless column
-        raise "Unknown field: #{field} (#{field.context})"
+        raise("Unknown field: #{field} (#{field.context})")
       end
 
       column.bind_table_field(field)
@@ -121,6 +118,10 @@ module Sql
 
     def resolve_simple_field(field)
       col = ast.resolve_column(field, :internal_expr)
+      unless col
+        require 'pry'
+        binding.pry
+      end
       table = col.table
       field.table = tables.lookup!(table)
       field.sql_name = field.column.fk_name.to_s if field.reference_id_only?

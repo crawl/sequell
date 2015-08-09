@@ -104,6 +104,11 @@ module Query
       # outer query.
       attr_accessor :outer_query
 
+      ##
+      # If this query is selecting from a subquery instead of directly from a
+      # table, from_subquery is set to the subquery that is the data source. If
+      # from_subquery is not nil, context == from_subquery, i.e. the subquery
+      # also acts as the query context.
       attr_accessor :from_subquery
 
       def self.next_id
@@ -238,6 +243,7 @@ module Query
       # list, then the block will be called on them as they're found in the
       # AST. The block is always called on this query last.
       def each_query(&block)
+        block.call(self.from_subquery) if self.from_subquery
         ASTWalker.each_kind(head, :query, &block)
         join_tables.each(&block)
         block.call(self)
@@ -649,6 +655,10 @@ module Query
         self.context.with(&block)
       end
 
+      def with(&block)
+        self.context.with(&block)
+      end
+
       def bind_tail!
         @full_tail = @tail && @tail.merge(@head)
       end
@@ -727,6 +737,10 @@ module Query
         self.object_id
       end
 
+      def table(game)
+        context.table(game)
+      end
+
       private
 
       def create_query_tables
@@ -765,7 +779,7 @@ module Query
         prefix = field.prefix
         if internal_expr
           if context_prefix?(prefix)
-            column = context.resolve_local_column(field, :internal_expr, :ignore_prefix)
+            column = context.resolve_local_column(field, false, :ignore_prefix)
             if column
               return column.bind(internal_expr ? context_table(context) : self)
             end
@@ -794,8 +808,8 @@ module Query
 
       def resolve_local_ungrouped_column(field, internal_expr)
         if internal_expr ? context_prefix?(field.prefix) : local_prefix?(field.prefix)
-          column = context.resolve_local_column(field, :internal_expr, :ignore_prefix) ||
-                   extra_column_lookup(field)
+          column = context.resolve_local_column(field, false, :ignore_prefix) ||
+                   (!internal_expr && extra_column_lookup(field))
 
           if column
             return column.bind(internal_expr ? context_table(context) : self)

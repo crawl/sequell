@@ -8,6 +8,12 @@ module Sql
     end
 
     ##
+    # Sets this context as the default (where relevant)
+    def with(&block)
+      not_implemented
+    end
+
+    ##
     # Formally registers a field belonging to this context as required. This
     # implies asking for the field's column to be SELECTed, and autojoining any
     # lookup table if necessary.
@@ -31,6 +37,12 @@ module Sql
     #
     # The alias MUST be a valid SQL identifier.
     def alias
+      not_implemented
+    end
+
+    ##
+    # Returns the SQL table for the given game in this context.
+    def table(game)
       not_implemented
     end
 

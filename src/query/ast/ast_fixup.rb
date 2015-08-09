@@ -16,33 +16,38 @@ module Query
 
       def result(fragment=false)
         query_ast.each_query { |q|
-          fix_milestone_value_fields!(q)
-          fixup_full_query!(q)
-
-          lift_join_conditions!(q)
-          autojoin_exists_queries(q)
-
-          q.transform_nodes! { |node|
-            collapse_negated_node(node)
-          }
-
-          q.transform! { |node|
-            collapse_empty_nodes(node)
-          }
-
-          q.each_node { |node|
-            fix_node(node)
-          }
-
-          bind_subquery_game_type(q)
+          if q.equal?(query_ast)
+            apply(q)
+          else
+            ASTFixup.result(q)
+          end
         }
-
-        query_ast.autojoin_lookup_columns!
-
         query_ast
       end
 
-    private
+      private
+
+      def apply(q)
+        fix_milestone_value_fields!(q)
+        fixup_full_query!(q)
+        lift_join_conditions!(q)
+        autojoin_exists_queries(q)
+
+        q.transform_nodes! { |node|
+          collapse_negated_node(node)
+        }
+
+        q.transform! { |node|
+          collapse_empty_nodes(node)
+        }
+
+        q.each_node { |node|
+          fix_node(node)
+        }
+        bind_subquery_game_type(q)
+        q.autojoin_lookup_columns!
+      end
+
 
       def bind_subquery_game_type(ast)
         return unless ast.kind == :query
