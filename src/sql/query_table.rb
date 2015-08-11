@@ -14,10 +14,6 @@ module Sql
     attr_accessor :name, :expr, :alias
 
     def initialize(name)
-      unless name
-        require 'pry'
-        binding.pry
-      end
       @name = name
       @alias = name
     end

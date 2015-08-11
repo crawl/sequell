@@ -23,6 +23,7 @@ require 'query/ast/window_funcall'
 require 'query/ast/window_partition'
 require 'query/ast/partition_order_list'
 require 'query/ast/from_subquery'
+require 'query/ast/subquery_expr'
 require 'query/nick_expr'
 require 'query/sort'
 require 'sql/field'
@@ -277,7 +278,7 @@ module Query
       }
 
       rule(from_subquery: simple(:subquery)) {
-        FromSubquery.new(subquery)
+        FromSubquery.new(subquery.query)
       }
 
       rule(subquery: {
@@ -285,7 +286,7 @@ module Query
              body: simple(:expr),
              alias: simple(:query_alias)
            }) {
-        QueryAST.new(context.to_s, expr, nil, nil, :subquery).as_subquery(query_alias.to_s)
+        SubqueryExpr.new(QueryAST.new(context.to_s, expr, nil, nil, :subquery).as_subquery(query_alias.to_s))
       }
 
       rule(table_subquery: simple(:subquery)) {

@@ -301,13 +301,17 @@ module Sql
       @query = nil
       sortdir = @summary_sort
 
-      where_clause = where(@summary_ast, false)
+      where = self.summary_where
       @values = self.with_values([summarise, extra].compact, @values)
 
       summary_field_text = self.summary_fields
       summary_group_text = self.summary_group
-      %{SELECT #{summary_field_text} FROM #{@summary_pred.to_table_list_sql}
-        #{where_clause} #{summary_group_text} #{summary_order}}
+      %{SELECT #{summary_field_text} FROM #{@summary_ast.to_table_list_sql}
+        #{where.where_clause} #{summary_group_text} #{summary_order}}
+    end
+
+    def summary_values
+      @summary_ast.table_list_values + summary_where.values
     end
 
     def summary_order
@@ -361,7 +365,7 @@ module Sql
           raise "Extra fields (#{@summary_extra}) contain non-aggregates"
         end
         extras = @summary_extra.fields.map { |f|
-          Sql::AggregateExpression.aggregate_sql(@summary_pred, f)
+          Sql::AggregateExpression.aggregate_sql(@summary_ast, f)
         }.join(", ")
       end
       if basefields.empty? && extras.empty?
@@ -409,6 +413,10 @@ module Sql
     def where(ast, with_sorts)
       @aliases = { }
       build_query(ast, with_sorts)
+    end
+
+    def summary_where
+      @summary_where ||= where(@summary_ast, false)
     end
 
     def count_where

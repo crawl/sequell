@@ -9,6 +9,10 @@ module Query
         :window_funcall
       end
 
+      def type
+        funcall.type
+      end
+
       def funcall
         @arguments[0]
       end

@@ -36,6 +36,10 @@ module Sql
       @tables.find { |t| t.name == table_name }
     end
 
+    ##
+    # Finds the table with the current table's alias in this table set. If the
+    # table alias is not found, registers the table with its current alias and
+    # returns the table.
     def lookup!(table)
       found_table = self[table.alias]
       unless found_table

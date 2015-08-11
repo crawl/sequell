@@ -31,7 +31,7 @@ module Sql
       field = @expr.first
       original_sql_field_name = field.sql_column_name
       reference_table = Sql::QueryTable.table(field.column.lookup_table)
-      @table_set.resolve!(reference_table, true)
+      @table_set.query_tables.resolve!(reference_table, true)
       field.name = field.name + 'num'
       key_field_sql = @expr.to_sql
       sql = ("(SELECT #{original_sql_field_name} " +

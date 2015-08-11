@@ -352,7 +352,10 @@ module Query
       # autojoins that table.
       def bind_table_field(field)
         unless grouped?
-          @bound_select_expressions << field unless @bound_select_expressions.include?(field)
+          unless @bound_select_expressions.include?(field) ||
+                 extra_column_lookup(field)
+            @bound_select_expressions << field
+          end
         end
       end
 
@@ -712,7 +715,7 @@ module Query
       ##
       # Returns the SQL for the entire query.
       def to_sql
-        "(" + ast_sql.to_sql + ")"
+        ast_sql.to_sql
       end
 
       ##

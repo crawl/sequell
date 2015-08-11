@@ -42,6 +42,9 @@ module Sql
       @tables.size
     end
 
+    ##
+    # Looks up the table with the given table's alias, or registers the table if
+    # not found.
     def lookup!(table)
       return lookup!(primary_table) if table.equal?(@query_ast)
       @tables.lookup!(table)
@@ -105,6 +108,8 @@ module Sql
     ##
     # Returns any SQL ? placeholder values from JOINed subqueries.
     def sql_values
+      return primary_table.sql_values if @joins.empty?
+
       values = []
       include_left_table = true
       @joins.each { |j|
