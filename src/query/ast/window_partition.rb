@@ -21,9 +21,9 @@ module Query
 
       def arguments=(args)
         @ordering = args.find { |a|
-          a.kind == :group_order_list
+          a.kind == :partition_order_list
         }
-        @fields = args.find_all { |a| a.kind != :group_order_list }
+        @fields = args.find_all { |a| a.kind != :partition_order_list }
       end
 
       def to_s
@@ -34,7 +34,17 @@ module Query
         end
       end
 
+      def to_sql
+        ["PARTITION BY", fields.map(&:to_sql).join(", "), partition_order_sql].compact.join(' ')
+      end
+
       private
+
+      def partition_order_sql
+        ord = self.ordering
+        return unless ord
+        ord.to_sql
+      end
 
       def field_list
         fields.map(&:to_s).join(',')

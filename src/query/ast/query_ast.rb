@@ -125,6 +125,7 @@ module Query
         @tail = tail
         @original_tail = @tail && @tail.dup
         @subquery_alias = nil
+        @subquery = subquery
         @join_tables = []
         @join_conditions = []
         @bound_select_expressions = []
@@ -360,7 +361,7 @@ module Query
       def bound_select_expressions
         exprs = @bound_select_expressions + (extra ? extra.arguments : [])
         return exprs unless exprs.empty?
-        @bound_select_expressions << Sql::Field.field('id').bind_context(self)
+        bind_default_select_expressions
       end
 
       ##
@@ -738,7 +739,11 @@ module Query
       end
 
       def table(game)
-        context.table(game)
+        self
+      end
+
+      def default_select_fields
+        context.default_select_fields
       end
 
       private
@@ -845,6 +850,10 @@ module Query
 
       def rebind_query_tables(old, query_tables)
         query_tables.rebind_table(old, self)
+      end
+
+      def bind_default_select_expressions
+        @bound_select_expressions << Sql::Field.field('id').bind_context(self)
       end
     end
   end

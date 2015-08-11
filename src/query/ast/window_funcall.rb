@@ -20,6 +20,10 @@ module Query
       def to_s
         "#{funcall.to_s}::#{partition.to_s}"
       end
+
+      def to_sql
+        "#{funcall.to_sql_output} OVER (#{partition.to_sql})"
+      end
     end
   end
 end

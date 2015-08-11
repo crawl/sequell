@@ -125,6 +125,12 @@ module Sql
     end
 
     ##
+    # Returns an array of fields that should be selected by default.
+    def default_select_fields
+      db_columns.map { |c| Sql::Field.field(c.name) }
+    end
+
+    ##
     # Returns +true+ if the given field name represents a real or synthetic
     # field in this context
     def field?(field)

@@ -130,12 +130,12 @@ module Sql
     end
 
     def select_query_fields
-      fields = @ctx.db_columns.map { |c| Sql::Field.field(c.name) }
+      fields = @ctx.default_select_fields
       known_fields = Set.new(fields.map(&:name))
 
       if @extra && @extra.fields
         fields += @extra.fields.find_all { |ef|
-          (!ef.simple_field? || !fields.include?(ef.expr.name)) && !ef.aggregate?
+          (!ef.simple_field? || !known_fields.include?(ef.expr.name)) && !ef.aggregate?
         }.map(&:expr)
       end
       fields

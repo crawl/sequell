@@ -8,6 +8,12 @@ module Sql
     end
 
     ##
+    # Returns an array of fields that should be selected by default.
+    def default_select_fields
+      not_implemented
+    end
+
+    ##
     # Sets this context as the default (where relevant)
     def with(&block)
       not_implemented

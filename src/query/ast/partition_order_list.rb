@@ -14,6 +14,10 @@ module Query
       def meta?
         false
       end
+
+      def to_sql
+        "ORDER BY " + arguments.map(&:to_sql).join(', ')
+      end
     end
   end
 end

@@ -18,6 +18,13 @@ module Query
 
       def apply
         ASTBinder.bind(@ast)
+
+        if @ast.respond_to?(:each_query)
+          @ast.each_query { |q|
+            ASTTranslator.new(q).apply unless q.equal?(@ast)
+          }
+        end
+
         @ast.transform! { |node|
           translate_ast(node) if node
         }
@@ -26,10 +33,6 @@ module Query
       private
 
       def translate_ast(ast)
-        ast = ASTWalker.map_kinds(ast, :query) { |q|
-          ASTTranslator.new(q).apply
-        }
-
         ast = ASTWalker.map_raw_fields(ast) { |field|
           Sql::Field.field(field.name).bind_context(field.context)
         }
