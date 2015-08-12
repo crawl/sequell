@@ -14,7 +14,7 @@ module Cmd
   end
 
   class UserKeyword
-    KEYWORD_REGEX = /^[\w@_.:+*&#$~`'"-]+$/
+    KEYWORD_REGEX = /^[\w@_.:+*&$~`'"-]+$/
 
     @@tracking_recursion = nil
 

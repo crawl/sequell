@@ -220,6 +220,7 @@ E !lg . won x=runes
 !lm * !ktyp s=name,char x=max(xl) pfmt:'${.} (${child})' fmt:'${.}'
 
 !lm * time>20130101 s=char,name x=max(xl) ?: max(xl)>=15
+!lm * time>20130101 s=char,name x=max(xl) ?: max(xl)>=15 # Trailing comment test.
 !lm elliptic min=sc
 !lg * win s=-name
 !lg * win s=name x=-max(sc)
@@ -274,6 +275,7 @@ E !lg * ${ac + ev} > 15
 
 !lg . DEFE
 !lg test
+!lg test # Test with trailing comment
 !lg * GhEn max=sc
 !lg * !win -3 max=sc
 !lg * s=name
