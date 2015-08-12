@@ -14,7 +14,7 @@ module Grammar
          (space >> nicked_query_body).maybe.as(:head) >>
         (space? >> query_tail).maybe.as(:tail) >>
         (space? >> query_result_filter).maybe.as(:filter) >>
-        space?).as(:query)
+        space? >> comment.maybe).as(:query)
     }
 
     rule(:query_context) {
@@ -38,5 +38,6 @@ module Grammar
 
     rule(:space) { match('\s').repeat(1) }
     rule(:space?) { space.maybe }
+    rule(:comment) { str("--") >> match(".*")}
   end
 end
