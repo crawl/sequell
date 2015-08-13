@@ -29,7 +29,6 @@ module Sql
       @summary_sort = nil
       @sorts = ast.sorts && ast.sorts.map(&:dup)
       @count_sorts = ast.sorts && ast.sorts.map(&:dup)
-      @summarise = ast.summarise && ast.summarise.dup
       @raw = nil
       @joins = false
 
@@ -37,6 +36,7 @@ module Sql
         @ast.autojoin_lookup_columns!
         @count_ast = @ast.dup
         @summary_ast = @ast.dup
+        @summarise = @summary_ast.summarise
 
         # Don't resolve sort fields until we've cloned the previous tables.
         resolve_sort_fields(@sorts, @ast)
@@ -178,6 +178,7 @@ module Sql
 
     def resolve_field(field, ast)
       with_contexts {
+        STDERR.puts("Resolving #{field} against #{ast.inspect}")
         Sql::FieldResolver.resolve(ast, field)
       }
     end
@@ -282,6 +283,7 @@ module Sql
     end
 
     def resolve_summary_fields
+      STDERR.puts("Summary AST: #{@summary_ast.inspect}")
       if summarise
         summarise.each_field { |field|
           resolve_field(field, @summary_ast)
@@ -293,6 +295,9 @@ module Sql
           resolve_field(field, @summary_ast)
         }
       end
+
+      require 'pry'
+      binding.pry
     end
 
     def summary_query
@@ -301,13 +306,12 @@ module Sql
       @query = nil
       sortdir = @summary_sort
 
-      where = self.summary_where
       @values = self.with_values([summarise, extra].compact, @values)
 
       summary_field_text = self.summary_fields
       summary_group_text = self.summary_group
       %{SELECT #{summary_field_text} FROM #{@summary_ast.to_table_list_sql}
-        #{where.where_clause} #{summary_group_text} #{summary_order}}
+        #{summary_where.where_clause} #{summary_group_text} #{summary_order}}
     end
 
     def summary_values

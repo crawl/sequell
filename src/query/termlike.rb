@@ -4,7 +4,14 @@ module Query
   module Termlike
     attr_accessor :arguments
     attr_accessor :context
-    attr_accessor :alias
+    attr_reader :alias
+
+    ##
+    # Sets an alias for this term, which may be used as the SQL column alias
+    # when selecting this term.
+    def alias=(new_alias)
+      @alias = new_alias if new_alias && !new_alias.empty?
+    end
 
     ##
     # Returns the primary body predicate for this term. In most cases the term

@@ -17,7 +17,7 @@ module Sql
     # synthetic version number instead of the string version.
     attr_reader :ordered_column_alias
 
-    attr_reader :table
+    attr_reader :table, :config
 
     def initialize(config, decorated_name, alias_map=nil)
       @config = config

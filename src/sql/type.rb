@@ -233,7 +233,7 @@ module Sql
     end
 
     def to_s
-      identifiers = [type, unit].compact.join(';')
+      identifiers = [type_string, unit].compact.join(';')
       "Type[#{identifiers}]"
     end
 

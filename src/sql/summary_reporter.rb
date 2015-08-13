@@ -84,7 +84,7 @@ module Sql
       query_count = @query_group.size
       first = true
       for q in @query_group do
-        sql_each_row_for_query(q.summary_query, *q.values) do |row|
+        sql_each_row_for_query(q.summary_query, *q.summary_values) do |row|
           srow = nil
           if group_by then
             srow = SummaryRow.new(self,

@@ -14,6 +14,12 @@ module Sql
     end
 
     ##
+    # Returns the name of the primary entity, usually "game" or "milestone".
+    def entity_name
+      not_implemented
+    end
+
+    ##
     # Sets this context as the default (where relevant)
     def with(&block)
       not_implemented

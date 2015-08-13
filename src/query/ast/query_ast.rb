@@ -164,6 +164,11 @@ module Query
         @join_tables = @join_tables.map(&:dup)
         @join_conditions = @join_conditions.map(&:dup)
         @query_tables = @query_tables.dup if @query_tables
+        @ast_sql = nil
+        if @from_subquery
+          @from_subquery = @from_subquery.dup
+          @context = @from_subquery
+        end
         ASTBinder.bind(self)
         rebind_table(o)
       end
@@ -202,6 +207,10 @@ module Query
         else
           bound_select_expressions
         end
+      end
+
+      def entity_name
+        context.entity_name
       end
 
       ##
@@ -352,9 +361,13 @@ module Query
       # autojoins that table.
       def bind_table_field(field)
         unless grouped?
-          unless @bound_select_expressions.include?(field) ||
-                 extra_column_lookup(field)
-            @bound_select_expressions << field
+          unless @bound_select_expressions.include?(field)
+            extra_match = extra_expr_lookup(field)
+            if extra_match
+              field.sql_name = query_tables.bind_column_alias(extra_match)
+            else
+              @bound_select_expressions << field
+            end
           end
         end
       end
@@ -815,26 +828,31 @@ module Query
       end
 
       def resolve_local_ungrouped_column(field, internal_expr)
-        if internal_expr ? context_prefix?(field.prefix) : local_prefix?(field.prefix)
-          column = context.resolve_local_column(field, false, :ignore_prefix) ||
-                   (!internal_expr && extra_column_lookup(field))
-
-          if column
-            return column.bind(internal_expr ? context_table(context) : self)
-          end
+        if internal_expr
+          return unless context_prefix?(field.prefix)
+          column = context.resolve_local_column(field, false, :ignore_prefix)
+          return column.bind(context_table(context)) if column
+        else
+          return unless local_prefix?(field.prefix)
+          column = extra_column_lookup(field) ||
+                   context.resolve_local_column(field, false, :ignore_prefix)
+          return Sql::Column.new(column.config, column.name + column.type.type_id).bind(self) if column
         end
+      end
+
+      def extra_expr_lookup(field)
+        return unless self.extra
+        self.extra.each { |extra_expr|
+          return extra_expr if external_field_matches_expr?(field, extra_expr)
+        }
+        nil
       end
 
       ##
       # Find an extra expression that matches the field.
       def extra_column_lookup(field)
-        return unless self.extra
-        self.extra.each { |extra_expr|
-          if external_field_matches_expr?(field, extra_expr)
-            return Sql::Column.new(context.config, field.name + extra_expr.type.type_id).bind(self)
-          end
-        }
-        nil
+        extra_expr = extra_expr_lookup(field)
+        extra_expr && Sql::Column.new(context.config, field.name + extra_expr.type.type_id).bind(self)
       end
 
       ##
@@ -853,6 +871,9 @@ module Query
 
       def rebind_query_tables(old, query_tables)
         query_tables.rebind_table(old, self)
+        if old.from_subquery && self.from_subquery
+          query_tables.rebind_table(old.from_subquery, self.from_subquery)
+        end
       end
 
       def bind_default_select_expressions

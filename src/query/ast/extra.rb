@@ -9,12 +9,13 @@ module Query
 
       def initialize(expr, ordering=nil, ealias=nil)
         self.expr = expr
+        self.alias = ealias
         @ordering = ordering.to_s
-        @alias = ealias
       end
 
-      def dup
-        self.class.new(expr.dup, ordering)
+      def initialize_copy(o)
+        super
+        self.expr = self.expr.dup
       end
 
       def kind

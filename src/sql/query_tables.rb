@@ -3,10 +3,57 @@ require 'sql/table_set'
 require 'set'
 
 module Sql
+  class ColumnAliases
+    attr_reader :aliases
+
+    def initialize
+      @aliases = { }
+    end
+
+    def [](term_alias)
+      return nil unless term_alias && !term_alias.empty?
+      @aliases[term_alias.downcase]
+    end
+
+    def bind_column_alias(term)
+      current_alias = term.alias
+      return current_alias if self[current_alias] == term
+      new_alias = create_unique_alias(nvl(term.alias) || term.to_s)
+      @aliases[new_alias] = term
+      term.alias = new_alias
+    end
+
+    private
+
+    def create_unique_alias(base)
+      new_alias = cleanse_base(base)
+      new_alias = rev(new_alias) while @aliases[new_alias]
+      new_alias
+    end
+
+    def rev(term_alias)
+      if term_alias =~ /_\d+$/
+        term_alias.gsub(/_(\d+)$/) { "_#{$1.to_i + 1}" }
+      else
+        "#{term_alias}_1"
+      end
+    end
+
+    def cleanse_base(base)
+      cleansed = base.gsub(/[^a-zA-Z_0-9]+/, ' ').strip.gsub(/ +/, '_')
+      SQL_CONFIG.sql_field_name_map[cleansed] || cleansed
+    end
+
+    def nvl(name)
+      return nil unless name && !name.empty?
+      name
+    end
+  end
+
   # Tracks the set of tables referenced in a query with one primary table
   # and any number of additional join tables.
   class QueryTables
-    attr_reader :primary_table, :outer_table, :joins
+    attr_reader :primary_table, :outer_table, :joins, :column_aliases
     attr_accessor :tables
 
     def self.next_id
@@ -19,6 +66,7 @@ module Sql
       @query_ast = query_ast
       @primary_table = Sql::QueryTable.table(primary_table)
       @outer_table = outer_table
+      @column_aliases = ColumnAliases.new
 
       # Share a set of tables with the outer table if possible.
       @tables = (@outer_table && @outer_table.query_tables.tables) || TableSet.new
@@ -29,9 +77,15 @@ module Sql
       super
       @id = self.class.next_id
       @joins = @joins.dup
+      @column_aliases = @column_aliases.dup
+    end
+
+    def bind_column_alias(term)
+      @column_aliases.bind_column_alias(term)
     end
 
     def rebind_table(old_table, new_table)
+      @primary_table = new_table if @primary_table.equal?(old_table)
       @tables.rebind(old_table, new_table)
       @joins.each { |j|
         j.rebind_table(old_table, new_table)
