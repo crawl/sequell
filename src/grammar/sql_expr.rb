@@ -7,7 +7,7 @@ module Grammar
     root(:sql_expr)
 
     rule(:sql_expr) {
-      escaped_expr | window_function_expr
+      window_function_expr | subquery | escaped_expr
     }
 
     rule(:window_function_expr) {

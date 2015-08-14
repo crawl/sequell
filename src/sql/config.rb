@@ -17,11 +17,11 @@ module Sql
     end
 
     def aggregate_functions
-      @aggregate_functions ||= Sql::FunctionDefs.new(@cfg['aggregate-functions'])
+      @aggregate_functions ||= Sql::FunctionDefs.new(@cfg['aggregate-functions'], aggregate: true)
     end
 
     def window_functions
-      @window_functions ||= Sql::FunctionDefs.new(@cfg['window-functions'])
+      @window_functions ||= Sql::FunctionDefs.new(@cfg['window-functions'], window: true)
     end
 
     def lookup_table(column)

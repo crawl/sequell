@@ -59,6 +59,10 @@ $ rm dat/user_commands.db
 # Games with one milestone:
 !lg * $lm[gid=outer:gid x=count(*)]=1
 
+# Milestone from game with one milestone:
+!lm elliptic gid=${$lg[$lm[gid=outer:gid x=count(*)]=1 x=gid]}
+!lm elliptic gid=$lg[$lm[gid=outer:gid x=count(*)]=1 x=gid]
+
 # Window function query: this should be a select from
 # a simple subquery with no joins.
 !lg * tab:$[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char

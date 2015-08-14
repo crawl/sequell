@@ -3,6 +3,7 @@ module Query
     class SubqueryExpr < Term
       def initialize(query)
         @arguments = [query]
+        query.subquery_expression = true
       end
 
       def query
@@ -15,6 +16,14 @@ module Query
 
       def to_sql
         "(" + query.to_sql + ")"
+      end
+
+      def inspect
+        to_s
+      end
+
+      def to_s
+        query.to_s
       end
     end
   end

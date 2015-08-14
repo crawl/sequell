@@ -163,7 +163,7 @@ module Grammar
     }
 
     rule(:field_expr) {
-      SqlExpr.new | subquery | function_expr | field
+      subquery | SqlExpr.new | function_expr | field
     }
 
     rule(:field_value_boundary) {

@@ -293,7 +293,10 @@ module Query
       # and build a final set of query tables (in query_tables).
       def autojoin_lookup_columns!
         @autojoined_lookups = true
-        join_tables.each(&:autojoin_lookup_columns!)
+        each_query { |q|
+          q.autojoin_lookup_columns! unless q.equal?(self)
+        }
+
         Sql::ColumnResolver.resolve(self)
         Sql::JoinResolver.resolve(self)
       end
@@ -326,7 +329,8 @@ module Query
       # from.
       def resolve_column(field, internal_expr)
         if subquery_expression? && field.parent_prefix? && self.outer_query
-          return self.outer_query.resolve_column(field.unqualified, false)
+          col = self.outer_query.resolve_column(field.unqualified, false)
+          return col
         end
 
         col = resolve_local_column(field, internal_expr)
@@ -357,9 +361,9 @@ module Query
       ##
       # Binds a field to this query AST, forcing it to be selected. This is also
       # an invitation to twiddle the field or the field's column if it requires
-      # special treatment. This is mainly used by subqueries to prevent the
-      # field from autojoining a lookup table when the subquery already
-      # autojoins that table.
+      # special treatment.
+      #
+      # A bound expression forces auto-joins, if any.
       def bind_table_field(field)
         unless grouped?
           unless @bound_select_expressions.include?(field)
@@ -602,8 +606,19 @@ module Query
         @head ||= Expr.and()
       end
 
+      ##
+      # Returns true if this is a grouped or ungrouped summary query.
+      #
+      # Any s=foo query, or an ungrouped query with aggregate extra expressions
+      # (x=count(*)) or ratio query is a summary query.
       def summary?
-        summarise || (extra && extra.aggregate?) || self.tail
+        summarise || simple_aggregate? || self.tail
+      end
+
+      ##
+      # Returns true if this is a non-grouped aggregate query.
+      def simple_aggregate?
+        extra && extra.aggregate?
       end
 
       def has_sorts?
@@ -879,6 +894,15 @@ module Query
 
       def bind_default_select_expressions
         @bound_select_expressions << Sql::Field.field('id').bind_context(self)
+      end
+
+      def local_clone_field(field)
+        clone = field.dup
+        field.column = nil
+        clone.prefix = nil
+        clone.context = self
+        clone.table = nil
+        clone
       end
     end
   end

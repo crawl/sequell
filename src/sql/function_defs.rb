@@ -3,10 +3,10 @@ require 'sql/errors'
 
 module Sql
   class FunctionDefs
-    def initialize(functions, aggregate=nil, window=nil)
+    def initialize(functions, opts={})
       @functions = functions
-      @aggregate = aggregate
-      @window = window
+      @aggregate = opts[:aggregate]
+      @window = opts[:window]
     end
 
     def aggregate?

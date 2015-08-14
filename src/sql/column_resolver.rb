@@ -18,6 +18,11 @@ module Sql
       @ast.head.each_predicate { |p|
         resolve_predicate(p)
       }
+      if @ast.respond_to?(:bound_select_expressions)
+        @ast.bound_select_expressions.each { |se|
+          Sql::FieldResolver.resolve(@ast, se)
+        }
+      end
       resolve_individual_fields(@ast.head)
       if @ast.respond_to?(:join_conditions)
         @ast.join_conditions.each { |jc|

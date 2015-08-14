@@ -54,8 +54,6 @@ module Sql
         apply_alt_join(field)
       end
 
-      return resolve_simple_field(field) if !field.reference? || field.reference_id_only?
-
       # Don't try to join lookup if this is a reference to an outer query field:
       if outer_query_reference?(field, column)
         # Create a proxy field to resolve on the outer query:
@@ -64,40 +62,37 @@ module Sql
         field_proxy = Sql::FieldResolver.resolve(column.table, field_proxy)
         field.table = field_proxy.table
         field.sql_name = field_proxy.sql_name
-      else
-        # Reference column -- find the reference table
-        reference_table = column.lookup_table
-
-        # Find the table that the predicate's field belongs to
-        qualified_field = field.context_qualified
-
-        # Set up the join
-        right_field = Sql::Field.field('id')
-        right_field.table = reference_table
-        join = Sql::Join.new(qualified_field.table,
-                             reference_table,
-                             [qualified_field.resolve(column.fk_name)],
-                             :inner,
-                             [right_field])
-
-        # Register the join
-        begin
-          tables.join(join)
-        rescue
-          require 'pry'
-          binding.pry
-          raise
-        end
-
-        # And qualify the field with the reference table. NOTE: the
-        # reference table *instance* will be bound to an alias specific
-        # to the join, so the same table may be joined multiple times
-        # with different instances and aliases. Two tables with the same
-        # name may be part of different joins and have different
-        # aliases. See QueryTable.
-        field.table = reference_table
-        field.sql_name = column.lookup_field_name
+        return field
       end
+
+      return resolve_simple_field(field) if !field.reference? || field.reference_id_only?
+
+      # Reference column -- find the reference table
+      reference_table = column.lookup_table
+
+      # Find the table that the predicate's field belongs to
+      qualified_field = field.context_qualified
+
+      # Set up the join
+      right_field = Sql::Field.field('id')
+      right_field.table = reference_table
+      join = Sql::Join.new(qualified_field.table,
+                           reference_table,
+                           [qualified_field.resolve(column.fk_name)],
+                           :inner,
+                           [right_field])
+
+      # Register the join
+      tables.join(join)
+
+      # And qualify the field with the reference table. NOTE: the
+      # reference table *instance* will be bound to an alias specific
+      # to the join, so the same table may be joined multiple times
+      # with different instances and aliases. Two tables with the same
+      # name may be part of different joins and have different
+      # aliases. See QueryTable.
+      field.table = reference_table
+      field.sql_name = column.lookup_field_name
 
       field
     end

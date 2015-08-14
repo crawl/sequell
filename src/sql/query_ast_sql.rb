@@ -74,8 +74,10 @@ module Sql
       query_ast.autojoin_lookup_columns!
       load_values([query_ast.head])
 
-      resolve(order_fields)
-      load_values(order_fields)
+      unless query_ast.simple_aggregate?
+        resolve(order_fields)
+        load_values(order_fields)
+      end
 
       ["SELECT #{query_columns.join(', ')}",
        "FROM #{query_tables_sql}",
@@ -112,7 +114,7 @@ module Sql
     end
 
     def query_order_by
-      return if !sorts || sorts.empty?
+      return if query_ast.simple_aggregate? || !sorts || sorts.empty?
       "ORDER BY " + sorts.map(&:to_sql).join(', ')
     end
 
