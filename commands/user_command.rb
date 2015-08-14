@@ -6,7 +6,7 @@ require 'timeout'
 
 help("No help for user-defined commands")
 
-TIME_LIMIT = 90
+TIME_LIMIT = 120
 
 cmd = ARGV[2]
 begin
@@ -22,7 +22,7 @@ begin
     exit(exit_code)
   }
 rescue Timeout::Error
-  puts "#{TIME_LIMIT}s limit exceeded: killed #{cmd}"
+  puts "#{TIME_LIMIT}s limit exceeded: #{cmd}"
   raise
 rescue StandardError
   puts $!
