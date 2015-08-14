@@ -15,17 +15,35 @@ module Query
       end
 
       def result(fragment=false)
-        query_ast.each_query { |q|
-          if q.equal?(query_ast)
-            apply(q)
-          else
-            ASTFixup.result(q)
-          end
-        }
+        apply_recursive(query_ast)
+
+        # This must happen after the initial fixup, since lifting extra fields is
+        # critical to correct autojoining.
+        autojoin_recursive(query_ast)
         query_ast
       end
 
       private
+
+      def apply_recursive(query_ast)
+        query_ast.each_query { |q|
+          if q.equal?(query_ast)
+            apply(q)
+          else
+            apply_recursive(q)
+          end
+        }
+      end
+
+      def autojoin_recursive(query_ast)
+        query_ast.each_query { |q|
+          if q.equal?(query_ast)
+            q.autojoin_lookup_columns!
+          else
+            autojoin_recursive(q)
+          end
+        }
+      end
 
       def apply(q)
         fix_milestone_value_fields!(q)
@@ -45,9 +63,8 @@ module Query
           fix_node(node)
         }
         bind_subquery_game_type(q)
-        q.autojoin_lookup_columns!
+        q.ast_meta_bound = true
       end
-
 
       def bind_subquery_game_type(ast)
         return unless ast.kind == :query
@@ -132,7 +149,9 @@ module Query
       end
 
       def fixup_full_query!(ast)
-        return unless ast.kind == :query
+        unless ast.kind == :query
+          return
+        end
 
         ast.game_number = -1
         ast.transform_nodes! { |node|
@@ -197,6 +216,7 @@ module Query
         end
 
         return node unless node.meta?
+        STDERR.puts("Meta node: #{node}")
         case node.kind
         when :summary, :extra, :group_order, :keyed_option, :filter_term
           # Don't cull these nodes, cull the parent.

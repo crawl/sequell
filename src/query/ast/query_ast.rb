@@ -111,6 +111,12 @@ module Query
       # also acts as the query context.
       attr_accessor :from_subquery
 
+      ##
+      # Set to true once this QueryAST has been preprocessed and meta nodes
+      # moved to their correct homes. Many AST operations will fail unless the
+      # AST has been fixed up.
+      attr_writer :ast_meta_bound
+
       def self.next_id
         @@id ||= 0
         @@id += 1
@@ -176,6 +182,10 @@ module Query
       end
 
       alias :table_alias :subquery_alias
+
+      def ast_meta_bound?
+        @ast_meta_bound
+      end
 
       def from_subquery=(q)
         if @from_subquery
@@ -262,6 +272,16 @@ module Query
       end
 
       ##
+      # Returns a list of all queries in this query, including this query itself.
+      def all_queries
+        result = []
+        each_query { |q|
+          result << q
+        }
+        result
+      end
+
+      ##
       # Returns a clone of this AST with the tail predicate as the only
       # predicate.
       def tail_ast
@@ -292,6 +312,8 @@ module Query
       # Bind all columns that are located in lookup tables as joined columns,
       # and build a final set of query tables (in query_tables).
       def autojoin_lookup_columns!
+        raise("autojoin_lookup_columns! called for #{self.inspect}, but ast_meta_bound=false") unless ast_meta_bound?
+
         @autojoined_lookups = true
         each_query { |q|
           q.autojoin_lookup_columns! unless q.equal?(self)
