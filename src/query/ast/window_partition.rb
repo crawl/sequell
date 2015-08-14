@@ -11,6 +11,11 @@ module Query
         @ordering = ordering
       end
 
+      def initialize_copy(o)
+        super
+        self.arguments = arguments.map(&:dup)
+      end
+
       def kind
         :window_partition
       end

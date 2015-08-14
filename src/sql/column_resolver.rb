@@ -15,7 +15,6 @@ module Sql
     end
 
     def resolve
-      STDERR.puts("ColumnResolver: #{@ast}")
       @ast.head.each_predicate { |p|
         resolve_predicate(p)
       }

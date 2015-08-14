@@ -37,11 +37,6 @@ module Query
           Sql::Field.field(field.name).bind_context(field.context)
         }
 
-        STDERR.puts("Field context report for #{ast}:")
-        ast.each_field { |f|
-          STDERR.puts("Field: #{f}, context: #{f.context}")
-        }
-
         ast = ASTWalker.map_keywords(ast) { |kw, parent|
           if kw.flag(:keyword_consumed)
             nil

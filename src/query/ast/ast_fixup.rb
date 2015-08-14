@@ -174,7 +174,6 @@ module Query
       # Convert milestones value fields X=Y (such as rune=barnacled) into the
       # noun=Y type=X form.
       def fix_milestone_value_fields!(ast)
-        STDERR.puts("Fixing milestone value fields for #{ast}")
         values = []
         ast.head.map_fields { |field|
           if field.value_key?

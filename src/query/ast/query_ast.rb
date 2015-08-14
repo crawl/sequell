@@ -164,6 +164,8 @@ module Query
         @join_tables = @join_tables.map(&:dup)
         @join_conditions = @join_conditions.map(&:dup)
         @query_tables = @query_tables.dup if @query_tables
+        @extra = @extra.dup if @extra
+        @summarise = @summarise.dup if @summarise
         @ast_sql = nil
         if @from_subquery
           @from_subquery = @from_subquery.dup
@@ -291,7 +293,6 @@ module Query
       # and build a final set of query tables (in query_tables).
       def autojoin_lookup_columns!
         @autojoined_lookups = true
-        STDERR.puts("Resolving fields in #{self}")
         join_tables.each(&:autojoin_lookup_columns!)
         Sql::ColumnResolver.resolve(self)
         Sql::JoinResolver.resolve(self)

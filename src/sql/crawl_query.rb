@@ -19,6 +19,7 @@ module Sql
     def initialize(ast)
       @ast = ast
       @ctx = @ast.context
+
       @original_query = @ast.dup
       @nick = ast.default_nick
       @num = @ast.game_number
@@ -32,16 +33,14 @@ module Sql
       @raw = nil
       @joins = false
 
-      with_contexts {
-        @ast.autojoin_lookup_columns!
-        @count_ast = @ast.dup
-        @summary_ast = @ast.dup
-        @summarise = @summary_ast.summarise
+      @ast.autojoin_lookup_columns!
+      @count_ast = @ast.dup
+      @summary_ast = @ast.dup
+      @summarise = @summary_ast.summarise
 
-        # Don't resolve sort fields until we've cloned the previous tables.
-        resolve_sort_fields(@sorts, @ast)
-        @query_fields = resolve_query_fields(@ast)
-      }
+      # Don't resolve sort fields until we've cloned the previous tables.
+      resolve_sort_fields(@sorts, @ast)
+      @query_fields = resolve_query_fields(@ast)
     end
 
     def formatter
@@ -178,7 +177,6 @@ module Sql
 
     def resolve_field(field, ast)
       with_contexts {
-        STDERR.puts("Resolving #{field} against #{ast.inspect}")
         Sql::FieldResolver.resolve(ast, field)
       }
     end
@@ -295,9 +293,6 @@ module Sql
           resolve_field(field, @summary_ast)
         }
       end
-
-      require 'pry'
-      binding.pry
     end
 
     def summary_query

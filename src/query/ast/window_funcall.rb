@@ -5,6 +5,11 @@ module Query
         @arguments = [funcall, partition]
       end
 
+      def initialize_copy(o)
+        super
+        @arguments = @arguments.map(&:dup)
+      end
+
       def kind
         :window_funcall
       end

@@ -16,7 +16,6 @@ module Sql
     end
 
     def resolve
-      STDERR.puts("JoinResolver join conditions: #{query_ast.join_conditions.map(&:to_s)} for #{query_ast}")
       query_ast.join_conditions.each { |jc|
         join = create_join(jc)
         apply_join(join)
