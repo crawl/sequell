@@ -1,5 +1,4 @@
-The LearnDB
-===========
+# The LearnDB
 
 The LearnDB is a user-maintained database of content accessible to
 users of ##crawl and ##crawl-dev on freenode IRC. This is a brief
@@ -10,8 +9,7 @@ may have one or more entries. For user convenience, entries may link
 to other entries.
 
 
-Querying the LearnDB
---------------------
+## Querying the LearnDB
 
 Use ?? to query the LearnDB:
 
@@ -51,8 +49,7 @@ out-of-bounds positive entries as equivalent to the last index, while
 others will just report an error, and this behaviour may change in the
 future.
 
-Adding to the LearnDB
----------------------
+## Adding to the LearnDB
 
 Use !learn add to add entries to the LearnDB. If no term exists,
 !learn add will create the term and add the entry. If an existing
@@ -95,8 +92,7 @@ particular index by specifying the index:
 When inserting entries, any existing entry with the same or larger
 index is renumbered one higher to accommodate the new entry.
 
-Updating entries in the LearnDB
--------------------------------
+## Updating entries in the LearnDB
 
 Use !learn set to replace the content of an existing entry in the LearnDB:
 
@@ -122,7 +118,7 @@ Sequell uses [the RE2 regex engine](https://code.google.com/p/re2/wiki/Syntax)
 Regular expressions are case-insensitive by default, but can be made
 case-sensitive using the flag I
 
-### Flags
+### Edit Flags
 
 Sequell recognises these regex flags for !learn edit:
 
@@ -133,8 +129,7 @@ Sequell recognises these regex flags for !learn edit:
 
 You may also use embedded regex flags such as (?-i).
 
-Removing entries from the LearnDB
----------------------------------
+## Removing entries from the LearnDB
 
 Use !learn del to remove entries from the LearnDB. Specify an entry by
 term and index. You may only remove one entry at a time.
@@ -142,8 +137,7 @@ term and index. You may only remove one entry at a time.
     <user> !learn del cow[1]
     <Sequell> Deleted cow[1/4]: Vocalization: "Moo!"
 
-Moving entries
---------------
+## Moving entries
 
 You may move entries using the general form:
 
@@ -175,8 +169,7 @@ and swap terms as:
 
     !learn swap A B
 
-Quoting
--------
+## Quoting
 
 Quoted strings are accepted as a convenience when entering long terms
 with embedded spaces, where it would be awkward to replace those
@@ -186,8 +179,7 @@ LearnDB manipulation commands, not when querying the DB.
 Quoted strings are still normalized for embedded spaces and stripped
 of leading and trailing spaces.
 
-Searching
----------
+## Searching
 
 You may search the LearnDB with
 [regular expressions](https://code.google.com/p/re2/wiki/Syntax) using `?/`:
@@ -199,8 +191,7 @@ You may search the LearnDB with
 If your `?/` search starts with `<` or `>`, use a space to separate the
 search from the `?/`.
 
-LearnDB command aliases
------------------------
+## LearnDB command aliases
 
 Some LearnDB commands may be aliases to different names, you may use
 any alias as convenient.
@@ -212,8 +203,7 @@ any alias as convenient.
 5. !learn move == !learn mv
 6. !learn delete == !learn del == !learn rm
 
-Links
------
+## Links
 
 Entries may link to other entries using the `see {term[index]}` format:
 
@@ -238,8 +228,7 @@ An alternative to `do {<command>}` is `$(<command>)`, but
 conspicuously different from regular command behaviour (particularly
 for !lg / !lm).
 
-Query Forms
------------
+## Query Forms
 
 There are three ways to query the LearnDB:
 
@@ -286,7 +275,7 @@ Sequell recognizes these variables:
 
 1. $nick/$user: The nick interacting with Sequell.
 2. $bot: Sequell's own nick ("Sequell").
-3. $channel: The channel.
+3. $channel: The channel, or "msg" for private messages.
 
 Sequell will also expand standard
 [Command-Line Expansions](commandline.md) in entries.
@@ -430,8 +419,7 @@ To ignore a LearnDB query:
 
     !learn add :beh: \?\?\s*secret\s* :::  ::: last
 
-Limitations
------------
+## LearnDB Limitations
 
 Terms may not contain the ` ` (space), `[` and `]` characters. Terms
 are case-insensitive and case-preserving, but case-insensitive
@@ -564,4 +552,4 @@ by the end-user specified in the -nick option, on the channel specified in the
 
 ## API
 
-See [the LearnDB API](api.md#learndb).
+See [the Sequell LearnDB API](api.md#learndb).

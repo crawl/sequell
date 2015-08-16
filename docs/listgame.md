@@ -1579,4 +1579,4 @@ Examples
 
 ## API
 
-See [the listgame API](api.md#listgame).
+See [the Sequell listgame API](api.md#listgame).
