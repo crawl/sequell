@@ -52,6 +52,10 @@ module Query
       attr_accessor :summarise
 
       ##
+      # The having clause, only valid if summarise is also set.
+      attr_accessor :having
+
+      ##
       # The options clause ("-tv", "-log") etc.
       attr_accessor :options
 
@@ -173,6 +177,7 @@ module Query
         @query_tables = @query_tables.dup if @query_tables
         @extra = @extra.dup if @extra
         @summarise = @summarise.dup if @summarise
+        @having = @having.dup if @having
         @ast_sql = nil
         if @from_subquery
           @from_subquery = @from_subquery.dup
@@ -678,6 +683,7 @@ module Query
 
       def transform!(&block)
         self.summarise = block.call(self.summarise) if self.summarise
+        self.having = block.call(self.having) if self.having
         if self.sorts
           self.sorts = self.sorts.map { |sort|
             block.call(sort)

@@ -76,6 +76,11 @@ module Sql
       query_ast.autojoin_lookup_columns!
       load_values([query_ast.head])
 
+      if query_ast.having
+        resolve([query_ast.having])
+        load_values([query_ast.having])
+      end
+
       if query_ast.ordered?
         resolve(order_fields)
         load_values(order_fields)
@@ -85,6 +90,7 @@ module Sql
        "FROM #{query_tables_sql}",
        query_where_clause,
        query_group_by_clause,
+       having_clause,
        query_order_by_clause,
        limit_clause].compact.join(' ')
     end
@@ -114,6 +120,11 @@ module Sql
     def query_group_by_clause
       return unless grouped?
       "GROUP BY #{query_summary_sql_columns.join(', ')}"
+    end
+
+    def having_clause
+      return unless grouped? && query_ast.having
+      "HAVING #{query_ast.having.to_sql}"
     end
 
     def query_order_by_clause

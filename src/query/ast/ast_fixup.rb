@@ -158,6 +158,8 @@ module Query
           kill_meta_nodes(ast, node)
         }
 
+        lift_having_clause(ast)
+
         if !ast.has_sorts? && ast.needs_sort?
           ast.sorts << Query::Sort.new(ast.context.defsort)
         end
@@ -178,6 +180,33 @@ module Query
         validate_filters(ast, ast.group_order)
 
         ast.bind_tail!
+      end
+
+      def lift_having_clause(ast)
+        mark_having_clauses(ast.head, nil)
+        having_clause = ast.head.bind(Expr.and(*ast.head.arguments.find_all { |n|
+                                                 n.flag(:aggregate_expr)
+                                               }))
+        ast.head.arguments = ast.head.arguments.find_all { |n|
+          !n.flag(:aggregate_expr)
+        }
+        unless having_clause.empty?
+          ast.having = having_clause
+          unless ast.summarise
+            raise("Invalid query: #{ast}; having condition #{having_clause} without summarise")
+          end
+        end
+      end
+
+      def mark_having_clauses(node, parent)
+        # Make sure we don't hit any x=foo nodes:
+        raise("Unexpected extra node: #{node} after meta-node lift.") if node.kind == :extra_list
+        if node.kind == :funcall && node.aggregate?
+          parent.flag!(:aggregate_expr) if parent
+        end
+        node.arguments.each { |arg|
+          mark_having_clauses(arg, node)
+        }
       end
 
       def validate_filters(ast, filter)
