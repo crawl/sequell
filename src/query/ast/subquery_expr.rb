@@ -6,6 +6,10 @@ module Query
         query.subquery_expression = true
       end
 
+      def empty?
+        arguments.empty?
+      end
+
       def query
         @arguments.first
       end
@@ -14,8 +18,13 @@ module Query
         :subquery_expr
       end
 
+      def table_subquery=(table)
+        query.table_subquery = table
+        query.subquery_expression = !table
+      end
+
       def type
-        query.type
+        query ? query.type : Sql::Type.type('*')
       end
 
       def to_sql

@@ -135,6 +135,10 @@ module Query
       self.operator && self.operator.equality?
     end
 
+    def empty?
+      self.operator && self.arguments.empty?
+    end
+
     def value
       self.right.value if self.right && self.right.kind == :value
     end

@@ -10,11 +10,17 @@ module Sql
 
     attr_reader :id
 
+    include Enumerable
+
     def initialize
       @table_aliases = { }
       @tables = []
       @alias_index = 0
       @id = self.class.next_id
+    end
+
+    def each(&block)
+      @tables.each(&block)
     end
 
     def size

@@ -295,7 +295,7 @@ module Query
       end
 
       def ast_empty?(ast)
-        ast.operator && ast.arguments.empty?
+        ast.empty? || (ast.operator && ast.arguments.empty?)
       end
 
       def coerce_to_field(node)
