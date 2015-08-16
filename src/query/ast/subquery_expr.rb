@@ -14,6 +14,10 @@ module Query
         :subquery_expr
       end
 
+      def type
+        query.type
+      end
+
       def to_sql
         "(" + query.to_sql + ")"
       end

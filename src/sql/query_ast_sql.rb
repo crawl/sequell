@@ -68,13 +68,15 @@ module Sql
     end
 
     def query_sql
+      query_ast.resolve_game_number!
+
       resolve(query_fields)
       load_values(query_fields)
 
       query_ast.autojoin_lookup_columns!
       load_values([query_ast.head])
 
-      unless query_ast.simple_aggregate?
+      if query_ast.ordered?
         resolve(order_fields)
         load_values(order_fields)
       end
@@ -82,8 +84,9 @@ module Sql
       ["SELECT #{query_columns.join(', ')}",
        "FROM #{query_tables_sql}",
        query_where_clause,
-       query_group_by,
-       query_order_by].compact.join(' ')
+       query_group_by_clause,
+       query_order_by_clause,
+       limit_clause].compact.join(' ')
     end
 
     def query_fields
@@ -108,14 +111,26 @@ module Sql
       query_ast.head.to_sql
     end
 
-    def query_group_by
+    def query_group_by_clause
       return unless grouped?
       "GROUP BY #{query_summary_sql_columns.join(', ')}"
     end
 
-    def query_order_by
+    def query_order_by_clause
       return if query_ast.simple_aggregate? || !sorts || sorts.empty?
       "ORDER BY " + sorts.map(&:to_sql).join(', ')
+    end
+
+    def limit_clause
+      return if query_ast.summary?
+
+      index = query_ast.game_number
+      raise("game_number=#{index}, expected > 0") if !index || index <= 0
+      if index == 1
+        "LIMIT 1"
+      else
+        "OFFSET #{index - 1} LIMIT 1"
+      end
     end
 
     def sorts

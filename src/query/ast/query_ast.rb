@@ -1,5 +1,6 @@
 require 'query/ast/term'
 require 'query/ast/ast_walker'
+require 'query/ast/sort_clauses'
 require 'query/nick_expr'
 require 'query/text_template'
 require 'query/query_template_properties'
@@ -139,7 +140,7 @@ module Query
         @filter = filter
         @options = []
         @opt_map = { }
-        @sorts = []
+        @sorts = SortClauses.new
         @keys = Query::AST::KeyedOptionList.new
 
         @nick = ASTWalker.find(@head) { |node|
@@ -312,7 +313,7 @@ module Query
       # Bind all columns that are located in lookup tables as joined columns,
       # and build a final set of query tables (in query_tables).
       def autojoin_lookup_columns!
-        raise("autojoin_lookup_columns! called for #{self.inspect}, but ast_meta_bound=false") unless ast_meta_bound?
+        assert_meta_bound!
 
         @autojoined_lookups = true
         each_query { |q|
@@ -629,7 +630,19 @@ module Query
       end
 
       ##
-      # Returns true if this is a grouped or ungrouped summary query.
+      # Returns true if this query's results can be meaningfully ordered by the
+      # database server.
+      #
+      # In general, ratio queries cannot be ordered by the database, since
+      # they're processed in ruby. Ungrouped aggregates are intrinsically single
+      # row, so ordering is meaningless. Other query forms may be ordered.
+      def ordered?
+        !simple_aggregate? && !self.tail
+      end
+
+      ##
+      # Returns true if this is a grouped or ungrouped summary (aggregate)
+      # query.
       #
       # Any s=foo query, or an ungrouped query with aggregate extra expressions
       # (x=count(*)) or ratio query is a summary query.
@@ -648,7 +661,7 @@ module Query
       end
 
       def reverse_sorts!
-        @sorts = @sorts.map { |sort| sort.reverse }
+        @sorts.reverse_sorts!
       end
 
       def needs_sort?
@@ -732,7 +745,7 @@ module Query
         pieces << extra.to_s if extra
         pieces << options.to_s if options && !options.empty?
         pieces << keys.to_s if keys && !keys.empty?
-        pieces << sorts[0].to_s if sorts && !sorts.empty?
+        pieces << sorts.to_s if sorts && !sorts.empty?
         pieces << "/" << @tail.to_query_string(false) if @tail
         pieces << "?:" << @filter.to_s if @filter
         text = pieces.select { |x| !x.empty? }.join(' ')
@@ -798,6 +811,30 @@ module Query
 
       def default_select_fields
         context.default_select_fields
+      end
+
+      ##
+      # For non-summary queries, resolves the game number into an index that
+      # can be used with OFFSET + LIMIT.
+      #
+      # Negative indices are the *natural* order matching the sort order; these
+      # are negated.
+      #
+      # Positive indices are retained, but the sort order is flipped.
+      def resolve_game_number!
+        assert_meta_bound!
+        return self.game_number if summary? || @game_number_resolved
+
+        self.game_number = 1 if self.game_number == 0
+        index = game_number
+        if index > 0
+          self.reverse_sorts!
+        elsif index < 0
+          self.game_number = -index
+        end
+        @game_number_resolved = true
+
+        self.game_number
       end
 
       private
@@ -925,6 +962,10 @@ module Query
         clone.context = self
         clone.table = nil
         clone
+      end
+
+      def assert_meta_bound!
+        raise("Invalid operation for #{self.inspect}, ast_meta_bound=false") unless ast_meta_bound?
       end
     end
   end
