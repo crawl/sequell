@@ -231,9 +231,13 @@ module Sql
         @values = []
         @values = self.with_values(query_fields, @values)
         @values += self.with_values(@count_sorts)
+        table_list_sql = @ast.to_table_list_sql
+        @values += @ast.table_list_values
         @values += id_values
+
         result = ("SELECT #{query_columns.join(", ")} " +
-                  "FROM #{@ast.to_table_list_sql} WHERE #{id_sql} = (#{id_subquery})")
+                  "FROM #{table_list_sql} WHERE #{id_sql} = (#{id_subquery})")
+
         return result
       end
 
@@ -245,9 +249,10 @@ module Sql
 
       @values += self.with_values(@sorts) if with_sorts
 
-      "SELECT #{query_columns.join(", ")} FROM #{@ast.to_table_list_sql} " +
+      query_text = "SELECT #{query_columns.join(", ")} FROM #{@ast.to_table_list_sql} " +
          where_clause.where_clause + " " +
-         limit_clause(record_index, count)
+                   limit_clause(record_index, count)
+      query_text
     end
 
     def select_id(with_sorts=false, record_index=0, count=1)

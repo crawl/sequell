@@ -752,6 +752,7 @@ module Query
         pieces << options.to_s if options && !options.empty?
         pieces << keys.to_s if keys && !keys.empty?
         pieces << sorts.to_s if sorts && !sorts.empty?
+        pieces << having.to_s if having
         pieces << "/" << @tail.to_query_string(false) if @tail
         pieces << "?:" << @filter.to_s if @filter
         text = pieces.select { |x| !x.empty? }.join(' ')

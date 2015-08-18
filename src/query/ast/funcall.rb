@@ -54,7 +54,11 @@ module Query
       end
 
       def to_s
-        "#{@name}(" + arguments.map(&:to_s).join(',') + ")"
+        if @name == 'count_all' && arguments.empty?
+          'count(*)'
+        else
+          "#{@name}(" + arguments.map(&:to_s).join(',') + ")"
+        end
       end
 
       def to_sql
