@@ -66,6 +66,22 @@ operators:
     arity: 2
     precedence: 40
 
+  - op: '=*'
+    negated: '!*'
+    argtype: '*'
+    result: '!'
+    arity: 2
+    precedence: 40
+    sql_operator: ' IN '
+
+  - op: '!*'
+    negated: '=*'
+    argtype: '*'
+    result: '!'
+    arity: 2
+    precedence: 40
+    sql_operator: ' NOT IN '
+
   - op: '='
     negated: '!='
     argtype: '*'

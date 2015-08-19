@@ -22,7 +22,7 @@ module Grammar
     }
 
     rule(:option_argument) {
-      match["^ :"].repeat(1).as(:option_argument)
+      match['^ :)\]'].repeat(1).as(:option_argument)
     }
 
     rule(:body_expr) {

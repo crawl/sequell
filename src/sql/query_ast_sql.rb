@@ -133,8 +133,22 @@ module Sql
     end
 
     def limit_clause
-      return if query_ast.summary? && !query_ast.explicit_game_number?
+      if query_ast.summary? && !query_ast.explicit_game_number?
+        summary_count_limit_clause
+      else
+        simple_limit_offset_clause
+      end
+    end
 
+    def summary_count_limit_clause
+      count_opt = query_ast.option(:count)
+      return unless count_opt
+      count = count_opt.option_arguments[0].to_i
+      return unless count > 0
+      "LIMIT #{count}"
+    end
+
+    def simple_limit_offset_clause
       index = query_ast.game_number
       raise("game_number=#{index}, expected > 0") if !index || index <= 0
       if index == 1

@@ -868,7 +868,11 @@ module Query
       end
 
       def grouped_select_expressions
-        summarise.arguments + [implied_group_count_expression] + (extra ? extra.arguments : [])
+        if subquery_expression? # If this is a single column query, we have to be picky about the column:
+          (extra && [extra.arguments.first]) || [summarise.arguments.first]
+        else
+          summarise.arguments + [implied_group_count_expression] + (extra ? extra.arguments : [])
+        end
       end
 
       def implied_group_count_expression
