@@ -128,12 +128,12 @@ module Sql
     end
 
     def query_order_by_clause
-      return if query_ast.simple_aggregate? || !sorts || sorts.empty?
-      "ORDER BY " + sorts.map(&:to_sql).join(', ')
+      return if query_ast.simple_aggregate? || !order_fields || order_fields.empty?
+      "ORDER BY " + order_fields.map(&:to_sql).join(', ')
     end
 
     def limit_clause
-      return if query_ast.summary?
+      return if query_ast.summary? && !query_ast.explicit_game_number?
 
       index = query_ast.game_number
       raise("game_number=#{index}, expected > 0") if !index || index <= 0
@@ -178,7 +178,7 @@ module Sql
     end
 
     def order_fields
-      query_ast.sorts
+      @order_fields ||= (query_ast.grouped? ? query_ast.group_order.to_a : query_ast.sorts)
     end
 
     def subquery?

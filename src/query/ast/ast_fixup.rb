@@ -153,7 +153,6 @@ module Query
           return
         end
 
-        ast.game_number = -1
         ast.transform_nodes! { |node|
           kill_meta_nodes(ast, node)
         }

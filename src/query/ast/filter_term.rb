@@ -137,6 +137,17 @@ module Query
       def to_s
         qualifier + term.to_s
       end
+
+      def to_sql
+        case
+        when self.expr
+          self.expr.to_sql
+        when term == 'n'
+          'COUNT(*)'
+        else
+          raise("No SQL expression for #{self.to_s}")
+        end
+      end
     end
   end
 end

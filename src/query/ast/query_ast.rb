@@ -67,10 +67,6 @@ module Query
       # The alias for this query when used in a larger query.
       attr_writer :alias
 
-      ##
-      # The requested game number.
-      attr_accessor :game_number
-
       attr_accessor :nick, :default_nick
 
       ##
@@ -185,6 +181,23 @@ module Query
         end
         ASTBinder.bind(self)
         rebind_table(o)
+      end
+
+      ##
+      # The game number selected, defaulting to -1.
+      def game_number
+        @game_number || -1
+      end
+
+      def game_number=(n)
+        @explicit_game_number = true
+        @game_number = n
+      end
+
+      ##
+      # Returns true if the input query had an explicit game number.
+      def explicit_game_number?
+        @explicit_game_number
       end
 
       alias :table_alias :subquery_alias
@@ -830,14 +843,14 @@ module Query
       # Positive indices are retained, but the sort order is flipped.
       def resolve_game_number!
         assert_meta_bound!
-        return self.game_number if summary? || @game_number_resolved
+        return self.game_number if @game_number_resolved
 
-        self.game_number = 1 if self.game_number == 0
-        index = game_number
+        @game_number = 1 if self.game_number == 0
+        index = self.game_number
         if index > 0
           self.reverse_sorts!
         elsif index < 0
-          self.game_number = -index
+          @game_number = -index
         end
         @game_number_resolved = true
 

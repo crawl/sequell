@@ -7,6 +7,10 @@ module Query
         :group_order_list
       end
 
+      def to_a
+        arguments
+      end
+
       def to_s
         "o:" + arguments.map(&:to_s).join(',')
       end

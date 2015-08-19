@@ -64,6 +64,12 @@ $ rm dat/user_commands.db
 !lm elliptic gid=$lg[@elliptic $lm[gid=outer:gid x=count(*)]=1 x=gid -1]
 !lm elliptic gid=$lg[@elliptic $lm[gid=outer:gid x=count(*)]=1 x=gid]
 
+# Find the gid with the most Boris kills, and show the game and the number of kills.
+!lg * $lm[uniq=Boris s=gid -1]:q gid=q:gid x=q:count
+
+# Same as previous, but with explicit order:
+!lg * $lm[uniq=Boris s=gid max=count(*) -1]:q gid=q:gid x=q:count
+
 !lg * $lm[uniq=Boris s=gid max=count(*)]:q gid=q:gid
 !lg * $lm[uniq=Boris s=gid count(*)=5]:q gid=q:gid
 
