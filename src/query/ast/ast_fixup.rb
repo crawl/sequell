@@ -28,6 +28,7 @@ module Query
       def apply_recursive(query_ast)
         query_ast.each_query { |q|
           if q.equal?(query_ast)
+            STDERR.puts("AST fixup: #{query_ast.inspect}")
             apply(q)
           else
             apply_recursive(q)
@@ -130,8 +131,7 @@ module Query
 
         return node unless right_col && left_col.table != right_col.table
 
-        STDERR.puts("**** Join node: #{node}")
-
+        #STDERR.puts("**** Join node: #{node}")
         outer = ast.outer_query
         if left_col.table.equal?(outer) || right_col.table.equal?(outer)
           node.right = right
@@ -153,30 +153,21 @@ module Query
           return
         end
 
+        STDERR.puts("Transforming AST: #{ast.inspect}")
         ast.transform_nodes! { |node|
-          kill_meta_nodes(ast, node)
+          node = kill_meta_nodes(ast, node)
+          lift_order_nodes(ast, node)
         }
 
+        STDERR.puts("Lifting AST: #{ast.inspect}")
         lift_having_clause(ast)
 
-        if !ast.has_sorts? && ast.needs_sort?
-          ast.sorts << Query::Sort.new(ast.context.defsort)
-        end
-
-        if ast.sorts
-          ast.sorts.each { |sort|
-            if sort.aggregate?
-              raise "Sort expression cannot be aggregate: #{sort}"
-            end
-          }
-        end
-
-        if !ast.group_order && ast.needs_group_order?
-          ast.group_order = ast.default_group_order
+        if !ast.has_order? && ast.needs_order?
+          ast.order << ast.default_group_order
         end
 
         validate_filters(ast, ast.filter)
-        validate_filters(ast, ast.group_order)
+        validate_filters(ast, ast.order)
 
         ast.bind_tail!
       end
@@ -237,6 +228,12 @@ module Query
         end
       end
 
+      def lift_order_nodes(ast, node)
+        return node unless node && node.kind == :group_order_list && !node.equal?(ast.order)
+        ast.order += node
+        nil
+      end
+
       def kill_meta_nodes(ast, node)
         if node.field_value_predicate? && node.field === 'game'
           ast.game = node.value
@@ -244,7 +241,6 @@ module Query
         end
 
         return node unless node.meta?
-        STDERR.puts("Meta node: #{node}")
         case node.kind
         when :summary, :extra, :group_order, :keyed_option, :filter_term
           # Don't cull these nodes, cull the parent.
@@ -252,13 +248,11 @@ module Query
         when :keyed_option_list
           ast.keys.merge!(node)
         when :sort
-          ast.sorts << node
+          ast.order << node.to_group_order_term
         when :option
           ast.add_option(node)
         when :game_number
           ast.game_number = node.value > 0 ? node.value - 1 : node.value
-        when :group_order_list
-          ast.group_order = node
         when :summary_list
           raise "Too many grouping terms (extra: #{node})" if ast.summarise
           ast.summarise = node

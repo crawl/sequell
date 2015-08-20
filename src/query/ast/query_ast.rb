@@ -1,6 +1,7 @@
 require 'query/ast/term'
 require 'query/ast/ast_walker'
 require 'query/ast/sort_clauses'
+require 'query/ast/group_order_list'
 require 'query/nick_expr'
 require 'query/text_template'
 require 'query/query_template_properties'
@@ -60,10 +61,6 @@ module Query
       attr_accessor :options
 
       ##
-      # The min|max clause.
-      attr_accessor :sorts
-
-      ##
       # The alias for this query when used in a larger query.
       attr_writer :alias
 
@@ -73,7 +70,12 @@ module Query
       # The query game type: crawl, sprint, zotdef, etc.
       attr_accessor :game
 
-      attr_accessor :group_order, :keys
+      ##
+      # Query sort order from max=, min= and o= clauses.
+      attr_accessor :order
+
+      attr_accessor :keys
+
       attr_reader   :subquery_alias
 
       attr_writer :subquery_expression
@@ -137,10 +139,11 @@ module Query
         @join_conditions = []
         @bound_select_expressions = []
 
+        @order = GroupOrderList.new
+
         @filter = filter
         @options = []
         @opt_map = { }
-        @sorts = SortClauses.new
         @keys = Query::AST::KeyedOptionList.new
 
         @nick = ASTWalker.find(@head) { |node|
@@ -174,6 +177,7 @@ module Query
         @extra = @extra.dup if @extra
         @summarise = @summarise.dup if @summarise
         @having = @having.dup if @having
+        @order = @order.dup if @order
         @ast_sql = nil
         if @from_subquery
           @from_subquery = @from_subquery.dup
@@ -582,16 +586,20 @@ module Query
 
       ##
       # Returns true if this is a grouped query without a group order.
-      def needs_group_order?
-        !group_order && grouped?
+      def needs_order?
+        !order && grouped?
       end
 
       ##
       # Returns the default group order that should be used when no
       # explicit group order is specified.
-      def default_group_order
-        (extra && extra.default_group_order) ||
-          (summarise && summarise.default_group_order)
+      def default_order
+        if grouped?
+          (extra && extra.default_order) ||
+            (summarise && summarise.default_order)
+        else
+          GroupOrderTerm.new(@context.defsort)
+        end
       end
 
       def head_desc(suppress_meta=true)
@@ -674,20 +682,20 @@ module Query
         extra && extra.aggregate?
       end
 
-      def has_sorts?
-        !@sorts.empty?
+      def has_order?
+        !self.order.empty?
       end
 
-      def reverse_sorts!
-        @sorts.reverse_sorts!
+      def needs_order?
+        grouped? || (!summary? && !compound_query? && !exists_query?)
       end
 
-      def needs_sort?
-        !summary? && !compound_query? && !exists_query?
+      def reverse_order!
+        self.order.reverse_order! if self.order
       end
 
       def primary_sort
-        @sorts.first
+        self.order.first
       end
 
       def compound_query?
@@ -697,12 +705,7 @@ module Query
       def transform!(&block)
         self.summarise = block.call(self.summarise) if self.summarise
         self.having = block.call(self.having) if self.having
-        if self.sorts
-          self.sorts = self.sorts.map { |sort|
-            block.call(sort)
-          }.compact
-        end
-        self.group_order = block.call(self.group_order) if self.group_order
+        self.order = block.call(self.order) if self.order
         self.extra = block.call(self.extra) if self.extra
         self.head = block.call(self.head)
         @full_tail = block.call(@full_tail) if @full_tail
@@ -720,12 +723,7 @@ module Query
 
       def each_node(&block)
         self.summarise.each_node(&block) if self.summarise
-        if self.sorts
-          self.sorts.each { |sort|
-            sort.each_node(&block)
-          }
-        end
-        self.group_order.each_node(&block) if self.group_order
+        self.order.each_node(&block) if self.order
         self.extra.each_node(&block) if self.extra
         self.head.each_node(&block)
         (self.full_tail || self.tail).each_node(&block) if self.tail
@@ -760,11 +758,10 @@ module Query
         pieces << @nick if @nick && !is_subquery
         pieces << head.to_query_string(false)
         pieces << @summarise.to_s if summary?
-        pieces << group_order.to_s if group_order
+        pieces << order.to_s if order
         pieces << extra.to_s if extra
         pieces << options.to_s if options && !options.empty?
         pieces << keys.to_s if keys && !keys.empty?
-        pieces << sorts.to_s if sorts && !sorts.empty?
         pieces << having.to_s if having
         pieces << "/" << @tail.to_query_string(false) if @tail
         pieces << "?:" << @filter.to_s if @filter

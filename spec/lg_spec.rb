@@ -35,4 +35,11 @@ describe '!lg behavior' do
       expect(q.to_s).to eql("!lg * vmsg='succumbed to something\\'s poison gas' s=place o:n")
     end
   end
+
+  query '!lg * $lm[uniq=Boris s=gid min=count(*) -1]:q gid=q:gid x=q:count' do
+    it 'will order subquery by count(*) asc' do
+      sql = q.join_tables[0].to_sql
+      expect(sql).to include("ORDER BY COUNT(*) ASC")
+    end
+  end
 end

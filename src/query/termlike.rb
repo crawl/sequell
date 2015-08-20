@@ -43,7 +43,7 @@ module Query
     def bind(term)
       return term unless term
       ctx = self.context
-      return unless ctx
+      return term unless ctx
       ::Query::AST::ASTWalker.each_node(term.head) { |n|
         n.bind_context(ctx)
       }

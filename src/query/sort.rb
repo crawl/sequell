@@ -1,6 +1,7 @@
 require 'sql/query_context'
 require 'sql/field_predicates'
 require 'query/has_expression'
+require 'query/ast/group_order_term'
 
 module Query
   class Sort
@@ -20,6 +21,10 @@ module Query
 
     def kind
       :sort
+    end
+
+    def to_group_order_term
+      bind(Query::AST::GroupOrderTerm.new(expr, asc? ? '-' : '+'))
     end
 
     def unique_valued?

@@ -192,7 +192,7 @@ module Sql
     end
 
     def order_fields
-      @order_fields ||= (query_ast.grouped? ? query_ast.group_order.to_a : query_ast.sorts)
+      @order_fields ||= query_ast.order.to_a
     end
 
     def subquery?
