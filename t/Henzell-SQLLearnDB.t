@@ -7,7 +7,7 @@ use File::Path;
 use lib 'lib';
 use Henzell::SQLLearnDB;
 
-File::Path->make_path('tmp');
+File::Path::make_path('tmp');
 unlink('tmp/test.db');
 
 my $db = Henzell::SQLLearnDB->new('tmp/test.db');
