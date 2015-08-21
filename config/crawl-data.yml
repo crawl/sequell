@@ -592,9 +592,9 @@ value-functions:
     expr: "LENGTH(%s)"
     summarisable: true
   log:
-    type: 'I'
+    type: 'F'
     return: 'F'
-    expr: "TRUNC(LOG(%s) * 10) / 10"
+    expr: "LOG(%s)"
     summarisable: true
   nhour:
     type: 'D'
