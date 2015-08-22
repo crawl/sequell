@@ -115,10 +115,6 @@ module Query
       self.arguments
     end
 
-    def empty?
-      arguments.empty?
-    end
-
     def aggregate?
       arguments.any?(&:aggregate?)
     end

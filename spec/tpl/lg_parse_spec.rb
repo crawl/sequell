@@ -54,16 +54,16 @@ describe "!lg parse" do
   end
 
   it 'will report the o=X order-clause with ast-order' do
-    expect(fnlg('lg/ast-order', '!lg * win')).to be_nil
+    expect(fnlg('lg/ast-order', '!lg * win').to_s).to eql('o:end')
     expect(fnlg('lg/ast-order', '!lg * win s=name o=name').to_s).to eql('o:name')
     expect(fnlg('lg/ast-order', '!lg * win s=name o=.').to_s).to eql('o:.')
     expect(fnlg('lg/ast-order', '!lg * win s=name o=-.').to_s).to eql('o:-.')
   end
 
-  it 'will report the max=X or min=X clause with ast-sort' do
-    expect(fnlg('lg/ast-sort', '!lg * win max=xl').to_s).to eql('max=xl')
-    expect(fnlg('lg/ast-sort', '!lg * win').to_s).to eql('max=end')
-    expect(fnlg('lg/ast-sort', '!lg * win min=dur').to_s).to eql('min=dur')
+  it 'will report the max=X or min=X clause with ast-order' do
+    expect(fnlg('lg/ast-order', '!lg * win max=xl').to_s).to eql('o:xl')
+    expect(fnlg('lg/ast-order', '!lg * win').to_s).to eql('o:end')
+    expect(fnlg('lg/ast-order', '!lg * win min=dur').to_s).to eql('o:-dur')
   end
 
   it 'will report the s=foo clause with ast-summarise' do

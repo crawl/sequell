@@ -7,6 +7,10 @@ module Query
         :group_order_list
       end
 
+      def empty?
+        arguments.empty?
+      end
+
       def meta?
         false
       end

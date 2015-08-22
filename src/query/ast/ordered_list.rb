@@ -30,7 +30,9 @@ module Query
         self.first.type
       end
 
-      def default_group_order
+      ##
+      # Returns the default order term for this ordered list.
+      def default_order
         order = self.first.reverse? ? '-' : ''
         GroupOrderList.new(
           if primary_type.date?

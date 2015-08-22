@@ -24,11 +24,8 @@ module Tpl
   }
 
   FunctionDef.define('lg/ast-order', 1) {
-    self[0].group_order
-  }
-
-  FunctionDef.define('lg/ast-sort', 1) {
-    self[0].sorts[0]
+    ord = self[0].order
+    ord.empty? ? nil : ord
   }
 
   FunctionDef.define('lg/ast-summarise', 1) {

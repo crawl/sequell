@@ -163,7 +163,7 @@ module Query
         lift_having_clause(ast)
 
         if !ast.has_order? && ast.needs_order?
-          ast.order << ast.default_group_order
+          ast.order << ast.default_order
         end
 
         validate_filters(ast, ast.filter)

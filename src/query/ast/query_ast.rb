@@ -591,8 +591,8 @@ module Query
       end
 
       ##
-      # Returns the default group order that should be used when no
-      # explicit group order is specified.
+      # Returns the default sort order that should be used when no
+      # explicit order is specified in the user's query.
       def default_order
         if grouped?
           (extra && extra.default_order) ||
