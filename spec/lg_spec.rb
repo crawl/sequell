@@ -42,4 +42,12 @@ describe '!lg behavior' do
       expect(sql).to include("ORDER BY COUNT(*) ASC")
     end
   end
+
+  query '!lg from:$[@elliptic x=rownum()::partition(char,o=-end):n] win n=1' do
+    it 'will use lg as alias of from subquery' do
+      expect(q.from_subquery).to eq(q.context)
+      subquery = q.context
+      expect(subquery.alias).to eql('lg')
+    end
+  end
 end
