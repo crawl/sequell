@@ -100,7 +100,7 @@ module Sql
   private
 
     def outer_query_reference?(field, column)
-      column.table == field.context.outer_query
+      column.table.equal?(field.context.outer_query)
     end
 
     def apply_alt_join(field)
@@ -112,11 +112,8 @@ module Sql
     end
 
     def resolve_simple_field(field)
+      #col = field.column
       col = ast.resolve_column(field, :internal_expr)
-      unless col
-        require 'pry'
-        binding.pry
-      end
       table = col.table
       field.table = tables.lookup!(table)
       field.sql_name = field.column.fk_name.to_s if field.reference_id_only?

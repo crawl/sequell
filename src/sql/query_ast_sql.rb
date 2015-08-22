@@ -100,7 +100,10 @@ module Sql
     end
 
     def query_columns
-      query_fields.map(&:to_sql_output)
+      query_fields.map { |f|
+        sql = f.to_sql_output
+        f.alias && !f.alias.empty? ? "#{sql} AS #{f.alias}" : sql
+      }
     end
 
     def query_tables_sql

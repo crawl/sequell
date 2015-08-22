@@ -5,13 +5,20 @@ require 'query/termlike'
 module Query
   module AST
     class Term
-      attr_accessor :context, :arguments
+      attr_reader :context, :arguments
 
       include ::Query::Termlike
       include ::Sql::TypePredicates
 
       def initialize
         @arguments = []
+      end
+
+      def context=(c)
+        if c.equal?(self)
+          raise("Attempt to set #{self}.context to itself")
+        end
+        @context = c
       end
 
       def operator

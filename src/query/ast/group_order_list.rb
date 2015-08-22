@@ -3,6 +3,11 @@ require 'query/ast/extra_list'
 module Query
   module AST
     class GroupOrderList < ExtraList
+      def initialize_copy(other)
+        super
+        @arguments = arguments.map(&:dup)
+      end
+
       def kind
         :group_order_list
       end

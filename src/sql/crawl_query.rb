@@ -29,12 +29,12 @@ module Sql
       @random_game = nil
       @summary_sort = nil
       @sorts = ast.order.dup
-      @count_sorts = ast.order.dup
       @raw = nil
       @joins = false
 
       @ast.autojoin_lookup_columns!
       @count_ast = @ast.dup
+      @count_sorts = @count_ast.order.dup
       @summary_ast = @ast.dup
       @summarise = @summary_ast.summarise
 
@@ -92,7 +92,7 @@ module Sql
     end
 
     def row_to_fieldmap(row)
-      base_size = @ctx.db_columns.size
+      base_size = @ctx.default_select_fields.size
       extras = { }
       map = { }
       row = row.to_a
@@ -149,7 +149,8 @@ module Sql
         }
         res
       end
-      self.select_query_fields.each { |field|
+      fields = self.select_query_fields
+      fields.map { |field|
         resolve_field(field, ast)
       }
     end
@@ -176,9 +177,7 @@ module Sql
     end
 
     def resolve_field(field, ast)
-      with_contexts {
-        Sql::FieldResolver.resolve(ast, field)
-      }
+      Sql::FieldResolver.resolve(ast, ast.bind(Sql::Field.field(field)))
     end
 
     def select(field_expressions, with_sorts=true)
@@ -252,8 +251,6 @@ module Sql
       query_text = "SELECT #{query_columns.join(", ")} FROM #{@ast.to_table_list_sql} " +
          where_clause.where_clause + " " +
          limit_clause(record_index, count)
-      require 'pry'
-      binding.pry
       query_text
     end
 

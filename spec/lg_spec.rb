@@ -50,4 +50,23 @@ describe '!lg behavior' do
       expect(subquery.alias).to eql('lg')
     end
   end
+
+  query '!lg from:$[@elliptic x=rownum()::partition(char,o=-end):n] win n=1' do
+    it 'will resolve id on the inner query' do
+      inner = q.from_subquery
+      col = inner.resolve_column(inner.bind(Sql::Field.field('id')), :internal)
+      expect(col).not_to be_nil
+      expect(col.table).to be_instance_of(Sql::QueryTable)
+      expect(inner.query_tables.lookup!(col.table)).to eq(col.table)
+    end
+
+    it 'will resolve id on the inner query after duplicating' do
+      z = q.dup
+      inner = z.from_subquery
+      col = inner.resolve_column(inner.bind(Sql::Field.field('id')), :internal)
+      expect(col).not_to be_nil
+      expect(col.table).to be_instance_of(Sql::QueryTable)
+      expect(inner.query_tables.lookup!(col.table)).to eq(col.table)
+    end
+  end
 end

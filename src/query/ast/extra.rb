@@ -55,11 +55,6 @@ module Query
         repr = (asc? ? '-' : '') + expr.to_s
         self.alias ? "#{repr}:#{self.alias}" : repr
       end
-
-      def to_sql
-        return "#{super} AS #{self.alias}" if self.alias && !self.alias.empty?
-        super
-      end
     end
   end
 end

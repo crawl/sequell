@@ -10,8 +10,9 @@ module Query
         @arguments = extras
       end
 
-      def dup
-        self.class.new(*arguments.map(&:dup))
+      def initialize_copy(other)
+        super
+        arguments = arguments.map(&:dup)
       end
 
       def kind

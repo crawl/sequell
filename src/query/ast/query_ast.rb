@@ -31,6 +31,10 @@ module Query
       attr_reader :context
 
       ##
+      # Unique query id.
+      attr_reader :id
+
+      ##
       # The head of the query for !lg queries "!lg HEAD / TAIL". The head is
       # always non-nil (but it may be empty for queries like "!lg").
       attr_accessor :head
@@ -173,18 +177,33 @@ module Query
         @original_tail = @tail && @tail.dup
         @join_tables = @join_tables.map(&:dup)
         @join_conditions = @join_conditions.map(&:dup)
+        @bound_select_expressions = @bound_select_expressions.map(&:dup)
         @query_tables = @query_tables.dup if @query_tables
         @extra = @extra.dup if @extra
         @summarise = @summarise.dup if @summarise
         @having = @having.dup if @having
         @order = @order.dup if @order
+        @context_table = @context_table.dup if @context_table
         @ast_sql = nil
+
+        old_context = @context
         if @from_subquery
           @from_subquery = @from_subquery.dup
           @context = @from_subquery
         end
         ASTBinder.bind(self)
-        rebind_table(o)
+        rebind_table(o, old_context)
+      end
+
+      ##
+      # Returns true if this is an !lm query.
+      def milestone?
+        context.milestone?
+      end
+
+      def bind(expr)
+        expr.context = self unless expr.equal?(self)
+        expr
       end
 
       ##
@@ -424,14 +443,16 @@ module Query
         unless grouped?
           unless @bound_select_expressions.include?(field)
             extra_match = extra_expr_lookup(field)
-            STDERR.puts("bind_table_field: #{field}, extra_match: #{extra_match}")
+            STDERR.puts("bind_table_field(#{self.inspect}): #{field}, extra_match: #{extra_match}")
             if extra_match
               field.sql_name = query_tables.bind_column_alias(extra_match)
             else
               # Clone the field: we can't just attach the field itself,
               # because it's probably an external field reference, and when
               # selecting, the selected field must be an internal reference.
-              @bound_select_expressions << bind(Sql::Field.field(field.name))
+              new_field = Sql::Field.field(field.name)
+              new_field.alias = field.sql_column_name
+              @bound_select_expressions << bind(new_field)
             end
           end
         end
@@ -749,6 +770,7 @@ module Query
 
       def each_node(&block)
         self.summarise.each_node(&block) if self.summarise
+        self.having.each_node(&block) if self.having
         self.order.each_node(&block) if self.order
         self.extra.each_node(&block) if self.extra
         self.head.each_node(&block)
@@ -848,7 +870,7 @@ module Query
         self.object_id
       end
 
-      def table(game)
+      def table(game=GameContext.game)
         self
       end
 
@@ -980,13 +1002,16 @@ module Query
       ##
       # Replaces all references to old with self in query_tables and in resolved
       # fields of this table.
-      def rebind_table(old)
+      def rebind_table(old, old_context)
         if @query_tables
           table_set = @query_tables.tables.dup
           each_query { |q|
             q.query_tables.tables = table_set
           }
           rebind_query_tables(old, @query_tables)
+        end
+        if old_context && @context_table && @context_table[old_context.alias]
+          @context_table[old_context.alias] = Sql::QueryTable.table(context)
         end
         ASTBinder.rebind_field_tables(old, self)
       end

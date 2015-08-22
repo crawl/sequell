@@ -76,7 +76,7 @@ module Sql
     end
 
     def context
-      @context || Sql::QueryContext.context
+      @context
     end
 
     def bind_context(new_context)
@@ -135,6 +135,7 @@ module Sql
     end
 
     def type
+      return Type.type('*') unless self.context
       column_prop(:type) || Type.type('')
     end
 
