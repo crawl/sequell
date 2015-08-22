@@ -9,6 +9,7 @@ module Query
       def initialize(subquery)
         super()
         @subquery = subquery
+        @subquery.subquery_expression = false
       end
 
       def meta?

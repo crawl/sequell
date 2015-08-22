@@ -204,6 +204,17 @@ module Query
         @explicit_game_number
       end
 
+      ##
+      # Returns true if a game number (offset+limit) must be applied to
+      # this query.
+      #
+      # - Table queries (from:, tab:, join tables) have no limit unless asked for.
+      # - Grouped queries have no limit unless asked for.
+      # - All other queries have an implied limit and offset.
+      def game_number?
+        explicit_game_number? || (!summary? && !table_subquery?)
+      end
+
       alias :table_alias :subquery_alias
 
       def ast_meta_bound?
@@ -413,10 +424,14 @@ module Query
         unless grouped?
           unless @bound_select_expressions.include?(field)
             extra_match = extra_expr_lookup(field)
+            STDERR.puts("bind_table_field: #{field}, extra_match: #{extra_match}")
             if extra_match
               field.sql_name = query_tables.bind_column_alias(extra_match)
             else
-              @bound_select_expressions << field
+              # Clone the field: we can't just attach the field itself,
+              # because it's probably an external field reference, and when
+              # selecting, the selected field must be an internal reference.
+              @bound_select_expressions << bind(Sql::Field.field(field.name))
             end
           end
         end
@@ -602,6 +617,10 @@ module Query
         end
       end
 
+      def defsort
+        context.defsort
+      end
+
       def head_desc(suppress_meta=true)
         stripped_ast_desc(@original_head, true, suppress_meta)
       end
@@ -653,6 +672,13 @@ module Query
 
       def head
         @head ||= Expr.and()
+      end
+
+      ##
+      # Returns true if this query's FROM clause consists entirely of
+      # simple tables (logrecord/milestone and lookup joins)
+      def simple_from_clause?
+        join_tables.empty? && !from_subquery
       end
 
       ##

@@ -1,6 +1,6 @@
 module Sql
   class QueryList < Array
-    attr_accessor :group_order, :filter
+    attr_accessor :order, :filter
 
     def ast
       self.primary_query.ast

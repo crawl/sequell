@@ -28,8 +28,8 @@ module Sql
       @values = nil
       @random_game = nil
       @summary_sort = nil
-      @sorts = ast.sorts && ast.sorts.map(&:dup)
-      @count_sorts = ast.sorts && ast.sorts.map(&:dup)
+      @sorts = ast.order.dup
+      @count_sorts = ast.order.dup
       @raw = nil
       @joins = false
 
@@ -221,7 +221,7 @@ module Sql
     #      (index - 1)
     # When +count+ is non-zero a LIMIT clause is used for that count.
     def select_all(with_sorts=true, record_index=0, count=1)
-      if record_index > 0 && count == 1
+      if record_index > 0 && count == 1 && @ast.simple_from_clause?
         resolve_sort_fields(@count_sorts, @count_ast)
         @values = []
         id_subquery = self.select_id(with_sorts, record_index, count)
@@ -251,7 +251,9 @@ module Sql
 
       query_text = "SELECT #{query_columns.join(", ")} FROM #{@ast.to_table_list_sql} " +
          where_clause.where_clause + " " +
-                   limit_clause(record_index, count)
+         limit_clause(record_index, count)
+      require 'pry'
+      binding.pry
       query_text
     end
 

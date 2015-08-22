@@ -32,7 +32,9 @@ module Query
           if q.equal?(ast)
             ast.transform_nodes! { |n|
               if n.respond_to?(:kind) && n.kind == :from_subquery
-                ast.from_subquery = n.subquery
+                ast.from_subquery = n.subquery.tap { |q|
+                  q.table_subquery = true
+                }
                 nil
               else
                 n

@@ -133,29 +133,41 @@ module Sql
     end
 
     def limit_clause
-      if query_ast.summary? && !query_ast.explicit_game_number?
-        summary_count_limit_clause
-      else
-        simple_limit_offset_clause
-      end
+      # Limit clauses:
+      # - Table queries (from:, tab:, join tables) have no limit unless asked for.
+      # - Grouped queries have no limit unless asked for.
+      # - All other queries have an implied limit and offset.
+      # In all cases, the user can explicitly request an offset and a limit.
+      # The offset is specified as a simple game number index. The limit
+      # defaults to 1 if the offset is set, and can be changed via the -count:X
+      # keyed option.
+
+      index = query_game_number
+      limit = query_limit
+      return unless index || limit
+      segs = []
+      segs << "OFFSET #{index - 1}" if index && index > 1
+      segs << "LIMIT #{limit}" if limit && limit > 0
+      return if segs.empty?
+      segs.join(' ')
     end
 
-    def summary_count_limit_clause
+    def query_game_number
+      query_ast.game_number if query_ast.game_number?
+    end
+
+    def query_limit
+      count = query_count_limit()
+      return count if count
+      1 if query_ast.game_number?
+    end
+
+    def query_count_limit
       count_opt = query_ast.option(:count)
       return unless count_opt
       count = count_opt.option_arguments[0].to_i
       return unless count > 0
-      "LIMIT #{count}"
-    end
-
-    def simple_limit_offset_clause
-      index = query_ast.game_number
-      raise("game_number=#{index}, expected > 0") if !index || index <= 0
-      if index == 1
-        "LIMIT 1"
-      else
-        "OFFSET #{index - 1} LIMIT 1"
-      end
+      count
     end
 
     def sorts

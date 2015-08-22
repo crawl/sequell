@@ -203,8 +203,10 @@ def sql_exec_query(num, q, lastcount=nil)
 end
 
 def sql_count_rows_matching(q)
-  STDERR.puts "Count: #{q.select_count} (#{q.count_values.inspect})" if DEBUG_HENZELL
-  sql_db_handle.get_first_value(q.select_count, *q.count_values).to_i
+  select_count = q.select_count
+  count_values = q.count_values
+  STDERR.puts "Count: #{select_count} (#{count_values.inspect})" if DEBUG_HENZELL
+  sql_db_handle.get_first_value(select_count, *count_values).to_i
 end
 
 def sql_random_row(q)

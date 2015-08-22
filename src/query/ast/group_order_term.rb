@@ -22,6 +22,10 @@ module Query
         asc? ? av <=> bv : bv <=> av
       end
 
+      def unique_valued?
+        expr.kind == :field && expr.unique_valued?
+      end
+
       private
 
       def order_sql
