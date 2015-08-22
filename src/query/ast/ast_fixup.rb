@@ -28,7 +28,6 @@ module Query
       def apply_recursive(query_ast)
         query_ast.each_query { |q|
           if q.equal?(query_ast)
-            STDERR.puts("AST fixup: #{query_ast.inspect}")
             apply(q)
           else
             apply_recursive(q)
@@ -153,13 +152,11 @@ module Query
           return
         end
 
-        STDERR.puts("Transforming AST: #{ast.inspect}")
         ast.transform_nodes! { |node|
           node = kill_meta_nodes(ast, node)
           lift_order_nodes(ast, node)
         }
 
-        STDERR.puts("Lifting AST: #{ast.inspect}")
         lift_having_clause(ast)
 
         if !ast.has_order? && ast.needs_order?
