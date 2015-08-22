@@ -87,7 +87,7 @@ describe Grammar::Query do
     '!lg * $lm[gid=root:gid x=count(*)]=1',
 
     # Window function + subquery
-    '!lg * tab:$[win x=rank()::partition(name, o=end):r,char]:q q:r=2 s=q:char',
+    '!lg * tab:$[win x=rank():partition(name, o=end):r,char]:q q:r=2 s=q:char',
 
     '!lg * !exists($lm[])',
     '!lg * !exists($lm[br.enter=Lair])',

@@ -43,7 +43,7 @@ describe '!lg behavior' do
     end
   end
 
-  query '!lg from:$[@elliptic x=rownum()::partition(char,o=-end):n] win n=1' do
+  query '!lg from:$[@elliptic x=rownum():partition(char,o=-end):n] win n=1' do
     it 'will use lg as alias of from subquery' do
       expect(q.from_subquery).to eq(q.context)
       subquery = q.context
@@ -51,7 +51,7 @@ describe '!lg behavior' do
     end
   end
 
-  query '!lg from:$[@elliptic x=rownum()::partition(char,o=-end):n] win n=1' do
+  query '!lg from:$[@elliptic x=rownum():partition(char,o=-end):n] win n=1' do
     it 'will resolve id on the inner query' do
       inner = q.from_subquery
       col = inner.resolve_column(inner.bind(Sql::Field.field('id')), :internal)

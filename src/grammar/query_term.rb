@@ -38,7 +38,7 @@ module Grammar
       QueryBody.new.subquery
     }
 
-    # from:$lg[x=rank()::partition(name)] for instance. Used to select from a
+    # from:$lg[x=rank():partition(name)] for instance. Used to select from a
     # subquery
     rule(:from_subquery_clause) {
       (str("tab:") | str("from:")) >> space? >> subquery.as(:from_subquery)

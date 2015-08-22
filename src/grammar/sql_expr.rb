@@ -11,7 +11,7 @@ module Grammar
     }
 
     rule(:window_function_expr) {
-      (function_call.as(:window_function_expr) >> space? >> str("::") >> space? >> partition_expr).as(:window_funcall)
+      (function_call.as(:window_function_expr) >> space? >> str(":") >> space? >> partition_expr).as(:window_funcall)
     }
 
     rule(:partition_expr) {
