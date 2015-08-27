@@ -172,9 +172,9 @@ module Query
         super
         @id = self.class.next_id
         @head = @head.dup
-        @original_head = @head.dup
+        @original_head = @original_head.dup
         @tail = @tail && @tail.dup
-        @original_tail = @tail && @tail.dup
+        @original_tail = @original_tail && @original_tail.dup
         @join_tables = @join_tables.map(&:dup)
         @join_conditions = @join_conditions.map(&:dup)
         @bound_select_expressions = @bound_select_expressions.map(&:dup)
