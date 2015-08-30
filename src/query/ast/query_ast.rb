@@ -319,6 +319,7 @@ module Query
       # AST. The block is always called on this query last.
       def each_query(&block)
         block.call(self.from_subquery) if self.from_subquery
+        ASTWalker.each_kind(self.extra, :query, &block) if self.extra
         ASTWalker.each_kind(head, :query, &block)
         join_tables.each(&block)
         block.call(self)
@@ -326,6 +327,8 @@ module Query
 
       ##
       # Returns a list of all queries in this query, including this query itself.
+      #
+      # The order of queries is guaranteed identical to each_query.
       def all_queries
         result = []
         each_query { |q|

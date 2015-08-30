@@ -6,6 +6,11 @@ module Query
         query.subquery_expression = true
       end
 
+      def initialize_copy(o)
+        super
+        @arguments = @arguments.map(&:dup)
+      end
+
       def empty?
         arguments.empty?
       end
