@@ -22,6 +22,10 @@ module Sql
       self.primary_query.group_count
     end
 
+    def order
+      self.primary_query.order
+    end
+
     def query_groups
       self.primary_query.query_groups
     end

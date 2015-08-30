@@ -13,8 +13,9 @@ module Query
         @percentage = percentage && !percentage.strip.empty?
       end
 
-      def dup
-        self.class.new(expr.dup, ordering, percentage ? '%' : '')
+      def initialize_copy(o)
+        super
+        @arguments = @arguments.map(&:dup)
       end
 
       def display_value(raw_value, format=nil)

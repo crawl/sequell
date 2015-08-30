@@ -9,6 +9,11 @@ module Query
         @arguments = summary_items
       end
 
+      def initialize_copy(o)
+        super
+        @arguments = @arguments.map(&:dup)
+      end
+
       def kind
         :summary_list
       end

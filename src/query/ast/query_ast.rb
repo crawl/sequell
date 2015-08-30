@@ -45,6 +45,12 @@ module Query
       attr_accessor :tail
 
       ##
+      # The original head and tail ASTs before fixups and translation were
+      # applied. This is usually used for display to the user since it's
+      # more compact and recognisable.
+      attr_reader :original_head, :original_tail
+
+      ##
       # The in-memory filter clause ("?: FILTER")
       attr_accessor :filter
 
@@ -320,6 +326,7 @@ module Query
       def each_query(&block)
         block.call(self.from_subquery) if self.from_subquery
         ASTWalker.each_kind(self.extra, :query, &block) if self.extra
+        ASTWalker.each_kind(self.summarise, :query, &block) if self.summarise
         ASTWalker.each_kind(head, :query, &block)
         join_tables.each(&block)
         block.call(self)
@@ -803,7 +810,28 @@ module Query
         @full_tail
       end
 
+      ##
+      # Returns a printable representation of this query that is as close to
+      # the original user input as reasonable.
       def to_s
+        is_subquery = subquery?
+        pieces = is_subquery ? [] : [context_name]
+        pieces << original_head.to_query_string(false)
+        pieces << "/" << original_tail.to_query_string(false) if @tail
+        pieces << "?:" << @filter.to_s if @filter
+        text = pieces.select { |x| !x.empty? }.join(' ')
+        if subquery?
+          text = "$#{context_alias.to_s}[#{text}]"
+          text += ":#{subquery_alias}" if subquery_alias
+        end
+        text
+      end
+
+      ##
+      # Returns a printable representation of this query's current state. This
+      # is usually quite different from the representation returned by to_s
+      # once the query has been transformed for execution.
+      def to_query_string(parens_ignored=false)
         is_subquery = subquery?
         pieces = is_subquery ? [] : [context_name]
         pieces << @nick if @nick && !is_subquery
@@ -822,10 +850,6 @@ module Query
           text += ":#{subquery_alias}" if subquery_alias
         end
         text
-      end
-
-      def to_query_string(parens_ignored=false)
-        to_s
       end
 
       ##
@@ -858,7 +882,7 @@ module Query
       end
 
       def inspect
-        "Query\##{@id}[#{to_s}]"
+        "Query\##{@id}[#{to_query_string}]"
       end
 
       def == (other)

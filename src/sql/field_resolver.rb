@@ -44,6 +44,8 @@ module Sql
 
       column = field.column
       unless column
+        require 'pry'
+        binding.pry
         raise("Unknown field: #{field} (#{field.context})")
       end
 

@@ -66,6 +66,9 @@ $ rm dat/user_commands.db
 # Number of uniques for last win:
 !lg * win x=$lm[gid=outer:gid uniq x=count(*)]
 
+# Group last three wins by their unique kill counts:
+!lg * win end>=$[win -3 x=end] s=$lm[uniq gid=outer:gid x=count(*)]
+
 # Milestone from game with one milestone:
 !lm elliptic gid=${$lg[@elliptic $lm[gid=outer:gid x=count(*)]=1 x=gid -1]}
 !lm elliptic gid=$lg[@elliptic $lm[gid=outer:gid x=count(*)]=1 x=gid -1]

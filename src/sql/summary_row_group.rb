@@ -11,7 +11,7 @@ module Sql
     end
 
     def sort(summary_rows)
-      order = @summary_reporter.query_group.group_order
+      order = @summary_reporter.query_group.order
 
       if order
         query = self.primary_query

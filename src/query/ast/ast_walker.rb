@@ -36,7 +36,7 @@ module Query
       def self.each_node(ast, parent=nil, condition=nil, visit_subqueries=false, &block)
         return nil if ast.nil?
         ast.arguments.each { |arg|
-          each_node(arg, ast, condition, &block)
+          each_node(arg, ast, condition, visit_subqueries, &block)
         }
 
         if ast.kind == :query && visit_subqueries

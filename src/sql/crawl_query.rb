@@ -38,6 +38,7 @@ module Sql
       @summary_ast = @ast.dup
       @summarise = @summary_ast.summarise
 
+      STDERR.puts("AST: #{@ast.inspect}, Count: #{@count_ast.inspect}, Summary: #{@summary_ast.inspect}") if DEBUG_HENZELL
       # Don't resolve sort fields until we've cloned the previous tables.
       resolve_sort_fields(@sorts, @ast)
       @query_fields = resolve_query_fields(@ast)
@@ -147,6 +148,10 @@ module Sql
 
     def summarise
       @summarise
+    end
+
+    def order
+      @ast.order
     end
 
     def group_count
@@ -290,7 +295,7 @@ module Sql
       @query = nil
       sortdir = @summary_sort
 
-      @values = self.with_values([summarise, extra].compact, @values)
+      @summary_values = self.with_values([summarise, extra].compact, @values)
 
       summary_field_text = self.summary_fields
       summary_group_text = self.summary_group
@@ -299,7 +304,7 @@ module Sql
     end
 
     def summary_values
-      @summary_ast.table_list_values + summary_where.values
+      @summary_values + @summary_ast.table_list_values + summary_where.values
     end
 
     def summary_order
