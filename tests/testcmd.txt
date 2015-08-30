@@ -57,8 +57,14 @@ $ rm dat/user_commands.db
 # Explicit lookup id column reference:
 !lg * x=game_key_id
 
-# Games with one milestone:
-!lg * $lm[gid=outer:gid x=count(*)]=1
+# HuFE Games with one milestone:
+!lg * HuFE $lm[gid=outer:gid x=count(*)]=1
+
+# Wins with exactly 15 uniq milestones.
+!lg * win $lm[gid=outer:gid uniq x=count(*)]=15
+
+# Number of uniques for last win:
+!lg * win x=$lm[gid=outer:gid uniq x=count(*)]
 
 # Milestone from game with one milestone:
 !lm elliptic gid=${$lg[@elliptic $lm[gid=outer:gid x=count(*)]=1 x=gid -1]}

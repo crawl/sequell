@@ -140,21 +140,6 @@ module Sql
       fields
     end
 
-    def resolve_query_fields(ast)
-      if @extra
-        res = @extra.fields.each { |extra|
-          extra.each_field { |field|
-            resolve_field(field, ast)
-          }
-        }
-        res
-      end
-      fields = self.select_query_fields
-      fields.map { |field|
-        resolve_field(field, ast)
-      }
-    end
-
     # Is this a query aimed at a single nick?
     def single_nick?
       @nick != '*' && @nick !~ /^!/
@@ -444,6 +429,21 @@ module Sql
         xlog_record['extra'] = field_expr
       end
       xlog_record
+    end
+
+    def resolve_query_fields(ast)
+      if @extra
+        res = @extra.fields.each { |extra|
+          extra.each_field { |field|
+            resolve_field(field, ast)
+          }
+        }
+      end
+      fields = self.select_query_fields
+      fields = fields.map { |field|
+        field.each_field { |f| resolve_field(f, ast) }
+      }
+      fields
     end
 
     def create_formatter

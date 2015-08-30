@@ -23,16 +23,19 @@ module Query
   end
 
   class QueryKeywordParser
-    def self.parse(arg)
-      self.new(arg).parse
+    def self.parse(context, arg)
+      self.new(context, arg).parse
     end
 
-    def initialize(arg)
+    attr_reader :context
+
+    def initialize(context, arg)
+      @context = context
       @arg = arg.strip
     end
 
     def body
-      @body ||= Expr.new(:and)
+      @body ||= Expr.new(:and).bind_context(self.context)
     end
 
     def parse
@@ -41,7 +44,7 @@ module Query
 
       expr_candidate = QueryExprCandidate.new(@equal_op)
       KeywordMatcher.each do |matcher|
-        res = matcher.match(arg, expr_candidate)
+        res = matcher.match(self.context, arg, expr_candidate)
         if res
           return nil if res == true
           return parse_expr(res, arg) if res.is_a?(String)

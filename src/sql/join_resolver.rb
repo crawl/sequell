@@ -49,8 +49,6 @@ module Sql
     def field_table(field)
       field.context.resolve_column(field, :internal_expr).table
     rescue
-      require 'pry'
-      binding.pry
       raise
     end
   end

@@ -425,6 +425,27 @@ same as !lg, with a few nuances:
   Example: `!lm * rune=barnacled` = `!lm * type=rune noun=barnacled`
            `!lm * god.worship=Lugonu` = `!lm * type=god.worship noun=Lugonu`
 
+Subqueries and Joins
+====================
+
+Some queries are not expressible as a simple !lg or !lm query. As an example, if
+you're looking for games *without* a specific milestone, a simple query won't
+work.
+
+Sequell supports more complex queries for such cases:
+
+### Single-valued expression subqueries.
+
+A single-valued expression subquery returns exactly one value to its outer query.
+For instance, if you're looking for a list of winners with exactly 15 unique kills,
+you could run:
+
+    !lg * win $lm[uniq x=count(*)]=15
+
+Similarly, to find the number of uniq milestones for the last win:
+
+    !lg * win x=$lm[uniq x=count(*)]
+
 
 !won
 ====

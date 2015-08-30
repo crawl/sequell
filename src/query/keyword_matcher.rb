@@ -30,7 +30,8 @@ module Query
       Sql::QueryContext.context
     end
 
-    def match(keyword, expr)
+    def match(context, keyword, expr)
+      @context = context
       @keyword = keyword
       @expr = expr
       @value_field = nil
@@ -38,7 +39,7 @@ module Query
     end
 
     def value_field
-      @value_field ||= Sql::Field.field(@keyword)
+      @value_field ||= Sql::Field.field(@keyword).bind_context(@context)
     end
   end
 end

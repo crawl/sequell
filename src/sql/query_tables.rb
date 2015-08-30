@@ -192,8 +192,6 @@ module Sql
       until unsorted_joins.empty?
         next_join_condition = find_next_join_condition(seen_tables, unsorted_joins)
         unless next_join_condition
-          require 'pry'
-          binding.pry
           raise("Bad join condition chain: no condition in #{unsorted_joins.map(&:to_s)} matches the table set #{seen_tables.to_a.map(&:to_s)}")
         end
         sorted_joins << next_join_condition

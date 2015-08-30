@@ -42,7 +42,7 @@ module Query
             nil
           else
             Cmd::UserKeyword.kill_recursive_keyword {
-              kw.bind(::Query::QueryKeywordParser.parse(kw.value))
+              kw.bind(::Query::QueryKeywordParser.parse(kw.context, kw.value))
             }
           end
         }

@@ -25,10 +25,6 @@ module Sql
                    right_fields=['id'])
       @left_table = Sql::QueryTable.table(left_table)
       @right_table = Sql::QueryTable.table(right_table)
-      if @left_table.is_a?(Sql::QueryContext) || @right_table.is_a?(Sql::QueryContext)
-        require 'pry'
-        binding.pry
-      end
       @left_fields = left_fields.map { |f| Sql::Field.field(f) }
       @right_fields = right_fields.map { |f| Sql::Field.field(f) }
       @join_mode = join_mode

@@ -38,6 +38,16 @@ module Query
       def to_s
         query.to_s
       end
+
+      def each_value(&block)
+        query.each_node { |n|
+          if n.value?
+            block.call(n)
+          else
+            n
+          end
+        }
+      end
     end
   end
 end
