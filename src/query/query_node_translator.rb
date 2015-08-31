@@ -36,6 +36,7 @@ module Query
 
     def translate
       return translate_simple_predicate(node) if node.field_value_predicate?
+      return translate_field_field_predicate(node) if node.field_field_predicate?
       return translate_funcall(node) if node.kind == :funcall
       node
     end
@@ -89,6 +90,26 @@ module Query
         return node
       end
       nil
+    end
+
+    def translate_field_field_predicate(node)
+      return node unless op && op.equality?
+
+      if reference_id_comparison?(node)
+        node.left.reference_id_only = true
+        node.right.reference_id_only = true
+      end
+      node
+    end
+
+    ##
+    # Returns true for comparisons such as killer=${ckiller}, which are both
+    # reference fields in the same reference table.
+    def reference_id_comparison?(node)
+      left = node.left
+      right = node.right
+      left.reference? && right.reference? && left.column && right.column &&
+        left.column.lookup_table == right.column.lookup_table
     end
 
     def translate_simple_predicate(node)
