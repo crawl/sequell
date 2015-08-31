@@ -453,7 +453,6 @@ module Query
         unless grouped?
           unless @bound_select_expressions.include?(field)
             extra_match = extra_expr_lookup(field)
-            STDERR.puts("bind_table_field(#{self.inspect}): #{field}, extra_match: #{extra_match}")
             if extra_match
               field.sql_name = query_tables.bind_column_alias(extra_match)
             else

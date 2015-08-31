@@ -6,7 +6,7 @@ module Query
       attr_accessor :value
 
       def self.value(v)
-        return v if v.is_a?(self)
+        return v if v.is_a?(Term)
         self.new(v)
       end
 

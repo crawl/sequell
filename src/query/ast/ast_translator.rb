@@ -33,6 +33,7 @@ module Query
       private
 
       def translate_ast(ast)
+        # Convert Query::AST::Field instances to Sql::Field instances
         ast = ASTWalker.map_raw_fields(ast) { |field|
           Sql::Field.field(field.name).bind_context(field.context)
         }

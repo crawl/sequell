@@ -39,11 +39,11 @@ module Grammar
     }
 
     rule(:single_quoted_string) {
-      str("'") >> quoted_body("'").repeat.as(:string) >> str("'")
+      str("'") >> quoted_body("'").repeat.as(:quoted_string) >> str("'")
     }
 
     rule(:double_quoted_string) {
-      str('"') >> quoted_body('"').repeat.as(:string) >> str('"')
+      str('"') >> quoted_body('"').repeat.as(:quoted_string) >> str('"')
     }
 
     rule(:safe_value) {

@@ -40,6 +40,8 @@ module Query
       node
     end
 
+    private
+
     def reexpand(node)
       ::Query::AST::ASTTranslator.apply(node)
     end
@@ -70,7 +72,29 @@ module Query
       field.name =~ /^god(?:$|[.])/i
     end
 
+    ##
+    # Translate RHS values into fields if they're expressed in the foo:bar
+    # form, and unquoted.
+    def translate_qualified_value_to_field(node)
+      rhs = node.right
+      if rhs.kind != :value
+        raise("Expected #{rhs} to be a value in #{node}")
+      end
+      return if rhs.flag(:quoted_string) # Don't mess with quoted strings.
+      right = Sql::Field.field(rhs.value).bind_context(node.context)
+      right_col = node.context.resolve_column(right, :internal_expr)
+
+      if right_col && right.prefix
+        node.right = right
+        return node
+      end
+      nil
+    end
+
     def translate_simple_predicate(node)
+      translated_node = translate_qualified_value_to_field(node)
+      return reexpand(translated_node) if translated_node
+
       if equality? && value =~ /^\(?[^| ]+(?:\|[^| ]+)+\)?$/
         values = value.gsub(/^\(|\)$/, '').split('|')
         operator = (op.equal? ? :or : :and)

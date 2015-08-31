@@ -69,4 +69,22 @@ describe '!lg behavior' do
       expect(inner.query_tables.lookup!(col.table)).to eq(col.table)
     end
   end
+
+  query '!lg * place="lg:br"' do
+    it 'will search for place matching the text "lg:br"' do
+      expect(q.to_sql).to include('place = ?')
+    end
+  end
+
+  query '!lg * place=lg:br' do
+    it 'will search for place = branch' do
+      expect(q.to_sql).to include('place = l_br.br')
+    end
+  end
+
+  query '!lg * killer=${ckiller}' do
+    it 'will search for killer_id = ckiller_id' do
+      expect(q.to_sql).to include('logrecord.killer_id = logrecord.ckiller_id')
+    end
+  end
 end

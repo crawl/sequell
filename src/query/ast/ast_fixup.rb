@@ -126,7 +126,7 @@ module Query
         left_col = ast.resolve_column(node.left, :internal_expr)
         return node unless left_col
         right = coerce_to_field(node.right)
-        right_col = ast.resolve_column(right, :internal_expr)
+        right_col = right && ast.resolve_column(right, :internal_expr)
 
         return node unless right_col && left_col.table != right_col.table
 
@@ -319,6 +319,7 @@ module Query
 
       def coerce_to_field(node)
         return node if node.kind == :field
+        return nil if node.flag(:quoted_string)
         Sql::Field.field(node.value).bind_context(node.context)
       end
     end

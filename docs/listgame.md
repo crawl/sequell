@@ -432,20 +432,31 @@ Some queries are not expressible as a simple !lg or !lm query. As an example, if
 you're looking for games *without* a specific milestone, a simple query won't
 work.
 
-Sequell supports more complex queries for such cases:
+Sequell supports more complex queries for such cases. Be cautious when using
+these advanced query forms, because it's quite easy to write absurdly slow
+queries that will hit Sequell's query time limit.
 
 ### Single-valued expression subqueries.
 
-A single-valued expression subquery returns exactly one value to its outer query.
-For instance, if you're looking for a list of winners with exactly 15 unique kills,
-you could run:
+A single-valued expression subquery returns exactly one value to its outer
+query. For instance, if you're looking for your list of wins with exactly 15
+unique kills, you could run:
 
-    !lg * win $lm[uniq x=count(*)]=15
+    !lg . win $lm[gid=outer:gid uniq x=count(*)]=15
 
 Similarly, to find the number of uniq milestones for the last win:
 
-    !lg * win x=$lm[uniq x=count(*)]
+    !lg * win x=$lm[gid=outer:gid uniq x=count(*)]
 
+The `outer:` qualifier refers to expressions in the outer query. The
+`gid=outer:gid` construct is used here to correlate the milestone lookup
+to its corresponding game, matching them by gid/game_key.
+
+### Multi-valued expression subqueries
+
+A multi-valued expression returns multiple values to its outer subquery,
+corresponding to the SQL IN-clause. You must use the special =* (IN) and !* (NOT
+IN) operators for multi-valued subqueries.
 
 !won
 ====

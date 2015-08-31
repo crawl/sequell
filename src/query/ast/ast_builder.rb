@@ -71,7 +71,7 @@ module Query
       }
 
       rule(nick: simple(:nick)) {
-        Value.new(nick)
+        Value.value(nick)
       }
 
       rule(negated_nick: simple(:nick)) {
@@ -105,7 +105,7 @@ module Query
       }
 
       rule(field_value: simple(:value)) {
-        value.is_a?(Term) ? value : value.to_s.strip
+        value.is_a?(Term) ? value : Value.new(value.to_s.strip)
       }
 
       rule(field: { identifier: simple(:field) }) {
@@ -134,7 +134,7 @@ module Query
       rule(function_call: simple(:funcall)) { funcall }
       rule(function_argument: simple(:argument)) {
         if argument.is_a?(String) || argument.is_a?(Numeric)
-          Value.new(argument)
+          Value.value(argument)
         else
           argument
         end
@@ -190,16 +190,16 @@ module Query
           op: simple(:op),
           value: simple(:value)
         }) {
-        Expr.new(op.to_s, funcall, Value.new(value.to_s))
+        Expr.new(op.to_s, funcall, Value.value(value.to_s))
       }
 
       rule(number: simple(:num)) { num }
 
-      rule(integer: simple(:num)) { Value.new(num.to_i) }
-      rule(float: simple(:num)) { Value.new(num.to_f) }
+      rule(integer: simple(:num)) { Value.value(num.to_i) }
+      rule(float: simple(:num)) { Value.value(num.to_f) }
 
       rule(plus: simple(:number)) { number }
-      rule(arithmetic_negated: simple(:number)) { Value.new(-number.value) }
+      rule(arithmetic_negated: simple(:number)) { Value.value(-number.value) }
 
       rule(op: simple(:op), right: simple(:value)) {
         OpenStruct.new(op: op.to_s, value: value)
@@ -222,7 +222,7 @@ module Query
           value: simple(:value)
         }) {
         Expr.new(op.to_s, expr,
-          value.is_a?(Term) ? value : Value.new(value.to_s))
+          Value.value(value))
       }
 
       rule(
@@ -235,8 +235,7 @@ module Query
         }) {
         Expr.new(:and,
           *fields.map { |field|
-            Expr.new(op.to_s, field,
-              value.is_a?(Term) ? value : Value.new(value.to_s))
+            Expr.new(op.to_s, field, value)
           })
       }
 
@@ -250,8 +249,7 @@ module Query
         }) {
         Expr.new(:or,
           *fields.map { |field|
-            Expr.new(op.to_s, field,
-                     value.is_a?(Term) ? value : Value.new(value.to_s))
+            Expr.new(op.to_s, field, Value.value(value))
           })
       }
 
@@ -380,6 +378,7 @@ module Query
 
       rule(char: simple(:c)) { c.to_s }
       rule(string: sequence(:chars)) { chars.join('') }
+      rule(quoted_string: sequence(:chars)) { Value.new(chars.join('').strip).flag!(:quoted_string) }
 
       rule(keyed_option_name: simple(:name),
            keyed_option_value: simple(:value)) {
