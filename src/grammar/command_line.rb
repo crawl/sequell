@@ -38,6 +38,10 @@ module Grammar
       chars.join('')
     }
 
+    rule(quoted_string: sequence(:chars)) {
+      chars.join('')
+    }
+
     rule(char: simple(:x)) {
       x.to_s
     }

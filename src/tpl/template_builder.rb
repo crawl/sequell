@@ -85,6 +85,7 @@ module Tpl
     rule(argument: sequence(:args)) { Fragment.new(*args).collapse }
     rule(string: sequence(:c)) { c.join('') }
     rule(string: simple(:c)) { c.to_s }
+    rule(quoted_string: sequence(:c)) { c.join('') }
     rule(leftquot: simple(:left),
          rightquot: simple(:right)) {
       left.to_s + right.to_s
