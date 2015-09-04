@@ -95,7 +95,7 @@ module Query
     def translate_field_field_predicate(node)
       return node unless op && op.equality?
 
-      if reference_id_comparison?(node)
+      if reference_id_comparison?(node) && !node.left.case_sensitive? && !node.right.case_sensitive?
         node.left.reference_id_only = true
         node.right.reference_id_only = true
       end

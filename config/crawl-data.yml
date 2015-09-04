@@ -710,6 +710,9 @@ milestone-indexes:
 # logrecord/milestone. Any field annotated ^ that does not have an
 # explicit lookup table gets an implicit lookup table with the same
 # name as the field.
+#
+# Lookup table fields MUST be annotated with types; the only optional type is
+# case-insensitive text.
 lookup-tables:
   file:
     fields: [file]

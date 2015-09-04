@@ -82,9 +82,21 @@ describe '!lg behavior' do
     end
   end
 
+  query '!lg * map=${killermap}' do
+    it 'will search for map_id = killermap_id (avoid join because of equality compare)' do
+      expect(q.to_sql).to include('logrecord.mapname_id = logrecord.killermap_id')
+    end
+  end
+
+  query '!lg * map<${killermap}' do
+    it 'will search for l_map.mapname < l_map_1.mapname (join because of inequality compare)' do
+      expect(q.to_sql).to include('l_map.mapname < l_map_1.mapname')
+    end
+  end
+
   query '!lg * killer=${ckiller}' do
-    it 'will search for killer_id = ckiller_id' do
-      expect(q.to_sql).to include('logrecord.killer_id = logrecord.ckiller_id')
+    it 'will search for l_killer.killer = l_killer1.killer' do
+      expect(q.to_sql).to include('CAST(l_killer.killer AS CITEXT) = CAST(l_killer_1.killer AS CITEXT)')
     end
   end
 end
