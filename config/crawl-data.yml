@@ -801,12 +801,14 @@ field-types:
 # - IB (big integer)
 # - IH (huge - 18 digits)
 # - D (date+time)
+# - ! (negatable, aka boolean)
+# Lacking an explicit type qualifier, a field is a case-insensitive (CITEXT)
+# string.
 #
 # - ? (indexed)
 # - * (not summarisable)
 # - % (autoincrementing primary key)
 # - ^ (foreign key into a table)
-# - ! (negatable, aka boolean)
 # - + (multi-valued)
 # - & (external book-keeping data, not derived from xlog fields)
 logrecord-fields-with-type:
