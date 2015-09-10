@@ -42,7 +42,7 @@ module Henzell
       [0, Henzell::LearnDBQuery.query(arguments), '']
     end
 
-    def execute(command_line, env, suppress_stderr=false)
+    def execute(command_line, env, suppress_stderr=false, help=false)
       unless command_line =~ /^(\S+)(?:(\s+(.*)))?/
         raise StandardError, "Bad command line: #{command_line}"
       end
@@ -53,7 +53,7 @@ module Henzell
         return learndb_query(arguments)
       end
 
-      execute_command(command, arguments, env, suppress_stderr)
+      execute_command(command, arguments, env, suppress_stderr, help)
     end
 
     def direct_command?(command)
@@ -64,7 +64,7 @@ module Henzell
       (@commands[command] || { })[:file] =~ /echo.pl/
     end
 
-    def execute_command(command, arguments, env, suppress_stderr=false)
+    def execute_command(command, arguments, env, suppress_stderr=false, help=false)
       seen_commands = Set.new
 
       unless direct_command?(command)
@@ -112,7 +112,7 @@ module Henzell
           redirect = suppress_stderr ? '2>/dev/null' : ''
           system_command_line =
             %{#{command_script} #{quote(target)} #{quote(target)} } +
-            %{#{quote(command_line)} '' #{redirect}}
+            %{#{quote(command_line)} "#{help ? '1' : ''}" #{redirect}}
           File.open('cmd.log', 'a') { |f|
             f.puts("Executing: #{system_command_line}")
           }

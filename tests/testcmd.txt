@@ -28,6 +28,10 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
+!lg . win !win ::= No games for hyperbolic (win !win).
+
+!help badcommand ::~ Unknown command
+
 !nick ivowin (win) Ivo
 !lg ivowin ::~ 4. Ivo the Swordmaster
 !nick ivowin ()
@@ -416,7 +420,7 @@ E !lg * s=trunc99(sc)
 
 !lg * fe--
 !lg * --fe
-!lg * __he
+!lg * __fe
 
 !lg * x=${2.0/3} ::~ 0.67
 !lg * x=${2/3} ::!~ 0.67

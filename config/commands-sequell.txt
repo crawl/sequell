@@ -2,7 +2,7 @@
 !cdefine source.pl
 !cmd cmd.rb :direct
 !cmdinfo cmdinfo.pl
-!help help.pl :direct
+!help help.rb :direct
 .echo echo.pl
 !fn fn.rb :direct
 !ftw ftw.pl

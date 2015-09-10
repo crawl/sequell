@@ -4,7 +4,15 @@ module Cmd
     attr_accessor :arguments
 
     def self.commands
-      Henzell::Config.default.commands
+      @commands ||= Henzell::Config.default.commands
+    end
+
+    def self.builtin?(command)
+      self.commands.builtin?(command)
+    end
+
+    def self.user_defined?(command)
+      self.commands.user_defined?(command)
     end
 
     def self.assert_valid!(command_line)
@@ -14,7 +22,7 @@ module Cmd
         unless self.commands.include?(cmd.command)
           raise "Unknown command: #{cmd}"
         end
-        return true if self.commands.builtin?(cmd.command)
+        return true if cmd.builtin?
         if seen_expansions[cmd.command]
           raise "Recursive command expansion in #{command_line}"
         end
@@ -46,6 +54,14 @@ module Cmd
     alias :command :command_name
     alias :name :command
 
+    def builtin?
+      self.class.builtin?(self.command)
+    end
+
+    def user_defined?
+      self.class.user_defined?(self.command)
+    end
+    
     def learndb_query?
       @command_line =~ /^!learn query/
     end
@@ -74,8 +90,8 @@ module Cmd
       self.command_line
     end
 
-    def execute(config, env, suppress_stderr=false)
-      config.commands.execute(self.command_line, env, suppress_stderr)
+    def execute(config, env, suppress_stderr=false, help=false)
+      config.commands.execute(self.command_line, env, suppress_stderr, help)
     end
 
     def valid?(config)

@@ -122,10 +122,14 @@ like(irc('?/cow'), qr/Matching terms \(2\): cow, cowt; entries \(4\): cow\[2\].*
 is(irc('?/<cow'), 'Matching terms (2): cow, cowt');
 like(irc('?/>cow'), qr/Matching entries \(4\): cow\[2.*/);
 
+irc('!cmd foo .echo Hi');
+irc('!cmd foz .echo Foz');
+irc('!cmd bar .echo Bar');
 irc('!learn add !help:!foo Hahahahaha');
 is(irc('!help !foo'), "!foo: Hahahahaha");
 is(irc('!help !foz'), "No help for !foz (you could add help with !learn add !help:!foz <helpful text>)");
 like(irc('!help !bar'), qr/No help for !bar/);
+like(irc('!help !miaow'), qr/Unknown command: !miaow/);
 
 beh('Hi! ::: Hello, $nick. Welcome to ${channel}!', sub {
   is(irc('Hi!'), "Hello, greensnark. Welcome to ##crawl!")
