@@ -81,7 +81,9 @@ module Query
       if rhs.kind != :value
         raise("Expected #{rhs} to be a value in #{node}")
       end
-      return if rhs.flag(:quoted_string) # Don't mess with quoted strings.
+      return if rhs.flag(:quoted_string)     # Don't mess with quoted strings.
+      return unless rhs.value.is_a?(String)  # Don't bother with non-strings
+
       right = Sql::Field.field(rhs.value).bind_context(node.context)
       right_col = node.context.resolve_column(right, :internal_expr)
 

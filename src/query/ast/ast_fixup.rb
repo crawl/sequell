@@ -320,6 +320,7 @@ module Query
       def coerce_to_field(node)
         return node if node.kind == :field
         return nil if node.flag(:quoted_string)
+        return nil unless node.value.is_a?(String)
         Sql::Field.field(node.value).bind_context(node.context)
       end
     end
