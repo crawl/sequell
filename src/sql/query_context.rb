@@ -64,7 +64,8 @@ module Sql
     # Returns true if the given name is a table alias for this context
     # or its alt.
     def table_alias?(name)
-      name == self.table_alias || (alt && name == alt.table_alias)
+      !name || name.empty? || name == self.table_alias ||
+        (alt && name == alt.table_alias)
     end
 
     ##
@@ -107,7 +108,8 @@ module Sql
     # Returns true if the given context is the autojoin (alt) context for this
     # one.
     def autojoin?(context)
-      @alt == context
+      return false unless @alt
+      @alt == context || Sql::QueryTable.table(@alt) == context
     end
 
     ##

@@ -59,6 +59,13 @@ module Sql
     end
 
     ##
+    # Returns true if the given prefix matches any of the aliases for the
+    # current context.
+    def table_alias?(prefix)
+      !prefix || not_implemented
+    end
+
+    ##
     # Returns the SQL table for the given game in this context.
     def table(game)
       not_implemented

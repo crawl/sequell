@@ -409,6 +409,12 @@ module Query
       end
 
       ##
+      # Returns true if the given prefix is an alias for this query.
+      def table_alias?(prefix)
+        !prefix || prefix.empty? || self.alias == prefix
+      end
+
+      ##
       # Sets the alias for this table. For subqueries with defined aliases,
       # does nothing.
       def alias=(new_alias)
@@ -443,20 +449,6 @@ module Query
         }
 
         nil
-      end
-
-      ##
-      # Returns true if this prefix can be considered as a lookup in the query
-      # context.
-      def context_prefix?(prefix)
-        !prefix || prefix == context.alias
-      end
-
-      ##
-      # Returns true if this prefix can be considered as a lookup in the query's
-      # local field expressions.
-      def local_prefix?(prefix)
-        !prefix || prefix == self.alias
       end
 
       ##
@@ -496,7 +488,7 @@ module Query
       # this query.
       def resolve_local_column(field, internal_expr, ignore_prefix=false)
         prefix = field.prefix
-        return if !ignore_prefix && prefix && prefix != self.alias && prefix != context.alias
+        return if !ignore_prefix && prefix && !self.table_alias?(prefix) && !context.table_alias?(prefix)
 
         if grouped?
           resolve_local_grouped_column(field, internal_expr)
@@ -972,6 +964,7 @@ module Query
       ##
       # Given a context object, returns a QueryTable.
       def context_table(context)
+        raise("#{context} is not a TableContext") unless context.is_a?(Sql::TableContext)
         @context_table ||= { }
         @context_table[context.alias] ||= Sql::QueryTable.table(context)
       end
@@ -986,14 +979,14 @@ module Query
       def resolve_local_grouped_column(field, internal_expr)
         prefix = field.prefix
         if internal_expr
-          if context_prefix?(prefix)
+          if context.table_alias?(prefix)
             column = context.resolve_local_column(field, false, :ignore_prefix)
             if column
               return column.bind(internal_expr ? context_table(context) : self)
             end
           end
         else
-          if local_prefix?(prefix)
+          if table_alias?(prefix)
             if field == "count"
               # If this is a grouped query, we must recognize the *implicit* count
               # column.
@@ -1016,11 +1009,14 @@ module Query
 
       def resolve_local_ungrouped_column(field, internal_expr)
         if internal_expr
-          return unless context_prefix?(field.prefix)
-          column = context.resolve_local_column(field, false, :ignore_prefix)
-          return column.bind(context_table(context)) if column
+          return unless context.table_alias?(field.prefix)
+          column = context.resolve_column(field, false)
+          if column && !column.table
+            raise "Unbound column: #{column} for #{field}"
+          end
+          return column.bind(context_table(column.table)) if column
         else
-          return unless local_prefix?(field.prefix)
+          return unless table_alias?(field.prefix)
           column = extra_column_lookup(field) ||
                    context.resolve_local_column(field, false, :ignore_prefix)
           return Sql::Column.new(column.config, column.name + column.type.type_id).bind(self) if column

@@ -51,7 +51,7 @@ module Sql
 
       # If this is not a local field, we need to join to the alt table first:
       if column.table != field.context && field.context.autojoin?(column.table)
-        apply_alt_join(field)
+        apply_alt_join(field, column)
       end
 
       # Don't try to join lookup if this is a reference to an outer query field:
@@ -103,16 +103,21 @@ module Sql
       column.table.equal?(field.context.outer_query)
     end
 
-    def apply_alt_join(field)
-      alt = field.context.alt
-      return unless alt
+    def apply_alt_join(field, column)
+      alt = column.table
+      unless alt
+        raise "#{field}: column (#{column.inspect}) has no table"
+      end
       ref_field = context.join_field
-      tables.join(Join.new(tables.primary_table, alt.table,
-                           ref_field, ref_field))
+      left = Sql::Field.field(ref_field)
+      right = Sql::Field.field(ref_field)
+      left.table = tables.primary_table
+      right.table = Sql::QueryTable.table(alt)
+      tables.join(Join.new(tables.primary_table, right.table,
+                           [left], :inner, [right]))
     end
 
     def resolve_simple_field(field)
-      #col = field.column
       col = ast.resolve_column(field, :internal_expr)
       table = col.table
       field.table = tables.lookup!(table)

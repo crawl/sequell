@@ -116,4 +116,11 @@ describe '!lg behavior' do
       end
     end
   end
+
+  query '!lm * br.end x=lg:place' do
+    it 'will autojoin logrecord' do
+      expect(q.to_sql).to include('JOIN logrecord')
+      expect(q.to_sql).to include('ORDER BY milestone.ttime')
+    end
+  end
 end

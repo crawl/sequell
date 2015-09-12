@@ -98,6 +98,10 @@ module Sql
       self.type.log_value(raw_value)
     end
 
+    def inspect
+      "#{@table}.#{name}"
+    end
+
   private
     def find_lookup_config
       @config.lookup_table_config(self.lookup_table.name)
