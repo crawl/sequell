@@ -37,12 +37,12 @@ module Query
       self
     end
 
+
     ##
     # Binds a term to use the same context as this term, recursively. Does
     # nothing if this term is not bound.
-    def bind(term)
+    def bind(term, ctx=self.context)
       return term unless term
-      ctx = self.context
       return term unless ctx
       ::Query::AST::ASTWalker.each_node(term.head) { |n|
         n.bind_context(ctx)

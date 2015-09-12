@@ -208,7 +208,9 @@ module Query
       end
 
       def bind(expr)
-        expr.context = self unless expr.equal?(self)
+        unless expr.equal?(self)
+          super(expr, self)
+        end
         expr
       end
 
@@ -330,6 +332,20 @@ module Query
         ASTWalker.each_kind(head, :query, &block)
         join_tables.each(&block)
         block.call(self)
+      end
+
+      ##
+      # Recursively visits all subqueries and join queries, including self.
+      # This is unlike each_query, which only visits all *top*-level subqueries
+      # in self, and self itself.
+      def each_query_depthfirst(&block)
+        each_query { |q|
+          if q.equal?(self)
+            block.call(q)
+          else
+            q.each_query_depthfirst(&block)
+          end
+        }
       end
 
       ##
@@ -803,6 +819,7 @@ module Query
 
       def bind_tail!
         @full_tail = @tail && @tail.merge(@head)
+        self
       end
 
       def full_tail

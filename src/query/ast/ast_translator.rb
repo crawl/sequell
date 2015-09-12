@@ -1,5 +1,6 @@
 require 'query/ast/ast_walker'
 require 'query/ast/ast_binder'
+require 'query/ast/ast_lifter'
 require 'query/query_keyword_parser'
 require 'query/query_node_translator'
 
@@ -18,6 +19,7 @@ module Query
 
       def apply
         ASTBinder.bind(@ast)
+        ASTLifter.lift(@ast)
 
         if @ast.respond_to?(:each_query)
           @ast.each_query { |q|

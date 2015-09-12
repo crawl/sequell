@@ -76,6 +76,10 @@ module Query
       argtypes.result_type(args)
     end
 
+    def in?
+      self == '=*' || self == '!*'
+    end
+
     def equality?
       self == '=' || self == '!='
     end

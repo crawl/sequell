@@ -1,5 +1,7 @@
 require 'query/nick_expr'
 require 'formatter/duration'
+require 'query/ast/extra_list'
+require 'query/ast/extra'
 
 module Query
   class QueryNodeTranslator
@@ -38,6 +40,7 @@ module Query
       return translate_simple_predicate(node) if node.field_value_predicate?
       return translate_field_field_predicate(node) if node.field_field_predicate?
       return translate_funcall(node) if node.kind == :funcall
+      return translate_ref_fields_to_ids(node) if case_insensitive_in_subquery?(node)
       node
     end
 
@@ -45,6 +48,40 @@ module Query
 
     def reexpand(node)
       ::Query::AST::ASTTranslator.apply(node)
+    end
+
+    def case_insensitive_in_subquery?(node)
+      node.operator && node.operator.in? && node.left.kind == :field &&
+        node.left.reference? &&
+        !node.left.type.case_sensitive? && node.right.kind == :subquery_expr
+    end
+
+    ##
+    # Given a query of the form field=*$[ x=field ] where field is a
+    # case-insensitive lookup field, convert it into the form
+    # field_id=*$[ x=field_id ] to avoid a redundant join on the lookup
+    # table in both outer and inner queries.
+    #
+    # This optimization is skipped if the field is case-sensitive, because in
+    # that case, the subquery may return a *single* id for its field (say
+    # "blue death"), but the outer query should match it even if the outer
+    # query's field is for an alternative case (say "Blue Death").
+    def translate_ref_fields_to_ids(node)
+      subquery = node.right.query
+      # If there's no x=foo, force one:
+      unless subquery.extra
+        extra_term = Query::AST::Extra.new(Sql::Field.field(node.left.name))
+        subquery.extra = Query::AST::ExtraList.new(extra_term)
+        subquery.bind(subquery.extra)
+      end
+
+      extra_field = subquery.extra.first
+      if extra_field.simple_field? && extra_field.expr == node.left &&
+         !extra_field.type.case_sensitive?
+        extra_field.expr.reference_id_only = true
+        node.left.reference_id_only = true
+      end
+      node
     end
 
     def expand_field_value!
