@@ -68,12 +68,31 @@ module Query
     # query's field is for an alternative case (say "Blue Death").
     def translate_ref_fields_to_ids(node)
       subquery = node.right.query
-      # If there's no x=foo, force one:
-      unless subquery.extra
-        extra_term = Query::AST::Extra.new(Sql::Field.field(node.left.name))
-        subquery.extra = Query::AST::ExtraList.new(extra_term)
-        subquery.bind(subquery.extra)
+
+      if subquery.grouped?
+        # Multigroup subqueries are trouble, bail out:
+        return node unless subquery.summarise.arity == 1
+
+        # If the user specified an explicit select that doesn't match what we
+        # wanted, bail out.
+        if subquery.extra
+          return node if subquery.extra.arity != 1
+          return node if subquery.extra.first.kind != :field
+          return node if subquery.extra.first != node.left
+        end
+
+        group = subquery.summarise.first
+        if group.first.kind == :field && group.first == node.left
+          subquery_force_select(subquery, node.left.name)
+          group.first.reference_id_only = true
+          node.left.reference_id_only = true
+          subquery.extra.first.first.reference_id_only = true
+          return node
+        end
       end
+
+      # If there's no x=foo, force one:
+      subquery_force_select(subquery, node.left.name)
 
       extra_field = subquery.extra.first
       if extra_field.simple_field? && extra_field.expr == node.left &&
@@ -82,6 +101,13 @@ module Query
         node.left.reference_id_only = true
       end
       node
+    end
+
+    def subquery_force_select(subquery, fieldname)
+      return if subquery.extra
+      extra_term = Query::AST::Extra.new(Sql::Field.field(fieldname))
+      subquery.extra = Query::AST::ExtraList.new(extra_term)
+      subquery.bind(subquery.extra)
     end
 
     def expand_field_value!

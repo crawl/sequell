@@ -100,19 +100,30 @@ describe '!lg behavior' do
     end
   end
 
-  query '!lg * ak gid!*$lm[ak abyss.exit x=gid]' do
-    it 'will search for game_key_id NOT IN (SELECT game_key_id)' do
-      expect(q.to_sql).to include('game_key_id NOT IN (SELECT milestone.game_key_id FROM milestone')
-    end
-  end
-
-  describe "with an implied x=foo in a subquery" do
-    # x=gid is implied in the subquery because the outer query is looking for a
-    # field match, and the inner query is not explicit about matching on a
-    # different field.
-    query '!lg * ak gid!*$lm[ak abyss.exit]' do
+  describe "in subqueries" do
+    query '!lg * ak gid!*$lm[ak abyss.exit x=gid]' do
       it 'will search for game_key_id NOT IN (SELECT game_key_id)' do
         expect(q.to_sql).to include('game_key_id NOT IN (SELECT milestone.game_key_id FROM milestone')
+      end
+    end
+
+    describe "with an implied x=foo in a subquery" do
+      # x=gid is implied in the subquery because the outer query is looking for a
+      # field match, and the inner query is not explicit about matching on a
+      # different field.
+      query '!lg * ak gid!*$lm[ak abyss.exit]' do
+        it 'will search for game_key_id NOT IN (SELECT game_key_id)' do
+          expect(q.to_sql).to include('game_key_id NOT IN (SELECT milestone.game_key_id FROM milestone')
+        end
+      end
+    end
+
+    describe "with an s=foo in the subquery" do
+      query "!lg * ak gid!*$lm[ak abyss.exit s=gid]" do
+        it 'will search for game_key_id NOT IN, and the inner query will group by game_key_id' do
+          expect(q.to_sql).to include('game_key_id NOT IN (SELECT milestone.game_key_id FROM milestone')
+          expect(q.to_sql).to include('GROUP BY milestone.game_key_id')
+        end
       end
     end
   end

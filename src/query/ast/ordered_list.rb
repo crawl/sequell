@@ -30,6 +30,12 @@ module Query
         self.first.type
       end
 
+      def + (other)
+        c = self.dup
+        c.arguments += other.arguments
+        c
+      end
+
       ##
       # Returns the default order term for this ordered list.
       def default_order

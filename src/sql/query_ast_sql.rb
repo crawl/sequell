@@ -76,6 +76,9 @@ module Sql
       query_ast.autojoin_lookup_columns!
       load_values([query_ast.head])
 
+      resolve([query_ast.summarise])
+      load_values([query_ast.summarise])
+
       if query_ast.having
         resolve([query_ast.having])
         load_values([query_ast.having])
@@ -192,17 +195,21 @@ module Sql
     # fields in the lookup tables.
     def resolve(exprs)
       exprs.each { |e|
-        e.each_field { |f|
-          Sql::FieldResolver.resolve(query_ast, f)
-        }
+        if e
+          e.each_field { |f|
+            Sql::FieldResolver.resolve(query_ast, f)
+          }
+        end
       }
     end
 
     def load_values(exprs)
       exprs.each { |e|
-        e.each_value { |v|
-          @values << v.value unless v.null?
-        }
+        if e
+          e.each_value { |v|
+            @values << v.value unless v.null?
+          }
+        end
       }
     end
 

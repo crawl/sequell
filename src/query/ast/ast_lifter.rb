@@ -42,7 +42,7 @@ module Query
         lift_having_clause(ast)
 
         if !ast.has_order? && ast.needs_order?
-          ast.order << ast.default_order
+          ast.order += ast.default_order
         end
 
         validate_filters(ast, ast.filter)
@@ -90,7 +90,7 @@ module Query
 
       def lift_order_nodes(ast, node)
         return node unless node && node.kind == :group_order_list && !node.equal?(ast.order)
-        ast.order += node
+        ast.order += node.arguments
         nil
       end
 
