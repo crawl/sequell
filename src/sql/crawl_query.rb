@@ -131,11 +131,11 @@ module Sql
 
     def select_query_fields
       fields = @ctx.default_select_fields
-      known_fields = Set.new(fields.map(&:name))
+      known_fields = Set.new(fields.map(&:to_s))
 
       if @extra && @extra.fields
         fields += @extra.fields.find_all { |ef|
-          (!ef.simple_field? || !known_fields.include?(ef.expr.name)) && !ef.aggregate?
+          (!ef.simple_field? || !known_fields.include?(ef.expr.to_s)) && !ef.aggregate?
         }.map(&:expr)
       end
       fields
@@ -293,8 +293,6 @@ module Sql
       resolve_summary_fields
 
       @query = nil
-      sortdir = @summary_sort
-
       @summary_values = self.with_values([summarise, extra].compact, @values)
 
       summary_field_text = self.summary_fields
@@ -378,7 +376,6 @@ module Sql
 
     def reverse
       with_contexts do
-        predicate_copy = @original_query.dup
         ast_copy = @ast.dup
         ast_copy.reverse_sorts!
         rq = CrawlQuery.new(ast_copy)
@@ -438,7 +435,7 @@ module Sql
 
     def resolve_query_fields(ast)
       if @extra
-        res = @extra.fields.each { |extra|
+        @extra.fields.each { |extra|
           extra.each_field { |field|
             resolve_field(field, ast)
           }

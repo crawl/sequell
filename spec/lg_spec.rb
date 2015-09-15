@@ -134,4 +134,18 @@ describe '!lg behavior' do
       expect(q.to_sql).to include('ORDER BY milestone.ttime')
     end
   end
+
+  query '!lm * xl>20 br.end x=lg:place' do
+    let (:cq) {
+      Sql::CrawlQuery.new(q.dup)
+    }
+
+    it 'should join l_place twice (milestone place, logrecord place)' do
+      expect(cq.select_all.scan('JOIN l_place').size).to eq(2)
+    end
+
+    it 'should join l_place twice after select_count' do
+      expect(cq.select_all.scan('JOIN l_place').size).to eq(2)
+    end
+  end
 end
