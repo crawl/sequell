@@ -147,5 +147,9 @@ describe '!lg behavior' do
     it 'should join l_place twice after select_count' do
       expect(cq.select_all.scan('JOIN l_place').size).to eq(2)
     end
+
+    it 'should order by ttime desc' do
+      expect(cq.select_all).to include('ORDER BY milestone.ttime DESC')
+    end
   end
 end
