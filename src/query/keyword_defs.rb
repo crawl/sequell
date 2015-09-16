@@ -2,6 +2,8 @@ require 'query/keyword_matcher'
 require 'query/ast/expr'
 require 'cmd/user_keyword'
 require 'crawl/playable'
+require 'crawl/job'
+require 'crawl/species'
 
 module Query
   # These matches are applied in sequence, order is significant.
@@ -61,6 +63,14 @@ module Query
     if arg =~ /^[a-z]{2}$/i then
       cls = is_class?(arg)
       sp = is_race?(arg)
+
+      if cls && sp
+        cls_exp = CLASS_EXPANSIONS[arg.downcase]
+        race_exp = RACE_EXPANSIONS[arg.downcase]
+        cls = false if cls_exp.all? { |c| Crawl::Job.dead_job?(c) }
+        sp = false if race_exp.all? { |r| Crawl::Species.dead_species?(r) }
+      end
+
       return expr.parse('cls', arg) if cls && !sp
       return expr.parse('crace', arg) if sp && !cls
       if cls && sp
