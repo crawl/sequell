@@ -5,7 +5,7 @@ module Henzell
   class Config
     DEFAULTS_FILEPATH = 'rc/sequell.defaults'
     CONFIG_FILEPATH = 'rc/sequell.rc'
-    SOURCE_BROWSE_URL = 'https://github.com/greensnark/dcss_sequell/blob/master'
+    SOURCE_BROWSE_URL = 'https://github.com/crawl/sequell/blob/master'
 
     def self.root
       ENV['HENZELL_ROOT'] || '.'
