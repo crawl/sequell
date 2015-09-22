@@ -92,7 +92,7 @@ sources:
 
   - name: csn
     base: http://crawlus.somatika.net
-    logfiles:
+    logs:
       - scoring/crawl-{trunk,0.11}/{logfile,milestones}{,-sprint,-zotdef}
     morgues:
       - http://crawlus.somatika.net/dumps
