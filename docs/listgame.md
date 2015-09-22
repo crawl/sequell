@@ -225,9 +225,9 @@ Where:
 
          For ungrouped queries, this is the display format for the
          game itself. You may use any of the game fields (`$name`,
-         `$turn`, `$sc`), `$x` to display `x=foo` values, and so on.  `$n` 
-         gives the total count of games matching the query.  Caveat: `$n` 
-         will not work in the `fmt` key for grouped queries, and 
+         `$turn`, `$sc`), `$x` to display `x=foo` values, and so on.  `$n`
+         gives the total count of games matching the query.  Caveat: `$n`
+         will not work in the `fmt` key for grouped queries, and
          `${n_x}` will not work for the `fmt` key ungrouped queries.
 
   * `pfmt`: For nested (`s=foo,bar`) queries, the display format of non-inner
@@ -239,7 +239,9 @@ Where:
 
            !lg * win s=name title:"Winners"
            => Winners: 392x ...
-           
+
+           When used with -graph, the title: is used as the graph title.
+
     The total count field `$n` will work in the title format for grouped queries.
 
   * `join`: The string used to join individual groups, defaulting to ", "

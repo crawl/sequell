@@ -7,11 +7,11 @@ module Formatter
     GRAPH_TEMPLATE = 'tpl/graph.html.haml'
     KNOWN_CHART_TYPES = Set.new(%w/Column Area Pie Scatter/)
 
-    attr_reader :file, :title, :query_group, :query
+    attr_reader :file, :default_title, :query_group, :query
 
-    def initialize(query_group, title, options)
+    def initialize(query_group, default_title, options)
       @query_group = query_group
-      @title = title
+      @default_title = default_title
       @options = options.option_arguments
       @type = chart_type(@options[0])
 
@@ -47,7 +47,7 @@ module Formatter
     end
 
     def qualified_title
-      title
+      user_requested_title || self.default_title
     end
 
     def chart_type(type)
@@ -162,11 +162,15 @@ module Formatter
 
     def with_graph_file
       require 'graph/file'
-      @file = Graph::File.new(@title)
+      @file = Graph::File.new(self.qualified_title + ':' + self.default_title)
       @file.with { |f|
         yield f
       }
       @file
+    end
+
+    def user_requested_title
+      @json_reporter.default_result_prefix_title
     end
   end
 end
