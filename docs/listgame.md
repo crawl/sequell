@@ -601,6 +601,16 @@ Full game version. Examples: "0.15.1", "0.15.0-31-geb66e34",
 "0.16-a0-296-gbdb9f68". vlong is empty for games saved by Crawl
 versions that did not have this information.
 
+`vsav`:
+The major.minor version of the most recently loaded Crawl save chunk. `vsav`
+may be empty if Crawl has not yet loaded any saves (this is usually the case
+only on the first dungeon level).
+
+`vsavrv`:
+The Crawl version of the most recently loaded player information. `vsavrv` will
+be empty unless the logfile entry is from a game that has been loaded from a
+save.
+
 `lv`:
 Logfile format version
 
@@ -867,10 +877,10 @@ these fields are obviously the value of that attribute at the time the
 milestone was generated, not at end of game.
 
 Fields in common with logfile:
-alpha, v, cv, name, race, crace, cls, char, xl, sk, sklev, title,
-place, br, lvl, ltyp, hp, mhp, mmhp, str, int, dex, god, dur, turn,
-urune, nrune, rstart, tiles, maxskills, status, gold, goldfound,
-goldspent, kills, ac, ev, sh, aut, ntv.
+alpha, v, cv, vsav, vsavrv, name, race, crace, cls, char, xl, sk, sklev, title,
+place, br, lvl, ltyp, hp, mhp, mmhp, str, int, dex, god, dur, turn, urune,
+nrune, rstart, tiles, maxskills, status, gold, goldfound, goldspent, kills, ac,
+ev, sh, aut, ntv.
 
 These fields are unique to milestones:
 

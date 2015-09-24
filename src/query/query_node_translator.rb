@@ -97,10 +97,11 @@ module Query
         node.value = SOURCES.canonical_source(value)
       end
 
-      if field === ['v', 'cv', 'vlong'] && op.relational? &&
+      if field.version_number? && op.relational? &&
           Sql::VersionNumber.version_number?(value)
-        return reexpand(AST::Expr.new(op, field.resolve(field.name + 'num'),
-                                 Sql::VersionNumber.version_numberize(value)))
+        return reexpand(
+            AST::Expr.new(op, field.bind_ordered_column!,
+                          Sql::VersionNumber.version_numberize(value)))
       end
 
       if field === 'god'

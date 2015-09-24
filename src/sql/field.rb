@@ -168,6 +168,7 @@ module Sql
         self.name = self.column.ordered_column_alias
         @column = nil
       end
+      self
     end
 
     def === (name)

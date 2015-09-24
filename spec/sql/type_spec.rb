@@ -14,4 +14,8 @@ describe Sql::Type do
     expect(t('I').numeric?).to be_truthy
     expect(t('F').numeric?).to be_truthy
   end
+
+  it 'will categorize VER as a version number' do
+    expect(t('VER').version_number?).to be(true)
+  end
 end

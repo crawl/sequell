@@ -116,6 +116,10 @@ module Sql
       self.type == 'S'
     end
 
+    def version_number?
+      self.type == 'VER'
+    end
+
     def text?
       self.category == 'S'
     end
@@ -164,7 +168,6 @@ module Sql
       return vault_name(value) if self.vault?
       return Sql::Duration.display_value(value) if self.duration?
       return Sql::Date.display_date(value, display_format) if self.date?
-      numeric_value = value.is_a?(BigDecimal) || value.is_a?(Float)
       if self.integer?
         return value.to_i
       end

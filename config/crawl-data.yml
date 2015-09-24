@@ -694,6 +694,14 @@ lookup-tables:
     fields: [v]
     generated-fields:
       - vnumIH?^
+  savercsversion:
+    fields: [vsavrv]
+    generated-fields:
+      - vsavrvnumIH?^
+  savever:
+    fields: [vsav]
+    generated-fields:
+      - vsavnumIH?^
   cversion:
     fields: [cv]
     generated-fields:
@@ -732,6 +740,8 @@ column-substitutes:
     v: vnum
     vlong: vlongnum
     cv: cvnum
+    vsavrv: vsavrvnum
+    vsav: vsavnum
 
 field-types:
   sql:
@@ -782,6 +792,8 @@ logrecord-fields-with-type:
   - vVER?^
   - cvVER?^
   - vlongVER?^
+  - vsavVER?^
+  - vsavrvVER?^
   - lv^
   - scIB?
   - nameS?^
@@ -867,6 +879,8 @@ milestone-fields-with-type:
   - vVER?^
   - cvVER?^
   - vlongVER?^
+  - vsavVER?^
+  - vsavrvVER?^
   - nameS?^
   - race?^
   - crace?^

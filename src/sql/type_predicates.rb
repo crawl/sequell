@@ -14,6 +14,10 @@ module Sql
       self.type.case_sensitive?
     end
 
+    def version_number?
+      self.type.version_number?
+    end
+
     def date?
       self.type.date?
     end
