@@ -781,7 +781,7 @@ Damage of the killing blow (integer)
 
 `sdam`:
 Total damage done by the source of death, uninterrupted by other
-sources of damage.
+sources of damage, on the player's last turn.
 
 `tdam`:
 Total damage the player sustained in their last turn.
