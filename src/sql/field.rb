@@ -118,9 +118,7 @@ module Sql
     end
 
     def version_number?
-      return @version_number if @version_number_checked
-      @version_number_checked = true
-      @version_number = self === ['v', 'cv']
+      self.type.version_number?
     end
 
     def dup
