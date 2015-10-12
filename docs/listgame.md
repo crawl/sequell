@@ -780,8 +780,7 @@ Player's base max magic points (integer)
 Damage of the killing blow (integer)
 
 `sdam`:
-Total damage done by the source of death, uninterrupted by other
-sources of damage, on the player's last turn.
+Total damage done by the source of death on the player's last turn.
 
 `tdam`:
 Total damage the player sustained in their last turn.
