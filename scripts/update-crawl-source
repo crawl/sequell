@@ -35,6 +35,7 @@ ctags -R \
     --regex-c++='/^ *\{ *\/\/ Book of (.*)/\1/t/i' \
     --regex-c++='/^ *\{ *\/\/ (.*)/\1/t/i' \
     -I decltype+ \
+    -I PURE -I IMMUTABLE -I override \
     --extra=+q \
     --exclude=contrib \
     --exclude=android-project \
