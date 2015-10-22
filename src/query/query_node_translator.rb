@@ -66,6 +66,10 @@ module Query
       node
     end
 
+    def god_field?(field)
+      field.name =~ /^god(?:$|[.])/i
+    end
+
     def translate_simple_predicate(node)
       if equality? && value =~ /^\(?[^| ]+(?:\|[^| ]+)+\)?$/
         values = value.gsub(/^\(|\)$/, '').split('|')
@@ -104,7 +108,7 @@ module Query
                           Sql::VersionNumber.version_numberize(value)))
       end
 
-      if field === 'god'
+      if god_field?(field)
         node.value = GODS.god_resolve_name(value) || value
       end
 

@@ -17,4 +17,16 @@ describe '!lg behavior' do
       expect(q.to_s).to include('vlongnum>')
     end
   end
+
+  query '!lg * god=tso' do
+    it "will search for god='The Shining One'" do
+      expect(q.to_s).to include("god='The Shining One'")
+    end
+  end
+
+  query '!lm * god.abandon=tso' do
+    it "will search for god.abandon='The Shining One'" do
+      expect(q.to_s).to include("noun='The Shining One'")
+    end
+  end
 end
