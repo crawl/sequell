@@ -40,7 +40,7 @@ module Sql
     end
 
     def type_id
-      @type ||= find_type
+      @type_id ||= find_type
     end
 
     def coerce_expr(sql)
@@ -118,7 +118,7 @@ module Sql
     end
 
     def version_number?
-      self.type == 'VER'
+      self.type_id == 'VER'
     end
 
     def text?
