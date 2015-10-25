@@ -14,19 +14,19 @@ describe '!lg behavior' do
 
   query '!lg * vlong>0.17-a0-1357-g326445f' do
     it 'will search for vlongnum>?' do
-      expect(q.to_s).to include('vlongnum>')
+      expect(q.to_sql).to include('vlongnum >')
     end
   end
 
   query '!lg * god=tso' do
     it "will search for god='The Shining One'" do
-      expect(q.to_s).to include("god='The Shining One'")
+      expect(q.to_query_string).to include("god='The Shining One'")
     end
   end
 
   query '!lm * god.abandon=tso' do
     it "will search for god.abandon='The Shining One'" do
-      expect(q.to_s).to include("noun='The Shining One'")
+      expect(q.to_query_string).to include("noun='The Shining One'")
     end
   end
 

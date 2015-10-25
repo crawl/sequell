@@ -40,14 +40,12 @@ module Query
       # Returns the default order term for this ordered list.
       def default_order
         order = self.first.reverse? ? '-' : ''
-        GroupOrderList.new(
-          if primary_type.date?
-            GroupOrderTerm.new(FilterTerm.new('.'),
-                               self.first.reverse? ? '' : '-')
-          else
-            GroupOrderTerm.new(FilterTerm.new('n'), order)
-          end
-        )
+        if primary_type.date?
+          GroupOrderTerm.new(FilterTerm.new('.'),
+          self.first.reverse? ? '' : '-')
+        else
+          GroupOrderTerm.new(FilterTerm.new('n'), order)
+        end
       end
     end
   end
