@@ -43,12 +43,12 @@ module Query
         @original = @arguments.map { |a| a.dup }
       end
 
-      def operator=(op)
-        @operator = Query::Operator.op(op)
+      def initialize_copy(o)
+        self.arguments = self.arguments.map(&:dup)
       end
 
-      def dup
-        self.class.new(operator, *arguments.map { |a| a.dup }).with_flags(flags)
+      def operator=(op)
+        @operator = Query::Operator.op(op)
       end
 
       def fields

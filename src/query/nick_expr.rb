@@ -78,14 +78,12 @@ module Query
       @negated = negated
     end
 
-    def dup
-      duplicate = self.class.new(@nick, @negated)
-      duplicate.field = self.field.dup
-      duplicate
+    def initialize_copy(o)
+      self.field = o.field.dup
     end
 
     def to_query_string(wrapping_parens=nil)
-      return nil if @nick.value == '*'
+      return '' if @nick.value == '*'
       @nick.value
     end
 
