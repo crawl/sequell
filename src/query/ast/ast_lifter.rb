@@ -90,7 +90,7 @@ module Query
 
       def lift_order_nodes(ast, node)
         return node unless node && node.kind == :group_order_list && !node.equal?(ast.order)
-        ast.order += node.arguments
+        ast.order += node
         nil
       end
 
