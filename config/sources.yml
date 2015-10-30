@@ -148,7 +148,7 @@ sources:
     base: http://crawl.berotato.org/crawl
     logs:
       - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}*
-      - meta/{0.16}/{logfile,milestones}{,-sprint}*
+      - meta/{0.16,0.17}/{logfile,milestones}{,-sprint}*
       - meta/{nostalgia,mulch_ado_about_nothing,squarelos-0.17}/{logfile,milestones}*
       - meta/evoker-god/{logfile,milestones}*: evoker-god
       - meta/bearkin/{logfile,milestones}*: bearkin
