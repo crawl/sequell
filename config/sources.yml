@@ -29,7 +29,7 @@ sources:
       - '{logfile,milestones}09'
       - '{logfile,milestones}10*'
       - '{logfile,milestones}{11,12,13,14,15,-git}{,-sprint,-zotdef}*'
-      - '{logfile,milestones}{16}{,-sprint}*'
+      - '{logfile,milestones}{16,17}{,-sprint}*'
       - '{logfile,milestones}-lorcs': lorcs
 
     # Regex -> location; player name is automatically appended.
@@ -68,7 +68,7 @@ sources:
     base: http://dobrazupa.org
     logs:
       - meta/{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*
-      - meta/{0.16}/{logfile,milestones}{,-sprint}*
+      - meta/{0.16,0.17}/{logfile,milestones}{,-sprint}*
       - meta/chunkless/{logfile,milestones}*: chunkless
       - meta/iashol/{logfile,milestones}*: iashol
       - meta/new_nemelex/{logfile,milestones}: new-nemelex
@@ -184,7 +184,7 @@ sources:
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
       - '{trunk,0.14}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.15,0.16}/{logfile,milestones}*'
+      - '{0.15,0.16,0.17}/{logfile,milestones}*'
     morgues:
       - [ 'lld.*/(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
       - http://lazy-life.ddo.jp:8080/morgue
