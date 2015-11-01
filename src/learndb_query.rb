@@ -26,7 +26,7 @@ class LearnDBQuery
       redir = self.redirect_term?(db, query)
       break unless redir
 
-      redir_term, ignored = self.parse_query(redir)
+      redir_term, _ = self.parse_query(redir)
       redir_term = redir_term.downcase.strip
       query = redir_term
       break if seen.include?(redir_term)
@@ -36,7 +36,7 @@ class LearnDBQuery
   end
 
   def self.redirect_term?(db, query)
-    query, index = self.parse_query(query)
+    query, _ = self.parse_query(query)
     e = db.entry(query)
     return false if e.size != 1
     redir = redirect_entry?(e[1].text)
@@ -51,7 +51,7 @@ class LearnDBQuery
   end
 
   def self.parse_query(query)
-    if query =~ /^(.*)\[([+-]?\d+|\$)\]\s*$/
+    if query =~ /^(.*)\[([+-]?\d+|\$)\]?\s*$/
       [$1, $2 == '$' ? -1 : $2.to_i]
     else
       [query, 1]
@@ -171,7 +171,6 @@ class LearnDBQuery
 
   def resolve_redirect(result)
     visited ||= { }
-    current = result
     pattern = redirect_pattern(result)
     return result unless pattern
     new_term, new_index = self.class.parse_query(pattern)
