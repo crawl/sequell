@@ -115,7 +115,7 @@ sources:
       - clan
     base: http://underhound.eu:81/crawl/meta
     logs:
-      - '{0.16}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17}/{logfile,milestones}{,-sprint}*'
       - '{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
       - http://underhound.eu:81/crawl/morgue
@@ -174,7 +174,7 @@ sources:
     base: http://crawl.xtahua.com/crawl/meta
     logs:
       - '{git,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.16}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17}/{logfile,milestones}{,-sprint}*'
     morgues:
       - http://crawl.xtahua.com/crawl/morgue
     ttyrecs:
