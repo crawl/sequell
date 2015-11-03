@@ -73,7 +73,7 @@ sub _slave {
 sub _new_slave_fd {
   my $self = shift;
   my $pwd = getcwd();
-  my $cmd = "bash -c \"seqdb isync 2> >(rotatelogs $pwd/isync.log.\%Y.\%m.\%d 86400)\"";
+  my $cmd = "seqdb -log log/seqdb.log isync";
   open my $outf, '|-', $cmd or die "Can't open pipe to `$cmd`: $!\n";
   $outf->autoflush(1);
   $outf
