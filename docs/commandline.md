@@ -259,7 +259,8 @@ Functions may be used as `$(<fn> ...)`.
    - `$(length <string|array>)` String or array length
    - `$(sub <start> [<exclusive-end>] <string|array>)` Substring or array slice
 
-   - `$(nth <index> <array>)` Index into array
+   - `$(nth <index> <array>)` Index into an array or a string of space-separated
+     words. Where possible, prefer `elt` to `nth`.
    - `$(car <array>)` First element
    - `$(cdr <array>)` Array slice (identical to $(sub 1 <array>))
    - `$(rand n)` => random integers in [0,n)
@@ -343,7 +344,10 @@ Functions may be used as `$(<fn> ...)`.
    - `$(hash [<key> <value> ...])` create a dictionary
    - `$(hash-put <key> <value> ... <hash>)` add keys and values to hash
    - `$(hash-keys <hash>)` returns a list of the keys in a hash
-   - `$(elt <key> <hash>)` get value of <hash>[<key>]
+   - `$(elt <key> <hash>)` get value of <hash>[<key>], or <list>[<index>],
+     or <string>[<index>]. `elt` behaves like `nth`, but does not
+     attempt to convert or auto-split its arguments. Wherever possible, prefer
+     `elt` to `nth`.
    - `$hash[key]` same as `$(elt key $hash)`
    - `$(elts <key> ... <hash>)` get list of hash values for keys
             Note: `(reverse <hash>)` will invert the hash, converting keys
