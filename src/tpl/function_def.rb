@@ -190,6 +190,9 @@ module Tpl
       val.is_a?(Enumerable) ? val.to_a : val
     end
 
+    ##
+    # autosplit converts word into an Array, by calling to_a, or stringifying
+    # and splitting it
     def autosplit(word, split_by=nil)
       return [] unless word
       return word.to_a if word.is_a?(Enumerable)
@@ -199,7 +202,7 @@ module Tpl
        elsif word.index('|')
          word.split('|')
        else
-         word.split(',')
+         word.split(/[, ]/)
        end).map(&:strip)
     end
 
@@ -239,7 +242,6 @@ module Tpl
 
     def eval_user_function
       map = { }
-      evaluated = { }
       fn = @evaluator
       fn.parameters.each_with_index { |p, i|
         map[p] = raw_arg(i)

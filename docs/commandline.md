@@ -105,6 +105,8 @@ Functions may be used as `$(<fn> ...)`.
 
          .echo $(join $(split & a&b&c)) => a, b, c
 
+     If unspecified, splitter=" ".
+
    - `$(str-find <str> <text>)`; `$(str-find? <str> <text>)`
 
       `str-find` returns the index of <str> in <text>, indexes

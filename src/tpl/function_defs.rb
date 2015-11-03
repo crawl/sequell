@@ -294,7 +294,7 @@ module Tpl
 
   FunctionDef.define('split', [1, 2]) {
     if arity == 1
-      autosplit(self[-1], ',')
+      autosplit(self[-1], ' ')
     else
       autosplit(self[-1], self[0])
     end
