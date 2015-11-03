@@ -115,6 +115,18 @@ describe Tpl::Template do
     end
   end
 
+  context 'nth' do
+    it 'will retrieve the nth element of an array' do
+      expect(e('$(nth 2 (list a b c d))')).to eq('c')
+      expect(e('$(nth -1 (list a b c d))')).to eq('d')
+      expect(e('$(nth 4 (list a b c d))')).to be_nil
+    end
+
+    it 'will retrieve the nth character in a splittable string' do
+      expect(e('$(nth 2 "how now brown cow")')).to eq('brown')
+    end
+  end
+
   context 'hash' do
     it 'will create hashes' do
       expect(e('$(hash)')).to eq({ })
