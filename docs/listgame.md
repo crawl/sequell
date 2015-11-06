@@ -537,6 +537,7 @@ Listgame keywords may be one of:
              tourney
     `t<V>` : Select games played in the tournament for version V. For instance
              `t0.10` selects the 0.10 tourney (2012a).
+    `t*`   : Select games played in any tournament.
 
 14. Milestone Types:
     In !lm queries ONLY (i.e. not in !lg) you may use the

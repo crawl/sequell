@@ -9,15 +9,25 @@ module Tourney
   TOURNEY_DATA = CFG['tournament-data']
 
   TOURNEY_REGEXES = TOURNEY_PREFIXES.map do |p|
-    %r/^(#{p})(?:(\d*)([a-z]?)|(\d*[.]\d+))$/i
+    %r/^(#{p})(?:(\d*)([a-z]?)|(\d*[.]\d+)|[*])$/i
   end
+
+  TOURNEY_WILDCARD = Regexp.new('^(?:' + TOURNEY_PREFIXES.join('|') + ')[*]$', Regexp::IGNORECASE)
 
   def tourney_keyword?(argument)
     TOURNEY_REGEXES.find { |r| argument =~ r }
   end
 
+  def tourney_wildcard?(argument)
+    argument =~ TOURNEY_WILDCARD
+  end
+
   def tourney_info(argument, game = GAME_TYPE_DEFAULT)
     TourneyInfo.new(argument, game)
+  end
+
+  def tourney_all_keys(game=GAME_TYPE_DEFAULT)
+    TOURNEY_DATA[game].keys.map { |k| "t#{k}" }
   end
 
   class TourneyInfo

@@ -203,6 +203,10 @@ module Query
       end
 
       if field === 'when'
+        if tourney_wildcard?(value)
+          return reexpand(AST::Expr.new(op, field, tourney_all_keys().join('|')))
+        end
+
         tourney = tourney_info(value, GameContext.game)
 
         if op.equality?
