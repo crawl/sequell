@@ -49,7 +49,7 @@ sources:
     logs:
       - '{allgames,milestones}-0.{3,4,5,6}.txt'
       - '{allgames,milestones}{,-spr}-0.7.txt'
-      - '{allgames,milestones}-0.16.txt*'
+      - '{allgames,milestones}-{0.16,0.17}.txt*'
       - '{allgames,milestones}{,-spr,-zd}-0.{8,10,11,12,13,14,15}.txt*'
       - '{allgames,milestones}{,-spr,-zd}-svn.txt*'
     morgues:
@@ -137,7 +137,7 @@ sources:
     base: http://webzook.net:82
     logs:
       - '0.16/{logfile,milestones}-old'
-      - '{0.13,0.14,0.15,0.16,trunk}/{logfile,milestones}*'
+      - '{0.13,0.14,0.15,0.16,0.17,trunk}/{logfile,milestones}*'
     morgues:
       - ['cwz.*/trunk', 'http://webzook.net:82/morgue/trunk']
       - ['cwz.*/(\d+[.]\d+)', 'http://webzook.net:82/morgue/$1']
