@@ -86,7 +86,10 @@ module Query
       end
 
       def type
-        operator.result_type(args)
+        arg_hash = args.hash
+        @type = nil unless @type_hash == arg_hash
+        @type_hash = arg_hash
+        @type ||= operator.result_type(args)
       end
 
       def merge(other, merge_op=:and)

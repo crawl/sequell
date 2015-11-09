@@ -80,7 +80,7 @@ $ rm dat/user_commands.db
 
 
 .echo Length: $(length abcd) ::~ Length: 4
-.echo Length: $(length $(split a,b,c,d,e)) ::~ Length: 5
+.echo Length: $(length $(split 'a b c d e')) ::~ Length: 5
 .echo Upper: $(upper upper) ::~ Upper: UPPER
 .echo Lower: $(lower LoWeR) ::~ Lower: lower
 .echo Sub: x$(sub 3 5 abcdef)y ::~ xdey
@@ -142,7 +142,7 @@ E !kw foo foo
 E !lg * killer=crazy yiuf ::~ No keyword 'yiuf'
 !lm * type=demonic rune
 !lg * troll air_elementalist
-!lg * high_elf fire_elementalist 
+!lg * high_elf fire_elementalist
 !lg * pale_draconian earth_elementalist ::~ Vyt the Geomancer
 
 !lg @* ::~ Vesto the Covered
@@ -197,7 +197,7 @@ E !lg * killer=tentacled monstrosity
 !lg * won max=${end - start}
 !lg * won end>${start + interval('1y')} s=${end - start}
 !lg greensnark won x=avg(end-start) ::~ 18d
-!lg * 
+!lg *
 !lg * won urune<5 start>2012 max=turns
 !lg elliptic win turn<20000 -ttyrec
 
@@ -394,7 +394,7 @@ E !lg * ${ac + ev} > 15
 E !lg * s=trunc99(sc)
 
 !lg * s=day(end) x=sum(sc) / tiles -graph
-!lg * day(end)=20121029 s=day(end) x=sum(sc) / tiles 
+!lg * day(end)=20121029 s=day(end) x=sum(sc) / tiles
 
 !lg * cv>=0.10 sc>0 s=log(sc),cv o=-. -graph:area
 !lm * recent s=day(time) / !alpha -graph
