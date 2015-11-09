@@ -276,7 +276,8 @@ Functions may be used as `$(<fn> ...)`.
      surprising behaviour.
    - `$(car <array>)` First element
    - `$(cdr <array>)` Array slice (identical to $(sub 1 <array>))
-   - `$(rand n)` => random integers in [0,n)
+   - `$(rand n)` => random integers in [0,n); if n=0, random floating point
+                    number in [0,1)
    - `$(rand n m)` => random integers in [n,m]
    - Prefix operators: `+` `-` `/` `*` `=` `/=` `<` `>` `<=` `>=` `<=>` `**`
      `mod` `not`
