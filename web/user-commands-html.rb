@@ -27,9 +27,11 @@ tries = 10
 while tries > 0
   begin
     keywords = db.keywords
-    commands = db.commands
-    functions = db.functions
     ldb = LearnDB::DB.default
+    commands = db.commands.map { |c|
+      [c[0], c[1], ldb.entry("!help:#{c[0]}").definitions[0]]
+    }
+    functions = db.functions
     behaviours = ldb.entry(':beh:').definitions
     acls = term_defs(/^:acl:.*/).sort { |a, b|
       lencomp = b[0].size <=> a[0].size

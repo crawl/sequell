@@ -13,11 +13,36 @@
       Updated #{Time.now.utc}
 
     %nav
-      %a(href="#keywords") Keywords
       %a(href="#commands") Commands
+      %a(href="#keywords") Keywords
       %a(href="#functions") Functions
       %a(href="#behaviours") Behaviours
       %a(href="#acls") ACLs
+
+    %section.commands
+      %a(name="commands")
+      %h2 Commands
+
+      - if commands.empty?
+        .stub No commands
+      - else
+
+        %table
+          %colgroup
+            %col(span="1" style="width: 15%")
+            %col(span="1" style="width: 85%")
+          %tr
+            %th Command
+            %th Definition
+
+          - for command in commands
+            %tr
+              %td.name
+                %a{name: h(command[0])}
+                #{h command[0]}
+              %td.command
+                %p.def= command[1]
+                %p.help= command[2]
 
     %section.keywords
       %a(name="keywords")
@@ -42,29 +67,6 @@
                 %a{name: keyword[0]}
                 #{keyword[0]}
               %td.def= keyword[1]
-
-    %section.commands
-      %a(name="commands")
-      %h2 Commands
-
-      - if commands.empty?
-        .stub No commands
-      - else
-
-        %table
-          %colgroup
-            %col(span="1" style="width: 15%")
-            %col(span="1" style="width: 85%")
-          %tr
-            %th Command
-            %th Definition
-
-          - for command in commands
-            %tr
-              %td.name
-                %a{name: h(command[0])}
-                #{h command[0]}
-              %td.def= command[1]
 
     %section.functions
       %a(name="functions")

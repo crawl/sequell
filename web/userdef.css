@@ -71,6 +71,17 @@ td, th {
   text-align: left;
   padding: 0.5em;
   word-wrap: break-word;
+  vertical-align: top;
+}
+
+td p {
+  padding: 0;
+  margin: 0;
+}
+
+p.help {
+  margin-top: 0.25em;
+  color: #aaa;
 }
 
 td.index {
@@ -82,7 +93,7 @@ td.name {
   color: #333;
 }
 
-td.def {
+.def {
   overflow: auto;
   font-family: Monospace;
   color: #333;
