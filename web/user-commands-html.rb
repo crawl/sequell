@@ -30,6 +30,16 @@ while tries > 0
     ldb = LearnDB::DB.default
     commands = db.commands.map { |c|
       [c[0], c[1], ldb.entry("!help:#{c[0]}").definitions[0]]
+    }.sort { |a, b|
+      if !a[2] != !b[2]
+        if a[2]
+          -1
+        else
+          1
+        end
+      else
+        a[0] <=> b[0]
+      end
     }
     functions = db.functions
     behaviours = ldb.entry(':beh:').definitions
