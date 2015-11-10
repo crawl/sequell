@@ -42,16 +42,16 @@ module Sql
     end
 
     def return_type(args)
-      @argtypes.return_type(args)
+      @argtypes.return_type(self.name, args)
     end
 
     def typecheck!(args)
-      @argtypes.type_match(args) or
+      @argtypes.type_match(self.name, args) or
         raise Sql::TypeError.new("Cannot apply to #{args}")
     end
 
     def coerce_argument_types(args)
-      @argtypes.coerce_argument_types(args)
+      @argtypes.coerce_argument_types(self.name, args)
     end
 
     def argument_types(types)

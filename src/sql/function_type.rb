@@ -4,19 +4,19 @@ module Sql
       @types = normalize(arg_type, return_type)
     end
 
-    def type_match(args)
+    def type_match(name, args)
       @types.find { |t|
         t.type.size == args.size && types_match(t.type, args)
-      } or raise Sql::TypeError.new("Cannot apply to #{args} (want #{@types})")
+      } or raise Sql::TypeError.new("Cannot call #{name}(#{args.map(&:to_s).join(',')}) (want (#{@types.map(&:type).join(',')}))")
     end
 
-    def return_type(args)
+    def return_type(name, args)
       first_arg_type = args && args.first && args.first.type
-      type_match(args).return.applied_to(first_arg_type)
+      type_match(name, args).return.applied_to(first_arg_type)
     end
 
-    def coerce_argument_types(args)
-      coerce_typematch(type_match(args), args)
+    def coerce_argument_types(name, args)
+      coerce_typematch(type_match(name, args), args)
     end
 
   private

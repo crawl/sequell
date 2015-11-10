@@ -665,6 +665,11 @@ value-functions:
       - type: ['S', 'S', 'S']
         result: 'S'
     expr: "regexp_replace(:1, :2, :3)"
+  trunc:
+    types:
+      - type: ['F', 'I']
+        result: 'I'
+    expr: "((:1 / :2) * :2)"
   size:
     type: 'S'
     summarisable: true
