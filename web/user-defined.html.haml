@@ -41,8 +41,8 @@
                 %a{name: h(command[0])}
                 #{h command[0]}
               %td.command
-                %p.def= command[1]
-                %p.help= command[2]
+                %p.def= h(command[1] || '')
+                %p.help= h(command[2] || '')
 
     %section.keywords
       %a(name="keywords")
