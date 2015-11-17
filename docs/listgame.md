@@ -147,8 +147,7 @@ Where:
 
   You can combine `x=aggregate(field)` with `s=field`:
 
-    `!lg * s=god x=avg(xl)` summarise by god and show the average XL for players
-                            of each god.
+    `!lg * s=god x=avg(xl)` summarise by god and show the average XL for players of each god.
 
   See the "[Aggregate Functions](#aggregate-functions)" section for a
   list of aggregate functions.
@@ -205,59 +204,60 @@ Where:
 
   ###### Recognised keyed options:
   * `fmt/format`:
-         For grouped (`s=foo`) queries, the display format of the
-         innermost group.
+     For grouped (`s=foo`) queries, the display format of the
+     innermost group.
 
-         The default fmt for inner groups is `"${n_x}${.} ${%} [${n_ratio};${x}]"`, where
-         `${n_x}` produces the `"45x "` prefix in groups such as `45x HEFE`,
-         `${.}` displays the actual group value, `${%}` displays the percentage
-         of the total that the group represents, `${n_ratio}` displays the
-         ratio of the numerator to denominator counts for ratio queries, and
-         `${x}` displays any extra field expressions. You may refer to
-         individual extra field expressions as `${x[0]}`, `${x[1]}`...
+     The default fmt for inner groups is `"${n_x}${.} ${%} [${n_ratio};${x}]"`, where
+     `${n_x}` produces the `"45x "` prefix in groups such as `45x HEFE`,
+     `${.}` displays the actual group value, `${%}` displays the percentage
+     of the total that the group represents, `${n_ratio}` displays the
+     ratio of the numerator to denominator counts for ratio queries, and
+     `${x}` displays any extra field expressions. You may refer to
+     individual extra field expressions as `${x[0]}`, `${x[1]}`...
 
-         You may also refer to the user issuing the command with `$user`
-         and the user referenced in the command as `$name` or `$target`.
-         `$target` will be set to the first name-like thing in the
-         query (which may be `*`), while `$name` will look for the first
-         non-* name referenced in the query. So in `!lg * s=name / @foo`,
-         `$target` will be `*`, but `$name` will be `foo`.
+     You may also refer to the user issuing the command with `$user`
+     and the user referenced in the command as `$name` or `$target`.
+     `$target` will be set to the first name-like thing in the
+     query (which may be `*`), while `$name` will look for the first
+     non-* name referenced in the query. So in `!lg * s=name / @foo`,
+     `$target` will be `*`, but `$name` will be `foo`.
 
-         For ungrouped queries, this is the display format for the
-         game itself. You may use any of the game fields (`$name`,
-         `$turn`, `$sc`), `$x` to display `x=foo` values, and so on.  `$n`
-         gives the total count of games matching the query.  Caveat: `$n`
-         will not work in the `fmt` key for grouped queries, and
-         `${n_x}` will not work for the `fmt` key ungrouped queries.
+     For ungrouped queries, this is the display format for the
+     game itself. You may use any of the game fields (`$name`,
+     `$turn`, `$sc`), `$x` to display `x=foo` values, and so on.  `$n`
+     gives the total count of games matching the query.  Caveat: `$n`
+     will not work in the `fmt` key for grouped queries, and
+     `${n_x}` will not work for the `fmt` key ungrouped queries.
 
   * `pfmt`: For nested (`s=foo,bar`) queries, the display format of non-inner
-          groups. Defaults to `${n_x}${.} ${%} (${child})`, with `${child}`
-          being replaced by a comma-separated list of inner-group strings.
+    groups. Defaults to `${n_x}${.} ${%} (${child})`, with `${child}` being
+    replaced by a comma-separated list of inner-group strings.
   * `stub`: Displayed when no results match the query condition.
   * `title`: Displayed as a prefix to grouped and aggregate queries. For
-           instance:
+    instance:
 
            !lg * win s=name title:"Winners"
            => Winners: 392x ...
 
-           When used with -graph, the title: is used as the graph title.
+    When used with `-graph`, the `title:` is used as the graph title.
 
     The total count field `$n` will work in the title format for grouped queries.
 
-  * `join`: The string used to join individual groups, defaulting to ", "
+  * `join`: The string used to join individual groups, defaulting to `", "`
 
 - `<option>`
   Some options modify the behaviour of !lg:
   * `-log`  Get a URL to the game morgue instead of displaying the game details.
   * `-tv`   Play the game on FooTV instead of displaying details. See
-            the "[FooTV](#footv)" section.
+    the "[FooTV](#footv)" section.
   * `-graph` For a grouping/summary query, produces a graph. See the
-             "[Graphs](#graphs)" section.
+    "[Graphs](#graphs)" section.
   * `-ttyrec` Get URLs to the game's ttyrecs.
   * `-random` Return a random game matching the filter conditions.
-  * `-count:N` For non-grouped, non-aggregate queries, request N games instead of 1. `-count:N` sets `fmt:'$name L$xl $char ($src)$(and $x " [$x]")'` unless `fmt:` is explicitly specified.
+  * `-count:N` For non-grouped, non-aggregate queries, request N games instead of 1. `-count:N` sets
+    `fmt:'$name L$xl $char ($src)$(and $x " [$x]")'` unless `fmt:` is explicitly specified.
 
-  These options are not applicable to summary queries (queries using s=foo),
+  These options are not applicable to summary queries (queries using `s=foo`),
   with the exception of `-graph`, which is *only* applicable to summary queries.
 
 - `<number>`
@@ -287,13 +287,16 @@ Where:
   get the second game and so on. For instance:
 
     `!lg * 1` (find the first game ended on any of the public servers)
-    `!lg * win -1` (find the most recent winning game:: same as !lg * win)
+
+    `!lg * win -1` (find the most recent winning game:: same as `!lg * win`)
+
     `!lg * win -2` (find the second-last winning game)
 
   When you combine a game number with max or min, you're using an index
   into games ordered by that field:
 
     `!lg * max=dur -2` (find the second longest game by real time spent)
+
     `!lg * win min=turn -3` (find the third fastest win by turn count)
 
 Ratio Queries
@@ -375,7 +378,7 @@ same as !lg, with a few nuances:
   `!lm * rune win` finds the most recent rune milestone from a winning game.
 
   `!lm * rune killer=centaur` finds the most recent rune milestone from
-                              a game where the character died to a centaur.
+  a game where the character died to a centaur.
 
   In some cases you may want to check the value of a logfile field even
   though milestones also have a field of the same name. For instance, if
@@ -387,18 +390,18 @@ same as !lg, with a few nuances:
 - Milestone Options:
 
   `-tv`   plays back the portion of the game just before and after the chosen
-        milestone.
+  milestone.
   `-log`  gets the URL to the character dump of the game corresponding to
-        the chosen milestone. If the milestone is a crash milestone,
-        gets the URL to the crash dump instead.
+  the chosen milestone. If the milestone is a crash milestone,
+  gets the URL to the crash dump instead.
   `-ttyrec` gets the URL to the single ttyrec that contains the chosen
-        milestone.
+  milestone.
   `-random` returns a random milestone matching the filters.
   `-game` gets the game correponding to the chosen milestone.
 
   ###### Example:
     `!lm * rune !win -game` finds the non-winning game corresponding to
-                            the most recent milestone.
+    the most recent milestone.
 
     You may combine `-game` with the usual `-log`, `-tv`, and `-ttyrec`
     options.
@@ -408,8 +411,11 @@ same as !lg, with a few nuances:
   You may use `s=<milestone-type>` instead of the longer
   form: `type=<milestone-type> s=noun`
 
-  Example: `!lm * s=rune` is the same as `!lm * type=rune s=noun`
-           `!lm * s=abyss.enter` == `!lm * type=abyss.enter s=noun`
+  Example:
+
+  `!lm * s=rune` is the same as `!lm * type=rune s=noun`
+
+  `!lm * s=abyss.enter` == `!lm * type=abyss.enter s=noun`
 
 - `<milestone-type>=<milestone-noun>`
 
@@ -1153,6 +1159,7 @@ User-Defined Commands
 You can define shortcut commands for !lg/!lm commands that you use frequently:
 
 Examples:
+
     !cmd !lgs !lg * sprint
     !cmd !lgz !lg * zotdef
 

@@ -14,18 +14,17 @@ The syntax used for command-line expansion is:
 
 ### Variables:
 
-References such as `$user`, `$name`, etc. Any reference that Sequell does not
-know how to expand will be canonicalized and echoed.
+References such as `$user`, `$name`, etc. are variables. Any variable that
+Sequell does not know how to expand will be canonicalized and echoed.
 
     <jake > .echo Hi $user => Hi jake
     <jake > .echo Hi $nobody => Hi ${nobody}
 
 Empty variables may be replaced with alternative text using the
-${x:-alt} form. The alternative text in ${x:-alt} is a full template,
+`${x:-alt}` form. The alternative text `alt` in `${x:-alt}` is a full template,
 and can reference other variables, functions, etc.
 
-The variables (really bindings, as in names bound to values) that
-Sequell recognizes depend on the context:
+The variable names that Sequell recognizes depend on the context:
 
  - Any context:
 
@@ -41,6 +40,8 @@ Sequell recognizes depend on the context:
    `$target`: The first nick referenced in the query, possibly *
               !lg * fmt:"Name: $name, Target: $target"
               => Name: <whoever>, Target: *
+
+    See [the Listgame docs](listgame.md) for more information.
 
 ### Subcommands:
 
@@ -93,11 +94,17 @@ Functions may be used as `$(<fn> ...)`.
          $(with-nvl yak $x) => yak
          $(with-nvl yak ${x:-foo}) => yak
 
-   - `$(join [<joiner>] <text>)`
-         .echo $(join " and " a,b,c) => a and b and c
+   - `$(join [<joiner>] <text|list>)`
 
-     The join function splits text on commas and joins it with the given
-     join string. If omitted, the join string defaults to ", "
+         .echo $(join " and " "a b c") => a and b and c
+
+     If called with a list (recommended), joins the elements of list with the
+     joiner.
+
+     If called with a final string argument, splits the string on whitespace
+     and joins it with the given joiner string.
+
+     If omitted the joiner string defaults to `", "`
 
    - `$(split [<splitter>] <text>)`
 
@@ -109,8 +116,8 @@ Functions may be used as `$(<fn> ...)`.
 
    - `$(str-find <str> <text>)`; `$(str-find? <str> <text>)`
 
-      `str-find` returns the index of <str> in <text>, indexes
-      starting with 0, or -1 if <str> is not found in <text>. If
+      `str-find` returns the index of `<str>` in `<text>`, indexes
+      starting with 0, or -1 if `<str>` is not found in `<text>`. If
       merely checking for match/no-match, `str-find?` returns boolean
       true or false.
 
@@ -133,7 +140,7 @@ Functions may be used as `$(<fn> ...)`.
      item is the full matching text of the regex; other captures start
      from 1. If unspecified, *n* is assumed to be 0.
 
-     If your pattern used named capturing groups (?P<name>...), you may
+     If your pattern used named capturing groups `(?P<name>...)`, you may
      use the name of the group instead of *n*.
 
    - `$(match-begin <match> [<group-index>])`
@@ -152,7 +159,7 @@ Functions may be used as `$(<fn> ...)`.
    - `$(replace <string> [<replacement>] <text>)`
 
      The replace function replaces occurrences of `<string>` in `<text>` with
-     `<replacement>`, the replacement defaulting to the empty string:
+     `<replacement>`, `<replacement>` defaulting to the empty string:
 
          .echo $(replace & ! a&b&c) => a!b!c
          .echo $(replace & a&b&c) => abc
@@ -203,9 +210,10 @@ Functions may be used as `$(<fn> ...)`.
      Returns a formatted string. The [format string](http://www.ruby-doc.org/core-2.1.0/Kernel.html#method-i-sprintf) accepts C printf style formatting
      sequences.
 
-   - `$(upper <str>), $(lower <str>)`
+   - `$(upper <str>)`, `$(lower <str>)`
 
-     upper/lower-case text
+     upper/lower-case text. No guarantees are made as to the locale used for
+     case-folding.
 
    - `$(fduration <integer seconds>)`
 
@@ -222,7 +230,11 @@ Functions may be used as `$(<fn> ...)`.
 
    - `$(time)`
 
-     Current time and date.
+     Current time and date in the server's local timezone. If you want UTC,
+     use `$(utc (time))`.
+
+     Times display in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format by default.
+     Note that this is not the same as the default format of `(ftime <x>)`.
 
    - `$(utc <time>)`
 
@@ -260,7 +272,8 @@ Functions may be used as `$(<fn> ...)`.
    - `$(sub <start> [<exclusive-end>] <string|array>)` Substring or array slice
 
    - `$(nth <index> <array>)` Index into an array or a string of space-separated
-     words. Where possible, prefer `elt` to `nth`.
+     words. Deprecate: Where possible, prefer `elt` to `nth`, `elt` is less prone to
+     surprising behaviour.
    - `$(car <array>)` First element
    - `$(cdr <array>)` Array slice (identical to $(sub 1 <array>))
    - `$(rand n)` => random integers in [0,n)
@@ -276,6 +289,7 @@ Functions may be used as `$(<fn> ...)`.
 
    - `$(list 1 2 3 4)` => [1, 2, 3, 4]
    - `$(cons 0 (list 1 2 3 4))` => [0, 1, 2, 3, 4]
+
          $(cons 0) => [0]
          $(cons) => []
 
@@ -286,9 +300,6 @@ Functions may be used as `$(<fn> ...)`.
 
      `let` binds names to values; values in a let form cannot refer to earlier
      names in the same `let` form (see `let*`).
-
-     Note: (let) now assumes multiple body forms, so the $() for let bodies
-     is no longer needed.
 
    - `$(let* (var1 value1 var2 value2 ...) <body-forms>)`
 
@@ -315,11 +326,7 @@ Functions may be used as `$(<fn> ...)`.
          .echo $((fn (foo) $foo) 10) => 10
          .echo $((fn (foo) foo) 10) => foo
 
-     The function body is *no longer treated as a template*:
-
          .echo $((fn (. args) (!lg $args fmt:"$name")) * xl>15)
-
-         (fn (x) (* $x 2))
 
    - `$(apply <fn> arg1 arg2 ... arglist)`
      Apply function to the given argument list, with any individual args
@@ -348,7 +355,6 @@ Functions may be used as `$(<fn> ...)`.
      or <string>[<index>]. `elt` behaves like `nth`, but does not
      attempt to convert or auto-split its arguments. Wherever possible, prefer
      `elt` to `nth`.
-   - `$hash[key]` same as `$(elt key $hash)`
    - `$(elts <key> ... <hash>)` get list of hash values for keys
             Note: `(reverse <hash>)` will invert the hash, converting keys
                   to values and vice-versa.
@@ -379,7 +385,7 @@ Functions may be used as `$(<fn> ...)`.
      Returns a hash-like lookup object that contains the names bound in
      the current scope. As an example:
 
-         $(let (x 55) $(elt x (scope))) => 55
+         $(let (x 55) (elt x (scope))) => 55
 
      Scopes behave like hashes, but you may not be able to inspect
      all locally bound names using (hash-keys (scope)).
@@ -387,7 +393,7 @@ Functions may be used as `$(<fn> ...)`.
      If given an optional hash object, any names in that hash override
      bindings in the current scope:
 
-         $(let (x 55) $(elt x (scope (hash x 32)))) => 32
+         $(let (x 55) (elt x (scope (hash x 32)))) => 32
 
    - `$(binding <scope|hash> [<forms>])`
 
@@ -396,8 +402,8 @@ Functions may be used as `$(<fn> ...)`.
      want to retain existing bindings, use a scope:
 
          $(binding (hash x 20) $x) => 20
-         $(let (y 30) $(binding (hash x 20) $y)) => ${y} (unbound y)
-         $(let (y 30) $(binding (scope (hash x 20)) $y)) => 30
+         $(let (y 30) (binding (hash x 20) $y)) => ${y} (unbound y)
+         $(let (y 30) (binding (scope (hash x 20)) $y)) => 30
 
    - `$(eval <string|quoted-form> [<scope>])`
 
@@ -421,15 +427,15 @@ Functions may be used as `$(<fn> ...)`.
 
    - `$(quote <form>)`
 
-     Returns <form> as a syntax object representing the template. Useful for
+     Returns `<form>` as a syntax object representing the template. Useful for
      eval, or regex replacements.
 
-     As a convenience, `<form> behaves the same as (quote <form>).
-     Sequell does not support splicing forms with , and ,@ yet.
+     As a convenience, ````<form>``` behaves the same as `(quote <form>)`.
+     Sequell does not support splicing forms with `,` and `,@` yet.
 
    - `$(do <forms>)`
 
-     Evaluates <forms> in sequence and returns the value of the last.
+     Evaluates `<forms>` in sequence and returns the value of the last form.
 
    - `$(void)`
 
