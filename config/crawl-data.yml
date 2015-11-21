@@ -669,7 +669,7 @@ value-functions:
     types:
       - type: ['F', 'I']
         result: 'I'
-    expr: "((:1 / :2) * :2)"
+    expr: "(trunc(:1 / :2) * :2)"
   size:
     type: 'S'
     summarisable: true

@@ -175,10 +175,6 @@ module Query
       Query::AST::ASTWalker.each_node(self, &block)
     end
 
-    def each_value(&block)
-      Query::AST::ASTWalker.each_value(self, &block)
-    end
-
     def without(&filter)
       Query::AST::ASTWalker.map_nodes(self.dup, nil, filter) { nil }
     end
@@ -190,7 +186,11 @@ module Query
     end
 
     def sql_values
-      []
+      if self.kind == :value
+        [self.value].compact
+      else
+        self.arguments.map(&:sql_values).flatten
+      end
     end
 
     def to_sql_output

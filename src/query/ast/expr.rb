@@ -187,15 +187,6 @@ module Query
           end
         }
       end
-
-      def sql_values
-        values = []
-        ASTWalker.map_values(self) { |value|
-          values << value.value unless value.null?
-          value
-        }
-        values
-      end
     end
   end
 end

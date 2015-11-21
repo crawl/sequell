@@ -1117,8 +1117,7 @@ grouping clauses (s=X) and extra-field info (x=X).
                        to steps of 0.1.
                        Note: you probably need a field>0 condition to prevent
                        zero or negative values exploding the log() function.
-- `trunc<X>(<number>)`   Truncates the numeric field to <X>. For instance:
-                       trunc500(turn), trunc1000(sc).
+- `trunc(<number>,<divisor>)`  Returns floor(number / divisor) * divisor.
 - `interval(<string>)` Convert a string to a Postgres [time interval](http://www.postgresql.org/docs/9.1/static/datatype-datetime.html#DATATYPE-INTERVAL-INPUT). Note that Postgres and Sequell have different notions of what a year is. Sequell treats years as simple units of 365 days, whereas `interval('1y')` == `interval('365d 6h')` == `interval('365.25d')`
 - `interval_seconds(<interval>)` Convert an interval to seconds (integer).
 - `seconds_interval(<number>)` Converts a number to an interval for use in date arithmetic (for instance `x=${start + seconds_interval(dur)}`)

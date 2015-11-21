@@ -228,11 +228,7 @@ module Sql
     def with_values(expressions, values=[])
       new_values = []
       if expressions
-        expressions.each { |expr|
-          expr.each_value { |value|
-            new_values << value.value unless value.null?
-          }
-        }
+        new_values = expressions.map(&:sql_values).flatten
       end
       new_values + (values || [])
     end

@@ -81,10 +81,6 @@ module Query
         each_kind(ast, :field, &block)
       end
 
-      def self.each_value(ast, &block)
-        each_kind(ast, :value, &block)
-      end
-
       def self.map_keywords(ast, &block)
         map_kinds(ast, :keyword, &block)
       end

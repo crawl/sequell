@@ -14,8 +14,10 @@ module Query
         @arguments = arguments
       end
 
-      def dup
-        self.class.new(@name.dup, *arguments.map(&:dup))
+      def initialize_copy(o)
+        super
+        @name = @name.dup
+        @arguments = @arguments.map(&:dup)
       end
 
       def display_value(raw_value, format=nil)
@@ -50,9 +52,23 @@ module Query
       end
 
       def to_sql
-        @fn.expr.gsub(/%s/) { |m| self.first.to_sql }.gsub(/:(\d+)\b/) { |m|
+        @fn.expr.gsub(/%s/) { |m|
+          self.first.to_sql
+        }.gsub(/:(\d+)\b/) { |m|
           arguments[$1.to_i - 1].to_sql
         }
+      end
+
+      def sql_values
+        argrefs = []
+        @fn.expr.gsub(/%s/) { |m|
+          argrefs << self.first
+          ''
+        }.gsub(/:(\d+)\b/) { |m|
+          argrefs << arguments[$1.to_i - 1]
+          ''
+        }
+        argrefs.map(&:sql_values).flatten
       end
     end
   end
