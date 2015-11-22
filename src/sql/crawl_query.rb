@@ -191,7 +191,7 @@ module Sql
     def with_values(expressions, values=[])
       new_values = []
       if expressions
-        new_values = expressions.map(&:sql_values).flatten
+        new_values = expressions.compact.map(&:sql_values).flatten
       end
       new_values + (values || [])
     end
@@ -219,7 +219,7 @@ module Sql
         id_sql = resolve_field(id_field, @ast).to_sql_output
         @values = []
         @values = self.with_values(query_fields, @values)
-        @values += self.with_values(@count_sorts)
+        @values += self.with_values([@count_sorts])
         table_list_sql = @ast.to_table_list_sql
         @values += @ast.table_list_values
         @values += id_values
@@ -236,7 +236,7 @@ module Sql
       where_clause = where(@ast, with_sorts && @sorts)
       @values += where_clause.values
 
-      @values += self.with_values(@sorts) if with_sorts
+      @values += self.with_values([@sorts]) if with_sorts
 
       query_text = "SELECT #{query_columns.join(", ")} FROM #{@ast.to_table_list_sql} " +
          where_clause.where_clause + " " +
