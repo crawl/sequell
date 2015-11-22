@@ -145,6 +145,7 @@ describe '!lg behavior' do
     end
 
     it 'should join l_place twice after select_count' do
+      cq.select_count
       expect(cq.select_all.scan('JOIN l_place').size).to eq(2)
     end
 

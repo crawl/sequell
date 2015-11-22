@@ -433,8 +433,10 @@ you're looking for games *without* a specific milestone, a simple query won't
 work.
 
 Sequell supports more complex queries for such cases. Be cautious when using
-these advanced query forms, because it's quite easy to write absurdly slow
-queries that will hit Sequell's query time limit.
+these advanced query forms, because it's easy to write very slow queries that
+will exceed Sequell's query time limit.
+
+Subqueries can be broadly classified by where and how they're used:
 
 ### Single-valued expression subqueries.
 
