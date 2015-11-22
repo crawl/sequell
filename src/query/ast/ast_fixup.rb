@@ -38,7 +38,7 @@ module Query
       def autojoin_recursive(query_ast)
         query_ast.each_query { |q|
           if q.equal?(query_ast)
-            q.autojoin_lookup_columns!
+            q.autojoin_lookup_columns! if q.kind == :query
           else
             autojoin_recursive(q)
           end
@@ -62,7 +62,7 @@ module Query
           fix_node(node)
         }
         bind_subquery_game_type(q)
-        q.ast_meta_bound = true
+        q.ast_meta_bound = true if q.respond_to?(:ast_meta_bound=)
       end
 
       def bind_subquery_game_type(ast)
@@ -97,7 +97,7 @@ module Query
       # query column condition, force a gid=outer:gid on it.
       def autojoin_exists_queries(ast)
         ast.each_query { |q|
-          if q.exists_query? && !q.flag(:outer_field_reference)
+          if q.kind == :query && q.exists_query? && !q.flag(:outer_field_reference)
             gid_autojoin_exists(ast)
           end
         }
@@ -111,6 +111,7 @@ module Query
       end
 
       def bind_joins!(ast)
+        return ast unless ast.kind == :query
         ast.transform_nodes! { |node|
           bind_join_condition(ast, node)
         }

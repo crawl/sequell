@@ -204,13 +204,7 @@ module Sql
     end
 
     def load_values(exprs)
-      exprs.each { |e|
-        if e
-          e.each_value { |v|
-            @values << v.value unless v.null?
-          }
-        end
-      }
+      @values = exprs.compact.map(&:sql_values).flatten
     end
 
     def order_fields
