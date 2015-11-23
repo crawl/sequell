@@ -164,6 +164,9 @@ sources:
       - meta/ranged_combat/{logfile,milestones}*: rc
       - meta/weightless/{logfile,milestones}: weightless
       - meta/cards/{logfile,milestones}*: cards
+      - meta/evoker-god-rebase/{logfile,milestones}*: evoker-god-rebase
+      - meta/abyssrun/{logfile,milestones}*: abyssrun
+      - meta/orcs_and_elves/{logfile,milestones}*: orcs-and-elves
     morgues:
       - http://crawl.berotato.org/crawl/morgue
     ttyrecs:
