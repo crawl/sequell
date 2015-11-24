@@ -39,6 +39,8 @@ my $ldb = Henzell::ReactorService->new(executor => $cmd,
                                        bus => $bus);
 $irc->configure_services(services => [$ldb]);
 
+irc('!learn add test Hi');
+is(irc('!RELAY -channel ##csdc !learn del test[$]'), 'Permission db:test denied: proxying not permitted');
 irc('!learn add aa Hello');
 irc('!learn add aa there');
 irc('!learn add bb mellow');

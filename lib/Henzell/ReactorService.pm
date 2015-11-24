@@ -317,24 +317,12 @@ sub _parse_relay {
         $change{outprefix} = $val;
       }
       if ($key eq 'nick' && $val) {
-        my $auth = $self->{auth};
-        my $auth_req =
-          Henzell::ACL::has_permission('proxy', $$m{nick}, $$m{channel},
-                                       $auth &&
-                                         $auth->nick_identified($$m{nick}),
-                                       'deny');
-        if ($auth_req && $auth_req eq 'authenticate' && $auth &&
-              !$$m{reprocessed_command})
-        {
-          return $self->authenticate_command($m);
-        }
-
-        if (!$auth_req || $auth_req ne 'ok') {
-          $change{relayed} = 1;
-          $change{proxied} = 1;
-        }
+        return unless $self->_authorize_relay($m, \%change);
         $change{orignick} = $$m{nick};
         $change{nick} = $val;
+      }
+      if ($key eq 'channel' && $val) {
+        return unless $self->_authorize_relay($m, \%change);
       }
       if ($key eq 'n' && $val > 0) {
         $change{nlines} = $val;
@@ -343,8 +331,30 @@ sub _parse_relay {
   }
   $change{body} = $cmd;
   $change{verbatim} = $cmd;
-
   %$m = (%$m, %change);
+}
+
+sub _authorize_relay {
+  my ($self, $m, $change) = @_;
+  my $auth = $self->{auth};
+  my $auth_req =
+    Henzell::ACL::has_permission('proxy', $$m{nick}, $$m{channel},
+                                 $auth &&
+                                   $auth->nick_identified($$m{nick}),
+                                 'deny');
+  if ($auth_req && $auth_req eq 'authenticate' && $auth &&
+        !$$m{reprocessed_command}) {
+    $self->authenticate_command($m);
+    return 0;
+  }
+
+  if (!$auth_req || $auth_req ne 'ok') {
+    $$change{relayed} = 1;
+    $$change{proxied} = 1;
+    return 1;
+  }
+
+  1
 }
 
 sub _apply_relay {
