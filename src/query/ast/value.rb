@@ -11,8 +11,8 @@ module Query
       end
 
       def self.single_quote_string(str, force_quote=false)
-        return str unless str.is_a?(String) && (str.index(' ') || force_quote)
-        "'" + str.gsub(/([\\\\'])/, '\\\1') + "'"
+        return str unless str.is_a?(String) && (force_quote || str.index(' '))
+        "'" + str.gsub(/([\\\\'])/, '\\\\\1') + "'"
       end
 
       def initialize(value)
