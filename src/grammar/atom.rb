@@ -19,8 +19,14 @@ module Grammar
         match["^#{quote}"].as(:char))
     end
 
+    def escaped_quoted_body(quote)
+      (str('\\') >> str('\\')).as(:char) |
+      (str('\\') >> str(quote)).as(:char) |
+      match["^#{quote}"].as(:char)
+    end
+
     rule(:wrapped_single_quoted_string) {
-      (str("'").as(:leftquot) >> quoted_body("'").repeat >> str("'").as(:rightquot)).as(:string)
+      (str("'").as(:leftquot) >> escaped_quoted_body("'").repeat >> str("'").as(:rightquot)).as(:string)
     }
 
     rule(:single_quoted_string) {

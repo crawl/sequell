@@ -72,6 +72,10 @@ describe Tpl::Template do
       ['Hi: a!', 'Hi: b!', 'Hi: c!'])
   end
 
+  it 'will handle escaped quotes' do
+    expect(e("'A\\'s test'")).to eq("'A\\'s test'")
+  end
+
   it 'will support recursive named lambdas' do
     name = "fact#{rand(10000)}"
     expect(e("$((fn #{name} (n) $(if (> $n 1) (* $n (#{name} (- $n 1))) 1)) 5)")).to eq(120)

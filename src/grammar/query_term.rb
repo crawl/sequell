@@ -131,8 +131,7 @@ module Grammar
     }
 
     rule(:term) {
-      term_field_expr.as(:term_expr) >> space? >> op >>
-      field_value.as(:value) |
+      term_field_expr.as(:term_expr) >> space? >> op >> field_value.as(:value) |
       SqlExpr.new
     }
 
