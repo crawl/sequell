@@ -218,7 +218,7 @@ def morgue_timestring(e, key=nil)
   if key
     timestamp = e[key].dup
   else
-    timestamp = (e["end"] || e["time"]).dup
+    timestamp = (e["rend"] || e["end"] || e["rtime"] || e["time"]).dup
   end
   timestamp.sub!(/(\d{4})(\d{2})(\d{2})/) do |m|
     "#$1#{sprintf('%02d', $2.to_i + 1)}#$3-"
