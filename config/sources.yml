@@ -134,7 +134,7 @@ sources:
       - http://kr.dobrazupa.org/ttyrecs
 
   - name: cwz
-    base: http://webzook.net:82
+    base: http://webzook.net/soup
     logs:
       - '0.16/{logfile,milestones}-old'
       - '{0.13,0.14,0.15,0.16,0.17,trunk}/{logfile,milestones}*'
