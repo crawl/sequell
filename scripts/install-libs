@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
 set -e
-./install-perl-modules
+./scripts/install-perl-modules
 
 gem install bundler && bundle install
