@@ -4,6 +4,7 @@ require 'command_context'
 module Sql
   class SummaryGroupFormatter
     DEFAULT_STUB = "${.}"
+    DEFAULT_PARENT_STUB = "${n_x}${.} (${child})"
     DEFAULT_FORMAT = '${n_x}${.} ${%} [${n_ratio};${x}]'
     DEFAULT_PARENT_FORMAT = '${n_x}${.} ${%} (${child})'
     DEFAULT_AGGREGATE_FORMAT = '$keyed_x'
@@ -13,7 +14,7 @@ module Sql
     end
 
     def self.parent_format(format=nil, template_properties=nil)
-      format ||= CommandContext.subcommand? ? DEFAULT_STUB : DEFAULT_PARENT_FORMAT
+      format ||= CommandContext.subcommand? ? DEFAULT_PARENT_STUB : DEFAULT_PARENT_FORMAT
       self.format(format, template_properties)
     end
 
