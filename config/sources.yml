@@ -167,6 +167,7 @@ sources:
       - meta/evoker-god-rebase/{logfile,milestones}*: evoker-god-rebase
       - meta/abyssrun/{logfile,milestones}*: abyssrun
       - meta/orcs_and_elves/{logfile,milestones}*: orcs-and-elves
+      - meta/combo_god/{logfile,milestones}*: combo-god
     morgues:
       - http://crawl.berotato.org/crawl/morgue
     ttyrecs:
