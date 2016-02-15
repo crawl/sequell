@@ -67,7 +67,8 @@ sub game_skill_title
   my $game_ref = shift;
   my $title = $game_ref->{title};
   $title = skill_farming($title) if $game_ref->{turn} > 200000;
-  $title = "the $title" unless $title =~ /^(the|le|la|l')\b/i;
+  my $article = "La" if $title =~ /petite/i else "the";
+  $title = $article .  " " . $title unless $title =~ /^(the|le|la|l')\b/i;
   return $title;
 }
 
