@@ -119,7 +119,6 @@ def sql_find_game(default_nick, args)
 end
 
 def sql_show_game(default_nick, args)
-  original_args = args.dup
   query_group = sql_parse_query(default_nick, args)
   query_group.with_context do
     q = query_group.primary_query
@@ -168,7 +167,6 @@ def sql_exec_query(num, q, lastcount=nil)
   return sql_random_row(q) if q.random_game?
 
   origindex = num
-  dbh = sql_db_handle
 
   # -1 is the natural index 0, -2 = 1, etc.
   num = -num - 1
@@ -229,7 +227,7 @@ QUERY
   end
   return Sql::ResultSet.empty(q) unless index
   q.with_contexts {
-    return sql_game_by_id(id, index, count, q)
+    return sql_game_by_id(id, index + 1, count, q)
   }
 end
 

@@ -30,6 +30,9 @@ $ rm dat/user_commands.db
 
 !lg . win !win ::= No games for hyperbolic (win !win).
 
+# Random game number test:
+!lg * gid=meneril:cdo:20071006235624S -random ::~ 1. meneril the Footpad
+
 !help badcommand ::~ Unknown command
 
 !nick ivowin (win) Ivo
