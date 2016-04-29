@@ -49,7 +49,7 @@ sources:
     logs:
       - '{allgames,milestones}-0.{3,4,5,6}.txt'
       - '{allgames,milestones}{,-spr}-0.7.txt'
-      - '{allgames,milestones}-{0.16,0.17}.txt*'
+      - '{allgames,milestones}-{0.16,0.17,0.18}.txt*'
       - '{allgames,milestones}{,-spr,-zd}-0.{8,10,11,12,13,14,15}.txt*'
       - '{allgames,milestones}{,-spr,-zd}-svn.txt*'
     morgues:
@@ -115,7 +115,7 @@ sources:
       - clan
     base: http://underhound.eu:81/crawl/meta
     logs:
-      - '{0.16,0.17}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18}/{logfile,milestones}{,-sprint}*'
       - '{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
       - http://underhound.eu:81/crawl/morgue
@@ -178,7 +178,7 @@ sources:
     base: http://crawl.xtahua.com/crawl/meta
     logs:
       - '{git,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.16,0.17}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18}/{logfile,milestones}{,-sprint}*'
     morgues:
       - http://crawl.xtahua.com/crawl/morgue
     ttyrecs:
@@ -188,7 +188,7 @@ sources:
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
       - '{trunk,0.14}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.15,0.16,0.17}/{logfile,milestones}*'
+      - '{0.15,0.16,0.17,0.18}/{logfile,milestones}*'
     morgues:
       - [ 'lld.*/(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
       - http://lazy-life.ddo.jp:8080/morgue
@@ -207,7 +207,7 @@ sources:
   - name: cjr
     base: http://www.jorgrun.rocks/meta/
     logs:
-      - '{0.17,git}/{milestones,logfile}{,-sprint,-zotdef}'
+      - '{0.17,0.18,git}/{milestones,logfile}{,-sprint,-zotdef}'
     morgues:
       - http://www.jorgrun.rocks/morgue
     ttyrecs:
