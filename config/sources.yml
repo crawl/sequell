@@ -207,7 +207,7 @@ sources:
   - name: cjr
     base: http://www.jorgrun.rocks/meta/
     logs:
-      - '{0.17,0.18,git}/{milestones,logfile}{,-sprint,-zotdef}'
+      - '{0.17,0.18,git}/{milestones,logfile}{,-sprint,-zotdef}*'
     morgues:
       - http://www.jorgrun.rocks/morgue
     ttyrecs:
