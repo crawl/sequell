@@ -205,10 +205,10 @@ sources:
       - https://crawl.project357.org/ttyrec
 
   - name: cjr
-    base: http://www.jorgrun.rocks/meta/
+    base: https://crawl.jorgrun.rocks/meta
     logs:
       - '{0.17,0.18,git}/{milestones,logfile}{,-sprint,-zotdef}*'
     morgues:
-      - http://www.jorgrun.rocks/morgue
+      - https://crawl.jorgrun.rocks/morgue
     ttyrecs:
-      - http://www.jorgrun.rocks/ttyrec
+      - https://crawl.jorgrun.rocks/ttyrec
