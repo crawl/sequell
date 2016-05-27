@@ -54,7 +54,7 @@ sub output {
     }
 
     print $prefix . $Helper::GIT_BROWSER_URL .
-      $filename . (defined $lines ? '#l' . $lines : "") .
+      $filename . (defined $lines ? '#L' . $lines : "") .
 	    "\n";
 } # }}}
 
