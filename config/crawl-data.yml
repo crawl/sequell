@@ -1077,6 +1077,8 @@ milestone-types:
   - death
   - begin
   - sacrifice
+  - ancestor.class
+  - ancestor.special
 
 milestone-aliases:
   god.abandon: god.renounce
