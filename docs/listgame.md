@@ -1540,7 +1540,7 @@ Examples
 
 `!lg * win min=turn`                Fastest win (turncount)
 
-`!lg * xl>20 min=turn`              Fastest win (turncount) for characters with
+`!lg * win xl>20 min=turn`          Fastest win (turncount) for characters with
                                     XL>20.
 
 `!lm * rune s=god`                  Summary of gods worshipped at the time of
