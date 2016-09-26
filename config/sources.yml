@@ -168,6 +168,7 @@ sources:
       - meta/abyssrun/{logfile,milestones}*: abyssrun
       - meta/orcs_and_elves/{logfile,milestones}*: orcs-and-elves
       - meta/combo_god/{logfile,milestones}*: combo-god
+      - meta/adrenaline_rush/{logfile,milestones}*: adrenaline-rush
     morgues:
       - http://crawl.berotato.org/crawl/morgue
     ttyrecs:
