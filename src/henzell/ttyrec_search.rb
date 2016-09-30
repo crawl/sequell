@@ -49,8 +49,7 @@ module Henzell
     def ttyrecs
       require 'httplist'
       all_ttyrecs =
-        HttpList::find_files(self.user_ttyrec_urls, /[.]ttyrec/, tty_end) ||
-        [ ]
+        HttpList::find_files(self.user_ttyrec_urls, /[.]ttyrec/, tty_end) || [ ]
       all_ttyrecs = unique_ttyrecs(all_ttyrecs)
 
       first_ttyrec_before_start = nil

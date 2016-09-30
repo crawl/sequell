@@ -1,5 +1,7 @@
 #! /usr/bin/env ruby
 
+require 'cgi'
+
 # Fetch http directory listings from the web.
 module HttpList
   require 'date'
@@ -69,7 +71,7 @@ module HttpList
     self.each_match(file_regex, html) do |m|
       # Remove leading ./
       file = m[1].sub(%r{^[.]/}, '')
-      files << file if file =~ regex
+      files << CGI.unescape(file) if file =~ regex
     end
     files
   end
