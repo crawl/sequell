@@ -134,9 +134,16 @@ sub db_timestamp_stale {
   !$canary_time || $datafiles_newest_time gt $canary_time
 }
 
+sub seqdb {
+  my $cmdline = shift;
+  print STDERR "[EXEC] seqdb $cmdline\n";
+  system("seqdb $cmdline")
+}
+
 sub db_reset() {
   announce("Rebuilding schema for $DBNAME");
-  system("seqdb --db $DBNAME resetdb --force");
+  seqdb("--db $DBNAME resetdb --force")
+    and die "failed to reset db";
 
   with_db {
     my $dbh = shift;
@@ -150,13 +157,13 @@ CREATE_CANARY
 
 sub db_load_data() {
   announce("Loading data into $DBNAME");
-  system("seqdb --db $DBNAME load --force-source-dir $DATADIR") and
+  seqdb("--db $DBNAME load --force-source-dir $DATADIR") and
     die "Couldn't load data into $DBNAME: $!\n";
 }
 
 sub db_create_indexes() {
   announce("Creating indexes for $DBNAME");
-  system("seqdb --db $DBNAME create-indexes") and
+  seqdb("--db $DBNAME create-indexes") and
     die "Couldn't create indexes for $DBNAME: $!\n";
 }
 
