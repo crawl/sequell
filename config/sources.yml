@@ -137,7 +137,7 @@ sources:
     base: http://webzook.net/soup
     logs:
       - '0.16/{logfile,milestones}-old'
-      - '{0.13,0.14,0.15,0.16,0.17,0.18,trunk}/{logfile,milestones}*'
+      - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,trunk}/{logfile,milestones}*'
     morgues:
       - ['cwz.*/trunk', 'http://webzook.net/soup/morgue/trunk']
       - ['cwz.*/(\d+[.]\d+)', 'http://webzook.net/soup/morgue/$1']
@@ -191,7 +191,7 @@ sources:
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
       - '{trunk,0.14}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.15,0.16,0.17,0.18}/{logfile,milestones}*'
+      - '{0.15,0.16,0.17,0.18,0.19}/{logfile,milestones}*'
     morgues:
       - [ 'lld.*/(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
       - http://lazy-life.ddo.jp:8080/morgue
@@ -201,7 +201,7 @@ sources:
   - name: cpo
     base: https://crawl.project357.org
     logs:
-      - dcss-{milestones,logfiles}-{trunk,0.15,0.16,0.17,0.18,combo_god}*
+      - dcss-{milestones,logfiles}-{trunk,0.15,0.16,0.17,0.18,0.19,combo_god}*
     morgues:
       - https://crawl.project357.org/morgue
     ttyrecs:
