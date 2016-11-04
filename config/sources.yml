@@ -49,7 +49,7 @@ sources:
     logs:
       - '{allgames,milestones}-0.{3,4,5,6}.txt'
       - '{allgames,milestones}{,-spr}-0.7.txt'
-      - '{allgames,milestones}-{0.16,0.17,0.18}.txt*'
+      - '{allgames,milestones}-{0.16,0.17,0.18,0.19}.txt*'
       - '{allgames,milestones}{,-spr,-zd}-0.{8,10,11,12,13,14,15}.txt*'
       - '{allgames,milestones}{,-spr,-zd}-svn.txt*'
     morgues:
@@ -115,7 +115,7 @@ sources:
       - clan
     base: http://underhound.eu:81/crawl/meta
     logs:
-      - '{0.16,0.17,0.18}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19}/{logfile,milestones}{,-sprint}*'
       - '{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
       - http://underhound.eu:81/crawl/morgue
@@ -210,7 +210,7 @@ sources:
   - name: cjr
     base: https://crawl.jorgrun.rocks/meta
     logs:
-      - '{0.17,0.18,git}/{milestones,logfile}{,-sprint,-zotdef}*'
+      - '{0.17,0.18,0.19,git}/{milestones,logfile}{,-sprint,-zotdef}*'
     morgues:
       - https://crawl.jorgrun.rocks/morgue
     ttyrecs:
