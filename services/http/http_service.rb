@@ -10,6 +10,7 @@ require 'services/throttle'
 require 'services/learndb'
 require 'services/listgame'
 require 'services/crawl_build'
+require 'services/update_sequell'
 require 'json'
 
 $LG_THROTTLE = Services::RequestThrottle.new(5)
@@ -33,6 +34,12 @@ end
 post '/crawl-build/' do
   $BUILD_DEBOUNCE.debounce {
     Services::CrawlBuild.rebuild
+  }
+end
+
+post '/sequell-update/' do
+  $BUILD_DEBOUNCE.debounce {
+    Services::UpdateSequell.run
   }
 end
 
