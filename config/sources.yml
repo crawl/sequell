@@ -171,6 +171,7 @@ sources:
       - meta/adrenaline_rush/{logfile,milestones}*: adrenaline-rush
       - meta/basajaun/{logfile,milestones}*: basajaun
       - meta/thorn_god/{logfile,milestones}*: thorn-god
+      - meta/councilgod/{logfile,milestones}*: council-god
     morgues:
       - http://crawl.berotato.org/crawl/morgue
     ttyrecs:
