@@ -172,6 +172,7 @@ sources:
       - meta/basajaun/{logfile,milestones}*: basajaun
       - meta/thorn_god/{logfile,milestones}*: thorn-god
       - meta/councilgod/{logfile,milestones}*: council-god
+      - meta/frogs/{logfile,milestones}*: frogs
     morgues:
       - http://crawl.berotato.org/crawl/morgue
     ttyrecs:
