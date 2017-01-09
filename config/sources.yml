@@ -171,6 +171,7 @@ sources:
       - meta/adrenaline_rush/{logfile,milestones}*: adrenaline-rush
       - meta/basajaun/{logfile,milestones}*: basajaun
       - meta/thorn_god/{logfile,milestones}*: thorn-god
+      - meta/dpegs_dynamic_monsters/{logfile,milestones}*: dynamic-monsters
       - meta/councilgod/{logfile,milestones}*: council-god
       - meta/frogs/{logfile,milestones}*: frogs
     morgues:
