@@ -160,9 +160,14 @@ sub known_orc {
   $ORCS{$name}
 }
 
+sub player_ghost {
+  my $name = shift;
+  $name =~ /'s? ghost$/
+}
+
 sub possible_pan_lord {
   my $name = shift;
-  !/^(?:an?|the) / && !crawl_unique($name) && !known_orc($name)
+  !/^(?:an?|the) / && !crawl_unique($name) && !known_orc($name) && !player_ghost($name)
 }
 
 sub canonical_god_name {
