@@ -113,14 +113,14 @@ sources:
     aliases:
       - cln
       - clan
-    base: http://underhound.eu:81/crawl/meta
+    base: https://underhound.eu:81/crawl/meta
     logs:
       - '{0.16,0.17,0.18,0.19}/{logfile,milestones}{,-sprint}*'
       - '{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
-      - http://underhound.eu:81/crawl/morgue
+      - https://underhound.eu:81/crawl/morgue
     ttyrecs:
-      - http://underhound.eu:81/crawl/ttyrec
+      - https://underhound.eu:81/crawl/ttyrec
 
   - name: ckr
     base: http://kr.dobrazupa.org
