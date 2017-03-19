@@ -964,6 +964,12 @@ field-input-transforms: &inputtransforms
     regexp-replace:
       - ["(?i)^head$", ""]
       - ["^crawl-.*", ""]
+  god:
+    string-replace:
+      - [Ieoh Jian, Wu Jian]
+  race:
+    string-replace:
+      - [Barachian, Barachi]
   crace:
     source: race
     regexp-replace:
