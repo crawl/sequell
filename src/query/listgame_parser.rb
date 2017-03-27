@@ -13,15 +13,12 @@ module Query
         ::Grammar::QueryBody.new.parse(
           fragment.to_s,
           reporter: Parslet::ErrorReporter::Deepest.new)
-      debug{"Fragment raw_parse: #{raw_parse.inspect}"}
+      debug{"Fragment '#{fragment.to_s}' raw_parse: #{raw_parse.inspect}"}
       ast = AST::ASTBuilder.new.apply(raw_parse)
-      #debug{"Fragment AST: #{ast.inspect}"}
       if ast.is_a?(Hash)
         raise "Could not understand fragment '#{query_text}'. This is a bug."
       end
-      ast = AST::ASTTranslator.apply(ast)
-      #debug{"Fragment translated AST: #{ast.inspect}"}
-      ast
+      AST::ASTTranslator.apply(ast)
     rescue Parslet::ParseFailed => error
       raise("Broken query near '" +
         fragment.to_s[error_place(error.cause)..-1] + "'")
@@ -42,7 +39,7 @@ module Query
           ::Grammar::Query.new.parse(
             query_text,
             reporter: Parslet::ErrorReporter::Deepest.new)
-        debug{"raw_parse: #{raw_parse.inspect}"}
+        debug{"Query '#{query_text}': raw_parse: #{raw_parse.inspect}"}
 
         ast = AST::ASTBuilder.new.apply(raw_parse)
         if ast.is_a?(Hash)

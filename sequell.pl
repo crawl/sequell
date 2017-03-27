@@ -56,6 +56,7 @@ my $port           = $CONFIG{irc_port} || 6667;
 my @CHANNELS         = Henzell::Config::array('channels');
 
 binmode STDOUT, ':utf8';
+binmode STDERR, ':utf8';
 
 Henzell::Utils::lock(verbose => 1,
                      lock_name => $ENV{HENZELL_LOCK} || $CONFIG{lock_name});
