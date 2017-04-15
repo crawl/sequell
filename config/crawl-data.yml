@@ -373,7 +373,8 @@ species:
   El: Elf*
   Fe: Felid
   Gh: Ghoul
-  Gn: Gnome*
+  Gm: Gnome*
+  Gn: Gnoll
   Ha: Halfling
   Hu: Human
   Ke: Kenku*
@@ -953,29 +954,44 @@ milestone-verb-mappings:
   enter: br.enter
   branch-finale: br.end
 
+# field input transforms are applied in sequence to xlog values on load
 field-input-transforms: &inputtransforms
-  sk:
-    # String replacements must match the full value:
-    string-replace:
-      - [Translocation, Translocations]
-      - [Transmutation, Transmutations]
-      - [Transmigration, Transmutations]
-  explbr:
-    regexp-replace:
-      - ["(?i)^head$", ""]
-      - ["^crawl-.*", ""]
-  god:
-    string-replace:
-      - [Ieoh Jian, Wu Jian]
-  race:
-    string-replace:
-      - [Barachian, Barachi]
-  crace:
-    source: race
-    regexp-replace:
-      - [".*(Draconian)", "$1"]
-      - [Grotesk, Gargoyle]
-      - [Kenku, Tengu]
+  - sk:
+      # String replacements must match the full value:
+      string-replace:
+        - [Translocation, Translocations]
+        - [Transmutation, Transmutations]
+        - [Transmigration, Transmutations]
+  - explbr:
+      regexp-replace:
+        - ["(?i)^head$", ""]
+        - ["^crawl-.*", ""]
+  - god:
+      string-replace:
+        - [Ieoh Jian, Wu Jian]
+  - race:
+      string-replace:
+        - [Barachian, Barachi]
+        - [Bultungin, Gnoll]
+  - crace:
+      source: race
+      regexp-replace:
+        - [".*(Draconian)", "$1"]
+        - [Grotesk, Gargoyle]
+        - [Kenku, Tengu]
+  - char:
+      if-match:
+        - field: race
+          equal: Gnome
+      regexp-replace:
+        - ['^Gn', 'Gm']
+  - char:
+      if-match:
+        - field: crace
+          equal: Gnoll
+      regexp-replace:
+        - ['^Bu', 'Gn']
+
 
 field-transforms:
   crace:
