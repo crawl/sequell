@@ -180,7 +180,6 @@ sub _command_processor {
 
 sub command_raw_output {
   my ($self, $m) = @_;
-  return if $$m{sibling};
   $m = $self->_message_metadata($m);
 
   my $command = $$m{command};
