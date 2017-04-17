@@ -134,13 +134,13 @@ sources:
       - http://kr.dobrazupa.org/ttyrecs
 
   - name: cwz
-    base: http://webzook.net/soup
+    base: https://webzook.net/soup
     logs:
       - '0.16/{logfile,milestones}-old'
       - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,trunk}/{logfile,milestones}*'
     morgues:
-      - ['cwz.*/trunk', 'http://webzook.net/soup/morgue/trunk']
-      - ['cwz.*/(\d+[.]\d+)', 'http://webzook.net/soup/morgue/$1']
+      - ['cwz.*/trunk', 'https://webzook.net/soup/morgue/trunk']
+      - ['cwz.*/(\d+[.]\d+)', 'https://webzook.net/soup/morgue/$1']
 
   - name: cbro
     aliases:
