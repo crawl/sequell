@@ -401,7 +401,7 @@ sub react {
   my ($self, $m) = @_;
 
   return if $self->irc_auth_process($m);
-  return if $$m{self} || $$m{authenticator} || $$m{sibling} || !$$m{body};
+  return if $$m{self} || $$m{authenticator} || !$$m{body};
   $self->_refresh();
   $self->_apply_relay($m);
   return if $$m{needauth};
