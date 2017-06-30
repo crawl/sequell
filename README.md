@@ -65,7 +65,7 @@ Dependencies
 
   2. Set up the database:
 
-     Build Sequell's DB ops tool using `make` (this requires Go 1.3):
+     Build Sequell's DB ops tool using `make` (this requires Go 1.3+):
 
           $ make
 

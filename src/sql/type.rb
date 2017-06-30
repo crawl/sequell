@@ -35,7 +35,9 @@ module Sql
     attr_accessor :unit
 
     def initialize(type_string)
-      @type_string = type_string.sub(/(?:.*?)([A-Z]*[\W]*)$/, '\1')
+      type_match = /(?:.*?)(?<type>[A-Z]*[\W]*)(?<qualifiers>(?:\[\w+\])*)$/.match(type_string)
+      @type_string = type_match['type']
+      @qualifiers = type_match['qualifiers']
     end
 
     def type

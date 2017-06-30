@@ -32,6 +32,10 @@ module Sql
       @type ||= Type.type(@decorated_name)
     end
 
+    def unique?
+      @decorated_name.index('[uuid]')
+    end
+
     # Foreign key into a table.
     def reference?
       @decorated_name =~ /\^/
@@ -77,7 +81,7 @@ module Sql
     end
 
     def strip_decoration(name)
-      name.sub(/[A-Z]*[\W]*$/, '')
+      name.sub(/[A-Z]*[\W]*(?:\[\w+\])*$/, '')
     end
   end
 end

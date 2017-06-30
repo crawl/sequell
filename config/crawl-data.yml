@@ -796,6 +796,7 @@ logrecord-fields-with-type:
   - idIB%*&
   - offsetIB*&
   - game_key?^
+  - hash?^[uuid]
   - file^
   - alpha!
   - src?^
@@ -882,6 +883,7 @@ logrecord-fields-with-type:
 milestone-fields-with-type:
   - idI%
   - game_key?^
+  - hash?^[uuid]
   - offsetIB*
   - file^
   - alpha!
