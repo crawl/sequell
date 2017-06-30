@@ -57,3 +57,4 @@ src/github.com
 server-xlogs/*
 vendor/
 .bundle
+Gemfile.lock
