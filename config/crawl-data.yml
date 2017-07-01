@@ -930,7 +930,7 @@ milestone-fields-with-type:
   - verb?^
   - nounS?^
   - milestone^
-  - ntvI?
+  - ntvI
   - oplace^
   - tiles!
   - goldI
