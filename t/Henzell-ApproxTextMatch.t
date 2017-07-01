@@ -6,7 +6,7 @@ use lib 'lib';
 
 use Henzell::ApproxTextMatch;
 
-my $matcher = Henzell::ApproxTextMatch->new('coc', [ 'cow', 'cows', 'kine', 'death magic' ]);
+my $matcher = Henzell::ApproxTextMatch->new('coc', [ 'cow', 'cows', 'kine', 'death magic' ], './tests/test-words');
 
 is_deeply([$matcher->fuzz_levenshtein('coc')], ['coc', 'cow'], 'Fuzz atom Levenshtein');
 is_deeply([$matcher->fuzz_stemming('cows')], ['cow', 'cows'], 'Stemming fuzz');
