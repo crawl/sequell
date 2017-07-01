@@ -19,7 +19,7 @@ sub _echo_service {
   my $self = shift;
   if (!$self->{_iecho}) {
     $self->{_echopid} =
-      open2(my $in, my $out, $self->_root() . '/commands/echo-pipe.rb')
+      open2(my $in, my $out, 'bundle exec ' . $self->_root() . '/commands/echo-pipe.rb')
         or die "Couldn't spawn echo service\n";
     $self->{_iecho} = $in;
     $self->{_oecho} = $out;
