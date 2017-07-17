@@ -690,6 +690,10 @@ Indirect killer: If the killer is a summoned monster or a band member,
 this field names the monster that summoned it, or its band leader.
 Example: ikiller=Mara ckiller=a player illusion killer=Johan's illusion
 
+`cikiller`:
+Canonicalised indirect killer: Canonicalise killers at the same time
+as checking for indirect killers.
+
 `kpath`:
 In the case where killer!=ikiller, kpath specifies the full blame chain
 accounting for the presence of the killer.
