@@ -211,10 +211,10 @@ sources:
       - https://crawl.project357.org/ttyrec
 
   - name: cjr
-    base: http://crawl.jorgrun.rocks/meta
+    base: https://crawl.jorgrun.rocks/meta
     logs:
       - '{0.17,0.18,0.19,0.20,git}/{milestones,logfile}{,-sprint,-zotdef}*'
     morgues:
-      - http://crawl.jorgrun.rocks/morgue
+      - https://crawl.jorgrun.rocks/morgue
     ttyrecs:
-      - http://crawl.jorgrun.rocks/ttyrec
+      - https://crawl.jorgrun.rocks/ttyrec
