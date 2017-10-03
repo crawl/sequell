@@ -88,7 +88,8 @@ sources:
       - http://dobrazupa.org/morgue
     ttyrecs:
       - https://termcast.shalott.org/ttyrecs/dobrazupa.org/ttyrec
-      - http://dobrazupa.org/ttyrec
+      # Disable this until dobrazupa.org comes back online.
+      # - http://dobrazupa.org/ttyrec
 
   - name: csn
     base: http://crawlus.somatika.net
