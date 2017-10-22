@@ -1581,6 +1581,9 @@ Examples
 
 `!lg * !boring s=day(end) -graph`   Graph games by date completed.
 
+`!lg * won s=species% start>${now()-interval('30d')}`    Show won species, ordered
+                                  by percentage, from the last 30 days.
+
 ## API
 
 See [the listgame API](api.md#listgame).
