@@ -130,3 +130,26 @@ which you run Sequell*. You can alternatively specify the rc filename
 as a command-line option with:
 
     perl sequell.pl --rc=some/path/to/myweirdrc
+
+
+Running Sequell queries without connecting to IRC
+-------------------------------------------------
+
+If you want to test new commands or run `!lg` queries on a local Sequell
+database without involving IRC, you can use the `scripts/runcmd.pl` script for
+an interactive Sequell REPL with no IRC strings attached. It's a good idea to
+run it via rlwrap for command-line editing and history support:
+
+    $ rlwrap ./scripts/runcmd.pl
+    Sequell command runner
+    > !lg *
+    7941444. foo the Warrior (L19 MfGl of Okawaru), mangled by a naga ritualist (a +3 dagger of venom) on Snake:4 (snake_hunt) on 2017-10-22 18:04:42, with 217416 points after 31169 turns and 0:53:26.
+
+runcmd.pl assumes a default IRC nick of `anon`, and a default IRC channel of
+`##crawl`, for commands that expect to see a nick/channel. You may override
+these defaults with the NICK/CHANNEL environment variables.
+
+    $ NICK=won CHANNEL='##crawl-dev' rlwrap ./scripts/runcmd.pl
+    > .echo $nick in $channel
+    Sequell command runner
+    won in ##crawl-dev

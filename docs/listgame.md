@@ -1167,6 +1167,7 @@ Examples:
     !cmd !lgz !lg * zotdef
 
 These shortcut commands can be used as:
+
     !lgs
     !lgz
     !lgs @person

@@ -18,7 +18,7 @@ use utf8;
 do 'sqllog.pl';
 do 'game_parser.pl';
 
-my $DEFAULT_NICK = $ENV{NICK} || 'greensnark';
+my $DEFAULT_NICK = $ENV{NICK} || 'anon';
 my $CHANNEL = $ENV{CHANNEL} || '##crawl';
 my $CONFIG = $ENV{RC} || 'rc/sequell.rc';
 
@@ -77,7 +77,7 @@ if (@ARGV > 0) {
   exit 0;
 }
 
-print "Henzell command runner\n";
+print "Sequell command runner\n";
 while ( my $cmd = do { print "> "; <STDIN> } ) {
   runcmd($cmd);
 }
