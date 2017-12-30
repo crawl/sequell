@@ -16,6 +16,7 @@ GEM
     deprecated (2.0.1)
     domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
+    gserver (0.0.1)
     haml (5.0.4)
       temple (>= 0.8.0)
       tilt
@@ -59,6 +60,7 @@ PLATFORMS
 DEPENDENCIES
   dbd-pg
   dbi
+  gserver
   haml
   json
   parslet
@@ -70,4 +72,4 @@ DEPENDENCIES
   sqlite3
 
 BUNDLED WITH
-   1.15.1
+   1.16.1

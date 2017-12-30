@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'gserver'
 gem 'sqlite3'
 gem 'dbi'
 gem 'dbd-pg'

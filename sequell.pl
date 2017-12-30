@@ -35,7 +35,7 @@ GetOptions("daemon!" => \$daemon,
 
 $ENV{LC_ALL} = 'en_US.UTF-8';
 $ENV{HENZELL_ROOT} = getcwd();
-$ENV{RUBYOPT} = "-rubygems -I" . File::Spec->catfile(getcwd(), 'src');
+$ENV{RUBYOPT} = "-I" . File::Spec->catfile(getcwd(), 'src');
 
 local $SIG{PIPE} = 'IGNORE';
 local $SIG{CHLD} = 'IGNORE';

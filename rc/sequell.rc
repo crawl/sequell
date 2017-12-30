@@ -11,5 +11,5 @@ preferred_sigil: "!"
 
 startup_services:
   - name: Sequell HTTP Service
-    command: rackup -p 29880 config.ru
+    command: bundle exec rackup -p 29880 config.ru
     directory: services/http
