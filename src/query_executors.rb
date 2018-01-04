@@ -30,17 +30,23 @@ module QueryExecutors
     end
 
     def single_value
-      sql_db_handle.get_first_value(@query_string, @query_parameters)
+      SQLConnection.with_connection { |c|
+        c.get_first_value(@query_string, @query_parameters)
+      }
     end
 
     def each_row
-      sql_db_handle.execute(@query_string, @query_parameters) do
-        yield
+      SQLConnection.with_connection do |c|
+        c.execute(@query_string, @query_parameters) do
+          yield
+        end
       end
     end
 
     def do
-      sql_db_handle.do(@query_string, @query_parameters)
+      SQLConnection.with_connection do |c|
+        c.do(@query_string, @query_parameters)
+      end
     end
   end
 

@@ -28,35 +28,34 @@ $ rm dat/user_commands.db
 !nick LordSlothN LordSloth ::= Mapping lordslothn => lordsloth
 !nick -rm LordSlothN ::= Deleted lordslothn => lordsloth
 
-!lg . win !win ::= No games for hyperbolic (win !win).
+!lg Yermak win !win ::= No games for Yermak (win !win).
 
 # Random game number test:
-!lg * gid=meneril:cdo:20071006235624S -random ::~ 1. meneril the Footpad
+!lg * gid=Yermak:cxc:20171118002011S -random ::~ 1. Yermak the Hoplite
 
 !help badcommand ::~ Unknown command
 
-!nick ivowin (win) Ivo
-!lg ivowin ::~ 4. Ivo the Swordmaster
-!nick ivowin ()
-!lg ivowin ::~ 5100. Ivo the Covered
+!nick yermakwin (win) Yermak
+!lg yermakwin ::~ 22. Yermak the Hoplite
+!nick yermakwin ()
+!lg yermakwin ::~ 33. Yermak the Slinger
 !nick zap (quit)
 !lg zap
 !nick zap () ::= Deleted zap => (quit)
 
-!lg greensnark x=sc fmt:'$(nvl ${x[1]:-moo})' ::= moo
+!lg Yermak x=sc fmt:'$(nvl ${x[1]:-moo})' ::= moo
 
 !lg * turn=0 -log
 !lg * dur<0:00:01
 !lg * dur<1
-!lg * max=cv x=cv ::~ cv=0.12-a
+!lg * max=cv x=cv ::~ cv=0.22-a
 
-!lm Kellhus br.enter=tomb -game ::~ Kellhus the Farming Archmage.*slain
-!lm elliptic 1 -log
+!lm Aryth br.enter=tomb -game ::~ Aryth the Talismancer.*blasted by an orb of fire
+!lm Aryth 1 -log
 
-!lg * win s=name -json ::~ \["hyperbolic",82.*"78291",61
-!lg * win -count:10 ::~ : jeanjacques L24 GhFi \(cdo\)
-!lg * win -count:1 max=sc x=sc ::= 1/1039 games for * (win): hyperbolic L27 DEFE (cdo) [sc=35019863]
-
+!lg * win s=name -json ::~ \["theanonym",25.*"Yermak",22
+!lg * win -count:10 ::~ : Sergey L27 MuNe \(cxc\)
+!lg * win -count:1 max=sc x=sc ::= 1/310 games for * (win): Charly L27 FoEE (cxc) [sc=56140783]
 !ftw warper :: ??Wr
 !apt Gr ::~ Gr: Fighting: \d
 !apt Gargoyle ::~ Gr: Fighting: \d
@@ -88,16 +87,15 @@ $ rm dat/user_commands.db
 .echo Lower: $(lower LoWeR) ::~ Lower: lower
 .echo Sub: x$(sub 3 5 abcdef)y ::~ xdey
 
-.echo HEFE: $(!lm * HEFE s=name x=max(xl) format:"${.}") ::~ BirdoPrey
-
-!cmd !spfoo !lg * SpEn|SpSk|SpFi s=char join:"|"
+.echo HEFE: $(!lm * HEFE s=name x=max(xl) format:"${.}") ::~ HEFE: sewshi
 
 !kw alive !ktyp
-!cmd !srcfixup => .echo $(replace cao CAO $(replace cdo CDO $(replace cszo CSZO $*)))
+!cmd !srcfixup => .echo $(replace cxc CXC $(replace cszo CSZO $*))
 !cmd .locate => !lm ${*:-.} alive fmt:"${*:-${user}} was last seen on \$(!srcfixup $src) ($name, L$xl $char of ${god:-No God})." stub:"Failed to locate ${*:-${user}}."
-.locate greensnark ::~ greensnark was last seen on CDO
+.locate pyroka ::~ pyroka was last seen on CXC
 
-!lg * char=$(!spfoo) s=char ::~ 4519x SpEn, 40x SpFi, 29x SpSk
+!cmd !spfoo !lg * SpEn|SpSk|SpFi s=char join:"|"
+!lg * char=$(!spfoo) s=char ::~ 388x SpEn, 94x SpSk
 
 E !lg * fe ::~ \(Felid\).*\(Fire Elementalist\)
 !lg * gr
@@ -111,10 +109,10 @@ E !lg * fe ::~ \(Felid\).*\(Fire Elementalist\)
 
 !lg * x=cdist(name)
 
-!lg * win s=char x=+avg(turn) ::~ : 2x MuCj
-!lg * win s=char x=-avg(turn) ::~ : NaWn
-!lg * win s=char x=avg(xl),+avg(turn) ::~ : 2x MuCj
-!lg * win s=char x=avg(xl),-avg(turn) ::~ : NaWn
+!lg * win s=char x=+avg(turn) ::~ : GrSk
+!lg * win s=char x=-avg(turn) ::~ : OpEE
+!lg * win s=char x=avg(xl),+avg(turn) ::~ : GrSk
+!lg * win s=char x=avg(xl),-avg(turn) ::~ : OpEE
 
 .echo 0=$(rand 1) ::~ 0=0
 .echo 5=$(rand 5 5)  ::~ 5=5
@@ -133,11 +131,11 @@ E !lg * fe ::~ \(Felid\).*\(Fire Elementalist\)
 
 .echo '$(!lg)' ::~ '\$\(!lg\)'
 .echo \$(!lg)  ::~ \$\(!lg\)
-!lg * trog fmt:"${name} of ${god:-No God}" ::~ Gandelf of Trog
+!lg * trog fmt:"${name} of ${god:-No God}" ::~ puck of Trog
 !cmd report !lg * fmt:"${name} of ${god:-No God}"
-!report trog ::~ Gandelf of Trog
+!report trog ::~ puck of Trog
 
-!lg * cv=0.9|0.11-a s=cv ::~ 27275x 0.11-a, 4806x 0.9
+!lg * cv=0.18-a|0.21-a s=cv ::~ 9995x 0.18-a, 8185x 0.21-a
 
 !kw foo defe
 E !kw foo foo
@@ -146,70 +144,69 @@ E !lg * killer=crazy yiuf ::~ No keyword 'yiuf'
 !lm * type=demonic rune
 !lg * troll air_elementalist
 !lg * high_elf fire_elementalist
-!lg * pale_draconian earth_elementalist ::~ Vyt the Geomancer
+!lg * white_draconian earth_elementalist ::~ Qrupt the Geomancer
 
-!lg @* ::~ Vesto the Covered
-!lg @. ::~ hyperbolic
+!lg @* ::~ KristoblXynda the Charmwright
+!lg @. ::~ Yermak the Slinger.*sky beast
 !won mikee x=cdist(char)
 .echo å ::~ å
 !lg * / ${tiles}
 !lg * / tiles
 
-!lg * x=turn,sc fmt:"$x; turn=${x[0]}, sc=${x[1]}" ::~ turn=449;sc=59; turn=449, sc=59
-!lg * x=avg(sc),max(sc) title:'' fmt:"avg.sc ${x[0]} max.sc ${x[1]}" ::~ avg.sc 26858.97 max.sc 35019863
-
-!lg * x=avg(sc),max(sc) ::~ avg\(sc\)=26858.97; max\(sc\)=35019863
+!lg * x=turn,sc fmt:"$x; turn=${x[0]}, sc=${x[1]}" ::~ turn=1596;sc=58; turn=1596, sc=58
+!lg * x=avg(sc),max(sc) title:'' fmt:"avg.sc ${x[0]} max.sc ${x[1]}" ::~ avg.sc 100911.69 max.sc 56140783
+!lg * x=avg(sc),max(sc) ::~ avg\(sc\)=100911.69; max\(sc\)=56140783
 
 !lg * x=$ part('cow:bar', ':', 1) $ ::~ part\('cow:bar',':',1\)=cow
-!lg elliptic x=kmap ::~ \[killermap=\]
+!lg Yermak kmap x=kmap ::~ \[killermap=swamp_old_school\]
 
 
 !kw playable:job ::!~ Jester
 
 !kw dragon => killer~~(dragon|draconian|drake|tiamat|xtahua)
 !kw recent cv>=0.11
-!lg * s=regexp_replace(name, 'Sebi', race + '!')
+!lg Yermak s=regexp_replace(name, 'Yermak', race + '!')
 !lm . abyss.enter recent s=lg:place x=cdist(gid) o=cdist(gid)
-!lg * map~~^hell_ ::~ hell_entry
+!lg * map~~^ice_cave ::~ ice_cave_small_necro
 !lg * x=${2+2} ::~ 2\+2=4
-!lg * x=sc fmt:"$x" ::~ sc=59
-!lg * fmt:"$name: $qualified_index" ::~ Vesto: 180017
-!lg * fmt:"$name: $qualified_index" -2 ::~ Gandelf: 180016/180017
+!lg * x=sc fmt:"$x" ::~ sc=58
+!lg * fmt:"$name: $qualified_index" ::~ KristoblXynda: 20000
+!lg * fmt:"$name: $qualified_index" -4 ::~ Paulus: 19997/20000
 
 !lg * x=${1+2} fmt:"$x" ::~ 1\+2=3
 E !lg * killer=tentacled monstrosity
 !cmd !puppet .echo $*
 !cmd %rc !puppet http://dobrazupa.org/rcfiles/crawl-${2:-git}/${1:-${user}}.rc
-%rc ::~ http://dobrazupa.org/rcfiles/crawl-git/hyperbolic.rc
+%rc ::~ http://dobrazupa.org/rcfiles/crawl-git/Yermak.rc
 %rc greensnark ::~ http://dobrazupa.org/rcfiles/crawl-git/greensnark.rc
 %rc . ::~ http://dobrazupa.org/rcfiles/crawl-git/..rc
 %rc greensnark 0.11 ::~ http://dobrazupa.org/rcfiles/crawl-0.11/greensnark.rc
 %rc greensnark 0.11 pow ::~ http://dobrazupa.org/rcfiles/crawl-0.11/greensnark.rc
 
 !cmd !testlg !lg ${1:-.} win s=name title:"Wins by ${name}"
-!testlg . ::~ Wins by hyperbolic
-!testlg elliptic ::~ Wins by elliptic
+!testlg . ::~ Wins by Yermak
+!testlg TacoSundae ::~ Wins by TacoSundae
 !testlg * ::~ Wins by *
 
-!cmd ell !lg * s=name / @${*:-.} win title:"Win ratio for $name" ?: N>80
-!ell ::~ Win ratio for hyperbolic
+!cmd ell !lg * s=name / @${*:-.} win title:"Win ratio for $name" ?: N>20
+!ell ::~ Win ratio for Yermak
 
 !cmd %rc !puppet http://dobrazupa.org/rcfiles/crawl-${2:-git}/${${1:-${user}}//./${user}}.rc
-%rc . ::~ http://dobrazupa.org/rcfiles/crawl-git/hyperbolic.rc
+%rc . ::~ http://dobrazupa.org/rcfiles/crawl-git/Yermak.rc
 
 !lg * won max=${end - start}
 !lg * won end>${start + interval('1y')} s=${end - start}
-!lg greensnark won x=avg(end-start) ::~ 18d
+!lg Yermak won x=avg(end-start) ::~ 7:59
 !lg *
 !lg * won urune<5 start>2012 max=turns
-!lg elliptic win turn<20000 -ttyrec
+!lg Yermak win turn<60000 -ttyrec
 
-!nick elynae elynae hyperelynae
-!lg * name=elynae s=name ::= 1702 games for * (name=elynae): 1702x Elynae
-!lg elynae s=name ::~ 1702x Elynae, 460x hyperelynae
+!nick theanonym theanonym Charly
+!lg * name=theanonym s=name ::= 134 games for * (name=theanonym): 134x theanonym
+!lg theanonym s=name ::~ 217 games for theanonym: 134x theanonym, 83x Charly
 
 !lg * won hp>0 min=${hp*1.0/turn}
-!lg * s=src x=max(cv) ::~ cdo [0.12-a]
+!lg * s=src x=max(cv) ::~ cxc [0.22-a]
 
 !kw recent cv>=0.11
 !lg * won aut>0 s=crace x=${avg(aut/turn)} o=${avg(aut/turn)}
@@ -228,13 +225,13 @@ E !lg . won x=runes
 
 !lm * time>20130101 s=char,name x=max(xl) ?: max(xl)>=15
 !lm * time>20130101 s=char,name x=max(xl) ?: max(xl)>=15 # Trailing comment test.
-!lm elliptic min=sc
+!lm Yermak min=sc
 !lg * win s=-name
 !lg * win s=name x=-max(sc)
 !lg * sp ev<${ac}
 E !lg * ce killer='elephant slug' -tv xl=max ::~ not an integer
 E !lg * ce killer=elephant_slug -tv xl=max ::~ not an integer
-E !lg jeanjacques !win XL>=25 s=killer x=xl ::~ non-aggregates
+E !lg yermak !win XL>=5 s=killer x=xl ::~ non-aggregates
 !lg * map=~grunt -tv
 !lg * x=${hp}
 !lg * x=${hp + ac}
@@ -253,9 +250,9 @@ E !lg * ${ac + ev} > 15
 !lg -3
 !lg . -2
 
-!won itsmu be
+!won yermak be
 
-!lm sebi type=~rune
+!lm ofeo type=~rune
 
 !lg * ktyp=quitting|leaving s=name
 !lg * killer =~kyrris
@@ -266,7 +263,7 @@ E !lg * ${ac + ev} > 15
 
 !lg * kaux=~holy max=dam x=dam
 
-!lm marvinpa drie type=zig.exit place=zig:27
+!lm * type=zig.exit place=zig:27
 
 !lm * type=zig.exit place=zig:27 s=game_id
 
@@ -331,7 +328,7 @@ E !lg * ${ac + ev} > 15
 
 !lg * won char=mdee -log
 
-!lm * gid=WasJordan:cdo:20101130144401S s=char ::~ 10x NaCK
+!lm * gid=Soeti:cxc:20180003101721S s=char ::~ 229x DsMo
 
 !lg * / win ?: N>1 ::~ games for \*.
 
@@ -339,12 +336,12 @@ E !lg * ${ac + ev} > 15
 
 !lg * won s=char x=min(start)
 
-!gamesby elliptic
+!gamesby Yermak
 
-!won elliptic 10
+!won Yermak 10
 
-!streak elliptic
-!streak elliptic be
+!streak Yermak
+!streak Yermak be
 
 # Game is not a Xom or a Nemelex or a 0.10 game
 !lg * !(xom|nemelex|0.10)
@@ -362,7 +359,7 @@ E !lg * ${ac + ev} > 15
 
 !lm * t9 won type=god.renounce x=cdist(gid)
 
-!lg @elliptic t s=name x=sum(dur)
+!lg @Yermak t s=name x=sum(dur)
 
 !kw boring quitting|leaving
 !kw bore boring
@@ -388,7 +385,7 @@ E !lg * ${ac + ev} > 15
 !lg * t s=god / win -graph
 
 
-!lg theglow win -ttyrec
+!lg Yermak win -ttyrec
 
 !lg * sc>0 s=log(sc) -graph
 !lg * s=ndayofweek(end) -graph
@@ -408,7 +405,7 @@ E !lg * s=trunc99(sc)
 
 !lg * char=hobe / won
 
-!lg * s=tiles ::~ 175371x false
+!lg * s=tiles ::~ 19293x true, 707x false
 !lg * s=length(name)
 !lg * x=max(length(name))
 !lg * win s=sc
@@ -434,7 +431,7 @@ E !lg * s=trunc99(sc)
 !lg * max=cv
 !lg * labyrinth
 
-!lg * win s=tiles,cv ::~ x false
+!lg * win s=tiles,cv ::~ 290x true \(163x 0.21-a
 !lg * x=max(dur)
 !lg undermind win s=dur
 !lg * Abyss:1
@@ -482,16 +479,16 @@ E !lg * s=trunc99(sc)
 
 !kw dying !(boring|winning)
 !lg * dying
-!lg * name=. ::~ hyperbolic
+!lg * name=. ::~ Yermak
 
 !lg * s=cls start>=20130101 / tiles
 
-!lm * !ktyp ::~ buki
+!lm * !ktyp ::~ pyroka
 !lg * status=berserk|hasted
 
 !lg * size(maxsk)=1
 !lg * win s=size(maxsk)
-!lg * maxsk=fi maxsk=~, ::~ jeanjacques
+!lg * maxsk=fi maxsk=~, ::~ Thaneod
 !kw nondead ((boring || winning))
 
 !lg * x=cdist(name) / won
@@ -506,10 +503,10 @@ E !lg * s=trunc99(sc)
 !lg * x=now()
 !lg * x=${now() - interval('1y')}
 !lg * cßo
-!lg * @@@elliptic ::~ elliptic the Archmage
+!lg * @@@Yermak ::~ Yermak the Slinger
 !kw t9
 !kw lava
 
-!lg * status=para,slow s=status ::~ 71x paralysed,slowed
+!lg * status=para,slow s=status ::~ 5x paralysed,exhausted
 
 .echo $(map (fn (_) "Hello ${_}!") a|b|c) ::~ Hello a! Hello b! Hello c!

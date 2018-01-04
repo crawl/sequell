@@ -1,8 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'sqlite3'
-gem 'dbi'
-gem 'dbd-pg'
+gem 'pg'
 gem 'parslet', '1.6.2'
 gem 'sinatra'
 gem 'rest-client'

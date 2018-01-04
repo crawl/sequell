@@ -4,7 +4,6 @@ if !ENV['HENZELL_SQL_QUERIES']
   raise Exception.new("sqlhelper: HENZELL_SQL_QUERIES is not set")
 end
 
-require 'dbi'
 require 'set'
 require 'yaml'
 
@@ -200,7 +199,9 @@ end
 
 def sql_count_rows_matching(q)
   STDERR.puts "Count: #{q.select_count} (#{q.values.inspect})" if DEBUG_HENZELL
-  sql_db_handle.get_first_value(q.select_count, *q.values).to_i
+  SQLConnection.with_connection do |c|
+    c.get_first_value(q.select_count, *q.values).to_i
+  end
 end
 
 def sql_random_row(q)
@@ -222,8 +223,11 @@ QUERY
   index = nil
   count = nil
   id = nil
-  sql_db_handle.execute(wrapped_random_query, *q.values) do |row|
-    index, count, id = row.to_a
+
+  SQLConnection.with_connection do |c|
+    c.execute(wrapped_random_query, *q.values) do |row|
+      index, count, id = row.to_a
+    end
   end
   return Sql::ResultSet.empty(q) unless index
   q.with_contexts {
@@ -231,14 +235,8 @@ QUERY
   }
 end
 
-def sql_each_row_matching(q, record_index=0, count=1)
-  query = q.select_all(true, record_index, count)
-  if DEBUG_HENZELL
-    STDERR.puts("SELECT query: #{query}, values: #{q.values.inspect}")
-  end
-  sql_db_handle.execute(query, *q.values) do |row|
-    yield row
-  end
+def sql_each_row_matching(q, record_index=0, count=1, &block)
+  sql_each_row_for_query(q.select_all(true, record_index, count), *q.values, &block)
 end
 
 def sql_each_row_for_query(query_text, *params)
@@ -246,8 +244,11 @@ def sql_each_row_for_query(query_text, *params)
     STDERR.puts("sql_each_row_for_query: #{query_text}, " +
                 "params: #{params.inspect}")
   end
-  sql_db_handle.execute(query_text, *params) do |row|
-    yield row
+
+  SQLConnection.with_connection do |c|
+    c.execute(query_text, *params) do |row|
+      yield row
+    end
   end
 end
 
@@ -309,8 +310,10 @@ end
 def logfile_names
   q = "SELECT file FROM logfiles;"
   logfiles = []
-  sql_db_handle.execute(q) do |row|
-    logfiles << row[0]
+  SQLConnection.with_connection do |c|
+    c.execute(q) do |row|
+      logfiles << row[0]
+    end
   end
   logfiles
 end

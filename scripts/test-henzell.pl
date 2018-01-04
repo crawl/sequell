@@ -16,7 +16,7 @@ use open qw/:std :encoding(UTF-8)/;
 $ENV{LEARNDB} = 'tmp/test.learn.db';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{HENZELL_TEST} = 'y';
-$ENV{RUBYOPT} = '-rubygems -Isrc';
+$ENV{RUBYOPT} = '-Isrc';
 $ENV{HENZELL_ALL_COMMANDS} = 'y';
 $ENV{PERL_UNICODE} = 'AS';
 $ENV{IRC_NICK_AUTHENTICATED} = 'y';
@@ -45,7 +45,7 @@ my @COMMAND_FILES = glob('config/commands-*.txt');
 my @FAILED_TESTS;
 my @OK_TESTS;
 
-my $TESTNICK = 'hyperbolic';
+my $TESTNICK = 'Yermak';
 
 my $TIMESTAMP_QUERY = <<QUERY;
 SELECT last_update FROM canary;
@@ -66,7 +66,7 @@ sub test_failed($$) {
 }
 
 sub datafiles() {
-  grep(m{/remote[.]}, glob("$DATADIR/*"))
+  grep(m{/test.remote[.]}, glob("$DATADIR/*"))
 }
 
 sub datafiles_newest_time() {
@@ -250,8 +250,8 @@ sub execute_cmd($) {
   Henzell::Cmd::execute_cmd($TESTNICK, shift)
 }
 
-sub execute_test($$) {
-  my ($test, $logf) = @_;
+sub execute_test($$$$) {
+  my ($test_index, $total_test_count, $test, $logf) = @_;
 
   if ($$test{shell}) {
     my $output = qx/$$test{shell} 2>&1/;
@@ -263,6 +263,7 @@ TESTREPORT
     return;
   }
 
+  print STDERR "> $test_index/$total_test_count: $$test{line}\n";
   my ($exitcode, $output, $cmd) = execute_cmd($$test{line});
   $output = Henzell::CommandService->handle_output($output, 1) || '';
   chomp $output;
@@ -348,8 +349,10 @@ sub run_tests() {
   my $test_count = grep(!$$_{shell}, @tests);
   announce "Running $test_count tests";
   open my $logf, '>', $TESTLOG or die "Can't write $TESTLOG: $!\n";
+
+  my $test_index = 0;
   for my $test (@tests) {
-    last if execute_test($test, $logf) && $FAILFAST;
+    last if execute_test(++$test_index, scalar(@tests), $test, $logf) && $FAILFAST;
   }
   test_summary($logf);
   test_summary(\*STDERR);

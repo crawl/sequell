@@ -1,4 +1,7 @@
 #!/usr/bin/python
+
+from __future__ import print_function
+
 import string, re, os, sys
 import os.path
 from glob import glob
@@ -140,5 +143,5 @@ def parse_argslist(argslist):
 
 def help(helpstring):
     if sys.argv[4]:
-        print helpstring
+        print(helpstring)
         sys.exit()

@@ -1,3 +1,4 @@
+require 'bigdecimal'
 require 'date'
 require 'sql/date'
 require 'sql/summary_group_formatter'
@@ -76,7 +77,7 @@ module Sql
 
     def add_count!(extra_counts)
       extra_counts.size.times do |i|
-        @counts[i] += extra_counts[i]
+        @counts[i] += extra_counts[i].to_i
       end
     end
 

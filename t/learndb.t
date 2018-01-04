@@ -15,7 +15,7 @@ File::Path::make_path('tmp');
 
 $ENV{IRC_NICK_AUTHENTICATED} = 'y';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
-$ENV{RUBYOPT} = '-rubygems -Isrc';
+$ENV{RUBYOPT} = '-Isrc';
 $ENV{PERL_UNICODE} = 'AS';
 $ENV{HENZELL_ROOT} = '.';
 $ENV{HENZELL_ALL_COMMANDS} = 'y';

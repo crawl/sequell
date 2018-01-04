@@ -6,7 +6,7 @@ seqdb:
 test: unit integration
 
 unit:
-	rspec spec
+	bundle exec rspec spec
 	prove t
 
 integration:

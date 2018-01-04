@@ -52,6 +52,10 @@ begin
     DateTime.new(date.year, date.month, date.day)
   end
 
+  def format_date(date)
+    date.sub(/^(\S+ \S+).*/, '\1')
+  end
+
   if rows.empty? || rows[0][1].to_i == 0
     puts "No games for #{q.argstr}."
   else
@@ -88,7 +92,7 @@ begin
     stats << "total time #{Formatter::Duration.display(duration.to_i)}"
 
     puts("#{q.argstr} has played #{ngames} game#{plural}, between " +
-      "#{datestr(tstart)} and #{datestr(tend)}, " + stats.join(", ") + ".")
+      "#{format_date(tstart)} and #{format_date(tend)}, " + stats.join(", ") + ".")
   end
 rescue
   puts $!
