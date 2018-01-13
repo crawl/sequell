@@ -7,7 +7,7 @@ use warnings;
 use Fcntl qw/:flock SEEK_SET SEEK_END/;
 use POSIX;
 
-our @EXPORT_OK = qw/lock_or_die lock daemonify tailed_handle/;
+our @EXPORT_OK = qw/lock_or_die lock/;
 
 sub service_def {
   my $service_def = shift;
@@ -49,32 +49,6 @@ sub spawn_service {
   exit 1
 }
 
-##
-# Returns a file handle pointing just after the last line of the file
-# (presumably at EOF).
-sub tailed_handle {
-  my $file = shift;
-  return unless $file;
-  open my $handle, '<', $file or return;
-
-  # Go to the very end and see if we have a newline there:
-  seek($handle, -1, SEEK_END) or return $handle;
-
-  my $offset = tell($handle);
-  my $tries = 5;
-  while ($tries-- > 0) {
-    my $line = <$handle>;
-    if (!defined($line) || $line =~ /\n$/) {
-      # Excellent! We're done here.
-      return $handle;
-    }
-    # Ugh, seek back to original spot, sleep and hope something was writing
-    # to the logfile:
-    seek($handle, $offset, SEEK_SET) or return;
-    select(undef, undef, undef, 0.25);
-  }
-}
-
 sub lock_filename {
   my $basename = shift;
 
@@ -83,14 +57,6 @@ sub lock_filename {
     unless $basename;
   my $dir = $ENV{HOME} || '.';
   "$dir/.$basename.lock"
-}
-
-sub daemonify {
-  umask 0;
-  defined(my $pid = fork) or die "Unable to fork: $!";
-  exit if $pid;
-  setsid or die "Unable to start a new session: $!";
-  # Done daemonifying.
 }
 
 sub lock_or_exit {

@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use POSIX qw(setsid); # For daemonization.
 use Fcntl qw/:flock SEEK_END/;
 
 use lib 'lib';
@@ -26,11 +25,9 @@ END {
 open STDOUT, '|-', q{( while read line; do echo "[$(date +'%Y-%m-%d %H:%M:%S')] $line"; done )} or die "Couldn't reopen STDOUT: $!\n";
 open STDERR, '>&', \*STDOUT or die "Couldn't reopen STDERR: $!\n";
 
-my $daemon = 1;
 my $irc = 1;
 my $config_file = Henzell::Config::default_config();
-GetOptions("daemon!" => \$daemon,
-           "irc!" => \$irc,
+GetOptions("irc!" => \$irc,
            "rc=s" => \$config_file) or die "Invalid options\n";
 
 $ENV{LC_ALL} = 'en_US.UTF-8';
@@ -65,27 +62,28 @@ if ($CONFIG{startup_services}) {
   Henzell::Utils::spawn_services($CONFIG{startup_services});
 }
 
-# Daemonify. http://www.webreference.com/perl/tutorial/9/3.html
-Henzell::Utils::daemonify() if $daemon;
-
 my $HENZELL;
 my %AUTHENTICATED_USERS;
 my %PENDING_AUTH;
 
-if ($irc) {
-  print "Connecting to $ircserver as $nickname, channels: @CHANNELS\n";
-  $HENZELL = Henzell::IRC->new(nick     => $nickname,
-                               server   => $ircserver,
-                               port     => $port,
-                               name     => $ircname,
-                               channels => [ @CHANNELS ],
-                               flood    => 1,
-                               charset  => "utf-8")
-    or die "Unable to create Henzell IRC bot\n";
-  $HENZELL->configure_services(
-    services => irc_services($HENZELL));
-  $HENZELL->run();
+unless ($irc) {
+  print STDERR "Waiting, hit Enter to exit\n";
+  <STDIN>;
+  exit 0;
 }
+
+print "Connecting to $ircserver as $nickname, channels: @CHANNELS\n";
+$HENZELL = Henzell::IRC->new(nick     => $nickname,
+                             server   => $ircserver,
+                             port     => $port,
+                             name     => $ircname,
+                             channels => [ @CHANNELS ],
+                             flood    => 1,
+                             charset  => "utf-8")
+  or die "Unable to create Henzell IRC bot\n";
+$HENZELL->configure_services(
+  services => irc_services($HENZELL));
+$HENZELL->run();
 exit 0;
 
 sub irc_services {
