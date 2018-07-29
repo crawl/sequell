@@ -10,7 +10,7 @@ module HttpList
   require 'pcache'
 
   def self.urljoin(a, b)
-    if a.empty?
+    if a.empty? || b =~ %r{^https?://}
       b
     elsif a =~ %r{/$}
       a + b

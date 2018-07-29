@@ -91,7 +91,7 @@ module Henzell
     end
 
     def ttyrec_filename_datetime_string(filename)
-      if filename =~ /^(\d{4}-\d{2}-\d{2}\.\d{2}:\d{2}:\d{2})\.ttyrec/
+      if filename =~ /(\d{4}-\d{2}-\d{2}\.\d{2}:\d{2}:\d{2})\.ttyrec/
         $1.gsub(/[-.:]/, '')
       elsif filename =~ /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})[+]00:?00/
         $1.gsub(/[-:T]/, '')
