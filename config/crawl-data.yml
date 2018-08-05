@@ -1133,7 +1133,7 @@ tournament-prefixes:
   - tournament
 
 tournament-data:
-  default-tourney: '2018a'
+  default-tourney: '2018b'
   crawl:
     '2008':
       version: "0.4"
@@ -1187,6 +1187,9 @@ tournament-data:
     '2018a':
       version: ["0.21", "0.21-a"]
       time: [2018010520, 2018012120]
+    '2018b':
+      version: ["0.22", "0.22-a"]
+      time: [2018081020, 2018082620]
 
   sprint:
     '2010':
