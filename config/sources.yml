@@ -29,7 +29,7 @@ sources:
       - '{logfile,milestones}09'
       - '{logfile,milestones}10*'
       - '{logfile,milestones}{11,12,13,14,15,-git}{,-sprint,-zotdef}*'
-      - '{logfile,milestones}{16,17,18,19,20,21}{,-sprint}*'
+      - '{logfile,milestones}{16,17,18,19,20,21,22}{,-sprint}*'
       - '{logfile,milestones}-lorcs': lorcs
 
     # Regex -> location; player name is automatically appended.
@@ -149,7 +149,7 @@ sources:
     base: http://crawl.berotato.org/crawl
     logs:
       - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}*
-      - meta/{0.16,0.17,0.18,0.19,0.20,0.21}/{logfile,milestones}{,-sprint}*
+      - meta/{0.16,0.17,0.18,0.19,0.20,0.21,0.22}/{logfile,milestones}{,-sprint}*
       - meta/{nostalgia,mulch_ado_about_nothing,squarelos-0.17}/{logfile,milestones}*
       - meta/evoker-god/{logfile,milestones}*: evoker-god
       - meta/bearkin/{logfile,milestones}*: bearkin
