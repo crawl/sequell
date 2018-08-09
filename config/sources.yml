@@ -138,7 +138,7 @@ sources:
     base: https://webzook.net/soup
     logs:
       - '0.16/{logfile,milestones}-old'
-      - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,trunk}/{logfile,milestones}*'
+      - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,trunk}/{logfile,milestones}*'
     morgues:
       - ['cwz.*/trunk', 'https://webzook.net/soup/morgue/trunk']
       - ['cwz.*/(\d+[.]\d+)', 'https://webzook.net/soup/morgue/$1']
