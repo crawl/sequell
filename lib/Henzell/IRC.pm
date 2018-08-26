@@ -34,42 +34,68 @@ sub connected {
 
 sub emoted {
   my ($self, $e) = @_;
-  print "emoted: ", Dumper($e), "\n" if $ENV{DEBUG_HENZELL};
+  print STDERR "emoted: ", Dumper($e), "\n" if $ENV{DEBUG_HENZELL};
   $self->_each_service_call('event_emoted', $self->_message_metadata($e));
   return undef;
 }
 
 sub chanjoin {
   my ($self, $j) = @_;
-  print "chanjoin: ", Dumper($j), "\n" if $ENV{DEBUG_HENZELL};
+  print STDERR "chanjoin: ", Dumper($j), "\n" if $ENV{DEBUG_HENZELL};
+
+  ${$self->{_joined_channels}}->{$j->{channel}} = 1;
   $self->_each_service_call('event_chanjoin', $self->_message_metadata($j));
   return undef;
 }
 
 sub userquit {
   my ($self, $q) = @_;
-  print "quit: ", Dumper($q), "\n" if $ENV{DEBUG_HENZELL};
+  print STDERR "quit: ", Dumper($q), "\n" if $ENV{DEBUG_HENZELL};
   $self->_each_service_call('event_userquit', $self->_message_metadata($q));
   return undef;
 }
 
 sub chanpart {
   my ($self, $m) = @_;
-  print "part: ", Dumper($m), "\n" if $ENV{DEBUG_HENZELL};
+  print STDERR "part: ", Dumper($m), "\n" if $ENV{DEBUG_HENZELL};
   $self->_each_service_call('event_chanpart', $self->_message_metadata($m));
   return undef;
 }
 
+# Returns true if the given IRC message is NickServ acknowledging that we've
+# successfully authenticated.
+sub is_nickserv_auth_ack {
+  my $m = shift;
+
+  $m->{channel} eq 'msg'
+    && $m->{who} eq 'NickServ'
+    && $m->{raw_nick} =~ /NickServ!NickServ/
+    && $m->{body} =~ /You are now identified for/
+}
+
+sub join_all_channels {
+  my $self = shift;
+  for my $channel (@{$self->{channels}}) {
+    print STDERR "/join $channel\n";
+    $self->pocoirc->yield('join', $channel);
+  }
+}
+
 sub said {
   my ($self, $m) = @_;
-  print "said: ", Dumper($m), "\n" if $ENV{DEBUG_HENZELL};
+  print STDERR "said: ", Dumper($m), "\n" if $ENV{DEBUG_HENZELL};
+
+  if (is_nickserv_auth_ack($m)) {
+      $self->join_all_channels();
+  }
+
   $self->_each_service_call('event_said', $self->_message_metadata($m));
   return undef;
 }
 
 sub help {
   my ($self, $m) = @_;
-  print "help: ", Dumper($m), "\n" if $ENV{DEBUG_HENZELL};
+  print STDERR "help: ", Dumper($m), "\n" if $ENV{DEBUG_HENZELL};
   $self->_each_service_call('event_said', $self->_message_metadata($m));
   return undef;
 }

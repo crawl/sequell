@@ -45,7 +45,7 @@ sub authorized_commands {
 
   print "IRCAuth: Processing auth response from $responder: $body\n";
   unless ($body =~ /^(\S+) ACC (\d+)/) {
-    print "IRCAuth: Unexpected response from $responder: $body\n";
+    print "IRCAuth: Unexpected response from $responder: $body\n" unless $body =~ /You are now identified for/;
     return;
   }
   my ($nick, $auth) = ($1, $2);
