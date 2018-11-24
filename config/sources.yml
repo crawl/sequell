@@ -219,3 +219,12 @@ sources:
       - https://crawl.jorgrun.rocks/morgue
     ttyrecs:
       - https://crawl.jorgrun.rocks/ttyrec
+      
+  - name: cko
+    base: https://crawl.kelbi.org/crawl/meta
+    logs:
+      - '{0.21,0.22,git}/{milestones,logfile}{,-sprint,-zotdef}*'
+    morgues:
+      - https://crawl.kelbi.org/crawl/morgue
+    ttyrecs:
+      - https://crawl.kelbi.org/crawl/ttyrec
