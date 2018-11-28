@@ -212,13 +212,13 @@ sources:
       - https://crawl.project357.org/ttyrec
 
   - name: cjr
-    base: https://crawl.jorgrun.rocks/meta
+    base: https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks
     logs:
-      - '{0.17,0.18,0.19,0.20,0.21,0.22,git}/{milestones,logfile}{,-sprint,-zotdef}*'
+      - '_crawl-master_crawl-{0.19,0.20,0.21,0.22,git}_saves_{milestones,logfile}{,-sprint,-zotdef}*'
     morgues:
-      - https://crawl.jorgrun.rocks/morgue
+      - https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks/morgue
     ttyrecs:
-      - https://crawl.jorgrun.rocks/ttyrec
+      - https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks/ttyrec
       
   - name: cko
     base: https://crawl.kelbi.org/crawl/meta
