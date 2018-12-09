@@ -224,6 +224,7 @@ sources:
     base: https://crawl.kelbi.org/crawl/meta
     logs:
       - '{0.21,0.22,git}/{milestones,logfile}{,-sprint,-zotdef}*'
+      - new-nemelex/{milestones,logfile}*: new-nemelex
     morgues:
       - https://crawl.kelbi.org/crawl/morgue
     ttyrecs:
