@@ -29,7 +29,7 @@ sources:
       - '{logfile,milestones}09'
       - '{logfile,milestones}10*'
       - '{logfile,milestones}{11,12,13,14,15,-git}{,-sprint,-zotdef}*'
-      - '{logfile,milestones}{16,17,18,19,20,21,22,23}{,-sprint}*'
+      - '{logfile,milestones}{16,17,18,19,20,21,22,23,24}{,-sprint}*'
       - '{logfile,milestones}-lorcs': lorcs
 
     # Regex -> location; player name is automatically appended.
@@ -116,7 +116,7 @@ sources:
       - clan
     base: https://underhound.eu/crawl/meta
     logs:
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24}/{logfile,milestones}{,-sprint}*'
       - '{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
       - https://underhound.eu/crawl/morgue
@@ -149,7 +149,7 @@ sources:
     base: http://crawl.berotato.org/crawl
     logs:
       - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}*
-      - meta/{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23}/{logfile,milestones}{,-sprint}*
+      - meta/{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24}/{logfile,milestones}{,-sprint}*
       - meta/{nostalgia,mulch_ado_about_nothing,squarelos-0.17}/{logfile,milestones}*
       - meta/evoker-god/{logfile,milestones}*: evoker-god
       - meta/bearkin/{logfile,milestones}*: bearkin
@@ -185,7 +185,7 @@ sources:
     base: https://crawl.xtahua.com/crawl/meta
     logs:
       - '{git,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24}/{logfile,milestones}{,-sprint}*'
     morgues:
       - https://crawl.xtahua.com/crawl/morgue
     ttyrecs:
@@ -195,7 +195,7 @@ sources:
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
       - '{trunk,0.14}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23}/{logfile,milestones}*'
+      - '{0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24}/{logfile,milestones}*'
     morgues:
       - [ 'lld.*/(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
       - http://lazy-life.ddo.jp:8080/morgue
@@ -205,7 +205,7 @@ sources:
   - name: cpo
     base: https://crawl.project357.org
     logs:
-      - dcss-{milestones,logfile}-{trunk,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,combo_god}*
+      - dcss-{milestones,logfile}-{trunk,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,combo_god}*
     morgues:
       - https://crawl.project357.org/morgue
     ttyrecs:
@@ -223,7 +223,7 @@ sources:
   - name: cko
     base: https://crawl.kelbi.org/crawl/meta
     logs:
-      - '{0.18,0.21,0.22,0.23,git}/{milestones,logfile}{,-sprint,-zotdef}*'
+      - '{0.18,0.21,0.22,0.23,0.24,git}/{milestones,logfile}{,-sprint,-zotdef}*'
       - new-nemelex/{milestones,logfile}*: new-nemelex
     morgues:
       - https://crawl.kelbi.org/crawl/morgue
