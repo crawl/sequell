@@ -85,7 +85,7 @@ sources:
       - meta/ranged_combat/{logfile,milestones}*: rc
       - meta/nostalgia/{logfile,milestones}*
     morgues:
-      - - time_gt: ['end_time', '20130902-0000']
+      - - time_gt: '20130902-0000'
         - http://dobrazupa.org/morgue # TODO: dead link, something more useful?
       - https://f000.backblazeb2.com/file/dcss-archives/www.dobrazupa.org/morgue
     ttyrecs:
