@@ -227,6 +227,7 @@ sources:
     logs:
       - '{0.18,0.21,0.22,0.23,0.24,git}/{milestones,logfile}{,-sprint,-zotdef}*'
       - new-nemelex/{milestones,logfile}*: new-nemelex
+      - positional-magic/{milestones,logfile}*: positional-magic
     morgues:
       - https://crawl.kelbi.org/crawl/morgue
     ttyrecs:
