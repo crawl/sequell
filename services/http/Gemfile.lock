@@ -34,7 +34,7 @@ GEM
     pry (0.11.3)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
-    rack (2.0.6)
+    rack (2.0.8)
     rack-protection (2.0.3)
       rack
     rack-timeout (0.4.2)
@@ -65,7 +65,7 @@ DEPENDENCIES
   json
   parslet
   pry
-  rack (~> 2.0.6)
+  rack (~> 2.0.8)
   rack-timeout
   re2!
   rest-client
