@@ -144,6 +144,8 @@ sources:
     morgues:
       - ['cwz.*/trunk', 'https://webzook.net/soup/morgue/trunk']
       - ['cwz.*/(\d+[.]\d+)', 'https://webzook.net/soup/morgue/$1']
+    ttyrecs:
+      - https://webzook.net/soup/ttyrecs
 
   - name: cbro
     aliases:
