@@ -918,7 +918,14 @@ The raw time string for the time the milestone was generated. Example:
 `verb/type`:
 The type of milestone. Example: "ghost" (player killed a ghost),
 "uniq" (player killed a unique), "orb" (player found the orb of Zot).
-You can use "!lm * s=type" to see a list of milestone types.
+You can try to use "!lm * s=type" to see a list of milestone types.
+However, this sort of query will often time out, so for reference, here
+is the set of types for 0.24: `uniq, begin, br.exit, br.enter, br.end,
+god.worship, shaft, rune, ghost, zig, god.maxpiety, abyss.enter,
+abyss.exit, sacrifice, god.renounce, orb, god.ecumenical, death,
+monstrous, uniq.ban, god.mollify, zig.enter, ancestor.class,
+zig.exit, uniq.ens, crash, uniq.slime, ghost.ban, uniq.pac`. Different
+versions may have further types.
 
 `noun`:
 The object of interest in the milestone. For instance if type=ghost,
