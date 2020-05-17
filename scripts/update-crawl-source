@@ -45,7 +45,7 @@ ctags -R \
 
 # And compile the binary for playable:*
 cd source
-make clean && make -j5 HURRY=y
+make clean && make -j10 HURRY=y
 
 if [[ -f crawl ]]; then
     mv crawl crawl.build
