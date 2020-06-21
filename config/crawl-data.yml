@@ -1199,7 +1199,7 @@ tournament-data:
       version: ["0.24", "0.24-a"]
       time: [2019102520, 2019111020]
     '2020a':
-      version: "0.25"
+      version: ["0.25", "0.25-a"]
       time: [2020061220, 2020062820]
 
   sprint:
