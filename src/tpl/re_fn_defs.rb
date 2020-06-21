@@ -60,7 +60,7 @@ module Tpl
     re = self[0]
     re = RE2::Regexp.new(re.to_s) unless re.is_a?(RE2::Regexp)
     index = arity == 3 ? self[-1].to_i : 0
-    re.match(self[1].to_s, -1, index)
+    re.match(self[1].to_s, nil, index)
   }
 
   FunctionDef.define('match-n', [1, 2]) {
