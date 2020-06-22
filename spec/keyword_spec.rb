@@ -38,4 +38,12 @@ describe Grammar::QueryBody do
     expect(kw.arguments[0].operator).to eq(:or)
     expect(kw.arguments[0].arguments.size).to eq(Tourney::TOURNEY_DATA['crawl'].keys.size)
   end
+
+  it "should parse t2020a to include file filter" do
+    expect(p("t2020a").to_s).to eq("start>='2020-06-12 20:00:00' end<'2020-06-28 20:00:00' ((cv=0.25|0.25-a)) explbr= file!=cwz/soup/trunk/logfile")
+  end
+
+  it "should parse t2019b without a filter" do
+    expect(p("t2019a").to_s).to eq("start>='2019-02-08 20:00:00' end<'2019-02-24 20:00:00' ((cv=0.23|0.23-a)) explbr=")
+  end
 end

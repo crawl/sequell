@@ -31,7 +31,7 @@ module Tourney
   end
 
   class TourneyInfo
-    attr_reader :tstart, :tend, :tmap, :version
+    attr_reader :tstart, :tend, :tmap, :version, :filter
 
     def initialize(tournament_key, game_type)
       @key = tournament_key
@@ -45,6 +45,7 @@ module Tourney
       @version = tourney_data[@year]['version']
       @version = [@version] unless @version.is_a?(Array)
       @version = @version.map(&:strip)
+      @filter = tourney_data[@year]['filter']
       resolve_time!
       resolve_map!
     end

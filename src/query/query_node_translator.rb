@@ -233,7 +233,8 @@ module Query
               }),
             AST::Expr.field_predicate(eqop, 'explbr', ''),
             (tourney.tmap &&
-              AST::Expr.field_predicate(eqop, 'map', tourney.tmap)))
+              AST::Expr.field_predicate(eqop, 'map', tourney.tmap)),
+            (tourney.filter && Query::ListgameParser::fragment(tourney.filter)))
         else
           raise "Bad selector #{field} (#{field}=t for tourney games)"
         end
