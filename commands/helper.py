@@ -21,12 +21,14 @@ adjective_skills = \
 adjective_end = re.compile(r'(?:ed|ble|ous|id)$')
 
 SPECIES_MAP = CFG['species']
-SPECIES = SPECIES_MAP.values()
-SPECIES_ABBR = SPECIES_MAP.keys()
+# not sure how this code will do in a python version that doesn't guarantee
+# stable order for dicts (pre 3.6)...
+SPECIES = list(SPECIES_MAP.values())
+SPECIES_ABBR = list(SPECIES_MAP.keys())
 
 ROLE_MAP = CFG['classes']
-ROLES = ROLE_MAP.values()
-ROLES_ABBR = ROLE_MAP.keys()
+ROLES = list(ROLE_MAP.values())
+ROLES_ABBR = list(ROLE_MAP.keys())
 
 WHERE_DIRS = None
 
