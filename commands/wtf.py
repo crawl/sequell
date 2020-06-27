@@ -73,7 +73,7 @@ def do_abbrv_thing(what, who):
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
-        print "Need at least 3 arguments: <what> <who> <fullcmd>"
+        print("Need at least 3 arguments: <what> <who> <fullcmd>")
         sys.exit(1)
 
-    print ' '.join( do_abbrv_thing( sys.argv[3], sys.argv[2] ) )
+    print(' '.join( do_abbrv_thing( sys.argv[3], sys.argv[2] ) ))
