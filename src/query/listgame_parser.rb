@@ -16,7 +16,7 @@ module Query
       debug{"Fragment '#{fragment.to_s}' raw_parse: #{raw_parse.inspect}"}
       ast = AST::ASTBuilder.new.apply(raw_parse)
       if ast.is_a?(Hash)
-        raise "Could not understand fragment '#{query_text}'. This is a bug."
+        raise "Could not understand fragment '#{fragment}'. This is a bug."
       end
       AST::ASTTranslator.apply(ast)
     rescue Parslet::ParseFailed => error
