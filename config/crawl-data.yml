@@ -1201,7 +1201,7 @@ tournament-data:
     '2020a':
       version: ["0.25", "0.25-a"]
       time: [2020061220, 2020062820]
-      filter: file!="cwz/soup/trunk/logfile"
+      filter: file!="cwz/soup/trunk/milestones|cwz/soup/trunk/logfile"
 
   sprint:
     '2010':
