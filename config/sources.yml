@@ -211,6 +211,7 @@ sources:
     logs:
       - dcss-{milestones,logfile}-{trunk,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,combo_god}*
       - dcss-{milestones,logfile}-experimental-positional-magic: positional-magic
+      - dcss-{milestones,logfile}-experimental-delpal: delver-palentonga
     morgues:
       - https://crawl.project357.org/morgue
     ttyrecs:
@@ -231,6 +232,7 @@ sources:
       - '{0.18,0.21,0.22,0.23,0.24,0.25,git}/{milestones,logfile}{,-sprint,-zotdef}*'
       - new-nemelex/{milestones,logfile}*: new-nemelex
       - positional-magic/{milestones,logfile}*: positional-magic
+      - delpal/{milestones,logfile}*: delver-palentonga
     morgues:
       - https://crawl.kelbi.org/crawl/morgue
     ttyrecs:
