@@ -147,6 +147,17 @@ sources:
     ttyrecs:
       - https://webzook.net/soup/ttyrecs
 
+  - name: cbr2
+    aliases:
+      - cbro2
+    base: https://cbro.berotato.org/
+    logs:
+      - meta/{0.24,0.25,git}/{logfile,milestones}{,-sprint}*
+    morgues:
+      - https://cbro.berotato.org/morgue
+    ttyrecs:
+      - https://cbro.berotato.org/ttyrec
+
   - name: cbro
     aliases:
       - cbo
