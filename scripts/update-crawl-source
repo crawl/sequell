@@ -23,7 +23,7 @@ fi
 
 cd $SOURCE_DIR
 git checkout -f
-git clean -dfx
+git clean -fx -e crawl.build
 git pull
 git submodule update --init
 
