@@ -4,10 +4,10 @@
 memory-use-limit-megabytes: 768
 
 termcast:
-  server: termcast.develz.org
+  server: termcast.shalott.org
   client-protocols:
     - telnet
-    - http
+    - https
 
 ##
 # Maps query context names to table names. Thus !lg will query the `logrecord`

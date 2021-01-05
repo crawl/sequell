@@ -347,10 +347,10 @@ the *last* thing on the !lg line.
                                 excluding unwon characters)
 
 `!lg * s=name / win o=% ?: den.N>10` (show players by win rate, excluding
-                                     players with <= 10 games.)
+                                     players with 10 or fewer games.)
 
 `!lg * s=name / win o=% ?: N>10` (show players by win rate, excluding
-                                 players with <= 10 *winning games*.)
+                                 players with 10 or fewer *winning games*.)
 
 Use `%>0` or `%=0` to select groups where the *percentage* is nonzero or 0.
 
@@ -1305,8 +1305,9 @@ or remove one server character name from a mapping with:
 FooTV
 =====
 
-FooTV is a channel on termcast.develz.org (telnet termcast.develz.org
-to watch) that plays games requested using the -tv option.
+FooTV is a channel on https://termcast.shalott.org (`telnet
+termcast.shalott.org`, or visit https://termcast.shalott.org to watch) that
+plays games requested using the -tv option.
 
 TV options
 ----------
