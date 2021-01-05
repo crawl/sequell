@@ -1,10 +1,10 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 GIT_URL=https://github.com/crawl/crawl.git
 SOURCE_DIR=current
 LOCK="$PWD/.crawl-fetch.lock"
 
-set -e
+set -o errexit -o pipefail
 
 while ! mkdir $LOCK 2>/dev/null; do
     echo >&2 "Unable to lock $LOCK, waiting..."
@@ -22,6 +22,8 @@ if [[ ! -d "$SOURCE_DIR" ]]; then
 fi
 
 cd $SOURCE_DIR
+git checkout -f
+git clean -dfx
 git pull
 git submodule update --init
 
