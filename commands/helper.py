@@ -10,7 +10,7 @@ from datetime import datetime
 import time
 
 CFGFILE = os.path.join(os.environ['HENZELL_ROOT'], 'config/crawl-data.yml')
-CFG = yaml.load(open(CFGFILE).read())
+CFG = yaml.safe_load(open(CFGFILE).read())
 
 xkeychars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
 
