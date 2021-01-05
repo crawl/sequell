@@ -213,6 +213,7 @@ uniques:
   - Vashnia
   - Satan Claus
   - Robin
+  - Maggie
 
 # Used to handle fields that contain both monster killers and oddball
 # edge cases.
@@ -368,7 +369,7 @@ god-aliases:
 
 # * - dead species
 species:
-  Ce: Centaur
+  Ce: Centaur*
   Dg: Demigod
   Ds: Demonspawn
   Dr: Draconian
@@ -407,6 +408,7 @@ species:
   VS: Vine Stalker
   Pl: Plutonian*
   Ba: Barachi
+  Pa: Palentonga
 
 species-flavours:
   draconian:
@@ -440,8 +442,9 @@ species-enum-map-override: {}
 # * - dead class
 classes:
   Ar: Artificer
-  As: Assassin
+  As: Assassin*
   Be: Berserker
+  Br: Brigand
   Cj: Conjurer
   Cr: Crusader*
   En: Enchanter
