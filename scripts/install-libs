@@ -4,3 +4,4 @@ set -e
 ./scripts/install-perl-modules
 
 gem install bundler && bundle install
+pip install pyyaml
