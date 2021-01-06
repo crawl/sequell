@@ -1015,6 +1015,9 @@ field-transforms:
     ke: Tengu
     kenku: Tengu
     grotesk: Gargoyle
+  cls:
+    as: Brigand
+    assassin: Brigand
   ktyp:
     poison: pois
     drown: water
