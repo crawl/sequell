@@ -26,7 +26,7 @@ use Henzell::CommandService;
 use Henzell::Bus;
 use LearnDB;
 
-my $channel = '##crawl';
+my $channel = '#crawl';
 my $nick = 'greensnark';
 my $rc = 'rc/sequell.rc';
 my $irc = Henzell::IRCTestStub->new(channel => $channel);
@@ -134,7 +134,7 @@ like(irc('!help !bar'), qr/No help for !bar/);
 like(irc('!help !miaow'), qr/Unknown command: !miaow/);
 
 beh('Hi! ::: Hello, $nick. Welcome to ${channel}!', sub {
-  is(irc('Hi!'), "Hello, greensnark. Welcome to ##crawl!")
+  is(irc('Hi!'), "Hello, greensnark. Welcome to #crawl!")
 });
 
 beh('Give $person a hug ::: /me hugs $person.', sub {

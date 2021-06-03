@@ -72,12 +72,13 @@ unless ($irc) {
   exit 0;
 }
 
-print "Connecting to $ircserver as $nickname, channels: @CHANNELS\n";
+print "Connecting to $ircserver:$port as $nickname, channels: @CHANNELS\n";
 $HENZELL = Henzell::IRC->new(nick     => $nickname,
                              server   => $ircserver,
                              port     => $port,
                              name     => $ircname,
-                             channels => [ @CHANNELS ],
+                             initial_channels => [ @CHANNELS ],
+                             channels => [ ],
                              flood    => 1,
                              charset  => "utf-8")
   or die "Unable to create Henzell IRC bot\n";

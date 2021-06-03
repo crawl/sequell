@@ -2,7 +2,7 @@ The LearnDB
 ===========
 
 The LearnDB is a user-maintained database of content accessible to
-users of ##crawl and ##crawl-dev on freenode IRC. This is a brief
+users of #crawl and #crawl-dev on Libera IRC. This is a brief
 description of the commands available to query and update the LearnDB.
 
 The LearnDB is organized into *terms* (also called *pages*). Each term
@@ -335,7 +335,7 @@ For instance adding this behaviour:
 Will provoke Sequell to greet any visitor to the channel who says "Hi!"
 
     <user> Hi!
-    <Sequell> Hello, user. Welcome to ##crawl!
+    <Sequell> Hello, user. Welcome to #crawl!
 
 The match *TEXT* is a [regular expression](https://code.google.com/p/re2/wiki/Syntax)
 with optional convenience syntax to capture sections of text by name:
@@ -374,7 +374,7 @@ Optionally, you may define additional conditions that must be
 satisfied before a behaviour is evaluated as `{{<check>:<value>}}`. As
 an example:
 
-    !learn add :beh: {{channel:##crawl-dev}} Hi! ::: Shh!
+    !learn add :beh: {{channel:#crawl-dev}} Hi! ::: Shh!
 
 `{{ }}` conditions are very limited (strict case-insensitive equality
 only), and may also be evaluated as (if) or other conditionals on the
@@ -513,9 +513,9 @@ give users oak, ash, and beech permissions to nick:tree, I might do:
      !learn set :acl:nick:tree @tree
 
 Groups may be groups of user nicks or channels. For instance, if I'd like
-nick mappings to be changeable only on ##crawl or ##crawl-dev, I might do:
+nick mappings to be changeable only on #crawl or #crawl-dev, I might do:
 
-     !learn set :group:crawl-channels ##crawl ##crawl-dev
+     !learn set :group:crawl-channels #crawl #crawl-dev
      !learn set :acl:nick:* #@crawl-channels
 
 Bear in mind that ACLs are not inherited. If you have an ACL on

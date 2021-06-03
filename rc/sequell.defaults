@@ -2,14 +2,14 @@
 
 use_pm:
 
-irc_server: chat.freenode.net
+irc_server: irc.libera.chat
 irc_port: 6667
 lock_name: henzell
 
 sql_queries:
 sql_store:
 
-bot_nick: Henzell
+bot_nick: Sequell
 
 announce:
 
@@ -19,9 +19,9 @@ sigils: "!@#$%&=^-"
 preferred_sigil: "!"
 
 sibling_bots: "Henzell Gretell Hehfiel Sizzell Sequell Cheibriados Lantell Ruffell Rotatell Eksell Kramell Postquell"
-channels: "##crawl ##crawl-dev ##crawl-sequell"
-announce_channel: "##crawl"
-dev_channel: "##crawl-dev"
+channels: "#crawl #crawl-dev #crawl-sequell"
+announce_channel: "#crawl"
+dev_channel: "#crawl-dev"
 
 commands_file: "config/commands-henzell.txt"
 public_commands_file: "config/public_commands.txt"

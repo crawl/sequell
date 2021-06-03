@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# Script courtesy kilobyte on ##crawl.
+# Script courtesy kilobyte on #crawl.
 # See original at http://angband.pl/crawl/henzell.
 
 use strict;
@@ -28,7 +28,7 @@ my $timestamp = 0;
 
 local $/;
 
-my $title = "##crawl learndb";
+my $title = "#crawl learndb";
 my %learndb;
 my %redir;
 my %link;

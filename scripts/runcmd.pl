@@ -19,7 +19,7 @@ do 'sqllog.pl';
 do 'game_parser.pl';
 
 my $DEFAULT_NICK = $ENV{NICK} || 'anon';
-my $CHANNEL = $ENV{CHANNEL} || '##crawl';
+my $CHANNEL = $ENV{CHANNEL} || '#crawl';
 my $CONFIG = $ENV{RC} || 'rc/sequell.rc';
 
 my $irc_auth = ($ENV{IRC_AUTH} || '') eq 'y';

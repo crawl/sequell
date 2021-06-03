@@ -22,7 +22,7 @@ sub match {
 
 sub msg {
   my ($msg, $channel, $who) = @_;
-  +{ channel => $channel || '##crawl',
+  +{ channel => $channel || '#crawl',
      body => $msg,
      who => $who || 'greensnark' }
 }

@@ -1,10 +1,10 @@
 The listgame manual
 ===================
 
-If you're on ##crawl on Freenode IRC, you can use listgame to see
+If you're on #crawl on Libera IRC, you can use listgame to see
 game statistics for Crawl games played on the public Crawl servers.
 
-The bot Sequell responds to listgame queries on ##crawl and can also
+The bot Sequell responds to listgame queries on #crawl and can also
 be /msged privately.
 
 This document describes listgame: specifically, it covers the !lg and

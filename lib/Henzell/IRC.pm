@@ -75,7 +75,7 @@ sub is_nickserv_auth_ack {
 
 sub join_all_channels {
   my $self = shift;
-  for my $channel (@{$self->{channels}}) {
+  for my $channel (@{$self->{initial_channels}}) {
     print STDERR "/join $channel\n";
     $self->pocoirc->yield('join', $channel);
   }

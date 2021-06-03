@@ -1,9 +1,9 @@
 Sequell
 -------
 
-Sequell is the stats IRC bot for ##crawl on Freenode IRC.
+Sequell is the stats IRC bot for #crawl on Libera IRC.
 
-Sequell is the successor to the original ##crawl Henzell which at one
+Sequell is the successor to the original #crawl Henzell which at one
 point shared the same code. There are still many references to Henzell
 in the source and configuration.
 
@@ -146,10 +146,10 @@ run it via rlwrap for command-line editing and history support:
     7941444. foo the Warrior (L19 MfGl of Okawaru), mangled by a naga ritualist (a +3 dagger of venom) on Snake:4 (snake_hunt) on 2017-10-22 18:04:42, with 217416 points after 31169 turns and 0:53:26.
 
 runcmd.pl assumes a default IRC nick of `anon`, and a default IRC channel of
-`##crawl`, for commands that expect to see a nick/channel. You may override
+`#crawl`, for commands that expect to see a nick/channel. You may override
 these defaults with the NICK/CHANNEL environment variables.
 
-    $ NICK=won CHANNEL='##crawl-dev' rlwrap ./scripts/runcmd.pl
+    $ NICK=won CHANNEL='#crawl-dev' rlwrap ./scripts/runcmd.pl
     > .echo $nick in $channel
     Sequell command runner
-    won in ##crawl-dev
+    won in #crawl-dev

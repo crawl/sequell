@@ -2,6 +2,7 @@ DBI
 DBD::Pg
 DBD::SQLite
 Bot::BasicBot
+POE::Component::SSLify
 YAML::XS
 YAML::Any
 Tie::Cache

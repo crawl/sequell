@@ -16,7 +16,7 @@ describe 'LearnDB functions' do
     FileUtils.rm_f('tmp/rlearn.db')
     ENV['LEARNDB'] = 'tmp/rlearn.db'
     ENV['HENZELL_ENV_NICK'] = 'greensnark'
-    ENV['HENZELL_ENV_CHANNEL'] = '##crawl'
+    ENV['HENZELL_ENV_CHANNEL'] = '#crawl'
     allow(LearnDB::DB).to receive(:default).and_return(db)
   }
 
