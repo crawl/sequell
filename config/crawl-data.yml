@@ -1151,7 +1151,7 @@ tournament-prefixes:
   - tournament
 
 tournament-data:
-  default-tourney: '2021a'
+  default-tourney: '2021b'
   crawl:
     '2008':
       version: "0.4"
@@ -1221,6 +1221,10 @@ tournament-data:
     '2021a':
       version: ["0.26", "0.26-a"]
       time: [2021010820, 2021012420]
+      filter: file!="cwz/soup/trunk/milestones|cwz/soup/trunk/logfile"
+    '2021b':
+      version: ["0.27", "0.27-a"]
+      time: [2021073020, 2021081520]
       filter: file!="cwz/soup/trunk/milestones|cwz/soup/trunk/logfile"
 
   sprint:
