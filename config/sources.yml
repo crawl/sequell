@@ -118,7 +118,7 @@ sources:
       - clan
     base: https://underhound.eu/crawl/meta
     logs:
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28}/{logfile,milestones}{,-sprint}*'
       - '{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
       - https://underhound.eu/crawl/morgue
@@ -152,7 +152,7 @@ sources:
       - cbro2
     base: https://cbro.berotato.org/
     logs:
-      - meta/{0.24,0.25,0.26,0.27,git}/{logfile,milestones}{,-sprint}*
+      - meta/{0.24,0.25,0.26,0.27,0.28,git}/{logfile,milestones}{,-sprint}*
     morgues:
       - https://cbro.berotato.org/morgue
     ttyrecs:
@@ -200,7 +200,7 @@ sources:
     base: https://crawl.xtahua.com/crawl/meta
     logs:
       - '{git,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28}/{logfile,milestones}{,-sprint}*'
     morgues:
       - https://crawl.xtahua.com/crawl/morgue
     ttyrecs:
@@ -220,7 +220,7 @@ sources:
   - name: cpo
     base: https://crawl.project357.org
     logs:
-      - dcss-{milestones,logfile}-{trunk,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,combo_god}*
+      - dcss-{milestones,logfile}-{trunk,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,combo_god}*
       - dcss-{milestones,logfile}-experimental-positional-magic: positional-magic
       - dcss-{milestones,logfile}-experimental-delpal: delver-palentonga
       - dcss-{milestones,logfile}-kobold-nightstalker: kobold-nightstalker
@@ -242,7 +242,7 @@ sources:
   - name: cko
     base: https://crawl.kelbi.org/crawl/meta
     logs:
-      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,git}/{milestones,logfile}{,-sprint,-zotdef}*'
+      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,git}/{milestones,logfile}{,-sprint,-zotdef}*'
       - new-nemelex/{milestones,logfile}*: new-nemelex
       - positional-magic/{milestones,logfile}*: positional-magic
       - delpal/{milestones,logfile}*: delver-palentonga
