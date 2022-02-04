@@ -140,7 +140,7 @@ sources:
     base: https://webzook.net/soup
     logs:
       - '0.16/{logfile,milestones}-old'
-      - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,trunk}/{logfile,milestones}*'
+      - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,trunk}/{logfile,milestones}*'
     morgues:
       - ['cwz.*/trunk', 'https://webzook.net/soup/morgue/trunk']
       - ['cwz.*/(\d+[.]\d+)', 'https://webzook.net/soup/morgue/$1']
@@ -210,7 +210,7 @@ sources:
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
       - '{trunk,0.14}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27}/{logfile,milestones}*'
+      - '{0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28}/{logfile,milestones}*'
     morgues:
       - [ 'lld.*/(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
       - http://lazy-life.ddo.jp:8080/morgue
