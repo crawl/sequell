@@ -398,7 +398,7 @@ species:
   MD: Mountain Dwarf*
   DE: Deep Elf
   GE: Grey Elf*
-  HE: High Elf
+  HE: High Elf*
   SE: Sludge Elf*
   HO: Hill Orc
   LO: Lava Orc*
@@ -411,6 +411,7 @@ species:
   Pl: Plutonian*
   Ba: Barachi
   Pa: Palentonga
+  My: Mayflytaur*
 
 species-flavours:
   draconian:
