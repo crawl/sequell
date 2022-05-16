@@ -62,6 +62,7 @@ sub expand {
                              HENZELL_ENV_CHANNEL => $$m{channel},
                              HENZELL_ENV_NICK => $$m{nick},
                              HENZELL_PROXIED => $$m{proxied} ? 'y' : '',
+                             HENZELL_READONLY => $$m{readonly} ? 'y' : '',
                              IRC_NICK_AUTHENTICATED => $authenticated ? 'y' : ''
                            },
                            env => $opt{env} }), "\n";

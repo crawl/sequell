@@ -4,12 +4,14 @@ use warnings;
 use Test::More;
 use lib 'lib';
 use File::Path;
+use File::Temp qw/tempdir/;
 use utf8;
 
 BEGIN {
   $ENV{LEARNDB} = 'tmp/test.db';
   unlink $ENV{LEARNDB};
-};
+}
+$ENV{HENZELL_ROOT} = tempdir(CLEANUP => 1);
 
 File::Path::make_path('tmp');
 
@@ -17,12 +19,15 @@ $ENV{IRC_NICK_AUTHENTICATED} = 'y';
 $ENV{HENZELL_SQL_QUERIES} = 'y';
 $ENV{RUBYOPT} = '-Isrc';
 $ENV{PERL_UNICODE} = 'AS';
-$ENV{HENZELL_ROOT} = '.';
 $ENV{HENZELL_ALL_COMMANDS} = 'y';
 
+use Henzell::ACL;
 use Henzell::ReactorService;
 use Henzell::IRCTestStub;
+use Henzell::IRCAuthStub;
 use Henzell::CommandService;
+use Henzell::SeenService;
+use Henzell::TellService;
 use Henzell::Bus;
 use LearnDB;
 
@@ -34,10 +39,16 @@ my $bus = Henzell::Bus->new;
 my $cmd = Henzell::CommandService->new(irc => $irc,
                                        config => $rc,
                                        bus => $bus);
-my $ldb = Henzell::ReactorService->new(executor => $cmd,
-                                       irc => $irc,
-                                       bus => $bus);
-$irc->configure_services(services => [$ldb]);
+$irc->configure_services(
+   services => [
+      Henzell::SeenService->new(irc => $irc),
+      Henzell::TellService->new(irc => $irc),
+      Henzell::ReactorService->new(
+         executor => $cmd,
+         auth => Henzell::IRCAuthStub->new('greensnark'),
+         irc => $irc,
+         bus => $bus)
+   ]);
 
 irc('!learn add test Hi');
 is(irc('!RELAY -channel ##csdc !learn del test[$]'), 'Permission db:test denied: proxying not permitted');
@@ -55,6 +66,18 @@ is(irc('??greeter'), 'greeter[1/1]: Hi greensnark');
 is(irc('!RELAY -nick mazda ??greeter'), 'greeter[1/1]: Hi mazda');
 is(irc('!RELAY -nick mazda -prefix Yak: ??greeter'), 'Yak:greeter[1/1]: Hi mazda');
 is(irc('!RELAY -nick mazda !learn add foo bar'), 'Permission db:foo denied: proxying not permitted');
+
+irc('!learn set :acl:proxy greensnark');
+Henzell::ACL::reload();
+is(irc('!RELAY -nick mazda !learn add foo bar'), 'foo[1/1]: bar');
+like(irc('!RELAY -nick mazda !cmd sayhi .echo hi'), qr/command: !sayhi => .echo hi/);
+is(irc('!RELAY -nick mazda !kw mazdawin win'), 'Defined keyword: mazdawin => win');
+is(irc('!RELAY -nick mazda -r !learn add foo baz'), 'Permission db:foo denied: read-only');
+is(irc('!RELAY -nick mazda -readonly !cmd dontsayhi .echo nohi'), 'Permission cmd:!dontsayhi denied: proxying not allowed');
+is(irc('!RELAY -nick mazda -r !kw mazdaquit quit'), 'Permission kw:mazdaquit denied: proxying not allowed');
+is(irc('!learn rm :acl:proxy'), 'Deleted :acl:proxy[1/1]: greensnark');
+Henzell::ACL::reload();
+is(irc('!RELAY -nick mazda !learn add foo bee'), 'Permission db:foo denied: proxying not permitted');
 
 irc('!learn add xxx Yak');
 is(irc('!learn mv xxx yyy'), 'xxx -> yyy[1/1]: Yak');

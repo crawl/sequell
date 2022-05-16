@@ -15,6 +15,7 @@ use parent qw/Henzell::ServiceBase Henzell::Forkable/;
 use Henzell::LearnDBBehaviour;
 use Henzell::LearnDBLookup;
 use Henzell::ACL;
+use Henzell::RelayCommandLine;
 
 use LearnDB;
 
@@ -305,52 +306,43 @@ sub unauthenticate {
 
 sub _parse_relay {
   my ($self, $m, $target) = @_;
-  $target =~ s/!RELAY +//;
 
-  my %change;
-  my ($params, $cmd) = $target =~ /^((?:-\w+ +\S+ +)*)(?:-- +)?(.*)/;
-  if ($params =~ /\S/) {
-    while ($params =~ /-(\w+) +(\S+) +/g) {
-      my ($key, $val) = ($1, $2);
-      $change{"relay$key"} = $val;
-      if ($key eq 'prefix' && $val =~ /\S/) {
-        $change{outprefix} = $val;
-      }
-      if ($key eq 'nick' && $val) {
-        return unless $self->_authorize_relay($m, \%change);
-        $change{orignick} = $$m{nick};
-        $change{nick} = $val;
-      }
-      if ($key eq 'channel' && $val) {
-        return unless $self->_authorize_relay($m, \%change);
-      }
-      if ($key eq 'n' && $val > 0) {
-        $change{nlines} = $val;
-      }
-    }
+  $$m{orignick} = $$m{nick};
+  my %change = Henzell::RelayCommandLine::parse($target);
+
+  if ($change{nick} || $change{relaychannel}) {
+    return unless $self->_authorize_relay($m, \%change);
   }
-  $change{body} = $cmd;
-  $change{verbatim} = $cmd;
+
+  %$m = (%$m, %change);
   %$m = (%$m, %change);
 }
 
 sub _authorize_relay {
   my ($self, $m, $change) = @_;
   my $auth = $self->{auth};
+
+  if ($$change{readonly}) {
+    $$m{relayed} = 1;
+    $$m{proxied} = 1;
+    $$m{readonly} = 1;
+    return 1;
+  }
+
   my $auth_req =
     Henzell::ACL::has_permission('proxy', $$m{nick}, $$m{channel},
                                  $auth &&
                                    $auth->nick_identified($$m{nick}),
                                  'deny');
-  if ($auth_req && $auth_req eq 'authenticate' && $auth &&
-        !$$m{reprocessed_command}) {
+
+  if ($auth_req && $auth_req eq 'authenticate' && $auth && !$$m{reprocessed_command}) {
     $self->authenticate_command($m);
     return 0;
   }
 
   if (!$auth_req || $auth_req ne 'ok') {
-    $$change{relayed} = 1;
-    $$change{proxied} = 1;
+    $$m{relayed} = 1;
+    $$m{proxied} = 1;
     return 1;
   }
 

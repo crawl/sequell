@@ -3,10 +3,10 @@ package Seen;
 use Helper;
 use File::Spec;
 
-my $seen_dir = 'dat/seendb';
+use Henzell::Root;
 
 sub seen_dir {
-  File::Spec->catfile(($ENV{HENZELL_ROOT} || '.'), $seen_dir)
+  Henzell::Root::root('dat/seendb')
 }
 
 sub seen_file {

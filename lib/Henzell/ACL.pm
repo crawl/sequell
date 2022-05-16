@@ -41,6 +41,10 @@ sub acl_db {
   $ACL_DB ||= Henzell::ACL->new(LearnDB::db());
 }
 
+sub reload {
+  undef $ACL_DB
+}
+
 sub new {
   my ($cls, $db) = @_;
   bless { db => $db }, $cls

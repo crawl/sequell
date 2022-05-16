@@ -702,3 +702,6 @@ commands, in LearnDB do {} forms, and other places that expect real commands.
    response to the command.
 - `-n` the maximum number of lines of output that must be returned. This is
    useful to keep Sequell from spamming lots of output in PM.
+- `-readonly` or `-r` to tell Sequell to reject all attempts to alter Sequell's
+  databases. A command proxied to Sequell with `-readonly` can't change the LearnDB,
+  define new commands or keywords, or otherwise change Sequell's visible public state.

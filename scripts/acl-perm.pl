@@ -19,6 +19,11 @@ unless ($perm && $nick ne '' && $chan ne '') {
   exit 1;
 }
 
+if ($ENV{HENZELL_READONLY} eq 'y') {
+  print "DENY:read-only\n";
+  exit 1;
+}
+
 if ($ENV{HENZELL_PROXIED} eq 'y') {
   print "DENY:proxying not permitted\n";
   exit 1;

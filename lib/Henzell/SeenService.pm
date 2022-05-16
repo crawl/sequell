@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 use File::Path;
+use Henzell::Root;
 
-my $SEEN_DIR       = 'dat/seendb';
+my $SEEN_DIR = Henzell::Root::root('dat/seendb');
 
 sub new {
   my ($cls, %opt) = @_;

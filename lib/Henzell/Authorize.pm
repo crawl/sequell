@@ -11,6 +11,12 @@ sub cmd_permit {
   $channel ||= $ENV{HENZELL_ENV_CHANNEL};
 
   print STDERR "perm:$permission $nick/$channel\n";
+
+  if (($ENV{HENZELL_READONLY} || '') eq 'y') {
+    print "Permission $permission denied: read-only\n";
+    exit 1;
+  }
+
   if ($ENV{HENZELL_PROXIED} eq 'y') {
     print "Permission $permission denied: proxying not permitted\n";
     exit 1;

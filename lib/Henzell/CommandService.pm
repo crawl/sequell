@@ -205,6 +205,7 @@ sub command_raw_output {
     print STDERR "CMD($private): $nick: $verbatim (target: $target)\n";
     local $ENV{PRIVMSG} = $private ? 'y' : '';
     local $ENV{HENZELL_PROXIED} = $proxied ? 'y' : '';
+    local $ENV{HENZELL_READONLY} = $$m{readonly} ? 'y' : '';
     local $ENV{IRC_NICK_AUTHENTICATED} =
       !$auth || $auth->nick_identified($nick) ? 'y' : '';
 
