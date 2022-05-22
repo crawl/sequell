@@ -28,11 +28,6 @@ describe Grammar::QueryBody do
     expect(kw.to_s).to eq('crace=Tengu')
   end
 
-  it "should parse a standalone HE as High Elf (because Healers are dead)" do
-    kw = p("HE")
-    expect(kw.to_s).to eq("crace='High Elf'")
-  end
-
   it "should parse t* as any t" do
     kw = p("t*")
     expect(kw.arguments[0].operator).to eq(:or)
@@ -40,7 +35,7 @@ describe Grammar::QueryBody do
   end
 
   it "should parse t2020a to include file filter" do
-    expect(p("t2020a").to_s).to eq("start>='2020-06-12 20:00:00' end<'2020-06-28 20:00:00' ((cv=0.25|0.25-a)) explbr= file!=cwz/soup/trunk/logfile")
+    expect(p("t2020a").to_s).to eq("start>='2020-06-12 20:00:00' end<'2020-06-28 20:00:00' ((cv=0.25|0.25-a)) explbr= file!=cwz/soup/trunk/milestones file!=cwz/soup/trunk/logfile")
   end
 
   it "should parse t2019b without a filter" do

@@ -54,10 +54,12 @@ describe LearnDB::DB do
     db.entry("世界中").rename_to('Адыгэбзэ')
     expect(db.entry('Адыгэбзэ').size).to eql(1)
     expect {
-      db.entry('cow').add('fief').rename_to('Адыгэбзэ')
-    }.to raise_error
+      entry = db.entry('cow')
+      entry.add('fief')
+      entry.rename_to('Адыгэбзэ')
+    }.to raise_error(/Cannot rename cow -> Адыгэбзэ/)
     expect {
       db.entry('miaow').rename_to('rawr')
-    }.to raise_error
+    }.to raise_error(/miaow doesn't exist/)
   end
 end
