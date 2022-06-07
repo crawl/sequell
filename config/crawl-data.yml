@@ -393,7 +393,7 @@ species:
   Sp: Spriggan
   Tr: Troll
   Vp: Vampire
-  DD: Deep Dwarf
+  DD: Deep Dwarf*
   HD: Hill Dwarf*
   MD: Mountain Dwarf*
   DE: Deep Elf
@@ -412,6 +412,7 @@ species:
   Ba: Barachi
   Pa: Palentonga
   My: Mayflytaur*
+  Me: Meteoran
 
 species-flavours:
   draconian:
