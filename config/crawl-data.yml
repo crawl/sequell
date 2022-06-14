@@ -469,7 +469,7 @@ classes:
   Tm: Transmuter
   Wn: Wanderer
   Wr: Warper
-  Wz: Hedge Wizard
+  HW: Hedge Wizard
   AE: Air Elementalist
   EE: Earth Elementalist
   FE: Fire Elementalist
@@ -481,6 +481,7 @@ classes:
   AM: Arcane Marksman
   Sk: Skald
   Jr: Jester*
+  Wz: Wizard*
 
 column-aliases:
   maxsk: maxskills
