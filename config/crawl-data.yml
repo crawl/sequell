@@ -990,6 +990,9 @@ field-input-transforms: &inputtransforms
   - cls:
       string-replace:
         - [Assassin, Brigand]
+  - cls:
+      regexp-replace:
+        - ["^Wizard", "Hedge Wizard"]
   - crace:
       source: race
       regexp-replace:
@@ -1014,6 +1017,12 @@ field-input-transforms: &inputtransforms
           equal: Gnoll
       regexp-replace:
         - ['^Bu', 'Gn']
+  - char:
+      if-match:
+        - field: cls
+          equal: Wizard
+      regexp-replace:
+        - ['Wz$', 'HW']
 
 
 field-transforms:
@@ -1024,6 +1033,8 @@ field-transforms:
   cls:
     as: Brigand
     assassin: Brigand
+    wz: Hedge Wizard
+    wizard: Hedge Wizard
   ktyp:
     poison: pois
     drown: water
