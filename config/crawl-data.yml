@@ -234,6 +234,7 @@ skills:
   - Slings
   - Bows
   - Crossbows
+  - Ranged Weapons
   - Throwing
   - Armour
   - Dodging
@@ -261,6 +262,7 @@ skills:
 
 skill-abbreviations:
   crossbows: Xbows
+  ranged: Ranged Weapons
   throwing: Throw
   dodging: Dodge
   spellcasting: Splcast
@@ -1075,6 +1077,7 @@ field-transforms:
     sli: Slings
     cross: Crossbows
     cbow: Crossbows
+    ranged: Ranged Weapons
     hex: Hexes
     cha: Charms
     tloc: Translocations
