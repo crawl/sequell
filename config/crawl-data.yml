@@ -1170,7 +1170,7 @@ tournament-prefixes:
   - tournament
 
 tournament-data:
-  default-tourney: '2022a'
+  default-tourney: '2022b'
   crawl:
     '2008':
       version: "0.4"
