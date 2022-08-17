@@ -1249,7 +1249,7 @@ tournament-data:
       version: ["0.28", "0.28-a"]
       time: [2022020420, 2022022020]
       filter: file!="cwz/soup/trunk/milestones|cwz/soup/trunk/logfile"
-    '2022a':
+    '2022b':
       version: ["0.29", "0.29-a"]
       time: [2022082620, 2022091120]
       filter: file!="cwz/soup/trunk/milestones|cwz/soup/trunk/logfile"
