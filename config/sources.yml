@@ -140,7 +140,7 @@ sources:
     base: https://webzook.net/soup
     logs:
       - '0.16/{logfile,milestones}-old'
-      - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,trunk}/{logfile,milestones}*'
+      - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,trunk}/{logfile,milestones}*'
     morgues:
       - ['cwz.*/trunk', 'https://webzook.net/soup/morgue/trunk']
       - ['cwz.*/(\d+[.]\d+)', 'https://webzook.net/soup/morgue/$1']
@@ -152,7 +152,7 @@ sources:
       - cbro2
     base: https://cbro.berotato.org/
     logs:
-      - meta/{0.24,0.25,0.26,0.27,0.28,git}/{logfile,milestones}{,-sprint}*
+      - meta/{0.24,0.25,0.26,0.27,0.28,0.29,git}/{logfile,milestones}{,-sprint}*
     morgues:
       - https://cbro.berotato.org/morgue
     ttyrecs:
@@ -200,7 +200,7 @@ sources:
     base: https://crawl.xtahua.com/crawl/meta
     logs:
       - '{git,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29}/{logfile,milestones}{,-sprint}*'
     morgues:
       - https://crawl.xtahua.com/crawl/morgue
     ttyrecs:
@@ -220,7 +220,7 @@ sources:
   - name: cpo
     base: https://crawl.project357.org
     logs:
-      - dcss-{milestones,logfile}-{trunk,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,combo_god}*
+      - dcss-{milestones,logfile}-{trunk,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,combo_god}*
       - dcss-{milestones,logfile}-experimental-positional-magic: positional-magic
       - dcss-{milestones,logfile}-experimental-delpal: delver-palentonga
       - dcss-{milestones,logfile}-kobold-nightstalker: kobold-nightstalker
