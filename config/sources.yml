@@ -118,7 +118,7 @@ sources:
       - clan
     base: https://underhound.eu/crawl/meta
     logs:
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29}/{logfile,milestones}{,-sprint}*'
       - '{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
       - https://underhound.eu/crawl/morgue
@@ -210,7 +210,7 @@ sources:
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
       - '{trunk,0.14}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28}/{logfile,milestones}*'
+      - '{0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29}/{logfile,milestones}*'
     morgues:
       - [ 'lld.*/(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
       - http://lazy-life.ddo.jp:8080/morgue
@@ -242,7 +242,7 @@ sources:
   - name: cko
     base: https://crawl.kelbi.org/crawl/meta
     logs:
-      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,git}/{milestones,logfile}{,-sprint,-zotdef}*'
+      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,git}/{milestones,logfile}{,-sprint,-zotdef}*'
       - new-nemelex/{milestones,logfile}*: new-nemelex
       - positional-magic/{milestones,logfile}*: positional-magic
       - delpal/{milestones,logfile}*: delver-palentonga
