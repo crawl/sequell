@@ -251,3 +251,12 @@ sources:
       - https://crawl.kelbi.org/crawl/morgue
     ttyrecs:
       - https://crawl.kelbi.org/crawl/ttyrec
+      
+- name: cdi
+    base: https://crawl.dcss.io/crawl/meta/
+    logs:
+      - 'crawl-bot-{0.29}/{milestones,logfile}{,-sprint}*'
+    morgues:
+      - https://crawl.dcss.io/crawl/morgue
+    ttyrecs:
+      - https://crawl.dcss.io/crawl/ttyrec      
