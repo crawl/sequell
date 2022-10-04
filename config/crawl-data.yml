@@ -121,99 +121,110 @@ orcs:
   - Zorug
 
 uniques:
-  - Ijyb
-  - Blork the orc
-  - Blork
-  - Urug
-  - Erolcha
-  - Snorg
-  - Polyphemus
   - Adolf
-  - Antaeus
-  - Xtahua
-  - Tiamat
-  - Boris
-  - Murray
-  - Terence
-  - Jessica
-  - Sigmund
-  - Edmund
-  - Psyche
-  - Donald
-  - Michael
-  - Joseph
-  - Erica
-  - Josephine
-  - Harold
-  - Norbert
-  - Jozef
   - Agnes
-  - Maud
-  - Louise
-  - Francis
-  - Frances
-  - Rupert
-  - Wayne
-  - Duane
-  - Norris
-  - Frederick
-  - Margery
-  - Mnoleg
-  - Lom Lobon
-  - Cerebov
-  - Gloorx Vloq
-  - Geryon
-  - Dispater
-  - Asmodeus
-  - Ereshkigal
-  - the royal jelly
-  - the Lernaean hydra
-  - Dissolution
-  - Azrael
-  - Prince Ribbit
-  - Sonja
-  - Ilsuiw
-  - Nergalle
-  - Saint Roka
-  - Roxanne
-  - Eustachio
-  - Nessos
-  - Dowan
-  - Duvessa
-  - Grum
-  - Crazy Yiuf
-  - Gastronok
-  - Pikel
-  - Menkaure
-  - Khufu
   - Aizul
-  - Purgy
-  - Kirke
-  - Maurice
-  - Nikola
-  - Mara
-  - Grinder
-  - Mennas
-  - Chuck
-  - the iron giant
-  - Nellie
-  - Wiglaf
-  - Jory
-  - Terpsichore
-  - Ignacio
-  - Fannar
+  - Amaemon
+  - Antaeus
   - Arachne
-  - "Cigotuvi's Monster"
-  - Jorgrun
-  - Lamia
-  - Pan
-  - Sojobo
+  - Asmodeus
   - Asterion
-  - Natasha
-  - Vashnia
-  - Satan Claus
-  - Robin
+  - Azrael
+  - Bai Suzhen
+  - Blork
+  - Blork the orc
+  - Boris
+  - Cerebov
+  - Chuck
+  - Crazy Yiuf
+  - Dispater
+  - Dissolution
+  - Donald
+  - Dowan
+  - Duane
+  - Duvessa
+  - Edmund
+  - the Enchantress
+  - Ereshkigal
+  - Erica
+  - Erolcha
+  - Eustachio
+  - Fannar
+  - Frances
+  - Francis
+  - Frederick
+  - Gastronok
+  - Geryon
+  - Gloorx Vloq
+  - Grinder
+  - Grum
+  - Grunn
+  - Harold
+  - Ignacio
+  - Ijyb
+  - Ilsuiw
+  - the Iron Giant
+  - Jessica
+  - Jorgrun
+  - Jory
+  - Joseph
+  - Josephine
+  - Josephina
+  - Jozef
+  - Khufu
+  - Kirke
+  - Lamia
+  - the Lernaean hydra
+  - Lodul
+  - Lom Lobon
+  - Louise
   - Maggie
+  - Mara
+  - Margery
+  - Maud
+  - Maurice
+  - Menkaure
+  - Mennas
+  - Michael
+  - Mlioglotl
+  - Mnoleg
+  - Murray
+  - Natasha
+  - Nellie
+  - Nergalle
+  - Nessos
+  - Nikola
+  - Norbert
+  - Norris
+  - Parghit
+  - Pargi
+  - Pan
+  - Pikel
+  - Polyphemus
+  - Prince Ribbit
+  - Psyche
+  - Purgy
+  - Robin
+  - Roxanne
+  - the Royal Jelly
+  - Rupert
+  - Saint Roka
+  - Satan Claus
+  - the Serpent of Hell
+  - Sigmund
+  - Snorg
+  - Sojobo
+  - Sonja
+  - Terence
+  - Terpsichore
+  - Tiamat
+  - Urug
+  - Vashnia
+  - Vv
+  - Wayne
+  - Wiglaf
+  - Xtahua
+  - Zenata
 
 # Used to handle fields that contain both monster killers and oddball
 # edge cases.
