@@ -383,48 +383,49 @@ god-aliases:
 
 # * - dead species
 species:
+  At: Armataur
+  Ba: Barachi
   Ce: Centaur*
+  DD: Deep Dwarf*
+  DE: Deep Elf
   Dg: Demigod
-  Ds: Demonspawn
+  Dj: Djinni
   Dr: Draconian
+  Ds: Demonspawn
   El: Elf*
   Fe: Felid
+  Fo: Formicid
+  GE: Grey Elf*
   Gh: Ghoul
   Gm: Gnome*
   Gn: Gnoll
+  Gr: [Gargoyle, Grotesk]
+  HD: Hill Dwarf*
+  HE: High Elf*
+  HO: Hill Orc
   Ha: Halfling
   Hu: Human
   Ke: Kenku*
   Ko: Kobold
+  LO: Lava Orc*
+  MD: Mountain Dwarf*
+  Me: Meteoran
   Mf: Merfolk
   Mi: Minotaur
   Mu: Mummy
+  My: Mayflytaur*
   Na: Naga
   OM: Ogre-Mage*
   Og: Ogre
-  Sp: Spriggan
-  Tr: Troll
-  Vp: Vampire
-  DD: Deep Dwarf*
-  HD: Hill Dwarf*
-  MD: Mountain Dwarf*
-  DE: Deep Elf
-  GE: Grey Elf*
-  HE: High Elf*
-  SE: Sludge Elf*
-  HO: Hill Orc
-  LO: Lava Orc*
-  Gr: [Gargoyle, Grotesk]
-  Dj: Djinni
   Op: Octopode
-  Te: Tengu
-  Fo: Formicid
-  VS: Vine Stalker
+  Pa: Palentonga*
   Pl: Plutonian*
-  Ba: Barachi
-  Pa: Palentonga
-  My: Mayflytaur*
-  Me: Meteoran
+  SE: Sludge Elf*
+  Sp: Spriggan
+  Te: Tengu
+  Tr: Troll
+  VS: Vine Stalker
+  Vp: Vampire
 
 species-flavours:
   draconian:
@@ -457,42 +458,43 @@ species-enum-map-override: {}
 
 # * - dead class
 classes:
+  AE: Air Elementalist
+  AK: Abyssal Knight*
+  AM: Arcane Marksman*
   Ar: Artificer
   As: Assassin*
   Be: Berserker
   Br: Brigand
   CA: Cinder Acolyte
+  CK: Chaos Knight
   Cj: Conjurer
   Cr: Crusader*
+  DK: Death Knight
   De: Delver
+  EE: Earth Elementalist
   En: Enchanter
+  FE: Fire Elementalist
   Fi: Fighter
   Gl: Gladiator
+  HW: Hedge Wizard
   He: Healer*
+  Hs: Hexslinger
   Hu: Hunter
+  IE: Ice Elementalist
+  Jr: Jester*
   Mo: Monk
   Ne: Necromancer
   Pa: Paladin*
   Pr: Priest*
-  Re: Reaver*
+  Re: Reaver
+  Sk: Skald
   St: Stalker*
   Su: Summoner
   Th: Thief*
   Tm: Transmuter
+  VM: Venom Mage
   Wn: Wanderer
   Wr: Warper
-  HW: Hedge Wizard
-  AE: Air Elementalist
-  EE: Earth Elementalist
-  FE: Fire Elementalist
-  IE: Ice Elementalist
-  AK: Abyssal Knight
-  CK: Chaos Knight
-  DK: Death Knight
-  VM: Venom Mage
-  AM: Arcane Marksman
-  Sk: Skald
-  Jr: Jester*
   Wz: Wizard*
 
 column-aliases:
