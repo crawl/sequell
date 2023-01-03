@@ -19,7 +19,7 @@ module Crawl
 
   private
     def self.read_config(config_file)
-      YAML.load_file(config_file)
+      YAML.load_file(config_file, aliases: true)
     end
   end
 end
