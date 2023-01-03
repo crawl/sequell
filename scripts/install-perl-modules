@@ -1,3 +1,8 @@
 #! /usr/bin/env bash
 
-cat PerlModules | xargs cpan -i
+CPAN=cpan
+if command -v cpanm &>/dev/null; then
+   CPAN=cpanm
+fi
+
+exec xargs "$CPAN" -i <PerlModules
