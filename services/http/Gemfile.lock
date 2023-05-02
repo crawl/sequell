@@ -16,42 +16,49 @@ GEM
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     gserver (0.0.1)
-    haml (5.1.2)
-      temple (>= 0.8.0)
+    haml (6.1.1)
+      temple (>= 0.8.2)
+      thor
       tilt
     http-accept (1.7.0)
-    http-cookie (1.0.3)
+    http-cookie (1.0.5)
       domain_name (~> 0.5)
-    json (2.5.1)
-    mime-types (3.3.1)
+    json (2.6.3)
+    mime-types (3.4.1)
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2020.0512)
-    mustermann (2.0.2)
+    mime-types-data (3.2023.0218.1)
+    mini_portile2 (2.8.2)
+    mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
     netrc (0.11.0)
+    nio4r (2.5.9)
     parslet (2.0.0)
-    pg (1.2.3)
-    rack (2.2.6.2)
-    rack-protection (2.2.3)
+    pg (1.5.3)
+    puma (6.2.2)
+      nio4r (~> 2.0)
+    rack (2.2.7)
+    rack-protection (3.0.6)
       rack
-    rack-timeout (0.6.0)
+    rack-timeout (0.6.3)
     rest-client (2.1.0)
       http-accept (>= 1.7.0, < 2.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
     ruby2_keywords (0.0.5)
-    sinatra (2.2.3)
-      mustermann (~> 2.0)
-      rack (~> 2.2)
-      rack-protection (= 2.2.3)
+    sinatra (3.0.6)
+      mustermann (~> 3.0)
+      rack (~> 2.2, >= 2.2.4)
+      rack-protection (= 3.0.6)
       tilt (~> 2.0)
-    sqlite3 (1.4.2)
-    temple (0.8.2)
-    tilt (2.0.11)
+    sqlite3 (1.6.2)
+      mini_portile2 (~> 2.8.0)
+    temple (0.10.0)
+    thor (1.2.1)
+    tilt (2.1.0)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.7)
+    unf_ext (0.0.8.2)
 
 PLATFORMS
   ruby
@@ -63,7 +70,8 @@ DEPENDENCIES
   haml
   json
   parslet
-  rack (~> 2.2.6)
+  puma
+  rack
   rack-timeout
   re2!
   rest-client
