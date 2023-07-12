@@ -242,9 +242,6 @@ skills:
   - Maces & Flails
   - Polearms
   - Staves
-  - Slings
-  - Bows
-  - Crossbows
   - Ranged Weapons
   - Throwing
   - Armour
@@ -272,8 +269,7 @@ skills:
   - MP
 
 skill-abbreviations:
-  crossbows: Xbows
-  ranged: Ranged Weapons
+  'ranged weapons': Ranged
   throwing: Throw
   dodging: Dodge
   spellcasting: Splcast
@@ -283,7 +279,6 @@ skill-abbreviations:
   necromancy: Nec
   translocations: Tloc
   transmutations: Tmut
-  divinations: Div
   invocations: Inv
   evocations: Evo
   experience: Exp
@@ -300,6 +295,7 @@ skill-expansions:
   tmut: transmutations
   armor: armour
   uc: unarmed combat
+  ranged: ranged weapons
   shp: shapeshifting
 
 # Must include all variations of branch names here. Canonical names may be
