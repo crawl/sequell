@@ -978,6 +978,8 @@ milestone-fields-with-type:
   - status^+
   - banisherS?^
   - cbanisherS?^
+  - fgemI
+  - igemI
 
 milestone-verb-mappings:
   unique: uniq
