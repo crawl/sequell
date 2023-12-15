@@ -905,8 +905,6 @@ logrecord-fields-with-type:
   - status^+
   - banisherS?^
   - cbanisherS?^
-  - fgemI
-  - igemI
 
 milestone-fields-with-type:
   - idI%
@@ -978,8 +976,6 @@ milestone-fields-with-type:
   - status^+
   - banisherS?^
   - cbanisherS?^
-  - fgemI
-  - igemI
 
 milestone-verb-mappings:
   unique: uniq
