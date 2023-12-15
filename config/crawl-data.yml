@@ -905,6 +905,8 @@ logrecord-fields-with-type:
   - status^+
   - banisherS?^
   - cbanisherS?^
+  - fgemI
+  - igemI
 
 milestone-fields-with-type:
   - idI%
