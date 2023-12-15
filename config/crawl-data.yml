@@ -1169,6 +1169,8 @@ milestone-types:
   - sacrifice
   - ancestor.class
   - ancestor.special
+  - gem.found
+  - gem.lost
 
 milestone-aliases:
   god.abandon: god.renounce
