@@ -415,7 +415,10 @@ species:
   My: Mayflytaur*
   Na: Naga
   OM: Ogre-Mage*
-  Og: Ogre
+  Og: Ogre*
+# Note: `On' must be quoted here because otherwise it's interpreted as `true'
+# in yaml 1.1 and earlier.
+  'On': Oni
   Op: Octopode
   Pa: Palentonga*
   Pl: Plutonian*
@@ -459,6 +462,7 @@ species-enum-map-override: {}
 classes:
   AE: Air Elementalist
   AK: Abyssal Knight*
+  Al: Alchemist
   AM: Arcane Marksman*
   Ar: Artificer
   As: Assassin*
@@ -492,7 +496,7 @@ classes:
   Su: Summoner
   Th: Thief*
   Tm: Transmuter*
-  VM: Venom Mage
+  VM: Venom Mage*
   Wn: Wanderer
   Wr: Warper
   Wz: Wizard*
