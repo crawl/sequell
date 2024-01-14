@@ -152,7 +152,7 @@ sources:
       - cbro2
     base: https://cbro.berotato.org/
     logs:
-      - meta/{0.24,0.25,0.26,0.27,0.28,0.29,0.30,git}/{logfile,milestones}{,-sprint}*
+      - meta/{0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,git}/{logfile,milestones}{,-sprint}*
     morgues:
       - https://cbro.berotato.org/morgue
     ttyrecs:
@@ -242,7 +242,7 @@ sources:
   - name: cko
     base: https://crawl.kelbi.org/crawl/meta
     logs:
-      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,git}/{milestones,logfile}{,-sprint,-zotdef}*'
+      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,git}/{milestones,logfile}{,-sprint,-zotdef}*'
       - new-nemelex/{milestones,logfile}*: new-nemelex
       - positional-magic/{milestones,logfile}*: positional-magic
       - delpal/{milestones,logfile}*: delver-palentonga
