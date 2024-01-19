@@ -255,7 +255,7 @@ sources:
   - name: cdi
     base: https://crawl.dcss.io/crawl/meta/
     logs:
-      - 'crawl-bot-{0.29,0.30,git}/{milestones,logfile}{,-sprint}*'
+      - 'crawl-bot-{0.29,0.30,0.31,git}/{milestones,logfile}{,-sprint}*'
     morgues:
       - https://crawl.dcss.io/crawl/morgue
     ttyrecs:
