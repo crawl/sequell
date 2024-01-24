@@ -255,12 +255,11 @@ skills:
   - Summonings
   - Necromancy
   - Translocations
-  - Transmutations
+  - Alchemy
   - Fire Magic
   - Ice Magic
   - Air Magic
   - Earth Magic
-  - Poison Magic
   - Invocations
   - Evocations
   - Shapeshifting
@@ -274,11 +273,10 @@ skill-abbreviations:
   dodging: Dodge
   spellcasting: Splcast
   conjurations: Conj
-  enchantments: Ench
   summonings: Summ
   necromancy: Nec
   translocations: Tloc
-  transmutations: Tmut
+  alchemy: Alch
   invocations: Inv
   evocations: Evo
   experience: Exp
@@ -288,14 +286,12 @@ skill-abbreviations:
   'unarmed combat': UC
 
 skill-expansions:
-  pois: poison magic
   flails: maces & flails
-  invo: invocations
-  necro: necromancy
-  tmut: transmutations
-  armor: armour
   uc: unarmed combat
-  ranged: ranged weapons
+  armor: armour
+  spell: spellcasting
+  necro: necromancy
+  invo: invocations
   shape: shapeshifting
 
 # Must include all variations of branch names here. Canonical names may be
@@ -1127,6 +1123,8 @@ field-transforms:
     long: Long Blades
     sh: Shields
     air: Air Magic
+    shape: Shapeshifting
+    alch: Alchemy
 
   maxskills:
     <<: *sk
