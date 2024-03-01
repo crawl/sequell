@@ -299,49 +299,50 @@ skill-expansions:
 # it has a depth. Suffix with [:] to indicate that this branch may or may
 # not have a depth.
 branches:
+  - 'Abyss[:]'
+  - Arena
+  - Bailey
+  - Bazaar
+  - Blade
+  - Bzr
+  - 'Coc:'
+  - 'Crypt:'
   - 'D:'
-  - 'Orc:'
-  - 'Elf:'
-  - 'Lair:'
   - 'Depths:'
-  - 'Swamp:'
+  - Desolation
+  - 'Dis:'
+  - 'Elf:'
+  - 'Forest:'
+  - Gauntlet
+  - 'Geh:'
+  - Hell
+  - 'Hive:'
+  - Ice
+  - IceCv
+  - Lab
+  - 'Lair:'
+  - Minitom
+  - 'Orc:'
+  - Ossuary
+  - Pan
+  - Sewer
   - 'Shoal:'
   - 'Shoals:'
   - 'Slime:'
   - 'Snake:'
   - 'Spider:'
-  - 'Hive:'
+  - 'Swamp:'
+  - 'Tar:'
+  - Temple
+  - 'Tomb:'
+  - Trove
   - 'Vault:'
   - 'Vaults:'
-  - 'Crypt:'
-  - 'Tomb:'
-  - 'Dis:'
-  - 'Geh:'
-  - 'Coc:'
-  - 'Tar:'
-  - 'Zot:'
-  - 'Ziggurat:'
-  - 'Zig:'
-  - 'Forest:'
-  - Lab
-  - Pan
-  - Bazaar
-  - Bzr
-  - Hell
-  - Blade
-  - Temple
-  - 'Abyss[:]'
-  - WizLab
-  - Sewer
-  - Bailey
-  - Minitom
-  - Ossuary
-  - Ice
-  - IceCv
   - Volcano
-  - Desolation
-  - Gauntlet
-  - Arena
+  - WizLab
+  - 'Zig:'
+  - 'Ziggurat:'
+  - 'Zot:'
 
 god:
   ash: Ashenzari
