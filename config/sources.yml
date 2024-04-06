@@ -21,16 +21,15 @@ sources:
     # assumed to be dead versions, and will be fetched only if the
     # local copy is missing.
     logs:
-      - allgames.txt
-      - milestones02
-      - milestones03
-      - '{logfile,milestones}{04,05,06}'
-      - '{logfile,milestones}{07,08}{,-sprint}'
-      - '{logfile,milestones}09'
-      - '{logfile,milestones}10*'
-      - '{logfile,milestones}{11,12,13,14,15,-git}{,-sprint,-zotdef}*'
-      - '{logfile,milestones}{16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31}{,-sprint}*'
+      - '{logfile,milestones}{-git,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31}{,-sprint}*'
+      - '{logfile,milestones}{11,12,13,14,15}{,-sprint,-zotdef}*'
+      - '{logfile,milestones}-git-zotdef'
       - '{logfile,milestones}-lorcs': lorcs
+      - '{logfile,milestones}{07,08,09,10}{,-sprint}'
+      - '{logfile,milestones}{04,05,06}'
+      - milestones03
+      - milestones02
+      - allgames.txt
 
     # Regex -> location; player name is automatically appended.
     morgues:
@@ -47,11 +46,12 @@ sources:
       D: '+0200'
       S: '+0100'
     logs:
-      - '{allgames,milestones}-0.{3,4,5,6}.txt'
+      - '{allgames,milestones}{,-spr}-{svn,0.24,0.25,0.26}.txt*'
+      - '{allgames,milestones}-zd-svn.txt'
+      - '{allgames,milestones}{,-spr}-{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23}.txt'
+      - '{allgames,milestones}{,-spr,-zd}-{0.8,0.10,0.11,0.12,0.13,0.14,0.15}.txt'
       - '{allgames,milestones}{,-spr}-0.7.txt'
-      - '{allgames,milestones}-{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26}.txt*'
-      - '{allgames,milestones}{,-spr,-zd}-0.{8,10,11,12,13,14,15}.txt*'
-      - '{allgames,milestones}{,-spr,-zd}-svn.txt*'
+      - '{allgames,milestones}-{0.3,0.4,0.5,0.6}.txt'
     morgues:
       - - time_gt: '20110819-1740'
           version_match: '0.9'
@@ -67,10 +67,10 @@ sources:
       - cßo
     base: http://dobrazupa.org
     logs:
-      - meta/{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*
-      - meta/{0.16,0.17}/{logfile,milestones}{,-sprint}*
-      - meta/chunkless/{logfile,milestones}*: chunkless
-      - meta/iashol/{logfile,milestones}*: iashol
+      - meta/{0.16,0.17}/{logfile,milestones}{,-sprint}
+      - meta/{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}
+      - meta/chunkless/{logfile,milestones}: chunkless
+      - meta/iashol/{logfile,milestones}: iashol
       - meta/new_nemelex/{logfile,milestones}: new-nemelex
       - meta/jump/{logfile,milestones}: jump
       - meta/inception/{logfile,milestones}: inception
@@ -81,9 +81,9 @@ sources:
       - meta/gods/{logfile,milestones}: gods
       - meta/shadow-god/{logfile,milestones}: shadow-god
       - meta/smithgod/{logfile,milestones}: smithgod
-      - meta/smithgod_rebased/{logfile,milestones}*: smithgod_rebased
-      - meta/ranged_combat/{logfile,milestones}*: rc
-      - meta/nostalgia/{logfile,milestones}*
+      - meta/smithgod_rebased/{logfile,milestones}: smithgod_rebased
+      - meta/ranged_combat/{logfile,milestones}: rc
+      - meta/nostalgia/{logfile,milestones}
     morgues:
       - - time_gt: '20130902-0000'
         - http://dobrazupa.org/morgue # TODO: dead link, something more useful?
@@ -118,8 +118,9 @@ sources:
       - clan
     base: https://underhound.eu/crawl/meta
     logs:
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31}/{logfile,milestones}{,-sprint}*'
-      - '{git,0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,git}/{logfile,milestones}{,-sprint}*'
+      - '{0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
+      - 'git/{logfile,milestones}-zotdef'
     morgues:
       - https://underhound.eu/crawl/morgue
     ttyrecs:
@@ -139,8 +140,8 @@ sources:
   - name: cwz
     base: https://webzook.net/soup
     logs:
-      - '0.16/{logfile,milestones}-old'
       - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,trunk}/{logfile,milestones}*'
+      - '0.16/{logfile,milestones}-old'
     morgues:
       - ['cwz.*/trunk', 'https://webzook.net/soup/morgue/trunk']
       - ['cwz.*/(\d+[.]\d+)', 'https://webzook.net/soup/morgue/$1']
@@ -163,33 +164,33 @@ sources:
       - cbo
     base: http://crawl.berotato.org/crawl
     logs:
-      - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}*
-      - meta/{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25}/{logfile,milestones}{,-sprint}*
-      - meta/{nostalgia,mulch_ado_about_nothing,squarelos-0.17}/{logfile,milestones}*
-      - meta/evoker-god/{logfile,milestones}*: evoker-god
-      - meta/bearkin/{logfile,milestones}*: bearkin
-      - meta/shoals-lite/{logfile,milestones}*: shoals-lite
-      - meta/imp/{logfile,milestones}*: imp
+      - meta/{0.15,0.14,0.13,git}/{logfile,milestones}{,-sprint,-zotdef}
+      - meta/{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25}/{logfile,milestones}{,-sprint}
+      - meta/{nostalgia,mulch_ado_about_nothing,squarelos-0.17}/{logfile,milestones}
+      - meta/evoker-god/{logfile,milestones}: evoker-god
+      - meta/bearkin/{logfile,milestones}: bearkin
+      - meta/shoals-lite/{logfile,milestones}: shoals-lite
+      - meta/imp/{logfile,milestones}: imp
       - meta/new_nemelex/{logfile,milestones}: new-nemelex
-      - meta/gods/{logfile,milestones}*: gods
-      - meta/faithful/{logfile,milestones}*: faithful
-      - meta/no_backtracking_god/{logfile,milestones}*: no-backtracking-god
-      - meta/salamander/{logfile,milestones}*: salamander
-      - meta/chunkless/{logfile,milestones}*: chunkless
-      - meta/plutonians/{logfile,milestones}*: plutonians
-      - meta/ranged_combat/{logfile,milestones}*: rc
+      - meta/gods/{logfile,milestones}: gods
+      - meta/faithful/{logfile,milestones}: faithful
+      - meta/no_backtracking_god/{logfile,milestones}: no-backtracking-god
+      - meta/salamander/{logfile,milestones}: salamander
+      - meta/chunkless/{logfile,milestones}: chunkless
+      - meta/plutonians/{logfile,milestones}: plutonians
+      - meta/ranged_combat/{logfile,milestones}: rc
       - meta/weightless/{logfile,milestones}: weightless
-      - meta/cards/{logfile,milestones}*: cards
-      - meta/evoker-god-rebase/{logfile,milestones}*: evoker-god-rebase
-      - meta/abyssrun/{logfile,milestones}*: abyssrun
-      - meta/orcs_and_elves/{logfile,milestones}*: orcs-and-elves
-      - meta/combo_god/{logfile,milestones}*: combo-god
-      - meta/adrenaline_rush/{logfile,milestones}*: adrenaline-rush
-      - meta/basajaun/{logfile,milestones}*: basajaun
-      - meta/thorn_god/{logfile,milestones}*: thorn-god
-      - meta/dpegs_dynamic_monsters/{logfile,milestones}*: dynamic-monsters
-      - meta/councilgod/{logfile,milestones}*: council-god
-      - meta/frogs/{logfile,milestones}*: frogs
+      - meta/cards/{logfile,milestones}: cards
+      - meta/evoker-god-rebase/{logfile,milestones}: evoker-god-rebase
+      - meta/abyssrun/{logfile,milestones}: abyssrun
+      - meta/orcs_and_elves/{logfile,milestones}: orcs-and-elves
+      - meta/combo_god/{logfile,milestones}: combo-god
+      - meta/adrenaline_rush/{logfile,milestones}: adrenaline-rush
+      - meta/basajaun/{logfile,milestones}: basajaun
+      - meta/thorn_god/{logfile,milestones}: thorn-god
+      - meta/dpegs_dynamic_monsters/{logfile,milestones}: dynamic-monsters
+      - meta/councilgod/{logfile,milestones}: council-god
+      - meta/frogs/{logfile,milestones}: frogs
     morgues:
       - http://crawl.berotato.org/crawl/morgue
     ttyrecs:
@@ -209,8 +210,9 @@ sources:
   - name: lld
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
-      - '{trunk,0.14}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31}/{logfile,milestones}*'
+      - '{0.31}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30}/{logfile,milestones}{,-sprint}'
+      - '{trunk,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}'
     morgues:
       - [ 'lld.*/(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
       - http://lazy-life.ddo.jp:8080/morgue
@@ -220,10 +222,12 @@ sources:
   - name: cpo
     base: https://crawl.project357.org
     logs:
-      - dcss-{milestones,logfile}-{trunk,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,combo_god}*
+      - dcss-{milestones,logfile}-{trunk,0.26,0.27,0.28,0.29,0.30,0.31}*
+      - dcss-{milestones,logfile}-{0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25}
       - dcss-{milestones,logfile}-experimental-positional-magic: positional-magic
       - dcss-{milestones,logfile}-experimental-delpal: delver-palentonga
       - dcss-{milestones,logfile}-kobold-nightstalker: kobold-nightstalker
+      - dcss-{milestones,logfile}-combo_god: combo-god
 
     morgues:
       - https://crawl.project357.org/morgue
@@ -233,7 +237,7 @@ sources:
   - name: cjr
     base: https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks
     logs:
-      - '_crawl-master_crawl-{0.19,0.20,0.21,0.22,git}_saves_{milestones,logfile}{,-sprint,-zotdef}*'
+      - '_crawl-master_crawl-{0.19,0.20,0.21,0.22,git}_saves_{milestones,logfile}{,-sprint,-zotdef}'
     morgues:
       - https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks/morgue
     ttyrecs:
@@ -242,11 +246,11 @@ sources:
   - name: cko
     base: https://crawl.kelbi.org/crawl/meta
     logs:
-      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,git}/{milestones,logfile}{,-sprint,-zotdef}*'
-      - new-nemelex/{milestones,logfile}*: new-nemelex
-      - positional-magic/{milestones,logfile}*: positional-magic
-      - delpal/{milestones,logfile}*: delver-palentonga
-      - kobold-nightstalker/{milestones,logfile}*: kobold-nightstalker
+      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,git}/{milestones,logfile}{,-sprint}*'
+      - new-nemelex/{milestones,logfile}: new-nemelex
+      - positional-magic/{milestones,logfile}: positional-magic
+      - delpal/{milestones,logfile}: delver-palentonga
+      - kobold-nightstalker/{milestones,logfile}: kobold-nightstalker
     morgues:
       - https://crawl.kelbi.org/crawl/morgue
     ttyrecs:
