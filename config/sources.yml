@@ -242,7 +242,7 @@ sources:
       - https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks/morgue
     ttyrecs:
       - https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks/ttyrec
-      
+
   - name: cko
     base: https://crawl.kelbi.org/crawl/meta
     logs:
@@ -255,7 +255,7 @@ sources:
       - https://crawl.kelbi.org/crawl/morgue
     ttyrecs:
       - https://crawl.kelbi.org/crawl/ttyrec
-      
+
   - name: cdi
     base: https://crawl.dcss.io/crawl/meta/
     logs:
@@ -264,4 +264,13 @@ sources:
     morgues:
       - https://crawl.dcss.io/crawl/morgue
     ttyrecs:
-      - https://crawl.dcss.io/crawl/ttyrec      
+      - https://crawl.dcss.io/crawl/ttyrec
+
+  - name: cnc
+    base: https://archive.nemelex.cards/meta/
+    logs:
+      - '{0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,git}/{logfile,milestones}{,-sprint,-zotdef}'
+    morgues:
+      - https://archive.nemelex.cards/morgue
+    ttyrecs:
+      - https://archive.nemelex.cards/ttyrec
