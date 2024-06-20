@@ -70,16 +70,17 @@ class SQLConnection
 
   def self.initialize_type_registry
     return if @type_registry_initialized
-    PG::BasicTypeRegistry.register_type(0, 'citext', PG::TextEncoder::String, PG::TextDecoder::String)
-    PG::BasicTypeRegistry.register_type(0, 'numeric', PG::TextEncoder::String, PgNumericDecoder)
+    @regi = PG::BasicTypeRegistry.new.register_default_types
+    @regi.register_type(0, 'citext', PG::TextEncoder::String, PG::TextDecoder::String)
+    @regi.register_type(0, 'numeric', PG::TextEncoder::String, PgNumericDecoder)
     @type_registry_initialized = true
   end
 
   def self.raw_type_mapped_connection
     self.initialize_type_registry
     connection = PG.connect(dbname: DBNAME, user: DBUSER, password: DBPASS)
-    connection.type_map_for_queries = PG::BasicTypeMapForQueries.new(connection)
-    connection.type_map_for_results = PG::BasicTypeMapForResults.new(connection)
+    connection.type_map_for_queries = PG::BasicTypeMapForQueries.new(connection, registry: @regi)
+    connection.type_map_for_results = PG::BasicTypeMapForResults.new(connection, registry: @regi)
     connection.exec("set time zone 'UTC'").clear
     connection
   end
