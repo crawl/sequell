@@ -140,7 +140,6 @@ module Cmd
 
     def open_db
       new_db = SQLite3::Database.new(@db_file)
-      new_db.type_translation = false
       begin
         new_db.execute(<<SCHEMA)
 CREATE TABLE user_functions (name STRING PRIMARY KEY, definition STRING);
