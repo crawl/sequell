@@ -98,7 +98,7 @@ module Nick
     end
 
     def load_nicks
-      return unless File.exists?(path)
+      return unless File.exist?(path)
       aliases = { }
       File.open(path) do |f|
         f.each_line do |line|

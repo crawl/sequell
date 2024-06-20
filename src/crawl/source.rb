@@ -18,7 +18,7 @@ module Crawl
 
     def self.file_path(filename)
       file = File.join(SOURCE_ROOT, SOURCES_PATH, filename)
-      raise MissingSourceFile.new(file) unless File.exists?(file)
+      raise MissingSourceFile.new(file) unless File.exist?(file)
       file
     end
   end

@@ -9,7 +9,7 @@ module Db
     end
 
     def exists?
-      File.exists?(self.filename)
+      File.exist?(self.filename)
     end
 
     def table_exists?(table)
