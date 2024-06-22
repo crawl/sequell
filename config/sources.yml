@@ -242,7 +242,7 @@ sources:
       - https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks/morgue
     ttyrecs:
       - https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks/ttyrec
-      
+
   - name: cko
     base: https://crawl.kelbi.org/crawl/meta
     logs:
@@ -255,7 +255,7 @@ sources:
       - https://crawl.kelbi.org/crawl/morgue
     ttyrecs:
       - https://crawl.kelbi.org/crawl/ttyrec
-      
+
   - name: cdi
     base: https://crawl.dcss.io/crawl/meta/
     logs:
@@ -264,4 +264,4 @@ sources:
     morgues:
       - https://crawl.dcss.io/crawl/morgue
     ttyrecs:
-      - https://crawl.dcss.io/crawl/ttyrec      
+      - https://crawl.dcss.io/crawl/ttyrec
