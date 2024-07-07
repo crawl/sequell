@@ -996,6 +996,7 @@ field-input-transforms: &inputtransforms
       regexp-replace:
         - ["(?i)^head$", ""]
         - ["^crawl-.*", ""]
+        - ["^heads.*", ""]
   - god:
       string-replace:
         - [Ieoh Jian, Wu Jian]
