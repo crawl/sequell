@@ -1176,6 +1176,7 @@ milestone-types:
   - ancestor.special
   - gem.found
   - gem.lost
+  - mark
 
 milestone-aliases:
   god.abandon: god.renounce
