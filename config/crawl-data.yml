@@ -1202,7 +1202,7 @@ tournament-prefixes:
   - tournament
 
 tournament-data:
-  default-tourney: '2024a'
+  default-tourney: '2024b'
   crawl:
     '2008':
       version: "0.4"
@@ -1292,6 +1292,9 @@ tournament-data:
     '2024a':
       version: ["0.31", "0.31-a"]
       time: [2024011920, 2024020420]
+    '2024b':
+      version: ["0.32", "0.32-a"]
+      time: [2024083020, 2024091520]
 
 
   sprint:
