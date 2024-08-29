@@ -246,7 +246,7 @@ sources:
   - name: cko
     base: https://crawl.kelbi.org/crawl/meta
     logs:
-      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,git}/{milestones,logfile}{,-sprint}*'
+      - '{0.18,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,git}/{milestones,logfile}{,-sprint}'
       - new-nemelex/{milestones,logfile}: new-nemelex
       - positional-magic/{milestones,logfile}: positional-magic
       - delpal/{milestones,logfile}: delver-palentonga
