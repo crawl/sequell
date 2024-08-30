@@ -140,7 +140,7 @@ sources:
   - name: cwz
     base: https://webzook.net/soup
     logs:
-      - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,trunk}/{logfile,milestones}*'
+      - '{0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,trunk}/{logfile,milestones}'
       - '0.16/{logfile,milestones}-old'
     morgues:
       - ['cwz.*/trunk', 'https://webzook.net/soup/morgue/trunk']
@@ -210,8 +210,8 @@ sources:
   - name: lld
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
-      # lld currently retires each previous stable version when the newest is released.
       - '{0.32}/{logfile,milestones}{,-sprint}*'
+      # lld currently retires each previous stable version when the newest is released.
       - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31}/{logfile,milestones}{,-sprint}'
       - '{trunk,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}'
     morgues:
