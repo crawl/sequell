@@ -33,11 +33,11 @@ sources:
 
     # Regex -> location; player name is automatically appended.
     morgues:
-      - http://crawl.akrasiac.org/rawdata
+      - https://crawl.akrasiac.org/rawdata
 
     ttyrecs:
       - https://termcast.shalott.org/ttyrecs/crawl.akrasiac.org/ttyrec
-      - http://crawl.akrasiac.org/rawdata
+      - https://crawl.akrasiac.org/rawdata
 
   - name: cdo
     base: http://crawl.develz.org
