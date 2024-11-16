@@ -256,6 +256,7 @@ skills:
   - Hexes
   - Summonings
   - Necromancy
+  - Forgecraft
   - Translocations
   - Alchemy
   - Fire Magic
@@ -481,6 +482,7 @@ classes:
   En: Enchanter
   FE: Fire Elementalist
   Fi: Fighter
+  Fw: Forgewright
   Gl: Gladiator
   HW: Hedge Wizard
   He: Healer*
@@ -1091,6 +1093,7 @@ field-transforms:
   sk: &sk
     fi: Fighting
     nec: Necromancy
+    forge: Forgecraft
     evo: Evocations
     sho: Short Blades
     sbl: Short Blades
