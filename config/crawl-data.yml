@@ -399,7 +399,7 @@ species:
   Fe: Felid
   Fo: Formicid
   GE: Grey Elf*
-  Gh: Ghoul
+  Gh: Ghoul*
   Gm: Gnome*
   Gn: Gnoll
   Gr: [Gargoyle, Grotesk]
@@ -425,13 +425,15 @@ species:
   'On': Oni
   Op: Octopode
   Pa: Palentonga*
+  Po: Poltergeist
   Pl: Plutonian*
+  Re: Revenant
   SE: Sludge Elf*
   Sp: Spriggan
   Te: Tengu
   Tr: Troll
   VS: Vine Stalker
-  Vp: Vampire
+  Vp: Vampire*
 
 species-flavours:
   draconian:
