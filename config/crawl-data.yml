@@ -311,6 +311,7 @@ branches:
   - Blade
   - Bzr
   - 'Coc:'
+  - Crucible
   - 'Crypt:'
   - 'D:'
   - 'Depths:'
@@ -327,6 +328,7 @@ branches:
   - Lab
   - 'Lair:'
   - Minitom
+  - Necropolis
   - 'Orc:'
   - Ossuary
   - Pan
@@ -348,7 +350,6 @@ branches:
   - 'Zig:'
   - 'Ziggurat:'
   - 'Zot:'
-  - Crucible
 
 god:
   ash: Ashenzari
