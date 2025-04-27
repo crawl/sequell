@@ -21,7 +21,7 @@ sources:
     # assumed to be dead versions, and will be fetched only if the
     # local copy is missing.
     logs:
-      - '{logfile,milestones}{-git,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32}{,-sprint}*'
+      - '{logfile,milestones}{-git,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33}{,-sprint}*'
       - '{logfile,milestones}{11,12,13,14,15}{,-sprint,-zotdef}*'
       - '{logfile,milestones}-git-zotdef'
       - '{logfile,milestones}-lorcs': lorcs
@@ -153,7 +153,7 @@ sources:
       - cbro2
     base: https://cbro.berotato.org/
     logs:
-      - meta/{0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,git}/{logfile,milestones}{,-sprint}*
+      - meta/{0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,git}/{logfile,milestones}{,-sprint}*
     morgues:
       - https://cbro.berotato.org/morgue
     ttyrecs:
@@ -201,7 +201,7 @@ sources:
     base: https://crawl.xtahua.com/crawl/meta
     logs:
       - '{git,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33}/{logfile,milestones}{,-sprint}*'
     morgues:
       - https://crawl.xtahua.com/crawl/morgue
     ttyrecs:
@@ -223,7 +223,7 @@ sources:
   - name: cpo
     base: https://crawl.project357.org
     logs:
-      - dcss-{milestones,logfile}-{trunk,0.26,0.27,0.28,0.29,0.30,0.31,0.32}*
+      - dcss-{milestones,logfile}-{trunk,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33}*
       - dcss-{milestones,logfile}-{0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25}
       - dcss-{milestones,logfile}-experimental-positional-magic: positional-magic
       - dcss-{milestones,logfile}-experimental-delpal: delver-palentonga
@@ -260,7 +260,7 @@ sources:
   - name: cdi
     base: https://crawl.dcss.io/crawl/meta/
     logs:
-      - 'crawl-{0.30,0.31,0.32,git}/{milestones,logfile}{,-sprint}*'
+      - 'crawl-{0.30,0.31,0.32,0.33,git}/{milestones,logfile}{,-sprint}*'
       # sources accessibly only to qw from before when CDI became an official server
       - 'crawl-bot-{0.29,0.30,0.31,git}/{milestones,logfile}{,-sprint}'
     morgues:
@@ -271,7 +271,7 @@ sources:
   - name: cnc
     base: https://archive.nemelex.cards/meta/
     logs:
-      - 'crawl-{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,git}/{logfile,milestones}{,-sprint}*'
+      - 'crawl-{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,git}/{logfile,milestones}{,-sprint}*'
       - 'crawl-{0.11,0.12,0.13,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
       - https://archive.nemelex.cards/morgue
