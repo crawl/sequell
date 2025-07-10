@@ -1191,6 +1191,8 @@ milestone-types:
   - gem.found
   - gem.lost
   - mark
+  - tesseract.activate
+  - tesseract.kill
 
 milestone-aliases:
   god.abandon: god.renounce
