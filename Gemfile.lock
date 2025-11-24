@@ -27,7 +27,7 @@ GEM
     netrc (0.11.0)
     parslet (1.6.2)
       blankslate (>= 2.0, <= 4.0)
-    pg (1.2.3)
+    pg (1.6.2)
     pry (0.13.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -51,7 +51,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
     rspec-support (3.9.3)
-    sqlite3 (1.4.2)
+    sqlite3 (2.8.0)
     temple (0.8.2)
     tilt (2.0.10)
     unf (0.1.4)
@@ -76,4 +76,4 @@ DEPENDENCIES
   sqlite3
 
 BUNDLED WITH
-   2.1.4
+   2.7.2
