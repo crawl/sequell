@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'bigdecimal'
 gem 'sqlite3'
 gem 'pg'
 gem 'parslet', '1.6.2'
