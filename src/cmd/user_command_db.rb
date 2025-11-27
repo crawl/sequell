@@ -111,7 +111,7 @@ module Cmd
     def insert(table, name, definition)
       sqlite_retry {
         db.execute("INSERT INTO #{table} (name, definition) VALUES (?, ?)",
-          "_" + name.downcase, definition)
+          ["_" + name.downcase, definition])
       }
     end
 
