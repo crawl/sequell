@@ -18,14 +18,12 @@ def main
   if $ctx[:ls]
     list_functions
   elsif $ctx[:rm] && name
-    forbid_private_messaging! "Cannot delete functions in PM."
-    IrcAuth.authorize!(:any)
+    IrcAuth.authorize!('cmd:' + name)
     delete_function(name)
   elsif name && expansion.empty?
     display_function(name)
   elsif name && !expansion.empty?
-    forbid_private_messaging! "Cannot define functions in PM."
-    IrcAuth.authorize!(:any)
+    IrcAuth.authorize!('cmd:' + name)
     define_function(name, expansion)
   else
     show_help(true)
