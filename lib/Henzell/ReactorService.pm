@@ -389,12 +389,45 @@ sub authenticate_command {
   return $auth->authenticate_user($$m{nick}, $m);
 }
 
+sub _authorize_irc {
+  my ($self, $m, $change) = @_;
+  my $auth = $self->{auth};
+  my $authenticated;
+  if (($ENV{IRC_NICK_AUTHENTICATED} || '') eq 'y')
+  {
+      $authenticated = 1;
+  } else
+  {
+      $authenticated = $auth && $auth->nick_identified($$m{nick});
+  }
+
+  my $auth_req =
+    Henzell::ACL::has_permission('irc', $$m{nick}, '#crawl', $authenticated,
+                                 'deny');
+  if (!$auth_req) {
+     return 0
+  }
+
+  if ($auth_req eq 'ok') {
+      return 1;
+  }
+
+  if ($auth_req eq 'authenticate' && $auth && !$$m{reprocessed_command}) {
+    $self->authenticate_command($m);
+  }
+
+  0
+}
+
 sub react {
   my ($self, $m) = @_;
 
   return if $self->irc_auth_process($m);
   return if $$m{self} || $$m{authenticator} || !$$m{body};
   $self->_refresh();
+
+  return unless $self->_authorize_irc($m);
+
   $self->_apply_relay($m);
   return if $$m{needauth};
 
