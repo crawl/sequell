@@ -25,7 +25,7 @@ module Db
     end
 
     def exec(query, *binds, &block)
-      db.execute(query, *binds, &block)
+      db.execute(query, binds, &block)
     end
 
     def transaction(&block)
