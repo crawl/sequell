@@ -17,18 +17,12 @@ use Data::Dumper;
 sub connected {
   my $self = shift;
 
+  return unless $self->{nickserv_login};
+
   $self->_each_service_call('event_connected');
-  open(my $handle, '<', 'password.txt')
-    or do {
-      warn "Unable to read password.txt: $!";
-      return undef;
-    };
-  my $password = <$handle>;
-  close $handle;
-  chomp $password;
   $self->say(channel => 'msg',
              who => 'nickserv',
-             body => "identify $password");
+             body => "identify " . $self->{password});
   return undef;
 }
 

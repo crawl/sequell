@@ -48,6 +48,7 @@ my @sibling_bots     = Henzell::Config::array('sibling_bots');
 my $nickname       = $CONFIG{bot_nick};
 my $ircname        = "$nickname the Crawl Bot";
 my $ircserver      = $CONFIG{irc_server};
+my $nickserv_login = $CONFIG{nickserv_login};
 my $port           = $CONFIG{irc_port} || 6667;
 
 my @CHANNELS         = Henzell::Config::array('channels');
@@ -72,10 +73,18 @@ unless ($irc) {
   exit 0;
 }
 
+open(my $handle, '<', 'password.txt')
+  or die "Unable to read password.txt: $!";
+my $password = <$handle>;
+close $handle;
+chomp $password;
+
 print "Connecting to $ircserver:$port as $nickname, channels: @CHANNELS\n";
 $HENZELL = Henzell::IRC->new(nick     => $nickname,
                              server   => $ircserver,
                              port     => $port,
+                             password => $password,
+                             nickserv_login => $nickserv_login,
                              name     => $ircname,
                              initial_channels => [ @CHANNELS ],
                              channels => [ ],

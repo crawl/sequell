@@ -4,6 +4,7 @@ use_pm:
 
 irc_server: irc.libera.chat
 irc_port: 6667
+nickserv_login: true
 lock_name: henzell
 
 sql_queries:
