@@ -33,7 +33,7 @@ GEM
     netrc (0.11.0)
     nio4r (2.5.9)
     parslet (2.0.0)
-    pg (1.5.3)
+    pg (1.6.2)
     puma (6.2.2)
       nio4r (~> 2.0)
     rack (2.2.7)
@@ -51,7 +51,7 @@ GEM
       rack (~> 2.2, >= 2.2.4)
       rack-protection (= 3.0.6)
       tilt (~> 2.0)
-    sqlite3 (1.6.2)
+    sqlite3 (2.8.0)
       mini_portile2 (~> 2.8.0)
     temple (0.10.0)
     thor (1.2.1)
@@ -79,4 +79,4 @@ DEPENDENCIES
   sqlite3
 
 BUNDLED WITH
-   2.1.4
+   2.7.2
