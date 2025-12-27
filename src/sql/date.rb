@@ -3,7 +3,7 @@ require 'date'
 module Sql
   class Date
     def self.log_date(sql_date)
-      if sql_date.is_a?(DateTime)
+      if sql_date.is_a?(DateTime) || sql_date.is_a?(Time)
         sql_date = sql_date.strftime('%Y-%m-%d %H:%M:%S')
       else
         sql_date = sql_date.to_s
@@ -17,7 +17,7 @@ module Sql
     end
 
     def self.display_date(sql_date, format=nil)
-      if sql_date.is_a?(DateTime)
+      if sql_date.is_a?(DateTime) || sql_date.is_a?(Time)
         sql_date.strftime(format || '%Y-%m-%d %H:%M:%S')
       elsif sql_date =~ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
         self.display_date(DateTime.parse(sql_date), format)

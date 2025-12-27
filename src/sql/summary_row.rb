@@ -252,7 +252,7 @@ module Sql
         rawv.sub!(/([.]\d*?)0+$/, '\1')
         rawv.sub!(/[.]$/, '')
         rawv
-      elsif v.is_a?(DateTime)
+      elsif v.is_a?(DateTime) || v.is_a?(Time)
         Sql::Date.display_date(v)
       else
         v
