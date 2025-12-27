@@ -21,9 +21,6 @@ use Henzell::IRCUtil;
 use IPC::Open2;
 use Helper;
 
-my %admins         = map {$_ => 1} qw/Eidolos raxvulpine toft
-                                      greensnark cbus doy/;
-
 sub new {
   my ($cls, %opt) = @_;
   my $irc = $opt{irc} or die "No irc provider\n";
@@ -192,12 +189,6 @@ sub command_raw_output {
   my $channel = $$m{channel};
   my $private = $$m{private} || $$m{relaypm} || '';
   my $proxied = $$m{proxied};
-
-  if (!$proxied && $command eq '!load' && exists $admins{$nick})
-  {
-    print "LOAD: $nick: $verbatim\n";
-    return $self->_load_commands();
-  }
 
   if ($self->recognized_command($m))
   {

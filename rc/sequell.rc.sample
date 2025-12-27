@@ -1,0 +1,13 @@
+# IRC connection details.
+irc_server: irc.libera.chat
+irc_port: 6667
+bot_nick: MyBot
+
+# Join these channels
+channels: #mychannel
+
+# HTTP services for the Sequell API. Change the port
+startup_services:
+  - name: Sequell HTTP Service
+    command: bundle exec rackup -p 29880 config.ru
+    directory: services/http
