@@ -1,6 +1,10 @@
 *.log
 dat
-www/graphs
+current
+www/userdef.html
+www/learndb.html
+graphs
+tmp
 .*.lock
 server-xlogs
 vendor/
