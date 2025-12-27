@@ -6,7 +6,13 @@ bot_nick: MyBot
 # Join these channels
 channels: #mychannel
 
-# HTTP services for the Sequell API. Change the port
+# The following aspects require external access to your server via HTTP.
+
+# A proper hostname is needed for listgame/listmilestone to produce graph urls.
+host: myhostname
+
+# HTTP services for the Sequell API. This will run on the port designated by
+# `-p`.
 startup_services:
   - name: Sequell HTTP Service
     command: bundle exec rackup -p 29880 config.ru
