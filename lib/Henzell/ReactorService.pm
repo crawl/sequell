@@ -389,7 +389,7 @@ sub authenticate_command {
   return $auth->authenticate_user($$m{nick}, $m);
 }
 
-sub _authorize_irc {
+sub _authorize_pm {
   my ($self, $m, $change) = @_;
   my $auth = $self->{auth};
   my $authenticated;
@@ -402,7 +402,7 @@ sub _authorize_irc {
   }
 
   my $auth_req =
-    Henzell::ACL::has_permission('irc', $$m{nick}, '#crawl', $authenticated,
+    Henzell::ACL::has_permission('pm', $$m{nick}, '#crawl', $authenticated,
                                  'deny');
   if (!$auth_req) {
      return 0
@@ -426,7 +426,10 @@ sub react {
   return if $$m{self} || $$m{authenticator} || !$$m{body};
   $self->_refresh();
 
-  return unless $self->_authorize_irc($m);
+  if ($$m{channel} eq 'msg')
+  {
+      return unless $self->_authorize_pm($m);
+  }
 
   $self->_apply_relay($m);
   return if $$m{needauth};
