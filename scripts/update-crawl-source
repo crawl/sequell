@@ -6,6 +6,8 @@ LOCK="$PWD/.crawl-fetch.lock"
 
 set -o errexit -o pipefail
 
+export PATH="/usr/lib/ccache:$PATH"
+
 while ! mkdir $LOCK 2>/dev/null; do
     echo >&2 "Unable to lock $LOCK, waiting..."
     sleep 5
@@ -38,7 +40,7 @@ ctags -R \
     --regex-c++='/^ *\{ *\/\/ (.*)/\1/t/i' \
     -I decltype+ \
     -I PURE -I IMMUTABLE -I override \
-    --extra=+q \
+    --extras=+q \
     --exclude=contrib \
     --exclude=android-project \
     --exclude=saves \
@@ -47,7 +49,7 @@ ctags -R \
 
 # And compile the binary for playable:*
 cd source
-make clean && make -j10 HURRY=y
+make clean && make -j8 HURRY=y
 
 if [[ -f crawl ]]; then
     mv crawl crawl.build
