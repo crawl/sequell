@@ -100,7 +100,18 @@ $db->each_term(
     }
   });
 
-print <<EOF;
+
+my $outf;
+my $file = shift;
+if (defined $file)
+{
+  open $outf, '>', $file or die "Can't write to $file: $!\n";
+} else
+{
+  open $outf, '>&', STDOUT or die "Can't dup STDOUT: $!\n";
+}
+
+print $outf <<EOF;
 <!DOCTYPE html>
 <html>
 <head>
@@ -112,8 +123,8 @@ print <<EOF;
 <body>
   <h1>${title}</h1>
 EOF
-print "<p class='note'>Updated on ".time2str($timestamp)."\n";
-print "<dl>\n";
+print $outf "<p class='note'>Updated on ".time2str($timestamp)."\n";
+print $outf "<dl>\n";
 
 sub htmlize($$$)
 {
@@ -135,17 +146,17 @@ for my $key ($collator->sort(keys %learndb))
     my $has_multiple = $learndb{"$key\[2]"};
     next if !$has_multiple && $learndb{$key} =~ $FULL_REDIRECT_PATTERN;
 
-    print "<dt>";
-    print   "<a name=\"$_\"></a>" for(map(escape($_),
+    print $outf "<dt>";
+    print $outf   "<a name=\"$_\"></a>" for(map(escape($_),
                                           sort keys %{$redir{canonical_lookup($key)}}));
 
     (my $clean_key = $key) =~ tr{_}{ };
     $clean_key = escape($clean_key);
-    print "$clean_key\n";
-    print " <dd>";
+    print $outf "$clean_key\n";
+    print $outf " <dd>";
 
-    print "<ol>" if $has_multiple;
-    print htmlize($learndb{$key}, $has_multiple, ''), "\n";
+    print $outf "<ol>" if $has_multiple;
+    print $outf htmlize($learndb{$key}, $has_multiple, ''), "\n";
     my $i=1;
     while(exists $learndb{$key."[".++$i."]"})
     {
@@ -153,12 +164,14 @@ for my $key ($collator->sort(keys %learndb))
       my $prefix = '';
       $prefix .= "<a name=\"$_\"></a>" for(map(escape($_),
                                                sort keys %{$redir{canonical_lookup($key."[$i]")}}));
-      print htmlize($text, $has_multiple, $prefix), "\n";
+      print $outf htmlize($text, $has_multiple, $prefix), "\n";
     }
-    print "</ol>" if $has_multiple;
+    print $outf "</ol>" if $has_multiple;
 }
-print <<EOF;
+print $outf <<EOF;
 </dl>
 </body>
 </html>
 EOF
+
+close $outf;
