@@ -9,7 +9,8 @@ module Query
         name = name.downcase
         reject_unknown_option!(name) unless known_option?(name)
         if name == 'tv'
-          TVOption.new(name, args)
+          raise "FooTV is currently disabled but will return!"
+          # TVOption.new(name, args)
         else
           Option.new(name, args)
         end
