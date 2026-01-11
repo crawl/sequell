@@ -6,7 +6,7 @@ require 'timeout'
 
 help("No help for user-defined commands")
 
-TIME_LIMIT = 90
+TIME_LIMIT = 180
 
 cmd = ARGV[2]
 begin

@@ -13,7 +13,7 @@ STDIN.sync = true
 STDERR.sync = true
 STDOUT.sync = true
 
-TIME_LIMIT = 60
+TIME_LIMIT = 180
 
 logf = File.open('echo-pipe.log', 'w')
 logf.sync = true
