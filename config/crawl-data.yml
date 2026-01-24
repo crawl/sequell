@@ -588,6 +588,7 @@ aggregate-functions:
     preserve-unit: true
   median:
     type: I
+    expr: "oracle.median(%s)"
     return: '*'
     preserve-unit: true
   max: '*'
