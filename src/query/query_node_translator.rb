@@ -231,7 +231,6 @@ module Query
               *cv.map { |cv_i|
                 AST::Expr.field_predicate(eqop, 'cv', cv_i)
               }),
-            AST::Expr.field_predicate(eqop, 'explbr', ''),
             (tourney.tmap &&
               AST::Expr.field_predicate(eqop, 'map', tourney.tmap)),
             (tourney.filter && Query::ListgameParser::fragment(tourney.filter)))
