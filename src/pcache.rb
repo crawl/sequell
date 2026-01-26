@@ -40,7 +40,7 @@ SQL
     self.create
     @@db.execute('DELETE FROM pcache WHERE key = ?', key)
     @@db.execute('INSERT INTO pcache (key, value, vtstamp) VALUES (?, ?, ?)',
-                 key, value, self.format_time(timestamp))
+                 [key, value, self.format_time(timestamp)])
   end
 
   # Queries the cache for the given key and returns the result if found
