@@ -1,5 +1,7 @@
 require 'pg'
 
+DBHOST = ENV['SEQUELL_HOST']
+DBPORT = ENV['SEQUELL_PORT']
 DBNAME = ENV['SEQUELL_DBNAME'] || 'sequell'
 DBUSER = ENV['SEQUELL_DBUSER'] || 'sequell'
 DBPASS = ENV['SEQUELL_DBPASS'] || 'sequell'
@@ -78,7 +80,7 @@ class SQLConnection
 
   def self.raw_type_mapped_connection
     self.initialize_type_registry
-    connection = PG.connect(dbname: DBNAME, user: DBUSER, password: DBPASS)
+    connection = PG.connect(host: DBHOST, port: DBPORT, dbname: DBNAME, user: DBUSER, password: DBPASS)
     connection.type_map_for_queries = PG::BasicTypeMapForQueries.new(connection, registry: @regi)
     connection.type_map_for_results = PG::BasicTypeMapForResults.new(connection, registry: @regi)
     connection.exec("set time zone 'UTC'").clear
