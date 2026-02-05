@@ -118,7 +118,7 @@ sources:
       - clan
     base: https://underhound.eu/crawl/meta
     logs:
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,git}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,0.34,git}/{logfile,milestones}{,-sprint}*'
       - '{0.15,0.14,0.13,0.12,0.11,0.10}/{logfile,milestones}{,-sprint,-zotdef}*'
       - 'git/{logfile,milestones}-zotdef'
     morgues:
@@ -153,7 +153,7 @@ sources:
       - cbro2
     base: https://cbro.berotato.org/
     logs:
-      - meta/{0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,git}/{logfile,milestones}{,-sprint}*
+      - meta/{0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,0.34,git}/{logfile,milestones}{,-sprint}*
     morgues:
       - https://cbro.berotato.org/morgue
     ttyrecs:
@@ -201,7 +201,7 @@ sources:
     base: https://crawl.xtahua.com/crawl/meta
     logs:
       - '{git,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33}/{logfile,milestones}{,-sprint}*'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,0.34}/{logfile,milestones}{,-sprint}*'
     morgues:
       - https://crawl.xtahua.com/crawl/morgue
     ttyrecs:
@@ -210,9 +210,9 @@ sources:
   - name: lld
     base: http://lazy-life.ddo.jp/mirror/meta
     logs:
-      - '{0.33}/{logfile,milestones}{,-sprint}*'
+      - '0.34/{logfile,milestones}{,-sprint}*'
       # lld currently retires each previous stable version when the newest is released.
-      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32}/{logfile,milestones}{,-sprint}'
+      - '{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33}/{logfile,milestones}{,-sprint}'
       - '{trunk,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}'
     morgues:
       - [ 'lld.*/(0.\d+)', 'http://lazy-life.ddo.jp:8080/morgue-$1' ]
@@ -271,7 +271,7 @@ sources:
   - name: cnc
     base: https://archive.nemelex.cards/meta/
     logs:
-      - 'crawl-{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,git}/{logfile,milestones}{,-sprint}*'
+      - 'crawl-{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,0.34,git}/{logfile,milestones}{,-sprint}*'
       - 'crawl-{0.11,0.12,0.13,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
     morgues:
       - https://archive.nemelex.cards/morgue
