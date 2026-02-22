@@ -391,7 +391,7 @@ god-aliases:
 
 # * - dead species
 species:
-  At: Armataur
+  At: Armataur*
   An: Anemocentaur
   Ba: Barachi
   Ce: Centaur*
