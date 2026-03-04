@@ -392,7 +392,7 @@ god-aliases:
 # * - dead species
 species:
   At: Armataur*
-  An: Anemocentaur
+  An: Anemocentaur*
   Ba: Barachi
   Ce: Centaur*
   Co: Coglin
@@ -405,6 +405,7 @@ species:
   El: Elf*
   Fe: Felid
   Fo: Formicid
+  GC: Gale Centaur
   GE: Grey Elf*
   Gh: Ghoul*
   Gm: Gnome*
@@ -1020,6 +1021,9 @@ field-input-transforms: &inputtransforms
       string-replace:
         - [Barachian, Barachi]
         - [Bultungin, Gnoll]
+  - race:
+      string-replace:
+        - [Anemocentaur, "Gale Centaur"]
   - cls:
       string-replace:
         - [Assassin, Brigand]
@@ -1049,7 +1053,7 @@ field-input-transforms: &inputtransforms
         - ['As$', 'Br']
   - char:
       if-match:
-        - field: crace
+        - field: race
           equal: Gnoll
       regexp-replace:
         - ['^Bu', 'Gn']
@@ -1065,6 +1069,12 @@ field-input-transforms: &inputtransforms
           equal: "Arcane Marksman"
       regexp-replace:
         - ['AM$', 'Hs']
+  - char:
+      if-match:
+        - field: race
+          equal: Anemocentaur
+      regexp-replace:
+        - ['^An', 'GC']
 
 
 field-transforms:
@@ -1072,6 +1082,8 @@ field-transforms:
     ke: Tengu
     kenku: Tengu
     grotesk: Gargoyle
+    an: Gale Centaur
+    anemocentaur: Gale Centaur
   cls:
     as: Brigand
     assassin: Brigand
