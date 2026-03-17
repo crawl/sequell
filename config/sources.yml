@@ -277,3 +277,30 @@ sources:
       - https://archive.nemelex.cards/morgue
     ttyrecs:
       - https://archive.nemelex.cards/ttyrec
+
+  - name: rgg
+    base: https://dcss.roguelikes.gg/meta
+    logs:
+      - '{0.30,0.31,0.32,0.33,0.34,git}/{logfile,milestones}*'
+    morgues:
+      - https://dcss.roguelikes.gg/morgue
+    ttyrecs:
+      - https://dcss.roguelikes.gg/ttyrec
+
+  - name: rca
+    base: https://dcss-ca.roguelikes.gg/meta
+    logs:
+      - '{0.30,0.31,0.32,0.33,0.34,git}/{logfile,milestones}*'
+    morgues:
+      - https://dcss-ca.roguelikes.gg/morgue
+    ttyrecs:
+      - https://dcss-ca.roguelikes.gg/ttyrec
+
+  - name: rsa
+    base: https://dcss-sa.roguelikes.gg/meta
+    logs:
+      - '{0.30,0.31,0.32,0.33,0.34,git}/{logfile,milestones}*'
+    morgues:
+      - https://dcss-sa.roguelikes.gg/morgue
+    ttyrecs:
+      - https://dcss-sa.roguelikes.gg/ttyrec
