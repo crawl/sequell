@@ -277,3 +277,12 @@ sources:
       - https://archive.nemelex.cards/morgue
     ttyrecs:
       - https://archive.nemelex.cards/ttyrec
+
+  - name: cbrg
+    base: https://crawl-br.roguelikes.gg/meta/
+    logs:
+      - '{0.30,0.31,0.32,0.33,0.34,git}/{milestones,logfile}{,-sprint}*'
+    morgues:
+      - https://crawl-br.roguelikes.gg/morgue/
+    ttyrecs:
+      - https://crawl-br.roguelikes.gg/ttyrec/
