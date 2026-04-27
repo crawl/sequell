@@ -1,6 +1,6 @@
 sources:
   - name: cao
-    base: http://crawl.akrasiac.org
+    base: https://crawl.akrasiac.org
 
     # If the file exists in this path, it will be linked into the data
     # directory from the local path; otherwise it will be fetched
@@ -60,7 +60,7 @@ sources:
       - ['cdo.*-(\d+[.]\d+)', 'http://crawl.develz.org/morgues/$1']
     ttyrecs:
       - https://termcast.shalott.org/ttyrecs/crawl.develz.org/ttyrec
-      - http://crawl.develz.org/ttyrecs
+      - https://crawl.develz.org/ttyrecs
 
   - name: cszo
     aliases:
@@ -101,7 +101,7 @@ sources:
       - http://crawlus.somatika.net/dumps
 
   - name: rhf
-    base: http://rl.heh.fi/
+    base: http://rl.heh.fi
     logs:
       - remote.rhf-{logfile,milestones}-{0.5,0.6,0.7,trunk,spr}
       - meta/crawl-0.12/{logfile,milestones}{,-sprint,-zotdef}
@@ -151,7 +151,7 @@ sources:
   - name: cbr2
     aliases:
       - cbro2
-    base: https://cbro.berotato.org/
+    base: https://cbro.berotato.org
     logs:
       - meta/{0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,0.34,git}/{logfile,milestones}{,-sprint}*
     morgues:
@@ -258,7 +258,7 @@ sources:
       - https://crawl.kelbi.org/crawl/ttyrec
 
   - name: cdi
-    base: https://crawl.dcss.io/crawl/meta/
+    base: https://crawl.dcss.io/crawl/meta
     logs:
       - 'crawl-{0.30,0.31,0.32,0.33,0.34,git}/{milestones,logfile}{,-sprint}*'
       # sources accessibly only to qw from before when CDI became an official server
@@ -269,7 +269,7 @@ sources:
       - https://crawl.dcss.io/crawl/ttyrec
 
   - name: cnc
-    base: https://archive.nemelex.cards/meta/
+    base: https://archive.nemelex.cards/meta
     logs:
       - 'crawl-{0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,0.34,git}/{logfile,milestones}{,-sprint}*'
       - 'crawl-{0.11,0.12,0.13,0.14,0.15}/{logfile,milestones}{,-sprint,-zotdef}*'
@@ -279,10 +279,10 @@ sources:
       - https://archive.nemelex.cards/ttyrec
 
   - name: cbrg
-    base: https://crawl-br.roguelikes.gg/meta/
+    base: https://crawl-br.roguelikes.gg/meta
     logs:
       - '{0.30,0.31,0.32,0.33,0.34,git}/{milestones,logfile}{,-sprint}*'
     morgues:
-      - https://crawl-br.roguelikes.gg/morgue/
+      - https://crawl-br.roguelikes.gg/morgue
     ttyrecs:
-      - https://crawl-br.roguelikes.gg/ttyrec/
+      - https://crawl-br.roguelikes.gg/ttyrec
