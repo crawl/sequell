@@ -1,29 +1,49 @@
 #! /usr/bin/env bash
 
-GIT_URL=https://github.com/crawl/crawl.git
-SOURCE_DIR=current
-LOCK="$PWD/.crawl-fetch.lock"
+git_url=https://github.com/crawl/crawl.git
+source_dir=current
+lock_dir="$PWD/.crawl-fetch.lock"
+num_threads=$(nproc)
+make_args=
 
 set -o errexit -o pipefail
 
-export PATH="/usr/lib/ccache:$PATH"
+while getopts "h?g:j:l:m:s:" opt; do
+    case "$opt" in
+        h|\?)
+            echo "$0 [-s <dir>] [-g <url> ] [-l <dir>]" \
+                " [-j <num>] [-m <args>]"
+            exit 0
+            ;;
+        g)  git_url="$OPTARG"
+            ;;
+        j)  num_threads="$OPTARG"
+            ;;
+        l)  lock_dir="$OPTARG"
+            ;;
+        m)  make_args="$OPTARG"
+            ;;
+        s)  source_dir="$OPTARG"
+            ;;
+    esac
+done
 
-while ! mkdir $LOCK 2>/dev/null; do
-    echo >&2 "Unable to lock $LOCK, waiting..."
+while ! mkdir $lock_dir 2>/dev/null; do
+    echo >&2 "Unable to lock $lock_dir, waiting..."
     sleep 5
 done
 
 cleanup_lock() {
-    rmdir $LOCK
+    rmdir $lock_dir
 }
 
 trap cleanup_lock EXIT
 
-if [[ ! -d "$SOURCE_DIR" ]]; then
-    git clone $GIT_URL $SOURCE_DIR
+if [[ ! -d "$source_dir" ]]; then
+    git clone $git_url $source_dir
 fi
 
-cd $SOURCE_DIR
+cd $source_dir
 git checkout -f
 git clean -fx -e crawl.build
 git pull
@@ -49,7 +69,8 @@ ctags -R \
 
 # And compile the binary for playable:*
 cd source
-make clean && make -j8 HURRY=y
+make clean
+make -j$num_threads $make_args
 
 if [[ -f crawl ]]; then
     mv crawl crawl.build
