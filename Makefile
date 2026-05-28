@@ -1,7 +1,7 @@
 all: seqdb
 
 seqdb:
-	go get -u github.com/crawl/go-sequell/cmd/seqdb
+	go install github.com/crawl/go-sequell/cmd/seqdb@latest
 
 test: unit integration
 
