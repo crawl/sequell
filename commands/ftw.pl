@@ -41,8 +41,10 @@ sub ftw {
 	}
 
 	# The strict version didn't work so we will relax the rules a bit and look
-	# for only 1 match. We take more words on both ends until a match is found.
-	for (my $i = 0; $i <= $#words; $i++) {
+	# for only 1 match. We take fewer words from both ends until a match is
+	# found, so that we find the match with the most words. (Vine Stalker
+	# rather than Stalker)
+	for (my $i = $#words; $i >= 0; $i--) {
 		my $head = join(" ", @words[0..$i]);
 		my $tail = join(" ", @words[$#words - $i .. $#words]);
 		my $race = race_lookup($head) || race_lookup($tail);
