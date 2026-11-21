@@ -22,29 +22,38 @@ sub role_lookup {
 }
 
 sub ftw {
-	my ($word1, $word2, $word3, $word4, $remainder) = split(' ');
-	my @keys = ();
+	my @words = split(' ');
 
-	push @keys, "$word1 $word2" unless !$word2;
-	push @keys, "$word2 $word3" unless !$word3;
-	push @keys, "$word3 $word4" unless !$word4;
-	push @keys, $word1 unless !$word1;
-	push @keys, $word2 unless !$word2;
-	push @keys, $word3 unless !$word3;
-	push @keys, $word4 unless !$word4;
+	# Look for a pivot point to split the arguments in 2 groups
+	# Return if the groups match a race AND a role.
+	for (my $i = 0; $i <= $#words - 1; $i++) {
+		my $first = join(" ", @words[0..$i]);
+		my $second = join(" ", @words[$i+1..$#words]);
 
-	my $race = '';
-	my $role = '';
-	my $temp_race = '';
-	my $temp_role = '';
-	foreach(@keys) {
-		$race ||= race_lookup($_);
-		$role ||= role_lookup($_);
-		last if $race and $role;
+		my $race = race_lookup($first);
+		my $role = role_lookup($second);
+		return "$race$role" if $race and $role;
+
+		# reverse them
+		$race = race_lookup($second);
+		$role = role_lookup($first);
+		return "$race$role" if $race and $role;
 	}
-    $race ||= '??';
-    $role ||= '??';
-	return "$race$role";
+
+	# The strict version didn't work so we will relax the rules a bit and look
+	# for only 1 match. We take fewer words from both ends until a match is
+	# found, so that we find the match with the most words. (Vine Stalker
+	# rather than Stalker)
+	for (my $i = $#words; $i >= 0; $i--) {
+		my $head = join(" ", @words[0..$i]);
+		my $tail = join(" ", @words[$#words - $i .. $#words]);
+		my $race = race_lookup($head) || race_lookup($tail);
+		my $role = role_lookup($head) || role_lookup($tail);
+		return "$race??" if $race;
+		return "??$role" if $role;
+	}
+
+	return "????";
 }
 
 # 3rd argument is the entire command line
